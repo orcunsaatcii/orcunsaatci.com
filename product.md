@@ -14641,7 +14641,7 @@ jobs:
 Adım notları:
 - **`quality`** GitHub branch korumasında ve (varsa) Vercel Deployment Checks'te seçilen zorunlu denetimin adıdır (§14.1, §14.2).
 - **Tip üretimi.** Temiz bir klonda `tsc --noEmit` için content-collections çıktısı ve Next'in typed route tipleri (`Route`, §3.5) gerekir. `npm run typecheck` bunları `pretypecheck` betiğiyle üretir (§8.7). ✅ DOĞRULANDI (2026-09-29, §8.7.1): `next typegen` Next 16.3.7'de bulunur.
-- **ƒ denetimi.** `tee` stdout'u pipe yaptığı için Next renk kodu basmaz. Route satırları `┌`, `├` ya da `└` ile başlar; açıklama satırları bu karakterlerle başlamaz. Yerelde doğrulandı (2026-09-29, `next build | tee build.log` ve §15.1.1 görev 18 öz-testi). ⚠️ **DOĞRULANMADI:** Bu biçim M0'daki ilk CI günlüğünde de görülerek doğrulanır.
+- **ƒ denetimi.** `tee` stdout'u pipe yaptığı için Next renk kodu basmaz. Route satırları `┌`, `├` ya da `└` ile başlar; açıklama satırları bu karakterlerle başlamaz. Yerelde doğrulandı (2026-09-29, `next build | tee build.log` ve §15.1.1 görev 18 öz-testi). ✅ DOĞRULANDI (2026-09-30, PR #1 `quality` günlüğü): CI'da da route satırları `┌`, `├`, `└` ile başlar.
 - **`CONTENT_STRICT`.** Bir depo değişkenidir (Settings → Secrets and variables → Actions → Variables). Lansman hazırlığında `true` yapılır. `true` iken yer tutucu kalan her PR kırmızı olur (D-36, §7.5).
 - **Poster eksiksizliği** ayrı bir adım değildir: `check-budgets.mjs` `public/stage/` doluysa 36 dosyanın (3 anahtar × 2 tema × 3 genişlik × 2 biçim) varlığını ve boyutunu denetler (§9.4.2).
 - **Bütçe raporu** `.next/budgets.json` her koşuda artefakt olarak saklanır (§9.4.2).
@@ -14961,7 +14961,7 @@ Zaman çizelgesi:
 | Speed Insights | Speed Insights sekmesi → Enable | Açık | M9 |
 | Vercel Toolbar | Settings → General → Vercel Toolbar | Preview: açık (CSP izin verir, §12.5.2). Production: kapalı. | M0 |
 | Firewall rate limit | Firewall → Rate Limiting | §12.2.8'deki `contact-rate-limit` kuralı, Published | v1.1 etkinleştirmesi (M10 sonrası, §14.5.4) |
-| Deployment Checks | Settings → Build and Deployment → Deployment Checks | M0'da `quality`; `lhci` M3'te eklenir (§15.0.4, §16.1.1 U-09). ⚠️ **DOĞRULANMADI:** Hobby'de bulunup bulunmadığı. Yoksa denetim PR aşamasında yapılır (§14.1 #6). | M0 |
+| Deployment Checks | Settings → Build and Deployment → Deployment Checks | M0'da `quality`; `lhci` M3'te eklenir (§15.0.4, §16.1.1 U-09). ✅ DOĞRULANDI (2026-09-30, Vercel panosu): Hobby'de vardır (Settings → Build and Deployment → Deployment Checks → Add Checks). | M0 |
 | Domains | Settings → Domains | §14.4 | M10 |
 
 #### 14.2.3 Ortam değişkenleri
@@ -16322,11 +16322,11 @@ Belgedeki her `⚠️ DOĞRULANMADI` maddesi, araştırma notlarındaki UNVERIFI
 | V-05 | `eslint-config-next/typescript`, `@typescript-eslint` kurallarını `.ts/.tsx`'e uygular; `allowImportNames` typescript-eslint 8'de temel kurala aktarılır. | §8.2.2 | `boundaries.test.ts` öz-testi | Çekirdek `no-restricted-imports`; tip importları `import('…')` sorgusuyla. | M0 — ✅ DOĞRULANDI (2026-09-29; lenis deseni için SPEC-SAPMA §8.2.2) |
 | V-06 | `@typescript-eslint/ban-ts-comment` ve `no-explicit-any` `error` düzeyindedir. | §13.7 | `npx eslint --print-config src/lib/security-headers.ts` (M0'da var olan bir `.ts` dosyası) | §8.2 yapılandırmasına açıkça eklenir. | M0 — ✅ DOĞRULANDI (2026-09-29) |
 | V-07 | `prettier-plugin-tailwindcss@0.8.1` seçeneğinin adı `tailwindStylesheet`'tir. | §8.6.3 | Paket README'si; sınıf sırası değişimi | Seçenek adı düzeltilir. | M0 — ✅ DOĞRULANDI (2026-09-29) |
-| V-08 | Build günlüğündeki route satırları `┌`, `├`, `└` ile başlar (ƒ denetimi). | §13.6.1 | İlk CI günlüğü + §15.1.1 görev 18 öz-testi | Regex güncellenir. | M0 — yerelde ✅ (2026-09-29); ilk CI günlüğü bekleniyor |
+| V-08 | Build günlüğündeki route satırları `┌`, `├`, `└` ile başlar (ƒ denetimi). | §13.6.1 | İlk CI günlüğü + §15.1.1 görev 18 öz-testi | Regex güncellenir. | M0 — ✅ DOĞRULANDI (2026-09-30, PR #1 CI günlüğü) |
 | V-09 | `headers()` kuralları 404 yanıtlarına da uygulanır. | §12.5.7 | `headers.spec.ts` `/yok` (yerel); üretimde §14.7 C | Yedek tanımlı değil; bulgu §12.5.7'ye yazılır, karar §16.3.2'ye taşınır. | M0 → M10 — yerelde ✅ (2026-09-29); production M10 |
 | V-10 | Node 24'ün npm'inde `approve-scripts` uyarısı ve komutu vardır. | §2.2.9 #11 | `npm help approve-scripts` | Adım atlanır. | M0 — yanlış çıktı → SPEC-SAPMA §2.2.9: komut `npm install-scripts approve` (2026-09-29) |
 | V-11 | Deployment Protection "All Deployments" Hobby'de ücretsizdir. | §14.2.2 | Vercel panosu | M3'ten itibaren production D-36 nedeniyle deploy olmaz. M0–M2'de production iskeleti açık kalır; içerik yoktur ve `robots.txt` `Disallow: /` döner. | M0 — ✅ DOĞRULANDI (2026-09-29, Vercel panosu) |
-| V-12 | Deployment Checks Hobby'de vardır. | §14.2.2, kalite §14 #1 | Vercel panosu | Denetim PR aşamasında yapılır (§14.1 #6). | M0 |
+| V-12 | Deployment Checks Hobby'de vardır. | §14.2.2, kalite §14 #1 | Vercel panosu | Denetim PR aşamasında yapılır (§14.1 #6). | M0 — ✅ DOĞRULANDI (2026-09-30, Vercel panosu) |
 | V-13 | Next 16.3.7 (2026-09-30) kırıcı değişiklik içermez; güvenlik düzeltmelerini kapsar. | D-01, platform §13 | Sürüm notları + X1 PR'ında `npm run check` | Güvenlik yaması ertelenmez; kırılma `SPEC-SAPMA` ile giderilir. | X1 (≤ M1) |
 | V-14 | Headless Chromium, SwiftShader bayraklarıyla poster render'ı için WebGL2 sağlar (macOS'ta ölçüldü; Linux'ta bayraksız davranış bilinmiyor). | §5.16.3, final §13 #6 | M1'de yerel `npm run posters`; CI yalnız `--check` | Yakalama yedeği `locator.screenshot({ omitBackground: true })`. | M1 |
 | V-15 | `WebGLRenderer.debug.onShaderError`, `@types/three` 0.186.0'da vardır. | §5.12.4, §5.17 | Tip dosyası | `compileAsync` sonrası `gl.info.programs[].diagnostics.runnable === false` kontrolü. | M1 |
