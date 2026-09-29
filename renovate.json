@@ -1,0 +1,62 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "timezone": "Europe/Istanbul",
+  "schedule": ["before 9am on monday"],
+  "prConcurrentLimit": 5,
+  "labels": ["dependencies"],
+  "packageRules": [
+    {
+      "description": "D-03: TypeScript 7 typescript-eslint'i kırar",
+      "matchPackageNames": ["typescript"],
+      "allowedVersions": "<7"
+    },
+    {
+      "description": "D-03: ESLint 10 eslint-plugin-react'i kırar",
+      "matchPackageNames": ["eslint"],
+      "allowedVersions": "<10"
+    },
+    {
+      "description": "D-02 / D-47: R3F 9.8 peer aralığı react <19.4",
+      "matchPackageNames": ["react", "react-dom"],
+      "allowedVersions": "<19.4"
+    },
+    {
+      "description": "D-47: three ve @types/three birlikte; tavan yalnız tüm peer'lar izin verince elle yükseltilir",
+      "matchPackageNames": ["three", "@types/three"],
+      "groupName": "three",
+      "allowedVersions": "<0.187.0"
+    },
+    {
+      "description": "D-04: Node 24 tipleri",
+      "matchPackageNames": ["@types/node"],
+      "allowedVersions": "<25"
+    },
+    {
+      "description": "D-01: next ve eslint-config-next aynı sürümde, 16.3.x hattında",
+      "matchPackageNames": ["next", "eslint-config-next"],
+      "groupName": "next",
+      "allowedVersions": "<16.4.0"
+    },
+    {
+      "matchPackageNames": ["@react-three/fiber", "@react-three/drei"],
+      "groupName": "react-three"
+    },
+    {
+      "matchPackageNames": ["@playwright/test", "@axe-core/playwright"],
+      "groupName": "e2e"
+    },
+    {
+      "matchPackageNames": ["vitest", "@vitest/coverage-v8"],
+      "groupName": "vitest"
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "groupName": "github-actions"
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "labels": ["security"],
+    "schedule": ["at any time"]
+  }
+}
