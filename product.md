@@ -829,8 +829,8 @@ Sırayla uygulanır:
     - `three`, `@react-three/*`, `maath` yalnız `src/stage/gl/**` altında import edilir.
     - Sürümler `product.md` §2.1'de sabittir: TypeScript 7, ESLint 10, React ≥ 19.4 YASAK.
     ```
-11. **İSTEĞE BAĞLI: npm betik onayı.** npm 11.17.0, `eslint-import-resolver-typescript`'in `unrs-resolver` postinstall'ı için `allow-scripts` uyarısı verdi; lint onsuz da çalıştı. Onaylamak için: `npm approve-scripts unrs-resolver`.
-    - ⚠️ DOĞRULANMADI: Node 24 ile gelen npm sürümünde bu uyarının ve komutun bulunduğu. Doğrulama: `npm help approve-scripts`. Başarısızsa: adım atlanır.
+11. **İSTEĞE BAĞLI: npm betik onayı.** npm 11.17.0, `eslint-import-resolver-typescript`'in `unrs-resolver` postinstall'ı için `allow-scripts` uyarısı verdi; lint onsuz da çalıştı. Onaylamak için: `npm install-scripts approve unrs-resolver`.
+    - SPEC-SAPMA: §2.2.9 — Node 24.21 ile gelen npm 11.19.0'da komutun adı `npm install-scripts approve <paket>`'tir (`npm approve-scripts` yok; 2026-09-29, `npm install-scripts --help`). Adım isteğe bağlıdır ve atlandı; lint onsuz çalışır.
 12. **ÖNERİLİR:** create-next-app'in `README.md`'si kısa bir Türkçe README ile değiştirilir: kurulum için §2.2'ye, içerik düzenleme için §7.10'a bağlantı verir.
 13. **Doğrulama:** `next.config.ts` `withContentCollections` ve `securityHeaders` kullandığı için önce §15.1.1 görev 8–9'daki dosyalar oluşturulur (`src/lib/security-headers.ts`, `content-collections.ts`, `content/site/site.yaml`, `scripts/check-content.ts` ve `scripts/build-cv.tsx` iskeletleri, geçici `src/app/robots.ts`). Ardından `npm run lint && npx tsc --noEmit && npx next build` yeşil biter ve build tablosunda yalnız ○/● route bulunur. `npm run check`'in M0'daki tam hâli (test ve budgets dâhil) §15.1'dedir.
 
@@ -10342,7 +10342,8 @@ const THREE = {
 };
 /** SB3: motion chunk statik olarak yalnız src/lib/gsap.ts içinde. */
 const MOTION = {
-  group: ['gsap', 'gsap/*', '@gsap/react', 'lenis', 'lenis/*', '!lenis/dist/lenis.css'],
+  // SPEC-SAPMA: §8.2.2 — gitignore kuralı: dışlanan klasörün altındaki dosya geri alınamaz (aşağıdaki not).
+  group: ['gsap', 'gsap/*', '@gsap/react', 'lenis/*', '!lenis/dist', 'lenis/dist/*', '!lenis/dist/lenis.css'],
   allowTypeImports: true,
   message: "D-33: gsap/lenis statik import YASAK. Runtime'ı useMotionRuntime()/whenMotion() ile alın (§5.13.2).",
 };
@@ -10360,13 +10361,17 @@ const CONTENT = {
 /** SB7: Node'da tsx ile de çalışan modüller @/ takma adı kullanmaz. */
 const NO_ALIAS = { group: ['@/*'], message: '§7.2.3: bu modül tsx ile Node\'da da çalışır; göreli import kullanın.' };
 
+/** MOTION ile birlikte kullanılan tam ad kuralı: kök `lenis` modülü. */
+const LENIS_ROOT = { name: 'lenis', allowTypeImports: true, message: MOTION.message };
+const motionPaths = (patterns) => (patterns.includes(MOTION) ? [LENIS_ROOT] : []);
+
 const restrict = (...patterns) => [
   'error',
-  { paths: BANNED_PATHS, patterns: [...BANNED_PATTERNS, ...patterns] },
+  { paths: [...BANNED_PATHS, ...motionPaths(patterns)], patterns: [...BANNED_PATTERNS, ...patterns] },
 ];
 const restrictWith = (paths, ...patterns) => [
   'error',
-  { paths: [...BANNED_PATHS, ...paths], patterns: [...BANNED_PATTERNS, ...patterns] },
+  { paths: [...BANNED_PATHS, ...paths, ...motionPaths(patterns)], patterns: [...BANNED_PATTERNS, ...patterns] },
 ];
 
 const GL = ['src/stage/gl/**/*.{ts,tsx}'];
@@ -10455,14 +10460,15 @@ export default defineConfig([
   globalIgnores([
     '.next/**', 'out/**', 'build/**', 'next-env.d.ts',
     '.content-collections/**', '.schemas/**', 'public/**',
-    'test-results/**', 'playwright-report/**', 'blob-report/**', '.lighthouseci/**',
+    'test-results/**', 'playwright-report/**', 'blob-report/**', '.lighthouseci/**', 'coverage/**',
   ]),
 ]);
 ```
 
 Notlar:
 - `files` desenleri her zaman uzantı içerir (`**/*.{ts,tsx}`). Uzantısız `scripts/**` deseni ESLint'in `.sh` dosyalarını da lint etmeye çalışmasına yol açabilir.
-- ⚠️ DOĞRULANMADI: `eslint-config-next/typescript`'in `@typescript-eslint` eklentisini `.ts/.tsx` dosyalarında kapsama aldığı ve `allowImportNames` seçeneğinin typescript-eslint 8.x sürümünde temel kurala aktarıldığı. Doğrulama: M0'da §8.2.4 öz-testi. Başarısızsa: `@typescript-eslint/no-restricted-imports` yerine çekirdek `no-restricted-imports` kullanılır (tip importları `import type` yerine `import('…')` tip sorgusu ile yazılır) ve drei kısıtı `importNames` listesine çevrilir.
+- ✅ DOĞRULANDI (2026-09-29, `tests/lint/boundaries.test.ts` 19 satır yeşil): `@typescript-eslint/no-restricted-imports` `.ts/.tsx` dosyalarında etkindir; `allowImportNames` ve `allowTypeImports` çalışır.
+- SPEC-SAPMA: §8.2.2 — Desenler gitignore kuralıyla eşleşir: dışlanan bir klasörün (`lenis`, `lenis/dist`) altındaki dosya `!` ile geri alınamaz. Bu yüzden kök `lenis` desenden çıkarılıp tam ad kuralına (`LENIS_ROOT`) taşındı, `lenis/dist` geri alınıp içi yeniden dışlandı; yalnız `lenis/dist/lenis.css` serbesttir. Ayrıca `coverage/**` (§13.7) `globalIgnores` listesine eklendi. Yukarıdaki dosya bu hâliyle günceldir.
 - `eslint-config-prettier`'in varsayılan dışa aktarımı flat config nesnesi olarak kullanılır.
 - `react-hooks` 7 (eslint-config-next içinde) `react-hooks/set-state-in-effect` kuralını **hata** olarak uygular (kalite araştırması §1.1). Prop'u effect içinde state'e kopyalamak bu yüzden YASAKtır; türetilmiş değer render sırasında hesaplanır.
 
@@ -10827,7 +10833,7 @@ Bilinçli olarak **ayarlanmayan** anahtarlar:
 
 Doğrulanacaklar:
 - ⚠️ DOĞRULANMADI: `images.localPatterns` tanımlıyken statik importlu görsellerin (`/_next/static/media/**`) ayrıca listelenmesi gerekip gerekmediği. İkinci girdi zararsızdır; M3'te statik importlu bir görselin optimizer URL'si 200 dönmelidir.
-- ⚠️ DOĞRULANMADI: `next.config.ts` içinden göreli `.ts` import'unun (`./src/lib/security-headers`) Next 16.3 yapılandırma yükleyicisiyle çalıştığı. Doğrulama: M0'da `next build` + `curl -sI localhost:3000/ | grep -i content-security-policy`. Başarısızsa dizi `next.config.ts` içine taşınır ve §12.5 bu dosyayı işaret eder.
+- ✅ DOĞRULANDI (2026-09-29, `next build` + `curl -sI localhost:3000/`): `next.config.ts` içinden göreli `.ts` import'u (`./src/lib/security-headers`) Next 16.3.7 yapılandırma yükleyicisiyle çalışır; CSP başlığı yanıtta birebir görünür.
 - `withContentCollections` sarmalayıcısı `next dev` sırasında içeriği izler (§7.3.4).
 
 #### 8.6.2 `tsconfig.json` farkları
@@ -10882,7 +10888,7 @@ content/**/*.mdx
 product.md
 ```
 
-- Tailwind v4'te sınıf sıralaması için eklentinin tema dosyasını bilmesi gerekir; yol `tailwindStylesheet` ile verilir. ⚠️ DOĞRULANMADI: seçenek adının `prettier-plugin-tailwindcss@0.8.1`'de `tailwindStylesheet` olduğu. Doğrulama: M0'da paket README'si; sınıf sırası değişmiyorsa ad düzeltilir.
+- Tailwind v4'te sınıf sıralaması için eklentinin tema dosyasını bilmesi gerekir; yol `tailwindStylesheet` ile verilir. ✅ DOĞRULANDI (2026-09-29, paket README'si): seçeneğin adı `tailwindStylesheet`'tir.
 - İçerik MDX'i biçimlenmez: sahibin metni yeniden akıtılmaz. YAML dosyaları biçimlenir.
 - `postcss.config.mjs` create-next-app'teki hâliyle kalır: `export default { plugins: { '@tailwindcss/postcss': {} } }`.
 
@@ -10929,7 +10935,7 @@ product.md
 | `check` | her milestone sonu (§0.2) | Sıra: lint → typecheck → test → build → budgets. |
 | `postinstall` | her `npm install` / `npm ci` | Betik dosyası oluşturulmadan eklenmez (§2.2.9 madde 8). `--ignore-scripts` ile kurulum **YASAK**tır; aksi hâlde `public/detect-gpu/` oluşmaz. |
 
-- ⚠️ DOĞRULANMADI: `next typegen` komutunun 16.3.x'te global route tiplerini ürettiği (platform araştırması §2.2 belgelerden aktarır). Doğrulama: M0'da temiz klonda `npm run typecheck`. Başarısızsa `pretypecheck` yalnız `content-collections build` olur ve `check` sırası `lint → test → build → typecheck → budgets` yapılır.
+- ✅ DOĞRULANDI (2026-09-29, temiz kopyada `npm ci && npm run check`): `next typegen` 16.3.7'de global route tiplerini üretir; `pretypecheck` olduğu gibi kalır.
 
 #### 8.7.2 Bağımlılıklar
 
@@ -13730,7 +13736,7 @@ Bağlantı noktaları:
 
 Dosya kuralları:
 - `@/…` takma adı, `server-only` ve Node'a özgü olmayan bağımlılıklar **YASAK**tır. `next.config.ts` bağlamında çözülmezler.
-- ⚠️ **DOĞRULANMADI:** `next.config.ts`'in göreli bir `.ts` modülünü import edebildiği (Node 24 + Next 16.3 yapılandırma yükleyicisi). Doğrulama: M0'da `npm run build` ve `curl -sI localhost:3000/ | grep -i content-security`. Çalışmazsa dosyanın gövdesi aynı export adlarıyla `next.config.ts`'in başına taşınır; birim testi o dosyayı import eder.
+- ✅ DOĞRULANDI (2026-09-29, `npm run build` + `curl -sI`): `next.config.ts` göreli `.ts` modülünü import edebilir (Node 24.21 + Next 16.3.7).
 
 ```ts
 // src/lib/security-headers.ts
@@ -13900,7 +13906,7 @@ CSP'ye yeni bir köken eklemek bir mimari değişikliktir. Aynı PR'da şunlar b
 | Test | Doğrulananlar |
 |---|---|
 | `src/lib/security-headers.test.ts` (Vitest) | - `buildCsp({ nodeEnv: 'production', vercelEnv: 'production' }, false)` §12.5.2'deki diziye **birebir** eşittir.<br>- Production çıktısında `unsafe-eval`, `vercel.live`, `blob:` (worker-src dışında) ve `*` yoktur.<br>- Preview + `reportOnly=true`: başlık adı `Content-Security-Policy-Report-Only`; `upgrade-insecure-requests` yok; `https://vercel.live` var.<br>- `nodeEnv: 'development'`: `'unsafe-eval'` ve `ws:` var.<br>- HSTS değeri `preload` içermez.<br>- Başlık anahtarları benzersizdir. |
-| `tests/e2e/headers.spec.ts` (§13.3.4) | Şu yollarda tüm başlıklar vardır ve CSP başlığının adı `Content-Security-Policy`'dir: `/`, ilk proje sayfası, `/sitemap.xml`, `/yok` (404) ve `/files/orcun-saatci-cv-tr.pdf`. `x-powered-by` yoktur. ⚠️ **DOĞRULANMADI:** `headers()`'ın 404 yanıtlarına da uygulandığı; bu test yerel olarak doğrular, production'da §14.7 tekrarlar. |
+| `tests/e2e/headers.spec.ts` (§13.3.4) | Şu yollarda tüm başlıklar vardır ve CSP başlığının adı `Content-Security-Policy`'dir: `/`, ilk proje sayfası, `/sitemap.xml`, `/yok` (404) ve `/files/orcun-saatci-cv-tr.pdf`. `x-powered-by` yoktur. Yerelde doğrulandı (2026-09-29, `headers.spec.ts` `/yok` yeşil): `headers()` 404 yanıtlarına da uygulanır. ⚠️ **DOĞRULANMADI:** production'da aynı davranış; §14.7 tekrarlar. |
 | Konsol denetimi | Tüm e2e testlerinde CSP ihlali bir konsol hatasıdır ve testi düşürür (§13.3.2). |
 | Üretim | securityheaders.com ve Mozilla Observatory'de hedef not **A**'dır. `'unsafe-inline'` puan kaybettirir; statik render için bu kabul edilir (§14.7). |
 
@@ -14634,8 +14640,8 @@ jobs:
 
 Adım notları:
 - **`quality`** GitHub branch korumasında ve (varsa) Vercel Deployment Checks'te seçilen zorunlu denetimin adıdır (§14.1, §14.2).
-- **Tip üretimi.** Temiz bir klonda `tsc --noEmit` için content-collections çıktısı ve Next'in typed route tipleri (`Route`, §3.5) gerekir. `npm run typecheck` bunları `pretypecheck` betiğiyle üretir (§8.7). ⚠️ **DOĞRULANMADI:** `next typegen`'in Next 16.3'te bulunduğu; doğrulama ve yedek sıra §8.7'dedir.
-- **ƒ denetimi.** `tee` stdout'u pipe yaptığı için Next renk kodu basmaz. Route satırları `┌`, `├` ya da `└` ile başlar; açıklama satırları bu karakterlerle başlamaz. ⚠️ **DOĞRULANMADI:** Bu biçim M0'daki ilk CI günlüğünde görülerek doğrulanır.
+- **Tip üretimi.** Temiz bir klonda `tsc --noEmit` için content-collections çıktısı ve Next'in typed route tipleri (`Route`, §3.5) gerekir. `npm run typecheck` bunları `pretypecheck` betiğiyle üretir (§8.7). ✅ DOĞRULANDI (2026-09-29, §8.7.1): `next typegen` Next 16.3.7'de bulunur.
+- **ƒ denetimi.** `tee` stdout'u pipe yaptığı için Next renk kodu basmaz. Route satırları `┌`, `├` ya da `└` ile başlar; açıklama satırları bu karakterlerle başlamaz. Yerelde doğrulandı (2026-09-29, `next build | tee build.log` ve §15.1.1 görev 18 öz-testi). ⚠️ **DOĞRULANMADI:** Bu biçim M0'daki ilk CI günlüğünde de görülerek doğrulanır.
 - **`CONTENT_STRICT`.** Bir depo değişkenidir (Settings → Secrets and variables → Actions → Variables). Lansman hazırlığında `true` yapılır. `true` iken yer tutucu kalan her PR kırmızı olur (D-36, §7.5).
 - **Poster eksiksizliği** ayrı bir adım değildir: `check-budgets.mjs` `public/stage/` doluysa 36 dosyanın (3 anahtar × 2 tema × 3 genişlik × 2 biçim) varlığını ve boyutunu denetler (§9.4.2).
 - **Bütçe raporu** `.next/budgets.json` her koşuda artefakt olarak saklanır (§9.4.2).
@@ -14739,7 +14745,7 @@ Notlar:
 | `react-hooks/set-state-in-effect` | eslint-config-next 16.3.6 ile gelen `eslint-plugin-react-hooks` v7'de **hata**dır (ölçüldü). Prop'u effect içinde state'e kopyalamak yerine türetilmiş değer ya da olay işleyicisi kullanılır (örnek: §12.2.6'daki token isteği). |
 | `@next/next/no-img-element` | Düz `<img>`/`<picture>` yalnız `src/stage/ScenePoster.tsx`'te serbesttir (D-31, §8.2 SB9). İzin dosya bazlı yapılandırmayla verilir; satır içi `eslint-disable` **YASAK**tır. |
 | `@next/next/no-html-link-for-pages` | İç bağlantılar `<Link>` ile yazılır (`global-not-found` dâhil, §3.7). |
-| TypeScript yorumları | `@ts-ignore` **YASAK**. `@ts-expect-error` yalnız açıklamalı kullanılır. `any` yerine `unknown` ve daraltma kullanılır. Bu kurallar `eslint-config-next/typescript` içindeki typescript-eslint önerilen kümesinden gelir (`@typescript-eslint/ban-ts-comment`, `@typescript-eslint/no-explicit-any`). ⚠️ **DOĞRULANMADI:** İkisinin de `error` düzeyinde etkin olduğu; M0'da `npx eslint --print-config src/lib/on-idle.ts` ile görülür. Değilse §8.2 yapılandırmasına açıkça eklenir. |
+| TypeScript yorumları | `@ts-ignore` **YASAK**. `@ts-expect-error` yalnız açıklamalı kullanılır. `any` yerine `unknown` ve daraltma kullanılır. Bu kurallar `eslint-config-next/typescript` içindeki typescript-eslint önerilen kümesinden gelir (`@typescript-eslint/ban-ts-comment`, `@typescript-eslint/no-explicit-any`). ✅ DOĞRULANDI (2026-09-29, `npx eslint --print-config src/lib/security-headers.ts`): ikisi de `error` düzeyindedir. |
 | Uyarılar | CI'da lint 0 **hata** ister. ÖNERİLİR: `lint` betiğine `--max-warnings=0` eklenir (§8.7). Eklenmezse her uyarı PR açıklamasında gerekçelendirilir. |
 | Prettier | `.prettierrc` ve `.prettierignore` §8.6'dadır. CI `npx prettier --check .` koşar. Bu bölüm `.prettierignore`'a yalnız `coverage/` satırını ekler. |
 | `tsconfig` | `strict` + D-27 bayrakları (`noUncheckedIndexedAccess`, `noImplicitOverride`, `noFallthroughCasesInSwitch`) + `forceConsistentCasingInFileNames`. Tam fark listesi §8.6'dadır. `exactOptionalPropertyTypes` açılmaz; R3F/drei prop tipleriyle sürtünme yaratır. |
@@ -16309,16 +16315,16 @@ Belgedeki her `⚠️ DOĞRULANMADI` maddesi, araştırma notlarındaki UNVERIFI
 
 | ID | İddia | § | Doğrulama | Başarısızsa | Milestone |
 |---|---|---|---|---|---|
-| V-01 | `next.config.ts` göreli `.ts` modülünü (`./src/lib/security-headers`) import edebilir. | §8.6.1, §12.5.2 | `next build` + `curl -sI localhost:3000/ \| grep -i content-security` | Dizi `next.config.ts`'e taşınır; test o dosyayı import eder. | M0 |
-| V-02 | `next typegen` 16.3.x'te global route tiplerini üretir. | §8.7.1, §13.6.1 | Temiz klonda `npm run typecheck` | `pretypecheck` yalnız `content-collections build`; `check` sırası lint → test → build → typecheck → budgets. | M0 |
-| V-03 | `experimental.globalNotFound: true` iken `global-not-found.tsx` olmadan (M0–M2) build geçer. | §8.6.1, §15.1.1 | M0 `next build` | Bayrak M2'de dosyayla birlikte eklenir. | M0 |
+| V-01 | `next.config.ts` göreli `.ts` modülünü (`./src/lib/security-headers`) import edebilir. | §8.6.1, §12.5.2 | `next build` + `curl -sI localhost:3000/ \| grep -i content-security` | Dizi `next.config.ts`'e taşınır; test o dosyayı import eder. | M0 — ✅ DOĞRULANDI (2026-09-29) |
+| V-02 | `next typegen` 16.3.x'te global route tiplerini üretir. | §8.7.1, §13.6.1 | Temiz klonda `npm run typecheck` | `pretypecheck` yalnız `content-collections build`; `check` sırası lint → test → build → typecheck → budgets. | M0 — ✅ DOĞRULANDI (2026-09-29) |
+| V-03 | `experimental.globalNotFound: true` iken `global-not-found.tsx` olmadan (M0–M2) build geçer. | §8.6.1, §15.1.1 | M0 `next build` | Bayrak M2'de dosyayla birlikte eklenir. | M0 — ✅ DOĞRULANDI (2026-09-29, M0 build: ○ /, ○ /en, ○ /_not-found) |
 | V-04 | `orcunsaatci.com` satın alınabilir. **Kısmen doğrulandı:** 2026-09-29'da Verisign WHOIS "No match" döndürdü (veritabanı 2026-09-28T21:02Z). | §14.3 | Sahip satın alırken Cloudflare Registrar araması | Başka alan adı; D-09 ve `NEXT_PUBLIC_SITE_URL` için sözleşme değişikliği. | M0 → M10 |
-| V-05 | `eslint-config-next/typescript`, `@typescript-eslint` kurallarını `.ts/.tsx`'e uygular; `allowImportNames` typescript-eslint 8'de temel kurala aktarılır. | §8.2.2 | `boundaries.test.ts` öz-testi | Çekirdek `no-restricted-imports`; tip importları `import('…')` sorgusuyla. | M0 |
-| V-06 | `@typescript-eslint/ban-ts-comment` ve `no-explicit-any` `error` düzeyindedir. | §13.7 | `npx eslint --print-config src/lib/security-headers.ts` (M0'da var olan bir `.ts` dosyası) | §8.2 yapılandırmasına açıkça eklenir. | M0 |
-| V-07 | `prettier-plugin-tailwindcss@0.8.1` seçeneğinin adı `tailwindStylesheet`'tir. | §8.6.3 | Paket README'si; sınıf sırası değişimi | Seçenek adı düzeltilir. | M0 |
-| V-08 | Build günlüğündeki route satırları `┌`, `├`, `└` ile başlar (ƒ denetimi). | §13.6.1 | İlk CI günlüğü + §15.1.1 görev 18 öz-testi | Regex güncellenir. | M0 |
-| V-09 | `headers()` kuralları 404 yanıtlarına da uygulanır. | §12.5.7 | `headers.spec.ts` `/yok` (yerel); üretimde §14.7 C | Yedek tanımlı değil; bulgu §12.5.7'ye yazılır, karar §16.3.2'ye taşınır. | M0 → M10 |
-| V-10 | Node 24'ün npm'inde `approve-scripts` uyarısı ve komutu vardır. | §2.2.9 #11 | `npm help approve-scripts` | Adım atlanır. | M0 |
+| V-05 | `eslint-config-next/typescript`, `@typescript-eslint` kurallarını `.ts/.tsx`'e uygular; `allowImportNames` typescript-eslint 8'de temel kurala aktarılır. | §8.2.2 | `boundaries.test.ts` öz-testi | Çekirdek `no-restricted-imports`; tip importları `import('…')` sorgusuyla. | M0 — ✅ DOĞRULANDI (2026-09-29; lenis deseni için SPEC-SAPMA §8.2.2) |
+| V-06 | `@typescript-eslint/ban-ts-comment` ve `no-explicit-any` `error` düzeyindedir. | §13.7 | `npx eslint --print-config src/lib/security-headers.ts` (M0'da var olan bir `.ts` dosyası) | §8.2 yapılandırmasına açıkça eklenir. | M0 — ✅ DOĞRULANDI (2026-09-29) |
+| V-07 | `prettier-plugin-tailwindcss@0.8.1` seçeneğinin adı `tailwindStylesheet`'tir. | §8.6.3 | Paket README'si; sınıf sırası değişimi | Seçenek adı düzeltilir. | M0 — ✅ DOĞRULANDI (2026-09-29) |
+| V-08 | Build günlüğündeki route satırları `┌`, `├`, `└` ile başlar (ƒ denetimi). | §13.6.1 | İlk CI günlüğü + §15.1.1 görev 18 öz-testi | Regex güncellenir. | M0 — yerelde ✅ (2026-09-29); ilk CI günlüğü bekleniyor |
+| V-09 | `headers()` kuralları 404 yanıtlarına da uygulanır. | §12.5.7 | `headers.spec.ts` `/yok` (yerel); üretimde §14.7 C | Yedek tanımlı değil; bulgu §12.5.7'ye yazılır, karar §16.3.2'ye taşınır. | M0 → M10 — yerelde ✅ (2026-09-29); production M10 |
+| V-10 | Node 24'ün npm'inde `approve-scripts` uyarısı ve komutu vardır. | §2.2.9 #11 | `npm help approve-scripts` | Adım atlanır. | M0 — yanlış çıktı → SPEC-SAPMA §2.2.9: komut `npm install-scripts approve` (2026-09-29) |
 | V-11 | Deployment Protection "All Deployments" Hobby'de ücretsizdir. | §14.2.2 | Vercel panosu | M3'ten itibaren production D-36 nedeniyle deploy olmaz. M0–M2'de production iskeleti açık kalır; içerik yoktur ve `robots.txt` `Disallow: /` döner. | M0 |
 | V-12 | Deployment Checks Hobby'de vardır. | §14.2.2, kalite §14 #1 | Vercel panosu | Denetim PR aşamasında yapılır (§14.1 #6). | M0 |
 | V-13 | Next 16.3.7 (2026-09-30) kırıcı değişiklik içermez; güvenlik düzeltmelerini kapsar. | D-01, platform §13 | Sürüm notları + X1 PR'ında `npm run check` | Güvenlik yaması ertelenmez; kırılma `SPEC-SAPMA` ile giderilir. | X1 (≤ M1) |

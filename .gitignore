@@ -39,3 +39,17 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# --- orcunsaatci.com ---
+!.env.example
+/.content-collections
+/public/files/
+/public/detect-gpu/
+/test-results/
+/playwright-report/
+/blob-report/
+/.lighthouseci/
+/coverage/
+/build.log
+/.schemas/
+/.lab-out/

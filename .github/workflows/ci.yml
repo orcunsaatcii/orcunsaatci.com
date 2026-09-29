@@ -1,0 +1,149 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      update_snapshots:
+        description: 'Görsel regresyon tabanlarını Linux üzerinde yeniden üret (artefakt olarak indirilir)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NEXT_TELEMETRY_DISABLED: '1'
+  LC_ALL: C.UTF-8
+
+jobs:
+  quality:
+    if: ${{ github.event_name != 'workflow_dispatch' || !inputs.update_snapshots }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck # pretypecheck: content-collections build && next typegen (§8.7)
+
+      - name: Prettier
+        run: npx prettier --check .
+
+      - name: Unit tests
+        run: npm run test -- --coverage
+
+      - name: E2E tag lint
+        shell: bash
+        run: |
+          if grep -nE "^(test|test\.describe)\(['\"][^'\"]*['\"], (async|\()" tests/e2e/*.spec.ts; then
+            echo '::error::Etiketsiz üst düzey test ya da describe bulundu (§13.3.2).'
+            exit 1
+          fi
+
+      - name: Build
+        shell: bash
+        run: npm run build 2>&1 | tee build.log
+
+      - name: Only static routes (D-06)
+        shell: bash
+        run: |
+          if grep -E '^[┌├└] +ƒ ' build.log; then
+            echo '::error::Dinamik (ƒ) route bulundu. D-06 yalnız ○ ve ● route'\''lara izin verir.'
+            exit 1
+          fi
+
+      - name: Strict content check
+        if: ${{ vars.CONTENT_STRICT == 'true' }}
+        run: npx tsx scripts/check-content.ts --strict
+
+      - name: CV PDF text
+        shell: bash
+        run: |
+          if command -v pdftotext > /dev/null; then
+            pdftotext public/files/orcun-saatci-cv-tr.pdf - | grep -q 'Saatçi'
+          else
+            echo 'pdftotext yok; PDF metin denetimi atlandı'
+          fi
+
+      - name: Bundle budgets
+        run: npm run budgets
+
+      - name: Upload budgets report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: budgets-report
+          path: .next/budgets.json
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: pw-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: E2E
+        run: npm run e2e
+
+      - name: Upload Playwright report
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: |
+            playwright-report
+            test-results
+          retention-days: 7
+
+  snapshots:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.update_snapshots }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Regenerate visual baselines
+        run: npx playwright test tests/e2e/visual.spec.ts --update-snapshots
+
+      - name: Upload baselines
+        uses: actions/upload-artifact@v7
+        with:
+          name: visual-baselines
+          path: tests/e2e/__screenshots__
+          retention-days: 7

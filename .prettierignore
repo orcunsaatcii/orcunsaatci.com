@@ -1,0 +1,12 @@
+.next/
+.content-collections/
+.schemas/
+public/
+test-results/
+playwright-report/
+blob-report/
+.lighthouseci/
+package-lock.json
+content/**/*.mdx
+product.md
+coverage/
