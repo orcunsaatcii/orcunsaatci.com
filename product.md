@@ -14996,6 +14996,14 @@ Adlar ve kapsamları §8.8.2'de, `.env.example` §8.8.1'dedir.
 
 ### 14.3 Alan adı satın alma
 
+> **Gerçekleşen (2026-09-30).** Alan adı 2026-09-29'da **Türkticaret.net**'ten alındı (WHOIS: Turkticaret.net Yazılım Hizmetleri). DNS Türkticaret ad sunucularında (`ns1–ns3.turkticaret.net`) kalır; Vercel'e yalnız kayıtlarla bağlanır:
+> - `@` **A** → `216.198.79.1` (Vercel alan adı kartındaki değer)
+> - `www` **CNAME** → `5afb7eee3499f855.vercel-dns-017.com.` (projeye özgü)
+> - AAAA ve CAA kaydı yoktur.
+> - Vercel: `www.orcunsaatci.com` Production'a bağlı (birincil), `orcunsaatci.com` → `www` yönlendirmesi; iki kart da "Valid Configuration". Let's Encrypt sertifikası verildi.
+> - Herkese açık e-posta Gmail adresidir (Ek A, A.1 #7), bu yüzden şimdilik MX, e-posta yönlendirmesi ve DMARC kaydı yoktur. §14.4.2'nin Cloudflare'e özgü satırları ve §14.5 (Cloudflare Email Routing) bu kuruluma uygulanmaz.
+> - SPEC-SAPMA: §14.3 / D-29 — Önerilen Cloudflare Registrar yerine Türkticaret + harici DNS kullanıldı (sahip kararı). D-29'un ZORUNLU kuralları (yalnız DNS kaydı, AAAA yok, www birincil, apex → www) sağlanır. Apex → www 308 kodu, Deployment Protection kaldırıldığında §14.4.3 komutlarıyla doğrulanır (M10).
+
 #### 14.3.1 Seçenekler
 
 | Kayıt şirketi | `.com` fiyatı (USD) | Notlar |
@@ -16318,7 +16326,7 @@ Belgedeki her `⚠️ DOĞRULANMADI` maddesi, araştırma notlarındaki UNVERIFI
 | V-01 | `next.config.ts` göreli `.ts` modülünü (`./src/lib/security-headers`) import edebilir. | §8.6.1, §12.5.2 | `next build` + `curl -sI localhost:3000/ \| grep -i content-security` | Dizi `next.config.ts`'e taşınır; test o dosyayı import eder. | M0 — ✅ DOĞRULANDI (2026-09-29) |
 | V-02 | `next typegen` 16.3.x'te global route tiplerini üretir. | §8.7.1, §13.6.1 | Temiz klonda `npm run typecheck` | `pretypecheck` yalnız `content-collections build`; `check` sırası lint → test → build → typecheck → budgets. | M0 — ✅ DOĞRULANDI (2026-09-29) |
 | V-03 | `experimental.globalNotFound: true` iken `global-not-found.tsx` olmadan (M0–M2) build geçer. | §8.6.1, §15.1.1 | M0 `next build` | Bayrak M2'de dosyayla birlikte eklenir. | M0 — ✅ DOĞRULANDI (2026-09-29, M0 build: ○ /, ○ /en, ○ /_not-found) |
-| V-04 | `orcunsaatci.com` satın alınabilir. **Kısmen doğrulandı:** 2026-09-29'da Verisign WHOIS "No match" döndürdü (veritabanı 2026-09-28T21:02Z). | §14.3 | Sahip satın alırken Cloudflare Registrar araması | Başka alan adı; D-09 ve `NEXT_PUBLIC_SITE_URL` için sözleşme değişikliği. | M0 → M10 |
+| V-04 | `orcunsaatci.com` satın alınabilir. **Kısmen doğrulandı:** 2026-09-29'da Verisign WHOIS "No match" döndürdü (veritabanı 2026-09-28T21:02Z). | §14.3 | Sahip satın alırken Cloudflare Registrar araması | Başka alan adı; D-09 ve `NEXT_PUBLIC_SITE_URL` için sözleşme değişikliği. | M0 → M10 — ✅ DOĞRULANDI (2026-09-30): alan adı Türkticaret'ten alındı ve Vercel'e bağlandı (§14.3 notu) |
 | V-05 | `eslint-config-next/typescript`, `@typescript-eslint` kurallarını `.ts/.tsx`'e uygular; `allowImportNames` typescript-eslint 8'de temel kurala aktarılır. | §8.2.2 | `boundaries.test.ts` öz-testi | Çekirdek `no-restricted-imports`; tip importları `import('…')` sorgusuyla. | M0 — ✅ DOĞRULANDI (2026-09-29; lenis deseni için SPEC-SAPMA §8.2.2) |
 | V-06 | `@typescript-eslint/ban-ts-comment` ve `no-explicit-any` `error` düzeyindedir. | §13.7 | `npx eslint --print-config src/lib/security-headers.ts` (M0'da var olan bir `.ts` dosyası) | §8.2 yapılandırmasına açıkça eklenir. | M0 — ✅ DOĞRULANDI (2026-09-29) |
 | V-07 | `prettier-plugin-tailwindcss@0.8.1` seçeneğinin adı `tailwindStylesheet`'tir. | §8.6.3 | Paket README'si; sınıf sırası değişimi | Seçenek adı düzeltilir. | M0 — ✅ DOĞRULANDI (2026-09-29) |
