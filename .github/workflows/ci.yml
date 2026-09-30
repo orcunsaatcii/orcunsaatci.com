@@ -26,6 +26,12 @@ jobs:
   quality:
     if: ${{ github.event_name != 'workflow_dispatch' || !inputs.update_snapshots }}
     runs-on: ubuntu-latest
+    # SPEC-SAPMA: §13.6.1 — resmî Playwright imajı: tarayıcılar ve sistem bağımlılıkları hazır. Runner'da
+    # `playwright install --with-deps` Azure apt aynası yavaşken 30+ dk sürüyordu (2026-09-30). Etiket
+    # package.json'daki @playwright/test sürümüyle aynı tutulur; görsel tabanlar da bu imajda üretilir.
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --ipc=host
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v7
@@ -97,22 +103,6 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
-      - name: Cache Playwright browsers
-        uses: actions/cache@v6
-        with:
-          path: ~/.cache/ms-playwright
-          key: pw-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-
-      - name: Install Playwright browsers
-        # apt (--with-deps) zaman zaman asılı kalıyor (2026-09-30: iki koşu 28+ dk): deneme başına 5 dk, en çok 3 deneme
-        timeout-minutes: 16
-        run: |
-          for i in 1 2 3; do
-            timeout 300 npx playwright install --with-deps chromium webkit && exit 0
-            echo "::warning::Playwright kurulumu $i. denemede bitmedi; yeniden deneniyor"
-          done
-          exit 1
-
       - name: E2E
         run: npm run e2e
 
@@ -129,6 +119,9 @@ jobs:
   snapshots:
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.update_snapshots }}
     runs-on: ubuntu-latest
+    container: # quality ile aynı imaj: tabanlar testlerin koştuğu ortamda üretilir
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --ipc=host
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
@@ -143,15 +136,6 @@ jobs:
 
       - name: Build
         run: npm run build
-
-      - name: Install Playwright browsers
-        timeout-minutes: 16
-        run: |
-          for i in 1 2 3; do
-            timeout 300 npx playwright install --with-deps chromium && exit 0
-            echo "::warning::Playwright kurulumu $i. denemede bitmedi; yeniden deneniyor"
-          done
-          exit 1
 
       - name: Regenerate visual baselines
         run: npx playwright test tests/e2e/visual.spec.ts tests/e2e/work-viewer.spec.ts --update-snapshots
