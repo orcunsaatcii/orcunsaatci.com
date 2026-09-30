@@ -74,10 +74,15 @@ describe('probeCapabilities', () => {
       return { getExtension: () => ({ loseContext: lose }) } as unknown as RenderingContext;
     } as never);
     vi.stubGlobal('matchMedia', (q: string) => ({ matches: q.includes('hover: hover') }));
+    // jsdom makinenin çekirdek sayısını döndürür (yerel 8+, CI 4): sinyal sabitlenir
+    cores(8);
   });
   afterEach(() => {
     window.history.replaceState(null, '', '/');
+    delete (navigator as unknown as { hardwareConcurrency?: number }).hardwareConcurrency;
   });
+  const cores = (n: number) =>
+    Object.defineProperty(navigator, 'hardwareConcurrency', { configurable: true, get: () => n });
 
   it('?tier= bütün sinyalleri geçersiz kılar; yazılım render’ında da açılır (düz WebGL2)', async () => {
     window.history.replaceState(null, '', '/?tier=high');
@@ -117,10 +122,12 @@ describe('probeCapabilities', () => {
     expect(r.tier).toBe('high');
   });
 
-  it('detect-gpu hatası kademe 2 sayılır', async () => {
+  it('detect-gpu hatası bilinmeyen GPU sayılır: 8 çekirdek + ince + geniş → high, 4 çekirdek → medium', async () => {
     getGPUTier.mockRejectedValue(new Error('ağ'));
     const r = await probeCapabilities();
     expect(r.signals.gpu).toEqual({ type: 'ERROR', tier: 2 });
-    expect(r.tier).toBe('high'); // cores 8 + ince + geniş (jsdom: hardwareConcurrency)
+    expect(r.tier).toBe('high');
+    cores(4);
+    expect((await probeCapabilities()).tier).toBe('medium');
   });
 });
