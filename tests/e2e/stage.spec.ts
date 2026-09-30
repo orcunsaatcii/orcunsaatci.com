@@ -403,12 +403,12 @@ test.describe('§5.12 kalıcı sahne (masaüstü, ?tier=high)', { tag: ['@deskto
     await page.waitForFunction((t) => performance.now() > t + 18_500, input, { timeout: 40_000 });
     const a = await readLive(page);
     await pageDelay(page, 1000);
+    // yavaş yazılım render'ında (CI ≈ 2 fps) açı birikimi kırpılmış dt ile çok yavaştır; duruştan sonra açı tam sabittir
     expect(
       Math.abs((await readLive(page)).idleAngle - a.idleAngle),
       '20 s dolmadan döner',
-    ).toBeGreaterThan(0.05);
-    // 20 s'de durur. idleS sönüm kuyruğu (SMOOTH_IDLE) yavaş yazılım render'ında dt 1/30 s'ye kırpıldığından
-    // gerçek zamanda uzar: 1 s boyunca kare çizilmeyene kadar beklenir, ardından açı sabittir.
+    ).toBeGreaterThan(0);
+    // 20 s'de durur: hız zarfı gerçek süreyle söner (≈ 3 s); 1 s boyunca kare çizilmeyene kadar beklenir, açı sabittir.
     await expect
       .poll(
         async () => {
@@ -501,6 +501,7 @@ test.describe('§5.12 kalıcı sahne (masaüstü, ?tier=high)', { tag: ['@deskto
     page,
     browser,
   }) => {
+    test.setTimeout(120_000); // iki tam sahne boot'u: CI yazılım render'ında 60 s'yi aşabiliyor
     await page.goto(HIGH);
     await waitForStagePhase(page, ['ready']);
     const y = await chapterY(page, 'journey');
