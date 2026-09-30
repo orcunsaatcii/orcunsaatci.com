@@ -1,9 +1,11 @@
 'use client';
 // src/components/ui/LocalTime.tsx — "{{ŞEHİR}} · 14:32" (§6.6.3, §3.8 kural 9).
 // SSR: yalnız şehir; saat yuvası min-w-[5ch] ile ayrılır (CLS yok). İstemci: mount sonrası saat yazılır ve dakika
-// sınırında güncellenir. Azaltılmış harekette donar ve " (yerel saat)" eki alır. Duraklatma (PauseButton) M4'te.
+// sınırında güncellenir. Azaltılmış harekette donar ve " (yerel saat)" eki alır. Duraklatılmışken (PauseButton,
+// stageStore.paused) güncelleme durur (WCAG 2.2.2, §10.2.3).
 import { useEffect, useState } from 'react';
 import { PREF_EVENTS } from '@/lib/head-script';
+import { stageStore, useStage } from '@/stage/store';
 
 interface LocalTimeProps {
   city: string;
@@ -16,6 +18,7 @@ interface LocalTimeProps {
 export function LocalTime({ city, timeZone, intl, frozenSuffix, className }: LocalTimeProps) {
   const [time, setTime] = useState<string | null>(null);
   const [frozen, setFrozen] = useState(false);
+  const paused = useStage((s) => s.paused);
 
   useEffect(() => {
     const fmt = new Intl.DateTimeFormat(intl, {
@@ -26,12 +29,17 @@ export function LocalTime({ city, timeZone, intl, frozenSuffix, className }: Loc
     });
     const root = document.documentElement;
     let timer = 0;
+    let shown = false;
     const tick = () => {
       window.clearTimeout(timer);
+      // duraklatma anlık okunur: effect temizliğinden önce çalışan eski dakika zamanlayıcısı saati ilerletmez
+      const halted = stageStore.getState().paused;
+      if (halted && shown) return;
       const reduce = root.getAttribute('data-motion') === 'reduce';
       setTime(fmt.format(new Date()));
       setFrozen(reduce);
-      if (!reduce) timer = window.setTimeout(tick, 60_000 - (Date.now() % 60_000));
+      shown = true;
+      if (!reduce && !halted) timer = window.setTimeout(tick, 60_000 - (Date.now() % 60_000));
     };
     timer = window.setTimeout(tick, 0);
     window.addEventListener(PREF_EVENTS.motion, tick);
@@ -39,7 +47,7 @@ export function LocalTime({ city, timeZone, intl, frozenSuffix, className }: Loc
       window.clearTimeout(timer);
       window.removeEventListener(PREF_EVENTS.motion, tick);
     };
-  }, [intl, timeZone]);
+  }, [intl, timeZone, paused]);
 
   return (
     <span

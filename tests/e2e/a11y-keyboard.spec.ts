@@ -1,7 +1,6 @@
 // tests/e2e/a11y-keyboard.spec.ts — klavye (§10.3, §10.6). İlk Tab SkipLink; route sonrası odak h1; çapa sonrası
-// sıralı odak bölümde; filtre aria-pressed + durum metni; ana sayfada 200 Tab boyunca tuzak ve görünmez durak yok.
-// Menü tuzağı + Esc mobile.spec.ts'te; çapa sonrası h2 odağı scrollToChapter ile (M4), areas atlama/adım düğmeleri
-// pin'le birlikte M4'te eklenir.
+// odak bölümün h2'sinde (scrollToChapter, §10.3.2); areas atlama bağlantısı ve adım düğmeleri (pin, §10.3.4);
+// filtre aria-pressed + durum metni; ana sayfada 200 Tab boyunca tuzak ve görünmez durak yok. Menü: mobile.spec.ts.
 import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 
@@ -49,14 +48,45 @@ test.describe('§10.3 klavye', { tag: ['@desktop-chromium', '@pixel-7', '@iphone
 });
 
 test.describe('§10.3 klavye: ana sayfa', { tag: ['@desktop-chromium'] }, () => {
-  test('çapa sonrası sıralı odak hedef bölümden başlar', async ({ page }) => {
+  test('çapa sonrası odak bölümün h2’sinde; sıralı odak hedef bölümden devam eder', async ({
+    page,
+  }) => {
     await page.goto('/', { waitUntil: 'networkidle' });
+    await page.waitForFunction(() => document.documentElement.classList.contains('motion-ready'));
     await page.locator('body > header nav a[href="#yolculuk"]').click();
+    await expect(page).toHaveURL(/#yolculuk$/);
+    await expect(page.locator('#yolculuk h2')).toBeFocused({ timeout: 5000 });
     await page.keyboard.press('Tab');
     const inside = await page.evaluate(
       () => !!document.activeElement?.closest('#yolculuk, #yolculuk ~ *'),
     );
     expect(inside).toBe(true);
+  });
+
+  test('areas: atlama bağlantısı ilk durak, #projeler’e gider; adım düğmeleri aria-current taşır', async ({
+    page,
+  }) => {
+    await page.goto('/', { waitUntil: 'networkidle' });
+    await page.waitForFunction(() => document.documentElement.classList.contains('motion-ready'));
+    const areas = page.locator('[data-chapter="areas"]');
+    const steps = areas.locator('[data-area-step]');
+    await expect(steps.first()).toBeVisible(); // pin istemcide doğrulandı
+    const first = await areas.evaluate(
+      (s) =>
+        s.querySelector<HTMLElement>('a[href], button:not([disabled])')?.getAttribute('href') ?? '',
+    );
+    expect(first).toBe('#projeler');
+    // adım düğmesi: Enter adıma kaydırır, adım etkin olur
+    const last = steps.last();
+    await last.focus();
+    await page.keyboard.press('Enter');
+    await expect(last).toHaveAttribute('aria-current', 'step', { timeout: 5000 });
+    await expect(areas.locator('[aria-current="step"][data-area-step]')).toHaveCount(1);
+    // atlama bağlantısı: sonraki bölümün h2'sine odak
+    await areas.locator('a[data-skip-section]').focus();
+    await page.keyboard.press('Enter');
+    await expect(page).toHaveURL(/#projeler$/);
+    await expect(page.locator('#projeler h2')).toBeFocused({ timeout: 5000 });
   });
 
   test('200 Tab: görünmez durak yok, tuzak yok (döngü SkipLink’e ya da body’ye döner)', async ({

@@ -1,5 +1,5 @@
-// tests/e2e/cv.spec.ts — CV sayfası, PDF ve JSON Resume (§7.6; D-13). RingsFigure (baskıda görünür) M4'te,
-// ≥ 80rem taş çapası M5'te bu dosyaya eklenir.
+// tests/e2e/cv.spec.ts — CV sayfası, PDF ve JSON Resume (§7.6; D-13, K-VAR-6). Baskıda RingsFigure görünür (M4);
+// ≥ 80rem taş çapası M5/M7'de bu dosyaya eklenir.
 import { expect, test } from './fixtures';
 
 test.describe('D-13 CV', { tag: ['@desktop-chromium', '@no-js'] }, () => {
@@ -74,5 +74,9 @@ test.describe('D-13 CV', { tag: ['@desktop-chromium', '@no-js'] }, () => {
     if ((await layer.count()) > 0) await expect(layer).toBeHidden(); // StageRoot M5'te gelir
     const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
     expect(bg).toMatch(/rgb\(255, 255, 255\)|rgba\(0, 0, 0, 0\)/);
+    // K-VAR-6: figürler basılır; ekranda cv-figure gizlidir
+    await expect(page.locator('.cv-figure svg[role="img"]')).toBeVisible();
+    await page.emulateMedia({ media: 'screen' });
+    await expect(page.locator('.cv-figure')).toBeHidden();
   });
 });

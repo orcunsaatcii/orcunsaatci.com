@@ -1,12 +1,12 @@
 // src/components/layout/SiteFooter.tsx — footer (server; full / compact, §3.9.3, §6.6.2).
 // full: e-posta + Kopyala, birincil sosyal bağlantılar, CV (PDF), site bağlantıları, Gizlilik, dil, tema, yerel saat,
-// "Başa dön", ©. compact (ana sayfa, contact bölümünün içinde): Gizlilik, dil, tema, "Başa dön", ©.
-// MotionToggle M4'te eklenir.
+// "Başa dön", ©. compact (ana sayfa, contact bölümünün içinde): Gizlilik, dil, tema, "Hareketi azalt", "Başa dön", ©.
 import Link from 'next/link';
 import { CopyEmail } from '@/components/ui/CopyEmail';
 import { CvDownload } from '@/components/ui/CvDownload';
 import { EmailLink } from '@/components/ui/EmailLink';
 import { HIT_AREA } from '@/components/ui/hit-area';
+import { MotionToggle } from '@/components/motion/MotionToggle';
 import { LocalTime } from '@/components/ui/LocalTime';
 import { SocialLinks } from '@/components/ui/SocialLinks';
 import { getDictionary } from '@/i18n/get-dictionary';
@@ -57,7 +57,11 @@ export function SiteFooter({ locale, enPaths, variant }: SiteFooterProps) {
       data-print="hide"
       className="border-t border-line"
     >
-      <div className="container-page grid-page gap-y-8 py-block">
+      <div
+        className={['container-page grid-page', full ? 'gap-y-8 py-block' : 'gap-y-4 py-6'].join(
+          ' ',
+        )}
+      >
         {full ? (
           <div className="col-span-4 flex flex-col gap-4 md:col-span-8 lg:col-span-12">
             <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
@@ -133,6 +137,7 @@ export function SiteFooter({ locale, enPaths, variant }: SiteFooterProps) {
             />
           )}
           <ThemeToggle labels={dict.theme} />
+          <MotionToggle label={dict.motion.reduce} />
         </div>
         <div className="col-span-4 flex flex-wrap items-center justify-between gap-4 md:col-span-8 lg:col-span-12">
           <p className="type-meta">

@@ -1,10 +1,11 @@
 // src/app/global-not-found.tsx — eşleşmeyen her URL için iki dilli 404 (D-19, §3.7). Kendi <html>/<body>'si vardır;
 // globals.css, fontlar ve head script'i kendisi yükler. StageRoot, Lenis, GSAP, site header'ı ve footer'ı YOKTUR.
-// E-posta bağlantısı yalnız TR listesinde (§3.7 iskeleti); MotionToggle'lı minimal footer M4'te eklenir (§10.2.2).
+// E-posta bağlantısı yalnız TR listesinde (§3.7 iskeleti). Minimal footer'da "Hareketi azalt" anahtarı (§10.2.2).
 import './globals.css';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ClockFigure } from '@/components/figures/ClockFigure';
+import { MotionToggle } from '@/components/motion/MotionToggle';
 import { EmailLink } from '@/components/ui/EmailLink';
 import { fontVariables } from '@/fonts';
 import { staticRoutes, type Locale } from '@/i18n/config';
@@ -82,6 +83,22 @@ export default function GlobalNotFound() {
             <ClockFigure label={tr.notFound.clock} />
           </div>
         </main>
+        <footer className="container-page border-t border-line py-6">
+          <MotionToggle
+            markHydrated
+            label={
+              <>
+                {tr.motion.reduce}
+                {hasEn && (
+                  <span lang="en">
+                    {' / '}
+                    {en.motion.reduce}
+                  </span>
+                )}
+              </>
+            }
+          />
+        </footer>
       </body>
     </html>
   );

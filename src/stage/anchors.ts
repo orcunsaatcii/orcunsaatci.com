@@ -1,5 +1,6 @@
 // src/stage/anchors.ts — sahne çapası tipleri ve ANCHORS kaydı (§5.7.3).
-// DOM öznitelikleri bu kayıttan üretilir (StageAnchor). measureAnchors() ve anchorScreen() M5'te eklenir.
+// DOM öznitelikleri bu kayıttan üretilir (StageAnchor). measureAnchors() ve anchorScreen() M5'te eklenir;
+// MeasuredAnchor tipi M4'te director'ün Layout'u için buradadır (liste M4'te boştur).
 
 export type AnchorId =
   | 'hero-rest'
@@ -42,3 +43,16 @@ export const PAGE_FOLIO_SIZE = {
   'about-page': 0.72,
   'contact-page': 0.8,
 } as const;
+
+/** Ölçülmüş anchor (§5.7.4). M4'te Layout.anchors boştur; alanlar M5'te measureAnchors() ile doldurulur. */
+export interface MeasuredAnchor {
+  id: AnchorId;
+  kind: AnchorKind;
+  /** belge koordinatında dikdörtgen (px) */
+  docTop: number;
+  docLeft: number;
+  width: number;
+  height: number;
+  size: number; // sizeFrac
+  align: 'center' | 'bottom';
+}

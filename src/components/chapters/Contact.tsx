@@ -1,7 +1,10 @@
 // src/components/chapters/Contact.tsx — "Bir sonraki halka" (§4.11.2, §12.1). Server.
 // mailto: + Kopyala + sosyal bağlantılar + CV + yerel saat; compact footer bölümün içindedir (§3.9.3).
-// contact-ring çapasında statik K5 posteri; gerçek tarih yayını (ArcFigure) M4'te.
+// contact-ring çapasında statik K5 posteri + istemcide bugüne kadar çizilen açık yay (ArcFigure). Reveal eşikleri
+// senkron istisnasıdır (§4.11.4, §4.12.3): H2 bölümün top 45%'inde (IN p 0.55), metin top 30%'unda (p 0.70).
 import Link from 'next/link';
+import { ArcFigure } from '@/components/figures/ArcFigure';
+import { RevealHeading } from '@/components/motion/RevealHeading';
 import { SiteFooter } from '@/components/layout/SiteFooter';
 import { CopyEmail } from '@/components/ui/CopyEmail';
 import { CvDownload } from '@/components/ui/CvDownload';
@@ -12,7 +15,7 @@ import { Txt } from '@/components/ui/Txt';
 import { getExperienceProfile } from '@/experience/profile';
 import { chapterAnchors, localeMeta, type Locale } from '@/i18n/config';
 import { getDictionary } from '@/i18n/get-dictionary';
-import { getContact, getHome, getPerson, getSite, t } from '@/lib/content';
+import { getContact, getHome, getPerson, getSite, getStageData, t } from '@/lib/content';
 import { listEnPaths, pageLink } from '@/lib/seo/metadata';
 import { StageAnchor } from '@/stage/ScenePoster';
 
@@ -26,6 +29,7 @@ export function Contact({ locale }: { locale: Locale }) {
   const heading = home.contact.heading ? t(home.contact.heading, locale) : null;
   const lead = home.contact.lead ? t(home.contact.lead, locale) : null;
   const status = contact.availability?.status;
+  const { rings } = getStageData('home', undefined, locale);
 
   return (
     <section
@@ -34,22 +38,27 @@ export function Contact({ locale }: { locale: Locale }) {
       aria-labelledby="contact-title"
       className="flex min-h-svh flex-col"
     >
-      <div className="container-page grid-page flex-1 content-center gap-y-6 py-section">
+      <div className="contact-grid container-page grid-page flex-1 content-center gap-y-6 pt-12 pb-8">
         <StageAnchor
           id="contact-ring"
           poster="k5"
-          className="col-span-4 h-[36svh] md:col-span-8 lg:col-span-5 lg:col-start-8 lg:row-span-4 lg:h-[72svh] lg:self-center"
-        />
+          className="contact-ring col-span-4 h-[36svh] md:col-span-8 lg:col-span-5 lg:col-start-8 lg:row-span-4 lg:h-[72svh] lg:self-center"
+        >
+          <ArcFigure rings={rings} className="arc-overlay" />
+        </StageAnchor>
         <div className="col-span-4 md:col-span-8 lg:col-span-7 lg:row-start-1">
           <p className="type-eyebrow">{labels.eyebrows.contact[locale]}</p>
-          <h2 id="contact-title" className="mt-4 type-h2">
+          <RevealHeading id="contact-title" className="mt-4 type-h2">
             {heading ? <Txt v={heading} /> : dict.nav.contact}
-          </h2>
-          <p className="mt-stack type-lead">
+          </RevealHeading>
+          <p className="mt-stack type-lead" data-reveal="block">
             {lead ? <Txt v={lead} /> : labels.contactLead[locale]}
           </p>
         </div>
-        <div className="col-span-4 flex flex-col items-start gap-4 md:col-span-8 lg:col-span-7">
+        <div
+          className="col-span-4 flex flex-col items-start gap-4 md:col-span-8 lg:col-span-7"
+          data-reveal="block"
+        >
           <EmailLink email={contact.email} id="contact-email" size="display" />
           <CopyEmail
             email={contact.email}
@@ -64,7 +73,10 @@ export function Contact({ locale }: { locale: Locale }) {
             }}
           />
         </div>
-        <div className="col-span-4 flex flex-col gap-4 md:col-span-8 lg:col-span-7">
+        <div
+          className="col-span-4 flex flex-col gap-4 md:col-span-8 lg:col-span-7"
+          data-reveal="block"
+        >
           <SocialLinks locale={locale} className="flex flex-wrap gap-x-6 gap-y-2 type-ui" />
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             <CvDownload locale={locale} label={dict.contact.cvPdf} />

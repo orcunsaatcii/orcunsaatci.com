@@ -62,9 +62,12 @@ const tr = {
     filterGroup: 'Alana göre filtrele',
     close: 'Kapat',
     newTab: '(yeni sekmede açılır)',
+    areaSteps: 'Alan adımları',
+    areaStep: 'Alan {k}: {title}',
   },
   theme: { label: 'Tema', system: 'Sistem', dark: 'Koyu', light: 'Açık' },
   motion: { reduce: 'Hareketi azalt', pause: 'Animasyonu durdur', play: 'Animasyonu başlat' },
+  figures: { dial: 'Çalışma alanları: {list}', rings: 'Kariyer halkaları: {start} – {end}' },
   hero: { ctaPrimary: 'Projeleri incele', ctaSecondary: 'İletişime geç', scrollCue: 'Kaydır' },
   home: {
     aboutMore: 'Tüm hikâye',

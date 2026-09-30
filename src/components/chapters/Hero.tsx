@@ -1,6 +1,8 @@
 // src/components/chapters/Hero.tsx — giriş bölümü (§4.6, §6.6.7, §7.9.2). Server; ilk boyamada görünür.
 // H1 LCP öğesidir: asla animasyon, maske, opaklık ya da clip yok (D-34). CTA'lar gerçek URL (D-41).
-// PauseButton M4'te, Magnetic sarmalayıcı M7'de; hero-rest çapasında statik K0 posteri (D-45, §5.16.4).
+// Magnetic sarmalayıcı M7'de; hero-rest çapasında statik K0 posteri (D-45, §5.16.4). Duraklatma düğmesi sahne
+// bölgesinin sağ altında ama aria-hidden çapanın DIŞINDA ve DOM'da sonda (odak sırası = görsel okuma sırası).
+import { PauseButton } from '@/components/motion/PauseButton';
 import { Button } from '@/components/ui/Button';
 import { LocalTime } from '@/components/ui/LocalTime';
 import { Txt } from '@/components/ui/Txt';
@@ -28,13 +30,11 @@ export function Hero({ locale }: { locale: Locale }) {
       id={chapterAnchors.hero[locale]}
       data-chapter="hero"
       aria-labelledby="hero-title"
-      className="container-page grid-page min-h-svh content-center gap-y-6 py-block"
+      className="container-page grid-page content-center gap-y-6"
     >
-      <StageAnchor
-        id="hero-rest"
-        poster="k0"
-        className="col-span-4 row-start-1 h-[40svh] md:col-span-8 lg:col-span-5 lg:col-start-8 lg:row-span-2 lg:h-[min(52svh,34rem)] lg:self-end"
-      />
+      <div className="hero-stage relative col-span-4 row-start-1 h-[40svh] md:col-span-8 lg:col-span-5 lg:col-start-8">
+        <StageAnchor id="hero-rest" poster="k0" className="size-full" />
+      </div>
       <p className="hero-in col-span-4 type-eyebrow [--i:0] md:col-span-8 lg:col-span-6 lg:row-start-1 lg:self-end">
         {eyebrow ? (
           <Txt v={eyebrow} />
@@ -74,7 +74,7 @@ export function Hero({ locale }: { locale: Locale }) {
       <div className="col-span-4 flex items-center justify-between gap-4 md:col-span-8 lg:col-span-12">
         <p aria-hidden="true" className="inline-flex items-center gap-3 type-meta">
           {dict.hero.scrollCue}
-          <span className="[display:inline-block] h-px w-8 bg-ink-subtle" />
+          <span className="hero-cue-line [display:inline-block] h-px w-8 bg-ink-subtle" />
         </p>
         <LocalTime
           city={city.text}
@@ -83,6 +83,11 @@ export function Hero({ locale }: { locale: Locale }) {
           frozenSuffix={dict.contact.localTimeSuffix}
         />
       </div>
+      {/* DOM'da sonda (§4.6.3 sırası); görsel olarak sahne bölgesinin sağ altında, aynı grid alanında (home.css) */}
+      <PauseButton
+        labels={{ pause: dict.motion.pause, play: dict.motion.play }}
+        className="hero-pause"
+      />
     </section>
   );
 }
