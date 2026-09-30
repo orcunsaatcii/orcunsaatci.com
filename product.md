@@ -2961,6 +2961,10 @@ final.md'de bulunmayan ve uygulanabilirlik için eklenen değerler aşağıdadı
 | 16 | §4.16.3 | D1 / D2 / D3 poster karşılıkları: `SpecimenGlyph` / `DialFigure` / `RingsFigure`. |
 | 17 | §4.16.4 | "Hareketi azalt" anahtarı canlı geçer (≤ 1 s) ve görünen bölüm korunur. |
 | 18 | §4.17.4 | `intensity` çarpanları ve easing'leri. |
+| 19 | §4.17.2 `engineer` | Taş: akik yumrusu (jeot). `shape` [2.2, 2.3], `radii` (1, 0.8, 1), `disp` 0.045, `surface` `geode`, `cap.pattern` `geode`. M1'de onaylandı (2026-09-30, [#5](https://github.com/orcunsaatcii/orcunsaatci.com/issues/5#issuecomment-5907686488)). |
+| 20 | §5.4.3 `geode` | Kabuk: `CRUST_BUMP` 0.028, çukur tonu 0.70–1.06, lekelenme ±%12, demir tonu çarpanı (1.07, 1.0, 0.88). Akik: bant tonu `mix(capBase, mix(capBase, ringLine, 0.45), 0.15–0.70)`, laminalar %6, süt beyazı bant `t > 0.74` (%50), druzy ölçeği 34, kabuk şeridi `RIND_WIDTH` 0.035, cilalı parlama 0.10, kalsedon parıltısı %8, yıl çizgisi kontrastı ×0.5. M1'de onaylandı (2026-09-30, [#5](https://github.com/orcunsaatcii/orcunsaatci.com/issues/5#issuecomment-5907686488)). |
+| 21 | §6.3.6 | Taş tonları (`--scene-stone-base` / `--scene-stone-light`): açık `#2B2F3A` / `#7C8292`, koyu `#5A5E68` / `#B9BCC4`. M1'de onaylandı (2026-09-30, [#5](https://github.com/orcunsaatcii/orcunsaatci.com/issues/5#issuecomment-5907686488)). |
+| 22 | §5.4.1 not 3, §5.16 | Aktif bant vurgusu `mix(col, uAccent, 0.18)` + 1.5 px kenar; açık yay tarama aralığı 0.035; poster çerçevesi `POSTER_STONE_FRAC` 0.8 (R0 = `footprintRadius`, §5.7.5). M1'de onaylandı (2026-09-30, [#5](https://github.com/orcunsaatcii/orcunsaatci.com/issues/5#issuecomment-5907686488)). |
 
 ### 4.13 Derin sayfalar ve route geçiş koreografisi
 
