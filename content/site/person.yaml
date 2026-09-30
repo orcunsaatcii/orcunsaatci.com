@@ -1,2 +1,26 @@
-# M2 geçici (§15.0.6 kalıbı): yalnız ad. M3'te §7.3 Person şemasının tamamıyla (Ek A içeriği) doldurulur.
+# yaml-language-server: $schema=../../.schemas/person.json
+# Tohum (§7.2.5): unvan sahibin cevabıdır (Q-01); diğer metinler yer tutucu.
 name: Orçun Saatçi
+givenName: Orçun
+familyName: Saatçi
+asciiName: Orcun Saatci
+jobTitle:
+  tr: "Bilgisayar Mühendisi ve Mobil Uygulama Geliştiricisi"
+  en: "Computer Engineer and Mobile App Developer"
+headline: { tr: "{{KONUMLANDIRMA_CÜMLESİ}}", en: "{{POSITIONING_STATEMENT}}" }
+shortBio: { tr: "{{KISA_BİYOGRAFİ}}", en: "{{SHORT_BIO}}" }
+location:
+  city: { tr: "{{ŞEHİR}}", en: "{{ŞEHİR_EN}}" }
+  country: { tr: "{{ÜLKE}}", en: "{{ÜLKE_EN}}" }
+  fromPhrase: { tr: "{{ŞEHİR_İFADESİ}}", en: "{{CITY_PHRASE}}" }
+  countryCode: TR
+  timezone: Europe/Istanbul
+  remote: false
+careerStartYear: 2014 # {{KARİYER_BAŞLANGIÇ_YILI}}
+portrait:
+  src: /media/placeholder/portrait-4x5.jpg
+  alt: { tr: "{{PORTRE_ALT}}", en: "{{PORTRAIT_ALT}}" }
+headshot:
+  src: /media/placeholder/headshot-1x1.jpg
+  alt: { tr: "{{VESİKALIK_ALT}}", en: "{{HEADSHOT_ALT}}" }
+knowsAbout: []

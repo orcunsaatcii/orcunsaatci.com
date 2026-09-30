@@ -15,7 +15,7 @@ const isTop = () => window.scrollY <= TOP_THRESHOLD;
 export function HeaderFrame({ className, children }: { className?: string; children: ReactNode }) {
   const top = useSyncExternalStore(subscribe, isTop, () => null);
   return (
-    <header className={className} data-top={top ? '' : undefined}>
+    <header className={className} data-top={top ? '' : undefined} data-print="hide">
       {children}
     </header>
   );

@@ -1,6 +1,6 @@
 // tests/e2e/not-found.spec.ts — 404 sayfaları (§3.7, §4.13.6; D-19, K-DEEP-2, K-DEEP-9).
-// M2 kapsamı: durum kodu, noindex, data-404, H1, iç bağlantılar, canvas yokluğu ve saat ibreleri.
-// mailto: bağlantısı (getContact) M3'te eklenir.
+// Durum kodu, noindex, data-404, H1, iç bağlantılar, mailto:, canvas yokluğu ve saat ibreleri; ağaç 404'ünde
+// "Son projeler" (§15.4.1 #10).
 import { allowConsole, expect, test } from './fixtures';
 import { NOT_FOUND_PATHS } from './helpers/urls';
 
@@ -18,12 +18,21 @@ test.describe('D-19 404 sayfaları', { tag: ['@desktop-chromium', '@no-js'] }, (
       await expect(page.getByRole('heading', { level: 1 })).toContainText('Sayfa bulunamadı');
       for (const href of ['/', '/projeler', '/iletisim'])
         await expect(page.locator(`[data-404] a[href="${href}"]`)).toHaveCount(1);
+      await expect(page.locator('[data-404] a[href^="mailto:"]').first()).toBeVisible();
       // JS yokken sayfa zamanlayıcısı çalışmaz; canvas zaten oluşamaz
       if (javaScriptEnabled)
         await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 3000)));
       await expect(page.locator('canvas')).toHaveCount(0);
     });
   }
+
+  test('ağaç 404’ü (V-23) "Son projeler" listeler', async ({ request }) => {
+    // notFound() çağıran ağaç sayfası: EN'de sayfası olmayan TR projesi (dynamicParams=false dışı yol, §3.7)
+    const html = await (await request.get('/projeler/yok')).text();
+    const tree = html.includes('data-404="tree"');
+    test.info().annotations.push({ type: 'V-23', description: tree ? 'tree' : 'global' });
+    if (tree) expect(html).toMatch(/Son projeler/);
+  });
 
   test('/yok ve /en/yok global 404’tür', async ({ request }) => {
     for (const path of ['/yok', '/en/yok']) {

@@ -1,0 +1,34 @@
+/* src/views/cv/print.css — /cv baskı stili (§7.6.3); CvView import eder. */
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm;
+  }
+  :root {
+    color-scheme: light !important;
+  } /* light-dark() token'ları açık değerlere çözülür (§6.3) */
+  html,
+  body {
+    background: #fff !important;
+  }
+  #scene-layer,
+  [data-print='hide'] {
+    display: none !important;
+  }
+  .cv-entry,
+  .cv-figure {
+    break-inside: avoid;
+  }
+  .cv-section > h2 {
+    break-after: avoid;
+  }
+  .cv-main a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .cv-main a[href^='http']::after {
+    content: ' (' attr(href) ')';
+    font-size: 0.85em;
+    overflow-wrap: anywhere;
+  }
+}

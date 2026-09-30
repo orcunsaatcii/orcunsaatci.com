@@ -20,6 +20,7 @@ export function SkipLink({ label }: { label: string }) {
   return (
     <a
       href="#main"
+      data-print="hide"
       className="sr-only fixed top-[calc(0.75rem+env(safe-area-inset-top))] left-[calc(0.75rem+env(safe-area-inset-left))] z-(--z-skip) inline-flex min-h-11 items-center rounded-md bg-ink px-4 type-ui text-canvas focus-visible:not-sr-only"
     >
       {label}

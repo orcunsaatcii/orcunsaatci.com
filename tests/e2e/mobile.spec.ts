@@ -2,11 +2,14 @@
 // M2 kapsamı: yatay taşma, dokunma hedefleri, Lenis sınıfı, çapa sonrası konum ve menü odak sözleşmesi.
 // Header gizleme (K-MOBILE-2) M4'ten, yatay modda taş (K-MOBILE-4) M6'dan itibaren eklenir (§15.3.1 #12).
 import { expect, test } from './fixtures';
-import { SHELL_PATHS } from './helpers/urls';
+import { pagePaths } from './helpers/urls';
 
 test.describe('K-MOBILE mobil kabuk', { tag: ['@pixel-7', '@iphone-15'] }, () => {
-  test('K-MOBILE-1 her URL’de yatay taşma yok ve html.lenis-smooth yok', async ({ page }) => {
-    for (const path of SHELL_PATHS) {
+  test('K-MOBILE-1 her URL’de yatay taşma yok ve html.lenis-smooth yok', async ({
+    page,
+    request,
+  }) => {
+    for (const path of await pagePaths(request)) {
       await test.step(path, async () => {
         // WebKit, yarıda kesilen RSC ön-yüklemelerini sayfa hatası olarak raporlar: ağ durulunca geçilir
         await page.goto(path, { waitUntil: 'networkidle' });

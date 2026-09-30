@@ -5,7 +5,20 @@ import { expect, test } from '../fixtures';
 
 export const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
+/** Sonlu CSS/WAAPI animasyonları (ör. hero-in girişi) bitene kadar bekler: kontrast ara karede ölçülmez. */
+export async function waitForAnimations(page: Page): Promise<void> {
+  await page.evaluate(() =>
+    Promise.all(
+      document
+        .getAnimations()
+        .filter((a) => a.effect?.getComputedTiming().iterations !== Infinity)
+        .map((a) => a.finished.catch(() => undefined)),
+    ),
+  );
+}
+
 export async function expectNoAxeViolations(page: Page, label: string): Promise<void> {
+  await waitForAnimations(page);
   const { violations } = await new AxeBuilder({ page })
     .withTags(WCAG_TAGS)
     .exclude('#scene-layer')

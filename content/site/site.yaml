@@ -1,1 +1,41 @@
+# yaml-language-server: $schema=../../.schemas/site.json
+# Tohum (§7.2.5). Lansman değeri Ek A.1 #2'ye göre belirlenir; cevap yoksa [tr].
 locales: [tr, en]
+persona: engineer
+title: { tr: "Orçun Saatçi", en: "Orçun Saatçi" }
+description:
+  tr: "Bilgisayar mühendisi ve mobil uygulama geliştiricisi Orçun Saatçi’nin sitesi: {{ALAN_1}}, {{ALAN_2}} ve {{ALAN_3}} projeleri, özgeçmiş ve iletişim."
+  en: "Orçun Saatçi, computer engineer and mobile app developer based in {{CITY}}: selected projects in {{AREA_1}}, {{AREA_2}} and {{AREA_3}}, CV and contact details."
+features: {}
+cv:
+  updatedAt: "2026-09" # {{CV_GÜNCELLEME_TARİHİ}}
+seo:
+  pages:
+    home:
+      description:
+        tr: "Bilgisayar mühendisi ve mobil uygulama geliştiricisi Orçun Saatçi’nin sitesi: {{ALAN_1}}, {{ALAN_2}} ve {{ALAN_3}} projeleri, özgeçmiş ve iletişim."
+        en: "Orçun Saatçi, computer engineer and mobile app developer based in {{CITY}}: selected projects in {{AREA_1}}, {{AREA_2}} and {{AREA_3}}, CV and contact details."
+    about:
+      description:
+        tr: "Orçun Saatçi kimdir? {{ŞEHİR}} merkezli bilgisayar mühendisi ve mobil uygulama geliştiricisi; yolculuğu ve {{BAŞLANGIÇ_YILI}} yılından bugüne öne çıkan işleri."
+        en: "Who is Orçun Saatçi? A computer engineer and mobile app developer based in {{CITY}}: background, way of working and highlights since {{START_YEAR}}."
+    cv:
+      description:
+        tr: "Orçun Saatçi’nin özgeçmişi (CV): deneyim, eğitim, yetkinlikler ve sertifikalar. PDF ve JSON Resume olarak indirilebilir."
+        en: "Orçun Saatçi’s CV: experience, education, skills and certifications. Available to download as PDF and JSON Resume."
+    projects:
+      description:
+        tr: "Orçun Saatçi’nin {{ALAN_1}}, {{ALAN_2}} ve {{ALAN_3}} alanlarındaki seçili projeleri: rol, tarih, ekran görüntüleri ve mağaza bağlantıları."
+        en: "Selected projects by Orçun Saatçi in {{ALAN_1_EN}}, {{ALAN_2_EN}} and {{ALAN_3_EN}}: role, dates, screenshots and app store links."
+    expertise:
+      description:
+        tr: "Orçun Saatçi’nin çalışma alanları: {{ALAN_1}}, {{ALAN_2}}, {{ALAN_3}}. Her alanda neler yaptığı ve ilgili projeler."
+        en: "Orçun Saatçi’s areas of expertise: {{ALAN_1_EN}}, {{ALAN_2_EN}}, {{ALAN_3_EN}}. What he does in each and the related projects."
+    contact:
+      description:
+        tr: "Orçun Saatçi ile iletişime geçin: e-posta, LinkedIn ve diğer profiller. {{ŞEHİR}} merkezli; Türkçe ve İngilizce yazışma."
+        en: "Get in touch with Orçun Saatçi by email, LinkedIn or other profiles. Based in {{ŞEHİR_EN}}; writing in Turkish and English."
+    privacy:
+      description:
+        tr: "orcunsaatci.com KVKK aydınlatma metni ve gizlilik politikası: hangi verilerin, hangi amaçla işlendiği ve haklarınız."
+        en: "Privacy policy for orcunsaatci.com: what data is processed, for which purpose, and your rights."

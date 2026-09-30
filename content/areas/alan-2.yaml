@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=../../.schemas/area.json
+order: 2
+title: { tr: "{{ALAN_2}}", en: "{{AREA_2}}" }
+summary: { tr: "{{ALAN_2_ÖZET}}", en: "{{AREA_2_SUMMARY}}" }
+description: { tr: "{{ALAN_2_AÇIKLAMA}}", en: "{{AREA_2_DESCRIPTION}}" }
+tags:
+  - { tr: "{{ETİKET_1}}" }
+  - { tr: "{{ETİKET_2}}" }
+  - { tr: "{{ETİKET_3}}" }
+capabilities:
+  - { tr: "{{ALAN_2_YETKİNLİK_1}}", en: "{{AREA_2_CAPABILITY_1}}" }
+  - { tr: "{{ALAN_2_YETKİNLİK_2}}", en: "{{AREA_2_CAPABILITY_2}}" }
+skills: [yetkinlik-3, yetkinlik-4]

@@ -2,7 +2,7 @@
 // ≥ 64rem: marka + 5 bağlantı + dil; < 64rem: marka + "Menü" düğmesi. HalkaIndicator M4'te eklenir.
 import { getDictionary } from '@/i18n/get-dictionary';
 import type { Locale } from '@/i18n/config';
-import { getPerson, getSite } from '@/lib/content';
+import { getPerson, isLocaleEnabled } from '@/lib/content';
 import { HeaderFrame } from './HeaderFrame';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { MobileMenu } from './MobileMenu';
@@ -12,7 +12,7 @@ import { ThemeToggle } from './ThemeToggle';
 export function SiteHeader({ locale, enPaths }: { locale: Locale; enPaths: readonly string[] }) {
   const dict = getDictionary(locale);
   const { name } = getPerson();
-  const showLanguages = getSite().locales.includes('en');
+  const showLanguages = isLocaleEnabled('en');
   const navLabels: NavLabels = {
     about: dict.nav.about,
     areas: dict.nav.areas,

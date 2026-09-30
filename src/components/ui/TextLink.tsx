@@ -20,6 +20,8 @@ interface ExternalProps extends CommonProps {
   href: string;
   /** Yalnız §4/§7'nin açıkça istediği yerde: yeni sekme + görsel olarak gizli ek (dict.a11y.newTab) */
   newTabLabel?: string;
+  /** Ek rel değeri; sosyal profiller "me" taşır (§11.7, §12.1.1) */
+  rel?: string;
 }
 interface DownloadProps extends CommonProps {
   variant: 'download';
@@ -60,11 +62,15 @@ export function TextLink(props: TextLinkProps) {
         className={cls}
         hrefLang={hrefLang}
         lang={lang}
-        rel="noopener noreferrer"
+        rel={[props.rel, 'noopener noreferrer'].filter(Boolean).join(' ')}
         target={newTab ? '_blank' : undefined}
       >
         {children}
-        <ExternalIcon />
+        {/* U+2060: simge son kelimeden ayrı satıra düşmez (bağlantı kutusu bölünmez) */}
+        <span className="whitespace-nowrap">
+          {'\u2060'}
+          <ExternalIcon />
+        </span>
         {newTab && <span className="sr-only"> {props.newTabLabel}</span>}
       </a>
     );

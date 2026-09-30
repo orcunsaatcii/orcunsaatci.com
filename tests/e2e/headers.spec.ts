@@ -1,8 +1,7 @@
 // tests/e2e/headers.spec.ts — §12.5.7 (D-25).
-// M0: only "/" and "/yok". M3 extends this to the five paths in §12.5.7 (§15.0.6).
+// The five paths in §12.5.7: /, the first project page, /sitemap.xml, /yok (404) and the CV PDF.
 import { expect, test } from './fixtures';
-
-const PATHS = ['/', '/yok'] as const;
+import { sitemapPaths } from './helpers/urls';
 
 const REQUIRED = [
   'content-security-policy',
@@ -15,8 +14,10 @@ const REQUIRED = [
 ] as const;
 
 test.describe('D-25 security headers', { tag: ['@desktop-chromium'] }, () => {
-  for (const path of PATHS) {
-    test(`D-25 ${path} sends all seven security headers`, async ({ request }) => {
+  test('D-25 five paths send all seven security headers', async ({ request }) => {
+    const project = (await sitemapPaths(request)).find((p) => p.startsWith('/projeler/'));
+    expect(project, 'first project page').toBeTruthy();
+    for (const path of ['/', project!, '/sitemap.xml', '/yok', '/files/orcun-saatci-cv-tr.pdf']) {
       const res = await request.get(path, { maxRedirects: 0 });
       const headers = res.headers();
       for (const name of REQUIRED) {
@@ -28,6 +29,6 @@ test.describe('D-25 security headers', { tag: ['@desktop-chromium'] }, () => {
         .toBeUndefined();
       expect.soft(headers['strict-transport-security'], `${path}: HSTS`).not.toContain('preload');
       expect.soft(headers['x-powered-by'], `${path}: x-powered-by`).toBeUndefined();
-    });
-  }
+    }
+  });
 });

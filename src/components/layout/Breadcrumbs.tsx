@@ -2,6 +2,7 @@
 // Zincir trail(ref) ile kurulur; son öğe bağlantı değildir ve aria-current="page" taşır.
 // JSON-LD BreadcrumbList aynı adlarla M3'te üretilir (§11.6).
 import Link from 'next/link';
+import { HIT_AREA_FLUSH } from '@/components/ui/hit-area';
 import { getDictionary } from '@/i18n/get-dictionary';
 import { pathOf, trail, type Locale, type PageRef } from '@/i18n/config';
 
@@ -41,7 +42,7 @@ export function Breadcrumbs({ pageRef, locale, title }: BreadcrumbsProps) {
                   {name(ref)}
                 </span>
               ) : (
-                <Link href={href} className="text-ink-muted hover:text-ink">
+                <Link href={href} className={`${HIT_AREA_FLUSH} text-ink-muted hover:text-ink`}>
                   {name(ref)}
                 </Link>
               )}

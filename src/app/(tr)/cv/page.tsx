@@ -1,9 +1,9 @@
-// src/app/(tr)/cv/page.tsx — M2 kabuğu (§15.3.1 #6); M3'te §3.4.3 kalıbıyla (içerik, pageLocales, staticPageMetadata) değiştirilir.
+// src/app/(tr)/cv/page.tsx — §3.4.3 kalıbı (TR her zaman üretilir).
 import type { Metadata } from 'next';
-import { getDictionary } from '@/i18n/get-dictionary';
+import { staticPageMetadata } from '@/lib/seo/metadata';
 import { CvView } from '@/views/cv/CvView';
 
-export const metadata: Metadata = { title: getDictionary('tr').meta.cv };
+export const metadata: Metadata = staticPageMetadata({ key: 'cv' }, 'tr');
 
 export default function Page() {
   return <CvView locale="tr" />;

@@ -4,8 +4,9 @@
 //   npm run posters            → 36 dosyayı üretir
 //   npm run posters -- --check → varlık + bütçe denetimi (yerel; CI'da aynı denetimi check-budgets.mjs yapar, §9.4.2, §13.6.1)
 //   npm run posters -- --qa    → 13 anahtar × 2 tema PNG'yi .lab-out/'a yazar (gitignore; görsel QA ızgarası)
-// SPEC-SAPMA: §5.16.3 — package.json "type": "module" taşımadığı için tsx dosyayı CommonJS olarak çalıştırır ve
-// üst düzey await kullanılamaz; akış aynı sırayla main() içine alındı.
+// SPEC-SAPMA: §5.16.3 — M1'de package.json "type" taşımadığından tsx dosyayı CommonJS çalıştırıyordu ve üst düzey
+// await yoktu; akış main() içine alındı. M3'ten beri scripts/package.json {"type":"module"} ile ESM'dir; main() iki
+// kipte de aynı çalışır.
 import { mkdir, stat } from 'node:fs/promises';
 import { chromium, type Page } from '@playwright/test';
 import sharp, { type OverlayOptions } from 'sharp';

@@ -1,17 +1,22 @@
 // src/views/not-found/NotFoundView.tsx — ağaç 404 gövdesi (§3.7, §4.13.6). SVG ClockFigure; WebGL yok (D-19).
-// M2: başlık, alt satır, gövde ve üç iç bağlantı. E-posta bağlantısı ve "Son projeler" M3'te; StagePreset none M5'te.
+// Başlık, alt satır, gövde, üç iç bağlantı, e-posta ve "Son projeler" (3). StagePreset none M5'te.
 import Link from 'next/link';
 import { ClockFigure } from '@/components/figures/ClockFigure';
+import { EmailLink } from '@/components/ui/EmailLink';
+import { Txt } from '@/components/ui/Txt';
 import { staticRoutes, type Locale } from '@/i18n/config';
 import { getDictionary } from '@/i18n/get-dictionary';
+import { pathOf } from '@/i18n/config';
+import { getContact, getProjects, t } from '@/lib/content';
 
 export function NotFoundView({ locale }: { locale: Locale }) {
   const dict = getDictionary(locale);
-  const t = dict.notFound;
+  const t_ = dict.notFound;
+  const latest = getProjects(locale).slice(0, 3);
   const links = [
-    { href: staticRoutes.home[locale], label: t.home },
-    { href: staticRoutes.projects[locale], label: t.projects },
-    { href: staticRoutes.contact[locale], label: t.contact },
+    { href: staticRoutes.home[locale], label: t_.home },
+    { href: staticRoutes.projects[locale], label: t_.projects },
+    { href: staticRoutes.contact[locale], label: t_.contact },
   ];
   return (
     <div
@@ -19,9 +24,9 @@ export function NotFoundView({ locale }: { locale: Locale }) {
       className="container-page grid-page items-center gap-y-block pt-block pb-section"
     >
       <div className="col-span-4 md:col-span-8 lg:col-span-6">
-        <h1 className="type-h1">{t.title}</h1>
-        <p className="mt-stack type-lead">{t.lead}</p>
-        <p className="mt-4 type-body text-ink-muted">{t.body}</p>
+        <h1 className="type-h1">{t_.title}</h1>
+        <p className="mt-stack type-lead">{t_.lead}</p>
+        <p className="mt-4 type-body text-ink-muted">{t_.body}</p>
         <ul className="mt-stack flex flex-wrap gap-x-6">
           {links.map((l) => (
             <li key={l.href}>
@@ -31,9 +36,31 @@ export function NotFoundView({ locale }: { locale: Locale }) {
             </li>
           ))}
         </ul>
+        <p className="mt-4 type-ui">
+          <EmailLink email={getContact().email} />
+        </p>
+        {latest.length ? (
+          <section aria-labelledby="latest-title" className="mt-block">
+            <h2 id="latest-title" className="type-h4">
+              {t_.latest}
+            </h2>
+            <ul className="mt-3 flex flex-col gap-2">
+              {latest.map((p) => (
+                <li key={p.slug}>
+                  <Link
+                    href={pathOf({ key: 'project', param: p.slug }, locale)}
+                    className="link-inline type-ui"
+                  >
+                    <Txt v={t(p.title, locale)} />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
       </div>
       <div className="col-span-4 mx-auto w-full max-w-sm md:col-span-6 md:col-start-2 lg:col-span-5 lg:col-start-8">
-        <ClockFigure label={t.clock} />
+        <ClockFigure label={t_.clock} />
       </div>
     </div>
   );

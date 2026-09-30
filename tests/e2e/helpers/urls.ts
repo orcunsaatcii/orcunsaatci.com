@@ -14,27 +14,6 @@ export const NOT_FOUND_PATHS = [
   '/en/projects/yok',
 ] as const;
 
-/**
- * Temporary (§15.0.6): M2 shell pages. The sitemap arrives in M3; "every route" loops then switch to
- * sitemapPaths(request) + NOINDEX_PATHS and this list is deleted.
- */
-export const SHELL_PATHS = [
-  '/',
-  '/hakkimda',
-  '/cv',
-  '/projeler',
-  '/calisma-alanlari',
-  '/iletisim',
-  '/gizlilik',
-  '/en',
-  '/en/about',
-  '/en/cv',
-  '/en/projects',
-  '/en/expertise',
-  '/en/contact',
-  '/en/privacy',
-] as const;
-
 /** Reads /sitemap.xml and returns the unique path part of every <loc> (origin dropped). */
 export async function sitemapPaths(request: APIRequestContext): Promise<string[]> {
   const res = await request.get('/sitemap.xml');
@@ -46,3 +25,43 @@ export async function sitemapPaths(request: APIRequestContext): Promise<string[]
   });
   return [...new Set(paths)];
 }
+
+/**
+ * Every page that answers 200: the sitemap plus NOINDEX_PATHS (§13.3.2). "Every route" loops use this;
+ * it replaced the temporary M2 SHELL_PATHS list in M3 (§15.0.6).
+ */
+export async function pagePaths(request: APIRequestContext): Promise<string[]> {
+  const paths = await sitemapPaths(request);
+  for (const path of NOINDEX_PATHS) {
+    if ((await request.get(path)).status() === 200) paths.push(path);
+  }
+  return paths;
+}
+
+export interface SitemapEntry {
+  /** canonical URL exactly as in <loc> (production origin) */
+  loc: string;
+  path: string;
+  /** xhtml:link alternates: hreflang → absolute URL (empty for single-language pages) */
+  alternates: Record<string, string>;
+}
+
+/** Parses /sitemap.xml into <url> entries with their hreflang alternates (§11.4). */
+export async function sitemapEntries(request: APIRequestContext): Promise<SitemapEntry[]> {
+  const xml = await (await request.get('/sitemap.xml')).text();
+  return [...xml.matchAll(/<url>([\s\S]*?)<\/url>/g)].map(([, block = '']) => {
+    const loc = /<loc>\s*([^<\s]+)\s*<\/loc>/.exec(block)?.[1] ?? '';
+    const alternates: Record<string, string> = {};
+    for (const [, lang = '', href = ''] of block.matchAll(
+      /<xhtml:link[^>]*hreflang="([^"]+)"[^>]*href="([^"]+)"/g,
+    ))
+      alternates[lang] = href;
+    return { loc, path: new URL(loc).pathname || '/', alternates };
+  });
+}
+
+/** Production URL → local path (origin dropped) */
+export const localPath = (url: string): string => {
+  const u = new URL(url);
+  return `${u.pathname}${u.search}`;
+};

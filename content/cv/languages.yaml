@@ -1,0 +1,4 @@
+# yaml-language-server: $schema=../../.schemas/languages.json
+items:
+  - { code: tr, name: { tr: "Türkçe", en: "Turkish" }, level: native }
+  - { code: en, name: { tr: "İngilizce", en: "English" }, level: c1 } # {{İNGİLİZCE_SEVİYESİ}}
