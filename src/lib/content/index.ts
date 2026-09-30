@@ -31,6 +31,7 @@ import {
   type Site,
   type Testimonials,
 } from 'content-collections';
+import { getExperienceProfile } from '@/experience/profile';
 import { fileRoutes, type Locale, type PageRef, type RouteKey } from '@/i18n/config';
 import { bandOf, ringGeometry } from '@/lib/section-geometry';
 import type { PresetName, StageData } from '@/stage/store';
@@ -394,7 +395,8 @@ export function getStageData(
     const y = entryYears(e);
     return { band: bandOf(y.start, y.end, g) };
   };
-  const base = { rings: g.rings, sectors };
+  const intensity = getExperienceProfile(getSite().persona).intensity; // areas dönüş easing'i (§5.9.4)
+  const base = { rings: g.rings, sectors, intensity };
 
   switch (preset) {
     case 'home':

@@ -2279,6 +2279,8 @@ Mobil 390×844 (4 kolon; kenar 16–20)
 └────────────────────────────────┘
 ```
 
+- SPEC-SAPMA: §4.5.2, §4.6.2 (M4, 2026-09-30) — Header akışta (sticky) olduğu için hero `margin-top: −(header + 1 px)` ile header'ın altına uzanır ve `min-height: 100svh` alır (header en üstte saydamdır): about üstü tam 100 svh'dedir (K-GEN-2). Masaüstünde hero ızgarası `minmax(12rem, 1fr) auto auto auto auto`'dur: çapa header + 16 px'ten H1'in üstüne kadar birinci satırı doldurur, eyebrow aynı satırın altında, H1, lead, CTA'lar ve ipucu altta. About'un 140 svh `min-height`'ı da `html.js[data-motion="full"]` ve ≥ 64rem ile kapılıdır (kaydırma koreografisi olmadan boş alan olurdu).
+
 #### 4.6.3 DOM
 
 Sunucuda render edilir ve ilk boyamada görünürdür. DOM sırası görsel sıradır.
@@ -2583,6 +2585,8 @@ Mobil 390×844 — pinli varyant (sticky 100 svh)
 └────────────────────────────────┘
 ```
 
+- SPEC-SAPMA: §4.8.4, §4.8.8 (M4, 2026-09-30) — Uygulama notları: (1) Açıklamaların "tek ortak yuvası" `subgrid` ile kurulur (`<ol>` N + 1 satır; her `<li>` bütün satırları kaplar, başlık k + 1. satırda, açıklama son satırda); ölçüm gerekmez, açıklamalar DOM'da başlıklarının ardında kalır. (2) `aria-current="step"` başlığın `<button>`'ında ve etkin ilerleme segmentindedir. (3) İğne 1 px genişlikli bir öğedir; konum ve uzunluk `transform: translate() scaleX()` ile (CSS değişkenleri) yazılır. Mobilde iğne kadranın saat 9 yönüne kısa bir çizgidir. (4) Sığma ölçümü (`scrollHeight > clientHeight`) masaüstünde de güvenlik olarak uygulanır. (5) Mobil pin'in 58 svh metin alanı tel çerçevedeki öğeleri taşır; alanlar cümlesi ve "Tüm çalışma alanları" bağlantısı mobil pin'de gösterilmez (liste modunda ve masaüstünde görünür). (6) Etkin adım GSAP'siz bir kaydırma dinleyicisiyle hesaplanır (`AreasPin`); director çalışırken (`directorApi.areasStepY` sonlu) onun `areas:step` olayları kullanılır, ikisi aynı saf fonksiyondur (`areasIndexAt`).
+
 #### 4.8.9 Azaltılmış hareket karşılığı
 
 - Pin yoktur. Tüm açıklamalar alt alta liste halindedir.
@@ -2825,6 +2829,8 @@ k1–7'dedir. Tuval rengi sabit kalır; **arka plan tersine çevrilmez.**
 | Footer | `<footer>` (bölümün içinde) | ©, TR/EN, tema seçici, "Hareketi azalt", künye | İçerik §3.9 |
 | Sahne çapası | `<div data-stage-anchor="contact-ring" data-anchor-kind="viewport" aria-hidden="true">` | — | k8–12, y 14–86 svh. Poster karşılığı: K5 posteri + gerçek tarih yayını çizen `ArcFigure` katmanı. |
 
+- SPEC-SAPMA: §4.11.2 (M4, 2026-09-30) — `contact-ring` bir viewport çapasıdır; masaüstünde akışta yer kaplamaz (`position: absolute`, bölüm üstünden 14 svh, 72 svh yükseklik, k8–12): bölüm yüksekliğini metin + footer belirler ve bölüm 100 svh kalır. Önceki akış düzeninde 72 svh'lik çapa bölümü 104 svh'ye uzatıyordu. Mobilde H2'nin üstündeki 40 svh bant akıştadır.
+
 #### 4.11.3 3D durumu: K5 `contact-ring`
 
 | Çapa | r | az | el | fov | D | rotY (scroll) | rotX | cut | ringContrast | sectorMix | ghost | arcGlow | Işık | rim | tone |
@@ -2936,6 +2942,8 @@ Uygulamanın test etmesi **ZORUNLU** olan kurallar (testler §4.18 K-CHOREO):
 9. **Tek DOM pin'i.** Metin tutan tek sticky kapsayıcı areas'tır. work ve journey'de yalnızca medya/çapa sütunu sticky'dir.
 10. **Boşta hareket sınırı.** Kendiliğinden hareket, son girdiden 20 s (ince işaretçi) / 8 s (kaba işaretçi, dokunmatik) sonra durur.
 11. **Scroll'a bağlı DOM.** Yalnızca §4.3'teki beyaz liste kaydırmaya bağlanır.
+
+- Not (M4, 2026-09-30, `tracks.test.ts`): Masaüstü journey BODY uzunluğu `35E − 30` svh'dir (kuyruk ≥ 30 svh). E = 1'de 5 svh, E = 2'de 40 svh kalır; `rotYScroll`'un +60°'si bu durumda ≤ 33.4°/100 svh (#5) ve 90°/100 svh (#6) sınırlarını aşar. Değişmezler varsayılan içerikle (E = 6) sınanır; küçük E için dönüşün BODY uzunluğuna ölçeklenmesi (ya da en az BODY uzunluğu) M6 koreografi ayarında karara bağlanır.
 
 #### 4.12.3 Senkron istisnaları (bildirilmiş)
 
@@ -4789,6 +4797,8 @@ N = 4, masaüstü: dönüşler 300–315, 350–365, 400–415 svh; metin deği�
 | `landscape` | mobil ve `innerHeight < 500` | yalnız about IN 0.2–0.5: `opacityTrack` 1 → 0; başka opaklık track'i yok |
 | `shortViewport` | masaüstü ve `innerHeight < 760` | work IN 0–0.5: `tone` 1 → 0; journey IN 0–0.5: 0 → 1 (§4.9.4 **[SABİT]**, §4.12.4 #8) |
 
+- SPEC-SAPMA: §5.9.4 (M4, 2026-09-30) — `areas-list` varyantında BODY dönüş track'leri yoktur, ama "bırakma" (`sectorMix` 1 → 0.5, `fill0` 1 → 0.15) BODY boyunca kalır. Aksi hâlde work IN (dolgular 0.15 → 0.12) ve journey IN (`sectorMix` 0.5 → 0) §5.9.3 süreklilik değişmezini (#2) bozar ve K3'te `sectorMix` 1 olurdu. Sahne bu aralıkta sönük olduğundan (`opacityTrack` 0) görünür etkisi yoktur. Areas dönüş easing'i persona yoğunluğundan gelir: `StageData.intensity` (isteğe bağlı alan; içerik yalnız sunucuda okunduğu için `getStageData` yazar).
+
 **Derin preset track'leri** (`chapter: 'page'`, taban anahtar D1–D5):
 
 | Preset | prop | Aralık | from → to | ease |
@@ -4877,6 +4887,8 @@ export function setPlanFilter(area: number | null): void  // plan-small: ?alan= 
 ```
 
 `about:cut` her güncellemede `cutProgress = (1.10 − stageTarget.cut) / 1.10` ile yayılır. Damped değer değil, track değeri kullanılır; DOM kesit çizgisi kaydırmayla birebir ilerler.
+
+- SPEC-SAPMA: §5.9.5 (M4, 2026-09-30) — Kaydırma döngüsünde bellek ayrılmaması için: `computeIndices(layout, y, out?)` ve `resolveEvents(preset, ix, data, ctx, out)` yeniden kullanılan nesnelere yazar; `EventIndices` ek olarak `fillWindow` (dolgular o konumda event'lerin mi) taşır; `EventTargets.fills` sabit altılı dizi + `fillsActive` bayrağıdır (`null` yerine). `about:cut` olayı tek bir değiştirilebilir nesneyle yayılır. `applyBase` dolgular event'lere aitken onları ezmez (aksi hâlde her güncelleme event tween'inin sonucunu silerdi). Director ayrıca `directorApi.startCut/endCut` (uzak atlama kesmesi, §5.13.4) ve statik kademe kadranı için `onStageUpdate` bildirimini sağlar. Hover/önizleme yardımcıları (`previewSector`, `pulseArc`, `sendWave` …) sahneyle birlikte M5/M7'dedir.
 
 #### 5.9.6 Kompozisyon ve rig-yerel hareket
 
@@ -5759,6 +5771,8 @@ final.md §4.2, lede'in satır satır açılmasını ister; D-46 ise SplitText'i
 
 - `full → reduce`: `teardownMotion()` (§5.13.2). İçerik anında görünür, Lenis kapanır, canvas unmount olur (R3F renderer'ı dispose eder; `materials.ts` kaynakları temizlikte `disposeMaterials` ile bırakılır). Hiçbir satır içi stil kalmaz: `ctx.revert()`, `split.revert()` ve `gsap.set(..., { clearProps: 'all' })`.
 - `reduce → full`: `loadMotion()` → `armReveals` (görünümdeki ve üstündeki öğeler açık kalır) → `StageRoot` yeniden boot eder (`fallback(reduced-motion) → poster → probing …`).
+
+- SPEC-SAPMA: §5.14.1, §5.14.3, §5.14.7 (M4, 2026-09-30) — (1) `RevealHeading` `children` olarak `Txt` kabul eder (düz dize zorunluluğu yerine; SplitText iç öğeleri korur) ve 12 kelimeyi aşan başlıkta `data-reveal="block"` yazar (§4.5.4 kural 2). (2) `data-reveal-when="<medya sorgusu>"`: öğe yalnız bu koşulda kurulur, aksi hâlde açılmış işaretlenir (mobil work kapaklarının klip reveal'ı; masaüstü görüntüleyicide figürler reveal almaz). (3) `teardownMotion` henüz açılmamış öğeleri `data-reveal-torn` ile işaretler; `reduce → full`'da yalnız görünümün altındakiler yeniden kurulur, görünen ve daha önce açılmış içerik gizlenmez. (4) `useMotionRuntime()` hareket `reduce` iken `null` döner; runtime'a bağlı effect'ler (director, reveal, Lenis, wipe, CutLine) böylece kendiliğinden temizlenir. `useMotionPref` ayrı bir modüldedir (`motion-pref.ts`; `global-not-found` reveal motorunu paketlemez).
 
 #### 5.14.8 Hero ikincil metinleri: yalnız CSS, JS'siz ilk boya animasyonu
 
@@ -7047,6 +7061,8 @@ Figürler `section-geometry.ts`'ten (§5.10) üretilen satır içi SVG'lerdir. S
 | `SpecimenGlyph` | 64 px, proje başına | `aria-hidden` (makale metasını tekrarlar) | Bant + sektör |
 | `EntryGlyph` | 24 px, CV girdisi başına | `aria-hidden` | Girdinin bandı |
 | `ClockFigure` (404) | 404 sayfasında `cols 7–12` karşılığı alan | `role="img"`, `aria-label` "Yerel saat 14:32" / "Local time 14:32" | 12 indeks, akrep 0.55R, yelkovan 0.85R (1.5 px aksan), merkez nokta; dakikada bir güncellenir; azaltılmış harekette yükleme anında donar; WebGL yok (D-19); kök öğe `data-live-time` taşır (test kancası, §13.3.3) |
+
+- SPEC-SAPMA: §6.6.5, §8.3 (M4, 2026-09-30) — Figürler sunucu bileşenidir (yalnız `ArcFigure` istemcide çizer); olay abonelikleri figürlerin içinde değil, kardeş denetleyicilerdedir: `DialRotor` (statik kademede `--dial-rot` = −rotYScroll), `AreasPin` (etkin dilim `data-active`), `JourneyActive` (etkin bant `data-active`, etkin `<time>`), `SectionWipe` (numune glifi). Böylece figür SVG'si JS'siz ve azaltılmış harekette aynı SSR çıktısıdır. Disk yarıçapı figürlerde kutunun 0.8'i (`R_FIGURE` 80/200), gliflerde 0.88'idir; çapadaki figür poster kutusuyla (D/0.8) aynı ölçüdedir.
 
 #### 6.6.6 `components/mdx/` (izinli liste §7.7)
 
@@ -10604,7 +10620,7 @@ Vitest, ESLint Node API'si ile (`new ESLint({ cwd })` → `lintText(code, { file
 | `data-theme-pref` | `system \| light \| dark` | head script; sonra `ThemeToggle` | ilk boyamadan önce |
 | `data-theme` | `light \| dark` (çözülmüş) | head script; `system` tercihinde OS değişimini head script dinler; elle seçimde `ThemeToggle` | ilk boyamadan önce |
 | `data-motion` | `full \| reduce` | head script; OS değişimini (kayıt yoksa) head script dinler; `MotionToggle` (§5.13.2) | ilk boyamadan önce |
-| `data-hydrated` | var / yok | `MotionRoot` ilk effect'inde. Geçici (§15.0.6, M3 → M4): `MotionRoot` gelene kadar iki kök layout'taki `HydrationMark` yaprağı yazar; aksi hâlde `js` sınıfı 4 s sonra kalkıyor ve `js:` ile açılan denetimler (Kopyala, Yazdır, filtre çipleri) kayboluyordu (M3'te `contact.spec.ts` ile bulundu). | hidrasyon sonrası |
+| `data-hydrated` | var / yok | `MotionRoot` ilk effect'inde (M4; M3'teki geçici `HydrationMark` kaldırıldı). SPEC-SAPMA: §8.4.4 (M4) — `global-not-found`'da `MotionRoot` yoktur; işareti minimal footer'daki `MotionToggle` (`markHydrated`) yazar, aksi hâlde `js:` ile açılan anahtar 4 s sonra kaybolurdu. | hidrasyon sonrası |
 | `.motion-ready` | var / yok | `armReveals()` kurulumdan **sonra** (§5.14.3); `teardownMotion()` kaldırır | `load` sonrası; asla önce değil |
 | `data-scroll-behavior` | **yazılmaz** | — | Lenis kaydırmanın sahibidir (§5.13.3) |
 
@@ -11542,6 +11558,8 @@ const measure = () => {
 
 - Bir dinamik import'un bütün chunk istekleri aynı görev içinde başlar; 100 ms pencere bu yüzden yeterlidir. ⚠️ DOĞRULANMADI: Turbopack'in bir async modülün bütün chunk'larını paralel istediği. Doğrulama: M5'te PB-3 penceresi dışında kalan geç bir three/R3F chunk'ı varsa (`WebGLRenderer` içeren istek pencere dışında başladıysa) pencere `os:stage-compiled`'a kadar genişletilir.
 
+- SPEC-SAPMA: §9.4.3 PB-2, PB-5 (M4, 2026-09-30) — Next 16 `<Link>` görünüm alanı prefetch'i hero CTA'sının hedef route'unun (`/projeler`) chunk'ını ilk boşlukta, motion import'uyla aynı anda ister. Bu route chunk'ları (herhangi bir route HTML'inin başlangıçta yüklediği dosyalar) PB-2 penceresinden ve PB-5'in "load sonrası betik yok" kuralından hariç tutulur; lazy (motion/stage) chunk'lar hariç tutulmaz. PB-2 pencereleri birleşimdir: iki pencerede başlayan istek bir kez sayılır (motion ve lenis pencereleri örtüşür). `BASE_URL` ile dosyalar okunamazsa filtre boştur. Ölçüm (2026-09-30, yerel): motion grubu 46.8 KB (gsap + ScrollTrigger + SplitText) + 5.3 KB (lenis) = 52.1 KB ≤ 60 KB; `check-budgets` motion grubu 50.9 KB.
+
 #### 9.4.4 Bütçe aşıldığında
 
 | Aşım | Önce bak | Sonra |
@@ -11597,7 +11615,7 @@ const measure = () => {
 2. LHCI mobil koşusunda `largest-contentful-paint-element` denetimi H1'i göstermelidir.
 
 **Çözüm sırası (doğrulama başarısızsa):**
-1. **H1 tek LCP adayı olsun:** 64rem altındaki satır kırılımı `display: block` span'lar yerine `<br>` ile yapılır (tek metin bloğu, §6.2.3 güncellenir). Yeniden ölçülür. **M3 (2026-09-30): uygulandı** (`<br className="lg:hidden" />`). LHCI mobil emülasyonunda (412 × 823) poster 354 × 354 px ≈ 125.000 px², H1 kutusu 368 × 152 px ≈ 56.000 px²; LCP öğesi hâlâ posterdir. Adım 2'ye göre `D ≤ floor(√(0.8 × 56.000)) ≈ 211 px` olur; karar V-39 ile (M4 → M8) sahibe sunulur.
+1. **H1 tek LCP adayı olsun:** 64rem altındaki satır kırılımı `display: block` span'lar yerine `<br>` ile yapılır (tek metin bloğu, §6.2.3 güncellenir). Yeniden ölçülür. **M3 (2026-09-30): uygulandı** (`<br className="lg:hidden" />`). LHCI mobil emülasyonunda (412 × 823) poster 354 × 354 px ≈ 125.000 px², H1 kutusu 368 × 152 px ≈ 56.000 px²; LCP öğesi hâlâ posterdir. Adım 2'ye göre `D ≤ floor(√(0.8 × 56.000)) ≈ 211 px` olur; karar V-39 ile (M4 → M8) sahibe sunulur. **M4 (2026-09-30):** ilk ölçüm V-39'da (poster hâlâ LCP öğesi). Poster `<img>` kutusu D/0.8 olduğu için adım 2'nin alan eşitsizliği `D ≤ 0.8·⌊√(0.8·A_h1)⌋` (360 × 640'ta ≈ 151 px) biçiminde okunmalıdır. Sahibin M3 kararıyla (LCP işi M8'de) uygulanması M8'dedir.
 2. **Poster alanı sınırlanır:** mobil hero bandında `D ≤ floor(sqrt(0.8 × A_h1))`. `A_h1`, 360 × 640 ve 390 × 844'te ölçülen en küçük H1 kutusu alanıdır. Sonuç px değeri §4.15.2'ye ve §5.8.3 mobil geçersiz kılmasına yazılır; poster ve canlı taş aynı `D`'yi kullanmaya devam eder.
 3. 1 ve 2 sahip tarafından reddedilirse karar §16.3'e açık soru olarak yazılır. Poster `fetchpriority="low"` kalır; LCP süresi yine ≤ 2.5 s olmalıdır.
 
@@ -15512,7 +15530,7 @@ Bazı dosyalar build zincirinin (§8.7.1) ilk günden çalışması için geçic
 | View kabukları (`src/views/**`): H1 sözlükten ya da persona etiketinden, gövde boş; ana sayfada yalnız hero H1'i, boş bölüm çapaları ve compact footer | M2 | M3 | §4.5–§4.11, §7.7 |
 | `ExpertiseView`, `tokens.test.ts` ve `src/lib/seo/og.tsx`'te `engineer` persona sabiti | M2 | M3 (`getSite().persona`) | §4.17, §6.10.4, §11.5 |
 | `src/lib/seo/og.tsx`: yalnız `loadOgFonts`, `renderDial`, `OG_COLORS`, `ICON_DIAL_ANGLE` | M2 | M3 (`renderOg`, `fitTitle`, `coverDataUri`, `angleFor`) | §11.5.3 |
-| `global-not-found.tsx` ve `NotFoundView` e-posta bağlantısı ve "Son projeler" olmadan; minimal footer'da `MotionToggle` yok | M2 | M3 (e-posta, liste), M4 (`MotionToggle`) | §3.7 |
+| `global-not-found.tsx` ve `NotFoundView` e-posta bağlantısı ve "Son projeler" olmadan; minimal footer'da `MotionToggle` yok | M2 | M3 (e-posta, liste), M4 (`MotionToggle`) — ✅ M4 | §3.7 |
 | `SiteFooter`'da e-posta, sosyal bağlantılar, CV ve `LocalTime` yok | M2 | M3 | §3.9.3 |
 | E2E: `SHELL_PATHS` listesi; `not-found.spec.ts` ve `i18n.spec.ts` yalnız M2 kapsamında | M2 | M3 (`sitemapPaths`, §13.3.4'teki tam kapsam) | §13.3.2, §13.3.4 |
 | `headers.spec.ts` yalnız `/` ve `/yok` ile | M0 | M3 (beş yol) | §12.5.7 |
@@ -15524,9 +15542,9 @@ Bazı dosyalar build zincirinin (§8.7.1) ilk günden çalışması için geçic
 | `CSP_REPORT_ONLY_ON_PREVIEW = true` | M0 | M10 (`false`) | §12.5.5 |
 | `SITE_INDEXABLE=false`, Deployment Protection "All Deployments" | M0 | M10 | §14.2.2, §14.6 |
 | `features.contactForm: false` | M3 | v1.1 etkinleştirmesi (M10 sonrası) | §12.2.1 |
-| `HydrationMark` (`data-hydrated` yazan yaprak, iki kök layout) | M3 | M4 (`MotionRoot` ilk effect'i) | §8.4.2 |
-| `a11y-keyboard.spec.ts`'te çapa sonrası `h2` odağı yerine sıralı odak başlangıç noktası | M3 | M4 (`scrollToChapter`, §5.13.4) | §10.3.2 |
-| `cv.spec.ts`'te baskıda `RingsFigure` ve ≥ 80rem taş çapası maddeleri yok | M3 | M4 (SVG figürler), M5 (Stage) | §13.3.4 |
+| `HydrationMark` (`data-hydrated` yazan yaprak, iki kök layout) | M3 | M4 (`MotionRoot` ilk effect'i) — ✅ M4'te kaldırıldı | §8.4.2 |
+| `a11y-keyboard.spec.ts`'te çapa sonrası `h2` odağı yerine sıralı odak başlangıç noktası | M3 | M4 (`scrollToChapter`, §5.13.4) — ✅ M4 | §10.3.2 |
+| `cv.spec.ts`'te baskıda `RingsFigure` ve ≥ 80rem taş çapası maddeleri yok | M3 | M4 (SVG figürler) — ✅ M4 baskı; ≥ 80rem çapa M5/M7 | §13.3.4 |
 | `lighthouserc.json`'da `largest-contentful-paint` `warn` (sahip kararı) | M3 | M8 (`error`) | §13.5.1, §9.1 |
 
 #### 15.0.7 Karar → milestone eşlemesi
@@ -16453,11 +16471,11 @@ Belgedeki her `⚠️ DOĞRULANMADI` maddesi, araştırma notlarındaki UNVERIFI
 | V-33 | "Missing source maps" uyarısı Best Practices puanını 0.95'in altına düşürmez. | §13.5.1 | LHCI BP puanı | `productionBrowserSourceMaps: true` (§8.6). | M3 → M8 — ✅ M3 (2026-09-30): BP 1.0, `valid-source-maps` geçer; source map açılmadı |
 | V-34 | `next.config.ts` `headers()` kuralı Vercel'de `public/` dosyalarına (`/files/*`) uygulanır. | §11.4.4 | Yerel `curl -sI`; Preview; üretimde §14.7 | Yedek tanımlı değil; sonuç §11.4.4'e işlenir. | M3 → M10 — yerel ✅ (2026-09-30): `/files/*.pdf` ve `/files/*.json` `X-Robots-Tag: noindex` (`seo.spec.ts`, `cv.spec.ts`); Preview/üretim §14.7 |
 | V-35 | `timeZoneName: 'shortOffset'` hedef tarayıcılarda desteklenir. | §4.14 #15 | Playwright (`desktop-chromium`, `iphone-15`) | İçerikteki statik ofset etiketi kullanılır. | M3 — ✅ (2026-09-30): `desktop-chromium` ve `iphone-15` (WebKit) `shortOffset` ile "GMT+3" verir |
-| V-36 | Safari/iOS `scrollend` olayını destekler. | §2.5.3, §5.13.4, §5.14.6, §9.5.5 | `iphone-15`: `'onscrollend' in window` | 150 ms debounce'lu `scroll` + 1,200 ms üst sınır. | M4 |
-| V-37 | `gsapVersions` ve `lenis-smooth` işaretçileri yalnız lazy chunk'ta ve kütüphane kodunda geçer. | §9.4.2 | `grep -l <işaretçi> .next/static/chunks/**/*.js` | Daha özgül bir dize seçilir, tablo güncellenir. | M4 |
-| V-38 | Aynı grid alanında örtüşen sticky öğeler Safari, Chrome ve Firefox'ta aynı davranır. | §4.9.3, final §13 #8 | `PW_CROSS=1 work-viewer.spec.ts`; gerçek Safari/Firefox (§9.6) | Yedek tanımlı değil; farklılık Ö1/Ö2 ise düzen akışa döner ve karar §16.3.2'ye taşınır. | M4 → M8 |
-| V-39 | Mobil hero'da LCP öğesi poster değil H1'dir. | §4.6.9, §9.5.4, 3D araştırması §11 | `pixel-7`, `iphone-15`, 360 × 640, 390 × 844; LHCI denetimi | §9.5.4 çözüm sırası (U-10). | M4 → M8 |
-| V-40 | `svh`/`lvh` A sınıfı tarayıcıların tamamında desteklenir. | §2.5.3 | caniuse "viewport-unit-variants"; `iphone-15`'te ölçülen yükseklik | Önce `vh` yedek bildirimi yazılır. | M4 → M8 |
+| V-36 | Safari/iOS `scrollend` olayını destekler. | §2.5.3, §5.13.4, §5.14.6, §9.5.5 | `iphone-15`: `'onscrollend' in window` | 150 ms debounce'lu `scroll` + 1,200 ms üst sınır. | M4 — ✅ (2026-09-30): Playwright WebKit (`iphone-15`, `desktop-webkit`) ve Firefox'ta `onscrollend` var. Eski Safari için yedek (150 ms sessizlik + 1,200 ms üst sınır) `LenisProvider`/`MotionRoot`'ta özellik algılamayla uygulanır; gerçek iOS 17 cihaz M8'de. |
+| V-37 | `gsapVersions` ve `lenis-smooth` işaretçileri yalnız lazy chunk'ta ve kütüphane kodunda geçer. | §9.4.2 | `grep -l <işaretçi> .next/static/chunks/**/*.js` | Daha özgül bir dize seçilir, tablo güncellenir. | M4 — ✅ (2026-09-30): iki işaretçi yalnız iki lazy chunk'ta (gsap + ScrollTrigger + SplitText; lenis); ilk paketlerde yok. `npm run budgets`: motion grubu 50.9 KB ≤ 60 KB. |
+| V-38 | Aynı grid alanında örtüşen sticky öğeler Safari, Chrome ve Firefox'ta aynı davranır. | §4.9.3, final §13 #8 | `PW_CROSS=1 work-viewer.spec.ts`; gerçek Safari/Firefox (§9.6) | Yedek tanımlı değil; farklılık Ö1/Ö2 ise düzen akışa döner ve karar §16.3.2'ye taşınır. | M4 → M8 — M4 ✅ (2026-09-30): `PW_CROSS=1 work-viewer.spec.ts` Chromium, WebKit (Playwright 1.63) ve Firefox 155'te geçer: her makalede figür kutuları formülle ±2 px, tam olarak bir figür açık. Gerçek Safari/Firefox M8'de (§9.6). |
+| V-39 | Mobil hero'da LCP öğesi poster değil H1'dir. | §4.6.9, §9.5.4, 3D araştırması §11 | `pixel-7`, `iphone-15`, 360 × 640, 390 × 844; LHCI denetimi | §9.5.4 çözüm sırası (U-10). | M4 → M8 — M4 ilk ölçüm ❌ (2026-09-30, Lighthouse 12.6.1 mobil, yerel): 390 × 844, 360 × 640 ve 412 × 915'te LCP öğesi hero posteri (`picture.stage-poster > img`), LCP 3.5 s (simülasyon), Perf 0.91, CLS 0. Masaüstünde H1, 0.7 s, Perf 1.0. H1 kutuları: 320 × 141 (360 × 640), 348 × 147 (390 × 844); poster `<img>` kutusu D/0.8 olduğundan (POSTER_STONE_FRAC) §9.5.4 adım 2 sınırı `D ≤ 0.8·⌊√(0.8·A_h1)⌋ ≈ 151 px` olur. Sahip kararı (M3): LCP işi M8'de (font kırpma + poster boyutu); K-HERO-1 mobil M8'de kapanır. |
+| V-40 | `svh`/`lvh` A sınıfı tarayıcıların tamamında desteklenir. | §2.5.3 | caniuse "viewport-unit-variants"; `iphone-15`'te ölçülen yükseklik | Önce `vh` yedek bildirimi yazılır. | M4 → M8 — M4 ✅ (2026-09-30): Chromium, WebKit ve Firefox (Playwright) `svh`/`lvh`, `1lh`, `subgrid` ve `:has()` destekler; gerçek iOS M8'de. |
 | V-41 | `failIfMajorPerformanceCaveat: true` SwiftShader'da bağlam vermez; CI'da doğal yol `static`'e düşer. | §13.3.3, §9.1 | `desktop-chromium` ile `/` açılır, `data-tier` okunur | Beklenen davranıştır; mutlu yol testleri `?tier=high`/`medium` ile. | M5 |
 | V-42 | Linux CI'da SwiftShader bayraklı Chromium `/?tier=high`'da `ready`'ye ulaşır. | §13.3.1, kalite §14 #2 | `stage.spec.ts` CI koşusu | Bayraklar zorunludur; ulaşmazsa `stage.spec.ts` beklentisi `fallback`'i kabul eder ve 3D yol yalnız gerçek cihazda doğrulanır. | M5 |
 | V-43 | Linux WebKit'te WebGL2 vardır. | §13.3.1 | `iphone-15` `stage.spec.ts` | Testler `ready` ya da `fallback`'i kabul eder. | M5 |

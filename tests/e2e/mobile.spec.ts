@@ -1,6 +1,6 @@
-// tests/e2e/mobile.spec.ts — mobil yerleşim, dokunma hedefleri ve mobil menü (§6.4.5, §10.3.4, §10.7; K-MOBILE-1/3).
-// M2 kapsamı: yatay taşma, dokunma hedefleri, Lenis sınıfı, çapa sonrası konum ve menü odak sözleşmesi.
-// Header gizleme (K-MOBILE-2) M4'ten, yatay modda taş (K-MOBILE-4) M6'dan itibaren eklenir (§15.3.1 #12).
+// tests/e2e/mobile.spec.ts — mobil yerleşim, dokunma hedefleri ve mobil menü (§6.4.5, §10.3.4, §10.7; K-MOBILE-1/2/3).
+// Yatay taşma, dokunma hedefleri, Lenis sınıfı, header gizle/göster (M4), çapa sonrası konum ve menü odak sözleşmesi.
+// Yatay modda taş (K-MOBILE-4) M6'dan itibaren eklenir (§15.3.1 #12).
 import { expect, test } from './fixtures';
 import { pagePaths } from './helpers/urls';
 
@@ -90,6 +90,28 @@ test.describe('K-MOBILE mobil kabuk', { tag: ['@pixel-7', '@iphone-15'] }, () =>
     await expect(openButton).toBeFocused();
     await expect(openButton).toHaveAttribute('aria-expanded', 'false');
     await expect(page.locator('#main')).toHaveJSProperty('inert', false);
+  });
+
+  test('K-MOBILE-2 header aşağı kaydırmada gizlenir, yukarıda döner; odak varken gizlenmez', async ({
+    page,
+  }) => {
+    await page.goto('/hakkimda', { waitUntil: 'networkidle' });
+    const header = page.locator('body > header');
+    const headerTop = () => header.evaluate((h) => h.getBoundingClientRect().bottom);
+    const scrollBy = async (dy: number) => {
+      await page.evaluate((d) => window.scrollBy({ top: d, behavior: 'instant' }), dy);
+      await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => r(null))));
+    };
+    await scrollBy(400);
+    await expect(header).toHaveAttribute('data-hidden', '');
+    await expect.poll(headerTop).toBeLessThanOrEqual(1); // translateY(−100%), 240 ms
+    await scrollBy(-40);
+    await expect(header).not.toHaveAttribute('data-hidden');
+    await expect.poll(headerTop).toBeGreaterThan(40);
+    // odak header'dayken aşağı kaydırma gizlemez
+    await header.getByRole('button', { name: 'Menüyü aç' }).focus();
+    await scrollBy(400);
+    await expect(header).not.toHaveAttribute('data-hidden');
   });
 
   test('K-MOBILE-3 çapa gezinmesinden sonra hedefin üstü header’ın altında', async ({ page }) => {

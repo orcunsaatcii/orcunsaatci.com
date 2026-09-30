@@ -15,6 +15,12 @@ interface TimelineEntryProps {
   children?: ReactNode; // sonuçlar
   as?: 'li' | 'article';
   className?: string;
+  /** ana sayfa journey: data-journey-entry (aktivasyon çizgisi, §5.9.5) */
+  entryIndex?: number;
+  /** blok reveal'ı (§4.10.2) */
+  reveal?: boolean;
+  /** 24 px bant glifi (EntryGlyph, §4.10.7–§4.10.8); tarih satırının başında */
+  glyph?: ReactNode;
 }
 
 export function TimelineEntry({
@@ -28,11 +34,16 @@ export function TimelineEntry({
   children,
   as: Tag = 'li',
   className,
+  entryIndex,
+  reveal,
+  glyph,
 }: TimelineEntryProps) {
   const label = (d: string) =>
     precision === 'year' ? d.slice(0, 4) : formatPartialDate(d, locale);
   return (
     <Tag
+      data-journey-entry={entryIndex}
+      data-reveal={reveal ? 'block' : undefined}
       className={[
         'grid gap-x-gutter gap-y-2 lg:grid-cols-[minmax(8rem,12rem)_minmax(0,1fr)]',
         className,
@@ -41,6 +52,7 @@ export function TimelineEntry({
         .join(' ')}
     >
       <p className="type-meta nums-tabular lg:text-right">
+        {glyph}
         <time dateTime={start}>{label(start)}</time>
         {' – '}
         {end ? (

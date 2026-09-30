@@ -63,9 +63,12 @@ const en = {
     filterGroup: 'Filter by area',
     close: 'Close',
     newTab: '(opens in a new tab)',
+    areaSteps: 'Area steps',
+    areaStep: 'Area {k}: {title}',
   },
   theme: { label: 'Theme', system: 'System', dark: 'Dark', light: 'Light' },
   motion: { reduce: 'Reduce motion', pause: 'Pause animation', play: 'Play animation' },
+  figures: { dial: 'Areas: {list}', rings: 'Career rings: {start} – {end}' },
   hero: { ctaPrimary: 'Explore projects', ctaSecondary: 'Get in touch', scrollCue: 'Scroll' },
   home: {
     aboutMore: 'Full story',

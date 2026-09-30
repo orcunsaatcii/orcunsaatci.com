@@ -71,7 +71,7 @@ test.describe('K-GEN-5 içerik görünürlüğü', { tag: ['@no-js', '@reduced-m
     }
   });
 
-  test('(d) tüm alan açıklamaları görünür (liste modu); (e) hero, about ve contact posterleri', async ({
+  test('(d) tüm alan açıklamaları görünür (liste modu); (e) posterler ve SVG figürler', async ({
     page,
   }) => {
     for (const home of ['/', '/en']) {
@@ -84,6 +84,30 @@ test.describe('K-GEN-5 içerik görünürlüğü', { tag: ['@no-js', '@reduced-m
         const posters = page.locator(`[data-stage-anchor="${anchor}"] img`);
         await expect.soft(posters.locator('visible=true'), `${home} ${anchor}`).toHaveCount(1);
       }
+      // §4.16.3 figür karşılıkları: kadran, halkalar, proje başına numune glifi, girdi başına bant glifi
+      await expect.soft(page.locator('[data-chapter="areas"] svg[role="img"]')).toBeVisible();
+      await expect.soft(page.locator('[data-chapter="journey"] svg[role="img"]')).toBeVisible();
+      const articles = await page.locator('[data-chapter="work"] article').count();
+      await expect
+        .soft(
+          page
+            .locator('[data-chapter="work"] article [data-specimen-glyph]')
+            .locator('visible=true'),
+        )
+        .toHaveCount(articles);
+      const entries = await page.locator('[data-journey-entry]').count();
+      await expect
+        .soft(page.locator('[data-journey-entry] svg[aria-hidden="true"]').locator('visible=true'))
+        .toHaveCount(entries);
+      // K-WORK-5: her figür akışta, clip-path yok
+      const clipped = await page.evaluate(
+        () =>
+          [...document.querySelectorAll<HTMLElement>('[data-work-figure]')].filter(
+            (f) =>
+              getComputedStyle(f).clipPath !== 'none' || getComputedStyle(f).position === 'sticky',
+          ).length,
+      );
+      expect.soft(clipped, `${home}: kırpılı/sticky figür`).toBe(0);
     }
   });
 });

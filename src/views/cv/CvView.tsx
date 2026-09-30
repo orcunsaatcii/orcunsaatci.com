@@ -1,7 +1,9 @@
 // src/views/cv/CvView.tsx — /cv (§7.6.1–§7.6.3). Server; okumak içindir, scroll-jacking yok.
-// Bölüm sırası ve çapalar cv.ts selectCv(…, 'web'); boş bölüm çizilmez. RingsFigure (baskı/statik) M4'te.
+// Bölüm sırası ve çapalar cv.ts selectCv(…, 'web'); boş bölüm çizilmez. cv-figure: RingsFigure yalnız baskıda
+// (§7.6.2, K-VAR-6); statik kademede ≥ 80rem sticky sütun (cv-core, D3) M7'de.
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import { RingsFigure } from '@/components/figures/RingsFigure';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { CvDownload } from '@/components/ui/CvDownload';
@@ -16,11 +18,13 @@ import { formatPartialDate } from '@/i18n/format';
 import { getDictionary } from '@/i18n/get-dictionary';
 import { duration, fill, plural } from '@/i18n/text';
 import {
+  getCareerStartYear,
   getContact,
   getCv,
   getPerson,
   getProject,
   getProjects,
+  getStageData,
   t,
   tList,
   type CvSection,
@@ -29,6 +33,7 @@ import { jsonLdFor } from '@/lib/seo/jsonld';
 import './print.css';
 
 const BUILD_MONTH = new Date().toISOString().slice(0, 7); // süren kaydın süresi için (build anı)
+const BUILD_YEAR = new Date().getFullYear(); // halka geometrisi build yılıyla (§5.10)
 
 export function CvView({ locale }: { locale: Locale }) {
   const dict = getDictionary(locale);
@@ -36,6 +41,7 @@ export function CvView({ locale }: { locale: Locale }) {
   const contact = getContact();
   const cv = getCv(locale);
   const graph = jsonLdFor({ key: 'cv' }, locale);
+  const rings = getStageData('cv-core', undefined, locale);
   const skillName = new Map<string, ReactNode>();
   const projectTitles = new Map(getProjects('tr').map((p) => [p.slug, p]));
 
@@ -387,6 +393,15 @@ export function CvView({ locale }: { locale: Locale }) {
               <div className="mt-stack">{sectionBody(s)}</div>
             </section>
           ))}
+          <figure className="cv-figure hidden w-48 print:block">
+            <RingsFigure
+              rings={rings.rings}
+              startYear={getCareerStartYear()}
+              currentYear={BUILD_YEAR}
+              ariaLabel={fill(dict.figures.rings, { start: getCareerStartYear(), end: BUILD_YEAR })}
+              bands={rings.entries.map((e) => e.band)}
+            />
+          </figure>
         </div>
       </div>
     </div>

@@ -533,6 +533,32 @@
     margin-block: -0.2em;
   }
 
+  /* Reveal (§5.14.2): gizli ön durum YALNIZ hareket tam + runtime hazır (.motion-ready) + öğe kurulmuşken
+     (kurulan öğe = kıvrım altında). JS yoksa ve azaltılmış harekette her şey görünür (D-39). */
+  html[data-motion="full"].motion-ready [data-reveal][data-armed]:not(.is-revealed) { opacity: 0; }
+  html[data-motion="full"].motion-ready [data-reveal="block"][data-armed]:not(.is-revealed) { transform: translateY(16px); }
+  html[data-motion="full"].motion-ready [data-reveal="clip"][data-armed] { clip-path: inset(0 round 6px); }
+  html[data-motion="full"].motion-ready [data-reveal="clip"][data-armed]:not(.is-revealed) { opacity: 1; clip-path: inset(8% round 6px); }
+  html[data-motion="full"].motion-ready [data-reveal="clip"][data-armed]:not(.is-revealed) img { scale: 1.08; }
+  html[data-motion="full"].motion-ready [data-reveal="lede"][data-armed]:not(.is-revealed) {
+    opacity: 1;
+    clip-path: inset(0 0 calc(100% - var(--lede-shown, 0) * 1lh) 0);
+  }
+  [data-reveal="block"] { transition: opacity 500ms var(--ease-out), transform 500ms var(--ease-out); }
+  [data-reveal="clip"] { transition: clip-path 700ms var(--ease-out); }
+  [data-reveal="clip"] img { transition: scale 700ms var(--ease-out); }
+  [data-reveal].is-instant,
+  [data-reveal].is-instant img { transition: none !important; }
+
+  /* Kesit çizgisi (§5.14.4): yalnız dekor; JS yoksa ve azaltılmış harekette tam genişlikte statik */
+  .cut-line {
+    display: block;
+    height: 1px;
+    background-color: var(--color-ink);
+    transform-origin: left center;
+  }
+  html[data-motion="full"].motion-ready .cut-line { transform: scaleX(var(--cut-progress, 0)); }
+
   /* Hero ikincil metinleri: yalnız CSS, JS beklemez; h1 ASLA bu sınıfı almaz (D-34) */
   .hero-in {
     animation: fade-up-sm 500ms var(--ease-out) both;

@@ -1,0 +1,597 @@
+/* src/components/chapters/home.css — ana sayfa bölüm düzenleri (§4.5–§4.11, §4.15, §4.16).
+   Hareketli düzenler (svh yükseklikleri, sticky sahneler, pin) html.js[data-motion="full"] ile kapılıdır (§4.5.2):
+   JS yoksa, azaltılmış harekette ve liste modunda bölümler doğal yükseklikte, akış düzenindedir. Head script
+   kapıyı ilk boyamadan önce belirler; sonradan düzen değişmez (CLS yok). Yalnız transform / opacity / clip-path
+   canlandırılır (§5.13.6 kural 8). Katmansız dosya: Tailwind yardımcılarını bilinçli olarak ezer. */
+
+/* ── about (§4.7.2, §4.7.7) ─────────────────────────────────────────────────── */
+.about-band {
+  position: relative;
+  grid-column: 1 / -1;
+}
+@media (max-width: 63.99rem) {
+  .about-band {
+    height: 36svh; /* lede'nin üstünde bant; kesit çizgisi bandın dikey merkezinden tam genişlikte geçer */
+  }
+  .about-band > .stage-anchor {
+    position: absolute;
+    inset: 0;
+  }
+  .about-band > .cut-line {
+    position: absolute;
+    inset-inline: 0;
+    top: 50%;
+  }
+}
+@media (min-width: 64rem) {
+  /* 1 px'lik satır: çizgi k1–8, çapa k8–12 ve dikey merkezi çizgide (aynı grid satırı) */
+  .about-band {
+    display: grid;
+    grid-template-columns: subgrid;
+    height: 1px;
+  }
+  .about-band > .cut-line {
+    grid-column: 1 / 9;
+    grid-row: 1;
+  }
+  .about-band > .stage-anchor {
+    position: absolute;
+    grid-column: 8 / 13;
+    grid-row: 1;
+    width: 100%;
+    aspect-ratio: 1;
+    top: 50%;
+    translate: 0 -50%;
+  }
+  :root.js[data-motion='full'] [data-chapter='about'] {
+    min-height: 140svh; /* §4.5.2; kaydırma koreografisi olmadan anlamı yok: azaltılmış harekette doğal yükseklik */
+  }
+}
+
+/* ── areas (§4.8) ───────────────────────────────────────────────────────────── */
+/* Liste modu (varsayılan: JS yok, azaltılmış hareket, N ≥ 7, küçük görüntü alanı, sığmayan mobil metin) */
+.areas-needle,
+.areas-progress {
+  display: none;
+}
+.area-item {
+  display: grid;
+  grid-template-columns: 4rem minmax(0, 1fr);
+  column-gap: var(--spacing-gutter);
+  align-items: start;
+}
+.area-item > .area-glyph {
+  grid-row: 1 / span 2;
+}
+.area-item > .area-title,
+.area-item > .area-desc {
+  grid-column: 2;
+}
+.areas-dial {
+  aspect-ratio: 1;
+  width: min(100%, 22rem);
+  justify-self: center;
+}
+@media (min-width: 64rem) {
+  .areas-dial {
+    grid-column: 8 / 13;
+    grid-row: 1 / span 2;
+    width: 100%;
+    align-self: start;
+  }
+}
+
+/* Pin (§4.8.2): masaüstü (≥ 64rem ve ≥ 40rem yükseklik) ya da mobil pin (≥ 360 × 600), html.js, tam hareket,
+   3 ≤ N ≤ 6 (data-areas-mode="dial") ve metin alanı sığıyor (data-areas-fit ≠ list). Sahne CSS sticky'dir;
+   ScrollTrigger yalnızca ölçer, GSAP pin yok (D-16). */
+@media (min-width: 64rem) and (min-height: 40rem) {
+  :root.js[data-motion='full'] [data-areas-mode='dial']:not([data-areas-fit='list']) {
+    min-height: calc((120 + 50 * var(--areas-n)) * 1svh);
+    padding-block: 0;
+
+    & .areas-stage {
+      position: sticky;
+      top: 0;
+      height: 100svh;
+      grid-template-rows: minmax(0, 1fr);
+      align-items: stretch;
+      padding-top: calc(var(--header-h) + 1.25rem);
+      padding-bottom: 4svh;
+      row-gap: 0;
+    }
+    & .areas-text {
+      grid-column: 1 / 7;
+      grid-row: 1;
+    }
+    & .area-title {
+      font-size: var(--text-xl);
+    }
+    & .area-desc,
+    & .areas-progress {
+      margin-top: 1rem;
+    }
+    & .areas-dial {
+      position: absolute;
+      grid-column: 7 / 13;
+      grid-row: auto; /* dikey kapsayıcı = sahnenin dolgu kutusu */
+      top: 13svh; /* y 13–94 svh (§4.5.6) */
+      height: 81svh;
+      width: 100%;
+      aspect-ratio: auto;
+    }
+  }
+}
+@media (max-width: 63.99rem) and (min-width: 360px) and (min-height: 600px) {
+  :root.js[data-motion='full'] [data-areas-mode='dial']:not([data-areas-fit='list']) {
+    min-height: calc((120 + 40 * var(--areas-n)) * 1svh);
+    padding-block: 0;
+
+    & .areas-stage {
+      position: sticky;
+      top: 0;
+      height: 100svh;
+      grid-template-rows: 42svh minmax(0, 1fr); /* üstte 42 svh kadran bandı, altta 58 svh metin alanı */
+      row-gap: 0;
+      align-items: stretch;
+    }
+    & .areas-dial {
+      grid-column: 1 / -1;
+      grid-row: 1;
+      width: 100%;
+      height: 100%;
+      aspect-ratio: auto;
+    }
+    & .areas-text {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      padding-top: 0.75rem;
+    }
+    & .areas-text .type-h2 {
+      font-size: var(--text-2xl);
+    }
+    & .area-title {
+      font-size: var(--text-sm);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    & .area-desc p:first-child {
+      font-size: var(--text-base);
+    }
+    /* 58 svh metin alanı yalnız şunları taşır: atlama, eyebrow + h2, kompakt başlıklar, etkin açıklama, etiketler,
+       sayaç + segmentler (§4.8.8 tel çerçevesi); cümle ve "tüm alanlar" bağlantısı mobil pin'de gösterilmez */
+    & .areas-statement,
+    & .areas-all {
+      display: none;
+    }
+    & .areas-text > *,
+    & .area-desc > *,
+    & .area-desc,
+    & .areas-progress {
+      margin-top: 0.5rem;
+    }
+    & .areas-text > :first-child,
+    & .area-desc > :first-child {
+      margin-top: 0;
+    }
+  }
+}
+/* Pin'in ortak parçaları (iki kırılımda aynı; medya sorguları kapıyı yukarıda seçti) */
+@media (min-width: 64rem) and (min-height: 40rem),
+  (max-width: 63.99rem) and (min-width: 360px) and (min-height: 600px) {
+  :root.js[data-motion='full'] [data-areas-mode='dial']:not([data-areas-fit='list']) {
+    & .areas-text {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: clip; /* sığma ölçümü: scrollHeight > clientHeight → liste modu (§4.8.8 [SABİT]) */
+      overflow-clip-margin: 0.5rem;
+    }
+    /* Başlıklar satır satır; açıklamalar tek ortak yuvada (son satır) üst üste (subgrid, ölçüm gerekmez) */
+    & .areas-list {
+      display: grid;
+      grid-template-rows: repeat(var(--areas-n), auto) auto;
+      gap: 0.25rem;
+    }
+    & .area-item {
+      grid-row: 1 / -1;
+      grid-column: 1;
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: subgrid;
+      pointer-events: none; /* üst üste binen li kutuları tıklamayı yutmasın */
+    }
+    & .area-item > * {
+      pointer-events: auto;
+    }
+    & .area-glyph {
+      display: none;
+    }
+    & .area-title {
+      grid-column: 1;
+      grid-row: var(--row); /* satır k + 1, satır içi --row */
+      color: var(--color-ink-muted);
+    }
+    & .area-item:has([aria-current='step']) .area-title {
+      color: var(--color-ink);
+    }
+    & .area-desc {
+      grid-column: 1;
+      grid-row: -2 / -1;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 180ms var(--ease-in); /* çıkış 180 ms (§4.5.4 kural 4) */
+    }
+    & .area-desc[data-active] {
+      opacity: 1;
+      pointer-events: auto;
+      transition: opacity 300ms var(--ease-out) 180ms; /* giriş 300 ms, çıkıştan sonra: çakışma yok */
+    }
+    & .areas-list.is-instant .area-desc {
+      transition: none;
+    }
+    & .areas-progress {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    & .areas-needle {
+      display: block;
+    }
+    & .areas-all {
+      margin-top: auto;
+      padding-top: 0.75rem;
+    }
+  }
+}
+.area-step {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  min-height: 1.5rem;
+  max-width: 100%;
+  text-align: start;
+  color: inherit;
+  font: inherit;
+}
+.area-step:hover {
+  color: var(--color-ink);
+}
+/* İlerleme segmentleri: görsel 1 px, tıklama alanı ≥ 24 × 24 px (WCAG 2.5.8) */
+.areas-seg {
+  display: inline-flex;
+  align-items: center;
+  width: 2.5rem;
+  min-height: 1.5rem;
+}
+.areas-seg > span {
+  display: block;
+  width: 100%;
+  height: 1px;
+  background-color: var(--color-line-strong);
+}
+.areas-seg[data-done] > span {
+  height: 2px;
+  background-color: var(--color-ink);
+}
+/* İğne: 1 px kılcal çizgi; konum ve uzunluk transform ile (400 ms --ease-tick, §4.8.4) */
+.areas-needle {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: 1px;
+  background-color: var(--color-ink);
+  transform-origin: 0 50%;
+  transform: translate(var(--needle-x, 0px), var(--needle-y, 0px)) scaleX(var(--needle-w, 0));
+  transition: transform 400ms var(--ease-tick);
+  pointer-events: none;
+}
+.areas-needle.is-instant {
+  transition: none;
+}
+
+/* ── work (§4.9.3) ──────────────────────────────────────────────────────────── */
+.work-caption,
+.work-specimen {
+  display: none; /* yalnız görüntüleyici düzeninde */
+}
+.work-glyph {
+  display: none;
+}
+@media (min-width: 64rem) {
+  .work-glyph {
+    display: block; /* JS yok / azaltılmış: proje başına statik numune glifi (§4.9.9) */
+  }
+}
+@media (max-width: 63.99rem) {
+  .work-pair > figure {
+    order: -1; /* mobil: kapak başlığın üstünde, satır içi 16:10 (§4.9.8) */
+  }
+}
+@media (min-width: 64rem) {
+  :root.js[data-motion='full'] [data-chapter='work'][data-work-viewer] {
+    min-height: calc((50 + 70 * var(--work-p)) * 1svh);
+    padding-block: 0;
+  }
+  :root.js[data-motion='full'] [data-work-viewer] .work-head {
+    min-height: 30svh; /* başlık bloğu 30 svh (§4.9.3) */
+    padding-top: 2.5rem;
+  }
+  :root.js[data-motion='full'] [data-work-viewer] .work-grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--spacing-gutter);
+    row-gap: 0;
+    margin-top: 0;
+    container-type: inline-size; /* altyazının kısa ekran konumu için görüntüleyici yüksekliği (cqw) */
+  }
+  :root.js[data-motion='full'] [data-work-viewer] .work-pair {
+    display: contents;
+  }
+  :root.js[data-motion='full'] [data-work-viewer] .work-pair > article {
+    grid-column: 1 / 6;
+    grid-row: var(--k);
+    min-height: 70svh;
+  }
+  :root.js[data-motion='full'] [data-work-viewer] .work-pair > figure,
+  :root.js[data-motion='full'] [data-work-viewer] .work-caption,
+  :root.js[data-motion='full'] [data-work-viewer] .work-specimen {
+    grid-row: 1 / span var(--work-p);
+    position: sticky;
+    align-self: start;
+  }
+  :root.js[data-motion='full'] [data-work-viewer] .work-pair > figure {
+    grid-column: 7 / 13;
+    top: 14svh;
+    clip-path: inset(0 0 0 100%); /* etkin olmayan (§4.9.3) */
+  }
+  :root.js[data-motion='full'] [data-work-viewer] .work-pair > figure[data-active] {
+    clip-path: inset(0);
+  }
+  :root.js[data-motion='full'] [data-work-viewer] .work-glyph {
+    display: none;
+  }
+  :root.js[data-motion='full'] [data-work-viewer] .work-caption {
+    display: block;
+    grid-column: 7 / 10;
+    top: 61svh;
+  }
+  :root.js[data-motion='full'] [data-work-viewer] .work-specimen {
+    display: block;
+    grid-column: 10 / 13;
+    top: 62svh;
+    height: 32svh; /* y 62–94 svh */
+  }
+  :root.js[data-motion='full'] [data-work-viewer] .work-closing {
+    min-height: 20svh;
+    margin-top: 0;
+    padding-top: 2rem;
+  }
+}
+@media (min-width: 64rem) and (max-height: 759.98px) {
+  /* innerHeight < 760 [SABİT]: altyazı görüntüleyicinin 8 px altında; numune gizli (§4.9.4) */
+  :root.js[data-motion='full'] [data-work-viewer] .work-caption {
+    top: calc(14svh + (50cqw - var(--spacing-gutter) / 2) * 0.625 + 8px);
+  }
+  :root.js[data-motion='full'] [data-work-viewer] .work-specimen {
+    visibility: hidden;
+  }
+}
+/* Silme kenarını taşıyan 1 px vurgu çizgisi (§4.9.4); yalnız silme sürerken görünür */
+.work-wipe-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  background-color: var(--color-accent);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── journey (§4.10.2, §4.10.7) ─────────────────────────────────────────────── */
+.journey-glyph {
+  display: block;
+}
+.journey-layout {
+  display: flex;
+  flex-direction: column;
+}
+.journey-core {
+  aspect-ratio: 1;
+  width: min(100%, 22rem);
+}
+@media (max-width: 63.99rem) {
+  .journey-core {
+    order: -1; /* bölüm başında bir kez, 36 svh bant (§4.10.7) */
+    width: 100%;
+    height: 36svh;
+    aspect-ratio: auto;
+  }
+}
+@media (min-width: 64rem) {
+  .journey-layout {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--spacing-gutter);
+  }
+  .journey-layout > .journey-main {
+    grid-column: 1 / 8;
+    grid-row: 1;
+  }
+  .journey-layout > .journey-core {
+    grid-column: 8 / 13;
+    grid-row: 1;
+    width: 100%;
+    align-self: start;
+  }
+  :root.js[data-motion='full'] [data-chapter='journey'] {
+    min-height: calc((70 + 35 * var(--journey-e)) * 1svh);
+    padding-block: 0;
+  }
+  :root.js[data-motion='full'] [data-chapter='journey'] .journey-head {
+    min-height: 40svh; /* başlık bloğu 40 svh (§4.5.2) */
+    padding-top: 2.5rem;
+  }
+  :root.js[data-motion='full'] [data-chapter='journey'] .journey-list {
+    margin-top: 0;
+    gap: 0;
+  }
+  :root.js[data-motion='full'] [data-chapter='journey'] [data-journey-entry] {
+    min-height: 35svh;
+  }
+  :root.js[data-motion='full'] [data-chapter='journey'] .journey-tail {
+    min-height: 30svh;
+    padding-bottom: 4rem;
+  }
+  :root.js[data-motion='full'] [data-chapter='journey'] .journey-core {
+    position: sticky; /* yalnız sahne sütunu sticky; metin doğal hızda kayar (D-16) */
+    top: 12svh;
+    height: 76svh;
+    aspect-ratio: auto;
+    margin-top: 12svh;
+  }
+  :root.js[data-motion='full'] [data-chapter='journey'] .journey-glyph {
+    display: none;
+  }
+}
+/* Etkin girdi: yıl etiketi vurgu rengi (aynı anda tek yıl, §4.10.3) */
+[data-journey-entry][data-active] time {
+  color: var(--color-accent);
+}
+
+/* ── contact (§4.11.2, §4.11.6) ─────────────────────────────────────────────── */
+@media (min-width: 64rem) {
+  /* viewport çapası: sayfa sonunda (bölüm 100 svh, en altta) görüntü alanında y 14–86 svh, k8–12; akışta yer
+     kaplamaz, bölüm yüksekliğini metin + footer belirler (§4.5.6) */
+  [data-chapter='contact'] > .contact-grid {
+    position: relative;
+  }
+  [data-chapter='contact'] .contact-ring {
+    position: absolute;
+    grid-column: 8 / 13;
+    grid-row: auto;
+    top: 14svh;
+    height: 72svh;
+    width: 100%;
+  }
+}
+@media (max-width: 63.99rem) {
+  .contact-ring {
+    height: 40svh; /* H2'nin üstünde 40 svh bant */
+  }
+}
+/* ArcFigure: K5 posterinin üstünde, poster kutusuyla aynı ölçü (R_FIGURE 80 → disk = D) */
+.contact-ring > .arc-overlay {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  aspect-ratio: 1;
+  width: calc(var(--anchor-size) * min(100cqw, 100cqh) / 0.8);
+  pointer-events: none;
+}
+@media (max-width: 63.99rem) {
+  .contact-ring > .arc-overlay {
+    width: calc(0.86 * min(100cqw, 100cqh) / 0.8);
+  }
+}
+
+/* ── hero (§4.6.2, §4.6.9) ──────────────────────────────────────────────────── */
+/* Hero 100 svh'dir ve header'ın altına uzanır (header en üstte saydamdır): about üstü = 100 svh (§4.5.2). */
+[data-chapter='hero'] {
+  --hero-top: calc(var(--header-h) + 1px + env(safe-area-inset-top));
+  margin-top: calc(-1 * var(--hero-top));
+  padding-top: calc(var(--hero-top) + 1rem);
+  padding-bottom: 1.5rem;
+  min-height: 100svh;
+  align-content: stretch;
+}
+/* Sahne ve duraklatma düğmesi aynı grid alanında: ikisi de açıkça yerleşir (otomatik yerleşim açıkça yerleşmiş
+   öğeyle çakışmamak için sahneyi yeni sütunlara iterdi) */
+[data-chapter='hero'] > .hero-stage {
+  grid-row: 1;
+  grid-column: 1 / -1;
+}
+@media (min-width: 64rem) {
+  [data-chapter='hero'] > .hero-stage {
+    grid-column: 8 / 13;
+  }
+}
+@media (min-width: 64rem) {
+  /* çapa header + 16 px'ten H1'in üstüne kadar (k8–12); H1, lead, CTA'lar ve ipucu altta (§4.6.2) */
+  [data-chapter='hero'] {
+    grid-template-rows: minmax(12rem, 1fr) auto auto auto auto;
+  }
+  [data-chapter='hero'] > .hero-stage {
+    grid-row: 1;
+    height: auto;
+    align-self: stretch;
+  }
+  [data-chapter='hero'] > .type-eyebrow {
+    grid-row: 1;
+    align-self: end;
+  }
+}
+@media (max-width: 63.99rem) and (max-height: 739.98px) {
+  [data-chapter='hero'] > .hero-stage {
+    height: 34svh; /* innerHeight < 740 → 34 svh (§4.6.9) */
+  }
+}
+@media (max-width: 63.99rem) and (max-height: 499.98px) {
+  /* yatay telefon: bant genişliğin %50'si, sağda; metin solda (§4.15.2) */
+  [data-chapter='hero'] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  [data-chapter='hero'] > * {
+    grid-column: 1;
+  }
+  [data-chapter='hero'] > .hero-stage {
+    grid-column: 2;
+    grid-row: 1 / span 5;
+    height: auto;
+    min-height: 60svh;
+  }
+  [data-chapter='hero'] > h1 {
+    /* iki satır ("Orçun" / "Saatçi") yarım genişlikte sığar; kelime bölünmez */
+    font-size: min(var(--text-display), calc((50vw - var(--spacing-margin)) / 3.6));
+  }
+}
+
+/* Satır yüksekliği 0.92 olan H1'in Ç/ç çengeli alt satıra taşar: lead ile arasına aksan payı (X6 tasarım QA) */
+[data-chapter='hero'] > h1 {
+  margin-bottom: 0.12em;
+}
+
+/* Duraklatma düğmesi: sahneyle aynı grid alanında, sağ altta (satır yüksekliğini sahne belirler: CLS yok) */
+[data-chapter='hero'] > .hero-pause {
+  grid-row: 1;
+  grid-column: 1 / -1;
+  align-self: end;
+  justify-self: end;
+  z-index: 1;
+}
+@media (min-width: 64rem) {
+  [data-chapter='hero'] > .hero-pause {
+    grid-column: 8 / 13;
+  }
+}
+@media (max-width: 63.99rem) and (max-height: 499.98px) {
+  [data-chapter='hero'] > .hero-pause {
+    grid-column: 2;
+    grid-row: 1 / span 5;
+  }
+}
+/* Kaydırma ipucu kılcal çizgisi bir kez 1.2 s'de büyür (CSS); azaltılmış harekette büyüme yok (§4.6.3) */
+.hero-cue-line {
+  transform-origin: left center;
+  animation: rule-draw 1200ms var(--ease-out) 400ms both;
+}
+:root[data-motion='reduce'] .hero-cue-line {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion='full']) .hero-cue-line {
+    animation: none;
+  }
+}

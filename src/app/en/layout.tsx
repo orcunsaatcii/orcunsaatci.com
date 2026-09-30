@@ -1,12 +1,13 @@
 // src/app/en/layout.tsx — EN kök layout (§8.4.4). M3 hâli: buildRootMetadata, listPages türetmesi ve persona paleti.
-// ScrollDirector / MotionRoot / LenisProvider (M4), StageRoot (M5) ve SiteAnalytics (M9) sonraki milestone'larda eklenir.
+// M4: ScrollDirector / MotionRoot / LenisProvider (§8.5.1 sırası). StageRoot (M5) ve SiteAnalytics (M9) sonra eklenir.
 import '../globals.css';
 import type { Metadata, Viewport } from 'next';
 import type { CSSProperties, ReactNode } from 'react';
-import { HydrationMark } from '@/components/layout/HydrationMark';
 import { SiteFooter } from '@/components/layout/SiteFooter';
 import { SiteHeader } from '@/components/layout/SiteHeader';
 import { SkipLink } from '@/components/layout/SkipLink';
+import { LenisProvider } from '@/components/motion/LenisProvider';
+import { MotionRoot } from '@/components/motion/MotionRoot';
 import { themeColors } from '@/design/tokens';
 import { getExperienceProfile, resolveTypePreset } from '@/experience/profile';
 import { fontVariables } from '@/fonts';
@@ -15,6 +16,7 @@ import { getSite } from '@/lib/content';
 import { headScript } from '@/lib/head-script';
 import { footprintRadius } from '@/lib/section-geometry';
 import { buildRootMetadata, listEnPaths } from '@/lib/seo/metadata';
+import { ScrollDirector } from '@/stage/ScrollDirector';
 
 const LOCALE = 'en' as const;
 const PROFILE = getExperienceProfile(getSite().persona); // build zamanı palet seçimi (§4.17, §6.3.7)
@@ -52,10 +54,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <SkipLink label={dict.a11y.skipToContent} />
         <SiteHeader locale={LOCALE} enPaths={enPaths} />
         <main id="main" tabIndex={-1}>
-          {children}
+          <ScrollDirector>{children}</ScrollDirector>
         </main>
         <SiteFooter locale={LOCALE} enPaths={enPaths} variant="full" />
-        <HydrationMark /> {/* Geçici (§15.0.6): M4'te MotionRoot */}
+        <MotionRoot />
+        <LenisProvider />
       </body>
     </html>
   );

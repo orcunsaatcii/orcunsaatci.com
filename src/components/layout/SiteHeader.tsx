@@ -1,5 +1,6 @@
 // src/components/layout/SiteHeader.tsx — header (server) + istemci adaları (§3.9.1, §4.5.5, §6.6.2).
-// ≥ 64rem: marka + 5 bağlantı + dil; < 64rem: marka + "Menü" düğmesi. HalkaIndicator M4'te eklenir.
+// ≥ 64rem: marka + 5 bağlantı + dil; < 64rem: marka + "Menü" düğmesi. HalkaIndicator M7'de eklenir.
+import { MotionToggle } from '@/components/motion/MotionToggle';
 import { getDictionary } from '@/i18n/get-dictionary';
 import type { Locale } from '@/i18n/config';
 import { getPerson, isLocaleEnabled } from '@/lib/content';
@@ -24,7 +25,7 @@ export function SiteHeader({ locale, enPaths }: { locale: Locale; enPaths: reado
   const langLabels = { group: dict.lang.group, unavailable: dict.lang.unavailable };
 
   return (
-    <HeaderFrame className="sticky top-0 z-(--z-header) border-b border-line bg-canvas/92 pt-[env(safe-area-inset-top)] [view-transition-name:site-header] data-top:border-transparent data-top:bg-transparent">
+    <HeaderFrame className="sticky top-0 z-(--z-header) border-b border-line bg-canvas/92 pt-[env(safe-area-inset-top)] transition-transform duration-(--dur-base) ease-standard [view-transition-name:site-header] data-hidden:-translate-y-full data-top:border-transparent data-top:bg-transparent lg:data-hidden:translate-y-0">
       <div className="container-page flex h-header items-center justify-between gap-4">
         <BrandLink
           locale={locale}
@@ -62,6 +63,7 @@ export function SiteHeader({ locale, enPaths }: { locale: Locale; enPaths: reado
                 <LanguageSwitcher locale={locale} enPaths={enPaths} labels={langLabels} />
               )}
               <ThemeToggle labels={dict.theme} />
+              <MotionToggle label={dict.motion.reduce} />
             </MobileMenu>
           </div>
         </div>

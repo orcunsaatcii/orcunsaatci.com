@@ -5,6 +5,7 @@
 // Açılış animasyonu (§4.14 #17) M7'dedir. Menü portal ile <body>'ye render edilir (§6.4.6).
 import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { getLenis } from '@/components/motion/LenisProvider';
 import type { Locale } from '@/i18n/config';
 import { NavLinks, type NavLabels } from './NavLinks';
 
@@ -25,7 +26,11 @@ function setBackgroundInert(on: boolean) {
       el.inert = on;
     });
   }
-  document.documentElement.style.overflow = on ? 'hidden' : '';
+  const root = document.documentElement;
+  root.style.overflow = on ? 'hidden' : '';
+  root.toggleAttribute('data-menu-open', on); // header menü açıkken daima görünür (§4.5.5)
+  if (on) getLenis()?.stop();
+  else getLenis()?.start();
 }
 
 export function MobileMenu({ locale, enPaths, labels, children }: MobileMenuProps) {

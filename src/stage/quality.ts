@@ -1,5 +1,5 @@
 // src/stage/quality.ts — kademe tablosu (§5.11.1). Three-free ve saf.
-// stepDown / stepUp ve QualityState M5'te eklenir (§5.11.4).
+// initialQuality / stepDown / stepUp M5'te eklenir (§5.11.4); QualityState tipi store.ts için M4'te burada.
 
 export type Tier = 'static' | 'low' | 'medium' | 'high'; // store.ts'ten yeniden dışa aktarılır
 export type SegmentTier = 'high' | 'medium' | 'low';
@@ -27,3 +27,11 @@ export const TIERS: Record<Exclude<Tier, 'static'>, TierSpec> = {
   medium: { segments: 'medium', octaves: 1, ghost: false, dprMax: 1.5, antialias: false, idle: true,  pointer: true },
   low:    { segments: 'low',    octaves: 1, ghost: false, dprMax: 1,   antialias: false, idle: false, pointer: false },
 };
+
+/** Çalışma zamanı kalite durumu (§5.11.4); değerleri M5'te initialQuality / stepDown / stepUp üretir. */
+export interface QualityState {
+  dpr: number;
+  ghost: boolean;
+  octaves: 1 | 2;
+  segments: SegmentTier;
+}
