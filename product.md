@@ -6758,7 +6758,7 @@ Emaye'de odak rengi (kırmızı) `danger`'a yakındır. Hata durumları bu yüzd
 | `--spacing-margin` | `clamp(1.25rem, 0.3333rem + 4.0741vw, 4rem)` | 20 → 64 | `px-margin` | Sayfa yan boşluğu (güvenli alanla birlikte `container-page` içinde) |
 | `--spacing-gutter` | `clamp(0.75rem, 0.5rem + 1.1111vw, 1.5rem)` | 12 → 24 | `gap-gutter` | Sütun arası |
 | `--spacing-section` | `clamp(6rem, 4rem + 8.8889vw, 12rem)` | 96 → 192 | `py-section` | Derin sayfalarda bölümler arası |
-| `--spacing-block` | `clamp(3rem, 2rem + 4.4444vw, 6rem)` | 48 → 96 | `mt-block` | Bölüm içi bloklar arası |
+| `--spacing-block` | `clamp(3rem, 2rem + 4.4444vw, 6rem)` | 48 → 96 | `mt-block` | Bölüm içi bloklar arası. SPEC-SAPMA: §6.4 (M3, 2026-09-30) — Tailwind v4 bu token'ı mantıksal boyut yardımcısıyla birleştirir: `inline-block` sınıfı `display: inline-block`'a ek olarak `inline-size: var(--spacing-block)` üretir ve öğeyi 48–96 px'e kilitler (↗ simgesi, bağlantılar, LocalTime M2'den beri etkileniyordu). `inline-block` sınıfı kullanılmaz; görünüm `[display:inline-block]` ile verilir, `tests/lint/tailwind-collisions.test.ts` bunu korur. |
 | `--spacing-stack` | `clamp(1.5rem, 1.1667rem + 1.4815vw, 2.5rem)` | 24 → 40 | `mt-stack` | Başlık → gövde |
 | `--spacing-header` | `clamp(3.5rem, 3.3333rem + 0.7407vw, 4rem)` | 56 → 64 | `h-header` | Başlık çubuğu yüksekliği (`--header-h` bunun takma adı) |
 
@@ -9598,7 +9598,7 @@ M3 uygulaması (2026-09-30), iskelete göre farklar:
 **PDF kalite kontrolü (M3 ve her CV şablonu değişikliğinde):**
 - Sayfa sayısı `PAGE_RE` ile sayılır. Bu yöntem react-pdf çıktısında doğrulandı **[TEST EDİLDİ]**.
 - Görsel kontrol için sayfa PNG'ye çevrilip incelenir: macOS'ta `qlmanage -t -s 1000 -o . <pdf>`, Linux'ta `pdftoppm -png -r 100 <pdf> out`. Türkçe karakterler, adın satır aralığı ve fotoğraf kırpımı kontrol edilir.
-- ⚠️ **DOĞRULANMADI:** GitHub Actions `ubuntu-latest` imajında `pdftotext` (poppler-utils) hazır mı? Nasıl doğrulanır: CI'da `pdftotext -v` adımı çalıştırılır. Varsa `pdftotext public/files/orcun-saatci-cv-tr.pdf - | grep -q "Saatçi"` ile metin iddiası eklenir (**İSTEĞE BAĞLI**, §13.6).
+- ❌ **DOĞRULANDI: yok (M3, 2026-09-30, V-29):** GitHub Actions `ubuntu-latest` imajında `pdftotext` (poppler-utils) kurulu değil (CI notu: "V-29 pdftotext yok"). Adım yoklukta atlanır (**İSTEĞE BAĞLI**, §13.6); metin iddiası `pdftotext` varsa çalışır. Yerelde metin PDFKit ile çıkarılıp doğrulandı (altbilgi, Türkçe glifler).
 
 #### 7.6.5 JSON Resume eşlemesi
 
@@ -9771,7 +9771,7 @@ publishedAt: "2025-07" # {{PROJE_1_YAYIN_TARİHİ}}
 | Konu | Kural |
 |---|---|
 | JS'siz | Tüm projeler görünür. Filtre çipleri HTML'de **yoktur**. |
-| Bileşen | `ProjectFilter` istemci bileşeni `useSearchParams()` okur ve `<Suspense fallback={null}>` içindedir. Liste `<Suspense>` **dışında** sunucuda çizilir. Her öğe `<li data-project data-areas="alan-a alan-b">` taşır. |
+| Bileşen | `ProjectFilter` istemci bileşeni `useSearchParams()` okur ve `<Suspense fallback={null}>` içindedir. Liste `<Suspense>` **dışında** sunucuda çizilir. Her öğe `<li data-project data-areas="alan-a alan-b">` taşır. SPEC-SAPMA: §7.8.2 (M3, 2026-09-30) — statik sayfada `useSearchParams` filtreyi istemci render'ına erteliyor, çipler hidrasyonda gelip listeyi itiyordu (LHCI CLS 0.093). Filtre sunucuda "Tümü" seçili çizilir, kapsayıcı `hidden js:flex` taşır (JS'siz görünümde çip görünmez); `?alan=` `useSyncExternalStore` ile `location.search`'ten okunur (sunucu anlık görüntüsü `null`, hidrasyon uyumsuzluğu yok). `<Suspense>` kaldırıldı. |
 | Çipler | `<div role="group" aria-label="Alana göre filtrele">` içinde `<button aria-pressed>` çipleri: "Tümü (n)" ve bu dilde en az 1 projesi olan her alan için "Alan (n)", `order` sırasıyla. Projesi olmayan alanın çipi çizilmez. |
 | Uygulama | Seçimde eşleşmeyen `li` öğelerine `hidden` verilir. URL `window.history.replaceState` ile `?alan=<id>` olur (seçim "Tümü" ise parametre kaldırılır); Next `useSearchParams` ile senkron kalır. Canlı bölge (`role="status"`) "4 proje" / "4 projects" duyurur (§7.9.6). |
 | Geçersiz değer | Bilinmeyen `?alan=` yok sayılır ve "Tümü" uygulanır. |
@@ -11597,7 +11597,7 @@ const measure = () => {
 2. LHCI mobil koşusunda `largest-contentful-paint-element` denetimi H1'i göstermelidir.
 
 **Çözüm sırası (doğrulama başarısızsa):**
-1. **H1 tek LCP adayı olsun:** 64rem altındaki satır kırılımı `display: block` span'lar yerine `<br>` ile yapılır (tek metin bloğu, §6.2.3 güncellenir). Yeniden ölçülür.
+1. **H1 tek LCP adayı olsun:** 64rem altındaki satır kırılımı `display: block` span'lar yerine `<br>` ile yapılır (tek metin bloğu, §6.2.3 güncellenir). Yeniden ölçülür. **M3 (2026-09-30): uygulandı** (`<br className="lg:hidden" />`). LHCI mobil emülasyonunda (412 × 823) poster 354 × 354 px ≈ 125.000 px², H1 kutusu 368 × 152 px ≈ 56.000 px²; LCP öğesi hâlâ posterdir. Adım 2'ye göre `D ≤ floor(√(0.8 × 56.000)) ≈ 211 px` olur; karar V-39 ile (M4 → M8) sahibe sunulur.
 2. **Poster alanı sınırlanır:** mobil hero bandında `D ≤ floor(sqrt(0.8 × A_h1))`. `A_h1`, 360 × 640 ve 390 × 844'te ölçülen en küçük H1 kutusu alanıdır. Sonuç px değeri §4.15.2'ye ve §5.8.3 mobil geçersiz kılmasına yazılır; poster ve canlı taş aynı `D`'yi kullanmaya devam eder.
 3. 1 ve 2 sahip tarafından reddedilirse karar §16.3'e açık soru olarak yazılır. Poster `fetchpriority="low"` kalır; LCP süresi yine ≤ 2.5 s olmalıdır.
 
@@ -13004,7 +13004,7 @@ Ek istekler:
 - `/robots.txt` (yerel build, `VERCEL_ENV` yok) → `Disallow: /` içerir.
 - `/sitemap.xml` → 200, XML, `xmlns:xhtml` içerir.
 
-⚠️ **DOĞRULANMADI:** Lighthouse `is-crawlable` denetimi robots.txt'yi de değerlendiriyorsa, CI'daki yerel build (`robots.txt` = `Disallow: /`, D-28) SEO skorunu 1.0'ın altına düşürür. CI'da `VERCEL_ENV=production` verilemez, çünkü `check-content` o durumda yer tutucularla build'i durdurur (D-36).
+✅ **DOĞRULANDI (M3, V-32):** Lighthouse `is-crawlable` denetimi robots.txt'yi değerlendirir; CI'daki yerel build (`robots.txt` = `Disallow: /`, D-28) SEO skorunu 0.66'ya düşürür, bu yüzden denetim CI'da atlanır. CI'da `VERCEL_ENV=production` verilemez, çünkü `check-content` o durumda yer tutucularla build'i durdurur (D-36).
 - Doğrulama: M3'te LHCI bir kez çalıştırılır.
 - `is-crawlable` CI'da baştan atlanır (`skipAudits`, §13.5.1; §16.3.2 T-05 a) ve SEO eşiği kalan denetimlerle 1.0 olarak korunur. Üretimde bu denetim PageSpeed Insights ile dâhil ölçülür (§14.7).
 - Üretimde SEO 1.0 ayrıca PageSpeed Insights ile doğrulanır (§14.7).
@@ -14544,10 +14544,12 @@ Değerlerin kaynağı ve gerekçeler:
 
 Ortam kararları:
 - **Varsayılan ayarlar mobildir** (Lighthouse'un simüle edilmiş 4× CPU ve yavaş 4G yapılandırması). `preset` verilmez; D-33 "mobil lab" ister.
-- **`skipAudits: ["is-crawlable"]`.** CI build'i production olmadığı için `robots.txt` `Disallow: /` döner (D-28). `is-crawlable` bunu engelleme sayar ve SEO kategorisini 1.0'ın altına düşürür (⚠️ **DOĞRULANMADI:** Lighthouse 12.6'da denetimin `robots.txt`'i okuduğu; M3'te ilk LHCI koşusunda görülür). Atlanan denetim kategori puanından çıkarılır. Üretimde bu denetim PageSpeed Insights ile doğrulanır (§14.7). Bu, §11.8.1'deki ⚠️ maddesinin çözümüdür.
+- **`skipAudits: ["is-crawlable"]`.** CI build'i production olmadığı için `robots.txt` `Disallow: /` döner (D-28). `is-crawlable` bunu engelleme sayar ve SEO kategorisini 1.0'ın altına düşürür (✅ **DOĞRULANDI** (M3, 2026-09-30, V-32): Lighthouse 12.6.1 `is-crawlable` `robots.txt`'in 1. satırını kaynak gösterir; dahil edilince SEO 0.66'ya düşer). Atlanan denetim kategori puanından çıkarılır. Üretimde bu denetim PageSpeed Insights ile doğrulanır (§14.7). Bu, §11.8.1'deki ⚠️ maddesinin çözümüdür.
 - **Canonical kökeni.** `lighthouse.yml` build'i `NEXT_PUBLIC_SITE_URL=http://localhost:3000` ile yapar. Canonical, hreflang ve OG adresleri denetlenen kökenle aynı olur ve `canonical` denetiminin köken farkına takılma riski ortadan kalkar. `ci.yml`'deki e2e build'i bu değişkeni vermez; varsayılan kökendir (§3.5).
 - **Tier.** CI Chromium'u SwiftShader kullanır ve yetenek yoklaması `failIfMajorPerformanceCaveat` yüzünden `static` kademeye düşer (§5.11.3, §9.1 notu). Kapı URL'leri bu yüzden **sahnesiz** deneyimi ölçer (LCP, CLS, TBT). 3D boot maliyeti ayrıca `/?tier=medium` uyarı koşusuyla, `perf-budgets.spec.ts` PB-3/PB-4 ile ve gerçek cihazlarda (§9.6) izlenir. `assertMatrix` girdileri birbirinden bağımsız uygulanır; bir URL'ye uyan tüm girdiler değerlendirilir.
-- ⚠️ **DOĞRULANMADI:** "Missing source maps for large first-party JavaScript" uyarısının Best Practices puanına etkisi. Puan 0.95'in altına düşerse §8.6'da `productionBrowserSourceMaps: true` açılır. Kaynak haritaları yalnız DevTools açıkken indirilir, ilk JS aktarımını değiştirmez.
+- ✅ **DOĞRULANDI (M3, 2026-09-30, V-33):** Best Practices bütün kapı URL'lerinde 1.0; `valid-source-maps` denetimi geçer. `productionBrowserSourceMaps` açılmadı.
+- SPEC-SAPMA: §13.5.1 (M3, 2026-09-30) — kapı URL'leri **SwiftShader bayrakları olmadan** (varsayılan başsız Chrome) ölçülür; `?tier=medium` uyarı koşusu ayrı yapılandırmadadır (`lighthouserc.tier.json`, SwiftShader'lı; `lighthouse.yml`'de ikinci adım). SwiftShader'lı koşuda GPU başlatması ilk boyamayı ~1 s geciktiriyor, Lantern bu sürede değerlendirilen bütün JS'i LCP'nin kritik yoluna katıyordu (her URL'de LCP ≈ 3.3 s). Kapı URL'leri zaten sahnesiz deneyimi ölçtüğü için (static tier) ölçülen şey değişmez.
+- M3 ölçümü (2026-09-30, yerel, kapı ayarı): Perf 0.92–0.98, A11y 1.0, BP 1.0, SEO 1.0, CLS 0, TBT ≤ 200 ms; **LCP 2.3–3.3 s**. Lantern, gözlenen ilk boyamadan önce biten font (122 KB) ve JS (~150 KB) isteklerini yavaş 4G'de yeniden oynatır; kerning'siz fontlarla (61 KB) metin-LCP'li sayfalar ~2.0–2.3 s'ye iner. Görsel-LCP'li sayfalar (ana sayfa posteri, `/projeler` küçük görseli, `/hakkimda` şekli) 2.9–3.3 s'dir. LCP kapısı için karar sahibe sunuldu (M3 PR #7).
 - Raporlar `uploadArtifacts: true` ile GitHub artefaktı olarak saklanır. **YASAK:** `temporaryPublicStorage: true`; raporlar herkese açık bir kovaya yüklenir ve taslak içerik sızar.
 
 #### 13.5.2 Bütçeler
@@ -16442,11 +16444,11 @@ Belgedeki her `⚠️ DOĞRULANMADI` maddesi, araştırma notlarındaki UNVERIFI
 | V-26 | Satori satır içi `<svg>` (kadran motifi) çizer. | §11.5.4 #2, §6.8 | `/opengraph-image` çıktısına bakılır | `data:image/svg+xml` kaynaklı `<img>`. | M3 — ✅ (2026-09-30): OG motifi (halkalar, dilim çizgileri, bant, açık yay) satır içi `<svg>` olarak doğru çizilir |
 | V-27 | Satori'nin değişken font ve `locl`/`liga` desteği. | §11.5.4 #4, tasarım §13 | OG'de "fi", "İ", "Ğ" görsel kontrolü | Riski liga'sız statik TTF'ler zaten azaltır; bulgu §11.5'e yazılır. | M3 — ✅ (2026-09-30): QA dizgisi ve "fi fl ffi" denemesi: bağ yok ("fi" noktalı), İ Ğ Ş ı ç doğru; eyebrow büyütmesi `upper(…, 'tr')` ile ("PROJE", "PROFİL") |
 | V-28 | `@content-collections/mdx` `MDXContent`, Next 16.3 RSC içinde render eder. | §7.3.4 #8, içerik §11 #10 | `/hakkimda` build'i (MDX gövdesi; projelerde MDX yok, D-48); `no-js` projesinde gövde `h2`'si HTML'de | `next-mdx-remote-client/rsc` 2.1.12 ile `doc.content`, aynı bileşen haritası. | M3 — ✅ (2026-09-30): `/hakkimda` ve `/gizlilik` ham HTML'inde MDX `h2`'leri var; `no-js` e2e yeşil |
-| V-29 | GitHub Actions `ubuntu-latest`'te `pdftotext` hazırdır. | §7.6.4 | CI'da `pdftotext -v` | Adım atlanır (İSTEĞE BAĞLI). | M3 — CI adımı `pdftotext -v` sonucunu `::notice::V-29` ile yazar; sonuç M3 PR'ının ilk CI koşusundan işlenir |
+| V-29 | GitHub Actions `ubuntu-latest`'te `pdftotext` hazırdır. | §7.6.4 | CI'da `pdftotext -v` | Adım atlanır (İSTEĞE BAĞLI). | M3 — ❌ yok (2026-09-30): `ubuntu-latest`'te `pdftotext` kurulu değil; adım atlanır (İSTEĞE BAĞLI) |
 | V-30 | `images.localPatterns` tanımlıyken statik importlu görseller ayrıca listelenmek zorunda değildir. | §8.6.1 | Statik importlu görselin optimizer URL'si 200 | İkinci girdi eklenir. | M3 — koşul oluşmadı (2026-09-30): statik importlu görsel yok; ikinci `localPatterns` girdisi tanımlı |
 | V-31 | `@react-pdf/renderer` 4.9.0 etiketli (tagged) PDF üretir. | §10.1 | Acrobat "Erişilebilirlik denetimi" ya da PAC | Durum §10.1'e yazılır; HTML `/cv` eşdeğer içeriği sağlar. | M3 — ❌ (2026-09-30): etiketsiz (`/StructTreeRoot` ve `/MarkInfo` yok; `/Lang` var). HTML `/cv` eşdeğer içerik sağlar (§10.1) |
-| V-32 | Lighthouse 12.6 `is-crawlable` denetimi `robots.txt`'i okur. | §11.8.1, §13.5.1 | İlk LHCI koşusu | `skipAudits` zaten uygulanır; üretimde PSI (T-05). | M3 — ilk LHCI koşusu M3 PR'ında (CI); `is-crawlable` `skipAudits`'te |
-| V-33 | "Missing source maps" uyarısı Best Practices puanını 0.95'in altına düşürmez. | §13.5.1 | LHCI BP puanı | `productionBrowserSourceMaps: true` (§8.6). | M3 → M8 — ilk BP puanı M3 PR'ının LHCI koşusundan işlenir |
+| V-32 | Lighthouse 12.6 `is-crawlable` denetimi `robots.txt`'i okur. | §11.8.1, §13.5.1 | İlk LHCI koşusu | `skipAudits` zaten uygulanır; üretimde PSI (T-05). | M3 — ✅ (2026-09-30): `is-crawlable` robots.txt'i okur (dahil edilince SEO 0.66); `skipAudits` gerekli |
+| V-33 | "Missing source maps" uyarısı Best Practices puanını 0.95'in altına düşürmez. | §13.5.1 | LHCI BP puanı | `productionBrowserSourceMaps: true` (§8.6). | M3 → M8 — ✅ M3 (2026-09-30): BP 1.0, `valid-source-maps` geçer; source map açılmadı |
 | V-34 | `next.config.ts` `headers()` kuralı Vercel'de `public/` dosyalarına (`/files/*`) uygulanır. | §11.4.4 | Yerel `curl -sI`; Preview; üretimde §14.7 | Yedek tanımlı değil; sonuç §11.4.4'e işlenir. | M3 → M10 — yerel ✅ (2026-09-30): `/files/*.pdf` ve `/files/*.json` `X-Robots-Tag: noindex` (`seo.spec.ts`, `cv.spec.ts`); Preview/üretim §14.7 |
 | V-35 | `timeZoneName: 'shortOffset'` hedef tarayıcılarda desteklenir. | §4.14 #15 | Playwright (`desktop-chromium`, `iphone-15`) | İçerikteki statik ofset etiketi kullanılır. | M3 — ✅ (2026-09-30): `desktop-chromium` ve `iphone-15` (WebKit) `shortOffset` ile "GMT+3" verir |
 | V-36 | Safari/iOS `scrollend` olayını destekler. | §2.5.3, §5.13.4, §5.14.6, §9.5.5 | `iphone-15`: `'onscrollend' in window` | 150 ms debounce'lu `scroll` + 1,200 ms üst sınır. | M4 |

@@ -49,11 +49,11 @@ export function Hero({ locale }: { locale: Locale }) {
         className="col-span-4 type-display md:col-span-8 lg:col-span-12"
         lang={locale === 'en' ? 'tr' : undefined}
       >
-        <span className="block lg:inline">{first}</span>
+        {first}
         {last ? (
           <>
-            {' '}
-            <span className="block lg:inline">{last}</span>
+            {/* §9.5.4 çözüm 1: H1 tek LCP adayı; 64rem altında satır <br> ile kırılır */}
+            <br className="lg:hidden" /> {last}
           </>
         ) : null}
       </h1>
@@ -74,7 +74,7 @@ export function Hero({ locale }: { locale: Locale }) {
       <div className="col-span-4 flex items-center justify-between gap-4 md:col-span-8 lg:col-span-12">
         <p aria-hidden="true" className="inline-flex items-center gap-3 type-meta">
           {dict.hero.scrollCue}
-          <span className="inline-block h-px w-8 bg-ink-subtle" />
+          <span className="[display:inline-block] h-px w-8 bg-ink-subtle" />
         </p>
         <LocalTime
           city={city.text}

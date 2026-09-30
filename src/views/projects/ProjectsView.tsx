@@ -1,6 +1,5 @@
 // src/views/projects/ProjectsView.tsx — /projeler (§7.8). Server; liste sunucuda tam çizilir.
-// ?alan= yalnız istemcide okunur (D-06): ProjectFilter <Suspense fallback={null}> içinde; JS'siz çip yoktur.
-import { Suspense } from 'react';
+// ?alan= yalnız istemcide okunur (D-06): ProjectFilter sunucuda "Tümü" ile çizilir, JS'siz görünümde gizlidir.
 import { PageHeader } from '@/components/layout/PageHeader';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { ProjectFilter } from '@/components/ui/ProjectFilter';
@@ -35,18 +34,16 @@ export function ProjectsView({ locale }: { locale: Locale }) {
           <p className="type-body text-ink-muted">{dict.projects.empty}</p>
         ) : (
           <>
-            <Suspense fallback={null}>
-              <ProjectFilter
-                locale={locale}
-                areas={areas}
-                total={projects.length}
-                labels={{
-                  group: dict.a11y.filterGroup,
-                  all: dict.projects.filterAll,
-                  count: dict.projects.count,
-                }}
-              />
-            </Suspense>
+            <ProjectFilter
+              locale={locale}
+              areas={areas}
+              total={projects.length}
+              labels={{
+                group: dict.a11y.filterGroup,
+                all: dict.projects.filterAll,
+                count: dict.projects.count,
+              }}
+            />
             <ul className="mt-stack border-t border-line">
               {projects.map((p) => (
                 <ProjectRow key={p.slug} project={p} locale={locale} />

@@ -47,7 +47,7 @@ export function LocalTime({ city, timeZone, intl, frozenSuffix, className }: Loc
       className={['type-meta nums-tabular', className].filter(Boolean).join(' ')}
     >
       {city} ·{' '}
-      <time dateTime={time ?? undefined} className="inline-block min-w-[5ch]">
+      <time dateTime={time ?? undefined} className="[display:inline-block] min-w-[5ch]">
         {time}
       </time>
       {frozen ? frozenSuffix : null}

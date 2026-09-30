@@ -35,14 +35,12 @@ function ExternalIcon() {
   return (
     <svg
       viewBox="0 0 24 24"
-      width="0.75em"
-      height="0.75em"
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
       aria-hidden="true"
       focusable="false"
-      className="ml-1 inline-block align-baseline"
+      className="ml-1 [display:inline-block] size-[0.75em] align-baseline"
     >
       <path d="M7 17 17 7M9 7h8v8" strokeLinecap="round" strokeLinejoin="round" />
     </svg>

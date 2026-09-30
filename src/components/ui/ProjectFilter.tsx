@@ -1,9 +1,10 @@
 'use client';
-// src/components/ui/ProjectFilter.tsx — /projeler alan filtresi (§7.8.2). <Suspense fallback={null}> içinde:
-// JS'siz HTML'de çip yoktur, liste tamdır. Seçimde eşleşmeyen li[data-project] öğeleri `hidden` olur;
+// src/components/ui/ProjectFilter.tsx — /projeler alan filtresi (§7.8.2). Sunucuda "Tümü" seçili çizilir; kapsayıcı
+// `hidden js:flex` olduğu için JS'siz görünümde çip yoktur, liste tamdır. ?alan= mount'ta location'dan okunur.
+// SPEC-SAPMA §7.8.2: useSearchParams + <Suspense fallback={null}> statik sayfada filtreyi istemciye erteliyor, çipler
+// hidrasyonda gelip listeyi aşağı itiyordu (LHCI CLS 0.093). Seçimde eşleşmeyen li[data-project] öğeleri `hidden` olur;
 // URL replaceState ile ?alan=<id> (Tümü → parametre yok). Bilinmeyen değer "Tümü" sayılır.
-import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import type { Locale } from '@/i18n/config';
 import { fill, plural, type PluralForms } from '@/i18n/text';
 import { Tag } from './Tag';
@@ -22,12 +23,19 @@ interface ProjectFilterProps {
   labels: { group: string; all: string; count: PluralForms };
 }
 
+const subscribe = (onChange: () => void) => {
+  window.addEventListener('popstate', onChange);
+  return () => window.removeEventListener('popstate', onChange);
+};
+const readAlan = () => new URLSearchParams(window.location.search).get('alan');
+const serverAlan = () => null; // SSR ve hidrasyon "Tümü" ile eşleşir; istemci anlık görüntüsü sonra uygulanır
+
 export function ProjectFilter({ locale, areas, total, labels }: ProjectFilterProps) {
-  const params = useSearchParams();
-  const requested = params.get('alan');
-  const [active, setActive] = useState<string | null>(
-    requested && areas.some((a) => a.id === requested) ? requested : null,
-  );
+  // Paylaşılan bağlantı: ?alan=<id> yalnız istemcide okunur (D-06); bilinmeyen değer yok sayılır
+  const requested = useSyncExternalStore(subscribe, readAlan, serverAlan);
+  const [choice, setChoice] = useState<string | null | undefined>(undefined);
+  const fromUrl = requested && areas.some((a) => a.id === requested) ? requested : null;
+  const active = choice === undefined ? fromUrl : choice;
 
   useEffect(() => {
     document.querySelectorAll<HTMLElement>('[data-project]').forEach((li) => {
@@ -41,9 +49,9 @@ export function ProjectFilter({ locale, areas, total, labels }: ProjectFilterPro
 
   const count = active ? (areas.find((a) => a.id === active)?.count ?? total) : total;
   return (
-    <div className="flex flex-col gap-4">
+    <div className="hidden flex-col gap-4 js:flex">
       <div role="group" aria-label={labels.group} className="flex flex-wrap gap-2">
-        <Tag variant="filter" pressed={active === null} onClick={() => setActive(null)}>
+        <Tag variant="filter" pressed={active === null} onClick={() => setChoice(null)}>
           {fill('{label} ({count})', { label: labels.all, count: total })}
         </Tag>
         {areas.map((a) => (
@@ -51,7 +59,7 @@ export function ProjectFilter({ locale, areas, total, labels }: ProjectFilterPro
             key={a.id}
             variant="filter"
             pressed={active === a.id}
-            onClick={() => setActive(a.id)}
+            onClick={() => setChoice(a.id)}
           >
             <span lang={a.lang}>{a.title}</span> ({a.count})
           </Tag>

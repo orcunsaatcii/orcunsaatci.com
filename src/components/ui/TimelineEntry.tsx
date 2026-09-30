@@ -48,7 +48,10 @@ export function TimelineEntry({
         ) : (
           <span className="inline-flex items-center gap-1.5">
             {presentLabel}
-            <span aria-hidden="true" className="inline-block size-1.5 rounded-pill bg-accent" />
+            <span
+              aria-hidden="true"
+              className="[display:inline-block] size-1.5 rounded-pill bg-accent"
+            />
           </span>
         )}
       </p>

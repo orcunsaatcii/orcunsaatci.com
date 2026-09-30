@@ -79,7 +79,7 @@ export function SiteFooter({ locale, enPaths, variant }: SiteFooterProps) {
               <SocialLinks
                 locale={locale}
                 className="flex flex-wrap gap-x-6 type-ui"
-                linkClassName={hit}
+                linkClassName={`${hit} min-w-11`} // li içinde: flex öğesi değil
               />
               <CvDownload
                 locale={locale}
