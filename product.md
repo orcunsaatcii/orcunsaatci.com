@@ -2315,7 +2315,7 @@ Sunucuda render edilir ve ilk boyamada görünürdür. DOM sırası görsel sır
   - Yalnızca hero etkin bölümken (`s < 30`) birikir.
   - **ZORUNLU:** `s = 100`'de render edilen `rotY`, K1b değerinden (30°) en fazla 1° sapar. Biriken açının nasıl sönümleneceği §5.9'dadır.
 
-- SPEC-SAPMA: §4.6.4 (M5, 2026-09-30) — "İşaretçi ya da kaydırma girdisi": `live.lastInput` ince işaretçide `pointermove`, her türlü `pointerdown` ve `scroll` ile yazılır (`src/stage/pointer.ts` `trackInput`; store'daki `trackPointer()`'ın yerini alır). İzleyici yalnız canlı sahne mount'ken çalışır ve ilk pakete girmez. Kare süresi 1/30 s'yi aşan yazılım render'ında dt kırpıldığından drift ve sönümü gerçek zamanda yavaşlar (SwiftShader'da ≈ 1.3°/s; 20 s sonrası kuyruk birkaç saniye uzar).
+- SPEC-SAPMA: §4.6.4 (M5, 2026-09-30) — "İşaretçi ya da kaydırma girdisi": `live.lastInput` ince işaretçide `pointermove`, her türlü `pointerdown` ve `scroll` ile yazılır (`src/stage/pointer.ts` `trackInput`; store'daki `trackPointer()`'ın yerini alır). İzleyici yalnız canlı sahne mount'ken çalışır ve ilk pakete girmez. Drift hızının zarfı (`idleS`) gerçek süreyle söner (kare başına ≤ 1 s): kare süresi 1/30 s'yi aşan cihazda kırpılmış dt, 20 s'deki duruşu 10+ kat uzatıyordu (CI SwiftShader ≈ 2 fps'te 40 s). Açı birikimi kırpılmış dt ile kalır: yavaş karede drift hızı düşer (SwiftShader'da ≈ 1.3°/s), sıçrama olmaz.
 
 #### 4.6.5 Yükleme sekansı
 
@@ -5376,7 +5376,7 @@ function FirstFrame() {
 
 - **ÖNERİLİR:** Shader derleme hatasında da `static` kademeye düşmek için `gl.debug.onShaderError` kullanılır. Geri çağrı konsola yazar ve `toFallback('error')` çağırır. ⚠️ DOĞRULANMADI: `WebGLRenderer.debug.onShaderError` alanının r186 tiplerinde varlığı; `@types/three` 0.186.0'da kontrol edilir. Yoksa `compileAsync` sonrasında `gl.info.programs` içindeki `diagnostics.runnable === false` kontrol edilir.
 
-- SPEC-SAPMA: §5.12.4 (M5, 2026-09-30) — `PrecompileVariants` ayrı bileşen değildir: `FirstFrame` ilk `ready`'den sonra düşük oktav varyantlarını ayrık bir `Group` üzerinde `compileAsync`'e sokar (sahne ağacına eklenmez).
+- SPEC-SAPMA: §5.12.4 (M5, 2026-09-30) — `PrecompileVariants` ayrı bileşen değildir: `FirstFrame` ilk `ready`'den sonra düşük oktav varyantlarını ayrık bir `Group` üzerinde `compileAsync`'e sokar (sahne ağacına eklenmez). `LoopPolicy` `never`'e geçerken R3F'in bekleyen kare sayacını (`internal.frames`) sıfırlar: R3F döngüsü bekleyen kareleri `frameloop`'tan bağımsız çizer ve opaklığı 0 olan sahnede bir kare daha çiziliyordu (§5.19, "2 s boyunca `useFrame` yok").
 
 #### 5.12.5 Katman CSS'i
 
@@ -14427,7 +14427,7 @@ Kurallar:
 | `visual.spec.ts` | `@reduced-motion`, `@pixel-7` (dosyada `test.use({ reducedMotion: 'reduce' })`), `@desktop-chromium` (yalnız başlık kırpıntıları) | §13.4.2 | K-GEN-10 |
 | `work-viewer.spec.ts` | `@desktop-chromium`, `@desktop-webkit`, `@desktop-firefox` (son ikisi yalnız `PW_CROSS=1`) | Work görüntüleyicisinin figür sütununun ekran görüntüsü ve tüm figürlerin kutu geometrisi. Tarayıcılar arası fark ≤ 2 px. | K-WORK-10, final.md §13 #8 |
 
-- SPEC-SAPMA: §13.3.4 (M5, 2026-09-30) — `perf-smoke.spec.ts` P8 etkileşimleri `/?tier=static`'te ölçer (SwiftShader'ın CPU'da çizdiği WebGL karesi GPU maliyetini temsil etmez; CI doğal yolu V-41'e bağlıdır). Yalnız `interactionId > 0` olan event girdileri sayılır; her etkileşim 3–4 kez ölçülür ve medyan bütçeyle karşılaştırılır (paralel işçilerin CPU gürültüsü). `posters.spec.ts` Firefox'ta temayı `localStorage['os-theme']` ile verir: Playwright Firefox'ta `colorScheme` öykünmesi head betiğinin `matchMedia`'sına yansımıyor (ölçüldü).
+- SPEC-SAPMA: §13.3.4 (M5, 2026-09-30) — `perf-smoke.spec.ts` P8 etkileşimleri `/?tier=static`'te ölçer (SwiftShader'ın CPU'da çizdiği WebGL karesi GPU maliyetini temsil etmez; CI doğal yolu V-41'e bağlıdır). Yalnız `interactionId > 0` olan event girdileri sayılır; her etkileşim 5–6 kez ölçülür ve medyan bütçeyle karşılaştırılır. "4× CPU kısıtı" referans geliştirme makinesine (M-serisi Mac; kalibrasyon iş yükü medyanı 46 ms) göredir: kısıt her ölçüm grubundan önce aynı iş yüküyle yeniden kalibre edilir (`4 × 46 / ölçülen`, 1–4×). CI koşucusu 4× sabit kısıtta tema değişimini 128–256 ms ölçüyordu; etkin cihaz hızı böylece makineden ve paralel işçilerin yükünden bağımsız kalır. `stage.spec.ts` K-HERO-7'deki "hero'nun CLS katkısı 0" ölçümü sahne boot'undan (`os:stage-probe`) sonraki kaymaları kapsar; ilk boyamadaki font değişimi (CI'da soğuk önbellekte 0.0116) sayfanın tamamıyla P5'te ve LHCI'da ölçülür. `posters.spec.ts` Firefox'ta temayı `localStorage['os-theme']` ile verir: Playwright Firefox'ta `colorScheme` öykünmesi head betiğinin `matchMedia`'sına yansımıyor (ölçüldü).
 
 #### 13.3.5 final.md §5 değişmezlerinin testleri
 

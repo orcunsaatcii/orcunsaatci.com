@@ -306,9 +306,18 @@ function siteFrame(
     document.documentElement.dataset.motion !== 'reduce' &&
     performance.now() - live.lastInput < idleMs;
   if (st.paused) extra.idleS = 0; // duraklatma drift'i hemen durdurur
+  // Hız zarfı gerçek süreyle söner (≤ 1 s adım): yavaş karede kırpılmış dt, 20 s'deki duruşu 10+ kat uzatıyordu
   moving =
-    easing.damp(extra, 'idleS', idleOn ? 1 : 0, SMOOTH_IDLE, dt, Infinity, undefined, 1e-3) ||
-    moving;
+    easing.damp(
+      extra,
+      'idleS',
+      idleOn ? 1 : 0,
+      SMOOTH_IDLE,
+      Math.min(delta, 1),
+      Infinity,
+      undefined,
+      1e-3,
+    ) || moving;
   if (live.inHero) {
     extra.idleAngle = wrap180(extra.idleAngle + params.idleDegPerSec * extra.idleS * dt);
   } else {

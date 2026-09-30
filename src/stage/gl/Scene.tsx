@@ -207,9 +207,15 @@ export interface SiteSceneProps {
 }
 
 /** §5.9.9: loop 'never' ya da sekme gizli → never; aksi hâlde demand (çıkışta önce demand, sonra invalidate). */
+/** R3F'in bekleyen kare sayacı (internal.frames) sıfırlanır; modül fonksiyonu (React Compiler immutability kuralı) */
+function resetPendingFrames(internal: { frames: number }): void {
+  internal.frames = 0;
+}
+
 function LoopPolicy() {
   const setFrameloop = useThree((s) => s.setFrameloop);
   const invalidate = useThree((s) => s.invalidate);
+  const internal = useThree((s) => s.internal);
   const loop = useStage((s) => s.loop);
   const [hidden, setHidden] = useState(() => document.hidden);
   useEffect(() => {
@@ -220,8 +226,10 @@ function LoopPolicy() {
   useEffect(() => {
     const mode = loop === 'never' || hidden ? 'never' : 'demand';
     setFrameloop(mode);
-    if (mode === 'demand') invalidate();
-  }, [loop, hidden, setFrameloop, invalidate]);
+    // R3F döngüsü bekleyen kareleri frameloop'tan bağımsız çizer (frames > 0): görünmez/gizli sahnede son kare de çizilmez
+    if (mode === 'never') resetPendingFrames(internal);
+    else invalidate();
+  }, [loop, hidden, setFrameloop, invalidate, internal]);
   return null;
 }
 

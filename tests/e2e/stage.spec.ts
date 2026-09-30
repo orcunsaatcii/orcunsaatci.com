@@ -93,15 +93,27 @@ test.describe('§5.12 kalıcı sahne (masaüstü, ?tier=high)', { tag: ['@deskto
     page,
   }) => {
     await page.addInitScript(() => {
-      const w = window as unknown as { __phases: [string, string][]; __cls: number };
+      type Shift = { t: number; v: number; src: string[] };
+      const w = window as unknown as { __phases: [string, string][]; __shifts: Shift[] };
       w.__phases = [];
-      w.__cls = 0;
+      w.__shifts = [];
       new PerformanceObserver((list) => {
         for (const e of list.getEntries() as (PerformanceEntry & {
           value: number;
           hadRecentInput: boolean;
+          sources?: { node?: Node | null }[];
         })[])
-          if (!e.hadRecentInput) w.__cls += e.value;
+          if (!e.hadRecentInput)
+            w.__shifts.push({
+              t: e.startTime,
+              v: e.value,
+              src: (e.sources ?? []).map((s) => {
+                const n = s.node as Element | null | undefined;
+                return n?.nodeType === 1
+                  ? `${n.localName}${n.id ? `#${n.id}` : ''}.${String(n.getAttribute('class') ?? '').split(' ')[0]}`
+                  : String(n?.nodeName ?? '?');
+              }),
+            });
       }).observe({ type: 'layout-shift', buffered: true });
       // faz değiştiği anda etkin hero posterinin opaklığı (init betiği <html>'den önce çalışır: belge gözlenir)
       new MutationObserver(() => {
@@ -141,8 +153,16 @@ test.describe('§5.12 kalıcı sahne (masaüstü, ?tier=high)', { tag: ['@deskto
       .first();
     await expect(poster).toHaveCSS('transition-duration', '0.6s');
     await expect.poll(() => heroPosterOpacity(page)).toBe('0');
-    const cls = await page.evaluate(() => (window as unknown as { __cls: number }).__cls);
-    expect(cls, 'yükleme ve crossfade boyunca CLS').toBeLessThanOrEqual(0.001);
+    // Sahnenin katkısı: boot (os:stage-probe) ve crossfade sırasındaki kaymalar. İlk boyamadaki font değişimi sahneye
+    // ait değildir; sayfanın tamamı P5'te (perf-smoke) ve LHCI'da ölçülür.
+    const { shifts, probe } = await page.evaluate(() => ({
+      shifts: (window as unknown as { __shifts: { t: number; v: number; src: string[] }[] })
+        .__shifts,
+      probe: performance.getEntriesByName('os:stage-probe', 'mark')[0]?.startTime ?? 0,
+    }));
+    const stageShifts = shifts.filter((x) => x.t >= probe);
+    const cls = stageShifts.reduce((n, x) => n + x.v, 0);
+    expect(cls, `boot ve crossfade boyunca CLS: ${JSON.stringify(shifts)}`).toBe(0);
   });
 
   test('D-18 sona kaydırıp dönünce ve proje sayfasına gidip gelince aynı canvas; bağlam yeniden kurulmaz', async ({
@@ -439,7 +459,17 @@ test.describe('§5.12 kalıcı sahne (masaüstü, ?tier=high)', { tag: ['@deskto
         page.evaluate(() => getComputedStyle(document.getElementById('scene-layer')!).opacity),
       )
       .toBe('0');
-    await pageDelay(page, 300);
+    // geçiş sırasında (cut) çizilen son kareler durulsun
+    await expect
+      .poll(
+        async () => {
+          const f = (await readLive(page)).frames;
+          await pageDelay(page, 500);
+          return (await readLive(page)).frames - f;
+        },
+        { timeout: 10_000, intervals: [0] },
+      )
+      .toBe(0);
     const f0 = (await readLive(page)).frames;
     await page.mouse.move(400, 300);
     await page.mouse.move(600, 500);
