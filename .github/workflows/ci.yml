@@ -104,7 +104,14 @@ jobs:
           key: pw-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium webkit
+        # apt (--with-deps) zaman zaman asılı kalıyor (2026-09-30: iki koşu 28+ dk): deneme başına 5 dk, en çok 3 deneme
+        timeout-minutes: 16
+        run: |
+          for i in 1 2 3; do
+            timeout 300 npx playwright install --with-deps chromium webkit && exit 0
+            echo "::warning::Playwright kurulumu $i. denemede bitmedi; yeniden deneniyor"
+          done
+          exit 1
 
       - name: E2E
         run: npm run e2e
@@ -138,7 +145,13 @@ jobs:
         run: npm run build
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
+        timeout-minutes: 16
+        run: |
+          for i in 1 2 3; do
+            timeout 300 npx playwright install --with-deps chromium && exit 0
+            echo "::warning::Playwright kurulumu $i. denemede bitmedi; yeniden deneniyor"
+          done
+          exit 1
 
       - name: Regenerate visual baselines
         run: npx playwright test tests/e2e/visual.spec.ts tests/e2e/work-viewer.spec.ts --update-snapshots
