@@ -1,6 +1,13 @@
 // src/experience/profile.test.ts — K-PERSONA-1, K-PERSONA-2 (§4.18, §13.2.2)
 import { describe, expect, it } from 'vitest';
-import { INTENSITY, PROFILES, getExperienceProfile, type Persona } from './profile';
+import { vi } from 'vitest';
+import {
+  INTENSITY,
+  PROFILES,
+  getExperienceProfile,
+  resolveTypePreset,
+  type Persona,
+} from './profile';
 
 const PERSONAS: readonly Persona[] = [
   'neutral',
@@ -110,5 +117,15 @@ describe('K-PERSONA-2', () => {
     expect(e.cap.pattern).toBe('geode');
     expect(e.palette).toBe('mekanizma');
     expect(e.intensity).toBe('standard');
+  });
+});
+
+describe('K-PERSONA-4', () => {
+  it('editoryal fontları yokken hassas kullanılır ve uyarı yazılır', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(resolveTypePreset(PROFILES.researcher.type)).toBe('hassas');
+    expect(warn).toHaveBeenCalledOnce();
+    expect(resolveTypePreset('hassas')).toBe('hassas');
+    expect(warn).toHaveBeenCalledOnce();
   });
 });

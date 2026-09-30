@@ -14,6 +14,27 @@ export const NOT_FOUND_PATHS = [
   '/en/projects/yok',
 ] as const;
 
+/**
+ * Temporary (§15.0.6): M2 shell pages. The sitemap arrives in M3; "every route" loops then switch to
+ * sitemapPaths(request) + NOINDEX_PATHS and this list is deleted.
+ */
+export const SHELL_PATHS = [
+  '/',
+  '/hakkimda',
+  '/cv',
+  '/projeler',
+  '/calisma-alanlari',
+  '/iletisim',
+  '/gizlilik',
+  '/en',
+  '/en/about',
+  '/en/cv',
+  '/en/projects',
+  '/en/expertise',
+  '/en/contact',
+  '/en/privacy',
+] as const;
+
 /** Reads /sitemap.xml and returns the unique path part of every <loc> (origin dropped). */
 export async function sitemapPaths(request: APIRequestContext): Promise<string[]> {
   const res = await request.get('/sitemap.xml');

@@ -1,26 +1,587 @@
-@import 'tailwindcss';
+/* =============================================================================
+   src/app/globals.css — orcunsaatci.com tasarım sistemi (product.md §6.10)
+   Palet: mekanizma · Tip preset'i: hassas
+   Renk değerleri src/design/tokens.ts ile birebir aynıdır; src/design/tokens.test.ts
+   "tokens:*:start/end" işaretleri arasındaki bildirimleri karşılaştırır.
+   Bu dosyaya yeni renk/ölçü değeri yalnızca token olarak eklenir (§6.3, §6.4).
+   ========================================================================== */
+@import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ── 1. Özel varyantlar ────────────────────────────────────────────────────── */
+/* data-theme / data-motion / .js / .motion-ready <html>'e head script'inde yazılır (§8.4) */
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+@custom-variant motion-on (&:where([data-motion=full], [data-motion=full] *));
+@custom-variant motion-off (&:where([data-motion=reduce], [data-motion=reduce] *));
+@custom-variant motion-ready (&:where(.motion-ready[data-motion=full], .motion-ready[data-motion=full] *));
+@custom-variant js (&:where(.js, .js *));
+@custom-variant pointer-fine (@media (hover: hover) and (pointer: fine));
+
+/* ── 2. Renk token'ları: light-dark(<açık>, <koyu>) ──────────────────────── */
+@theme static {
+  --color-*: initial;
+  --color-white: #FFFFFF;
+  --color-black: #000000;
+  /* tokens:colors:start */
+  --color-canvas: light-dark(#ECEEF2, #0B1020);
+  --color-surface: light-dark(#F7F8FA, #121833);
+  --color-raised: light-dark(#E0E4EB, #1A2244);
+  --color-ink: light-dark(#0E1530, #E8EBF2);
+  --color-ink-muted: light-dark(#454E6B, #A3ACC2);
+  --color-ink-subtle: light-dark(#5A6382, #8790AA);
+  --color-ink-disabled: light-dark(#8A91A6, #5B6480);
+  --color-line: light-dark(#CDD2DC, #252E52);
+  --color-line-strong: light-dark(#737C97, #6B76A0);
+  --color-accent: light-dark(#B0103C, #FF7A95);
+  --color-accent-hover: light-dark(#8E0A30, #FF9AB0);
+  --color-on-accent: light-dark(#FFFFFF, #0B1020);
+  --color-focus: light-dark(#2340C4, #F2C46D);
+  --color-brass: light-dark(#8A6420, #C9A66B);
+  --color-success: light-dark(#11764A, #5FD4A0);
+  --color-danger: light-dark(#B42318, #FF8A7A);
+  --color-selection: light-dark(#F6C9D4, #5A2238);
+  --color-scrim: light-dark(rgb(236 238 242 / 0.85), rgb(11 16 32 / 0.85));
+  /* tokens:colors:end */
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+/* ── 3. Tipografi, ölçü, biçim ve hareket token'ları ─────────────────────── */
+@theme static {
+  /* Akışkan tip ölçeği: 360 → 1440 px doğrusal, dışında sabit (WCAG 1.4.4 kontrollü, §6.2.4) */
+  --text-*: initial;
+  --text-2xs: 0.75rem;
+  --text-2xs--line-height: 1.4;
+  --text-2xs--letter-spacing: 0.08em;
+  --text-xs: clamp(0.7812rem, 0.7604rem + 0.0926vw, 0.8438rem);
+  --text-xs--line-height: 1.45;
+  --text-xs--letter-spacing: 0.04em;
+  --text-sm: clamp(0.875rem, 0.8542rem + 0.0926vw, 0.9375rem);
+  --text-sm--line-height: 1.5;
+  --text-base: clamp(1.0312rem, 1rem + 0.1389vw, 1.125rem);
+  --text-base--line-height: 1.6;
+  --text-lg: clamp(1.125rem, 1.0625rem + 0.2778vw, 1.3125rem);
+  --text-lg--line-height: 1.5;
+  --text-lg--letter-spacing: -0.005em;
+  --text-xl: clamp(1.25rem, 1.1458rem + 0.463vw, 1.5625rem);
+  --text-xl--line-height: 1.35;
+  --text-xl--letter-spacing: -0.01em;
+  --text-2xl: clamp(1.4375rem, 1.25rem + 0.8333vw, 2rem);
+  --text-2xl--line-height: 1.2;
+  --text-2xl--letter-spacing: -0.015em;
+  --text-3xl: clamp(1.6875rem, 1.3333rem + 1.5741vw, 2.75rem);
+  --text-3xl--line-height: 1.1;
+  --text-3xl--letter-spacing: -0.02em;
+  --text-4xl: clamp(2rem, 1.25rem + 3.3333vw, 4.25rem);
+  --text-4xl--line-height: 1;
+  --text-4xl--letter-spacing: -0.025em;
+  --text-5xl: clamp(2.25rem, 1.125rem + 5vw, 5.625rem);
+  --text-5xl--line-height: 1;
+  --text-5xl--letter-spacing: -0.03em;
+  --text-display: clamp(4.8rem, 2.4rem + 10.6667vw, 12rem);
+  --text-display--line-height: 0.92;
+  --text-display--letter-spacing: -0.035em;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  --font-weight-*: initial;
+  --font-weight-regular: 400;
+  --font-weight-book: 450;
+  --font-weight-medium: 520;
+  --font-weight-strong: 560;
+  --font-weight-semibold: 620;
+  --font-weight-heading: 680;
+  --font-weight-bold: 720;
+  --font-weight-heavy: 760;
+
+  --tracking-*: initial;
+  --tracking-display: -0.035em;
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0em;
+  --tracking-mono: 0.04em;
+  --tracking-caps: 0.08em;
+
+  --leading-*: initial;
+  --leading-display: 0.92;
+  --leading-heading: 1;
+  --leading-snug: 1.2;
+  --leading-ui: 1.4;
+  --leading-body: 1.6;
+
+  /* Boşluk: 4 px taban + akışkan düzen token'ları (§6.4) */
+  --spacing: 0.25rem;
+  --spacing-margin: clamp(1.25rem, 0.3333rem + 4.0741vw, 4rem);
+  --spacing-gutter: clamp(0.75rem, 0.5rem + 1.1111vw, 1.5rem);
+  --spacing-section: clamp(6rem, 4rem + 8.8889vw, 12rem);
+  --spacing-block: clamp(3rem, 2rem + 4.4444vw, 6rem);
+  --spacing-stack: clamp(1.5rem, 1.1667rem + 1.4815vw, 2.5rem);
+  --spacing-header: clamp(3.5rem, 3.3333rem + 0.7407vw, 4rem);
+
+  /* Kapsayıcılar. "prose" adı YASAK: yerleşik max-w-prose (65ch) kazanır (§6.4) */
+  --container-page: 90rem;
+  --container-wide: 105rem;
+  --container-text: 40rem;
+
+  --radius-*: initial;
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  --aspect-card: 16 / 10;
+  --aspect-preview: 4 / 3;
+  --aspect-portrait: 4 / 5;
+  --aspect-photo: 3 / 2;
+  --aspect-og: 1200 / 630;
+
+  --shadow-*: initial;
+  --shadow-raise: 0 1px 0 rgb(14 21 48 / 0.04), 0 8px 24px -12px rgb(14 21 48 / 0.18);
+  --shadow-float: 0 30px 60px -30px rgb(0 0 0 / 0.5);
+
+  /* Easing (§6.5.1) */
+  --ease-*: initial;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-in: cubic-bezier(0.5, 0, 0.75, 0);
+  --ease-tick: cubic-bezier(0.34, 1.4, 0.64, 1);
+
+  /* Yalnız CSS animasyonları (JS'siz çalışır); koreografi GSAP'tadır (§5.14) */
+  --animate-fade-up: fade-up 500ms var(--ease-out) both;
+  --animate-fade-up-sm: fade-up-sm 240ms var(--ease-out) both;
+  --animate-rule-draw: rule-draw 600ms var(--ease-out) both;
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes fade-up-sm {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes rule-draw {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* next/font değişkenlerine başvurduğu için inline (src/fonts/index.ts, §6.2.3) */
+@theme inline static {
+  --font-sans: var(--font-mona), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-display: var(--font-mona), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-martian), ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+/* ── 4. Yardımcı olmayan token'lar ───────────────────────────────────────── */
+:root {
+  color-scheme: light dark;            /* JS yoksa işletim sistemi teması */
+  --header-h: var(--spacing-header);
+  --body-wght: 400;
+
+  --dur-instant: 90ms;
+  --dur-fast: 160ms;
+  --dur-base: 240ms;
+  --dur-medium: 400ms;
+  --dur-slow: 700ms;
+  --dur-slower: 1000ms;
+  --stagger-line: 70ms;
+  --stagger-item: 50ms;
+  --rise-hero: 12px;
+  --rise-block: 16px;
+  --rise-card: 24px;
+  --lift-hover: 2px;
+  --reveal-line-from: 130%;
+
+  --z-stage: 0;
+  --z-content: 10;
+  --z-header: 40;
+  --z-menu: 50;
+  --z-toast: 70;
+  --z-skip: 80;
+
+  /* Sahne token'ları: sahne değerleri tokens.ts'ten okur; burada parite ve DOM içindir (§6.3.6) */
+  /* tokens:scene:start */
+  --scene-stone-base: light-dark(#2B2F3A, #5A5E68);
+  --scene-stone-light: light-dark(#7C8292, #B9BCC4);
+  --scene-sky: light-dark(#FFFFFF, #E8EBF2);
+  --scene-ground: light-dark(#9AA1B2, #0B1020);
+  --scene-shadow: light-dark(rgb(14 21 48 / 0.16), rgb(0 0 0 / 0.45));
+  /* tokens:scene:end */
+}
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; --body-wght: 380; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) { --body-wght: 380; }
+}
+
+/* light-dark() desteklemeyen motorlar (Safari < 17.5): düz değerler. JS yoksa açık tema. */
+@supports not (color: light-dark(#fff, #000)) {
+  :root {
+    /* tokens:fallback-light:start */
+    --color-canvas: #ECEEF2;
+    --color-surface: #F7F8FA;
+    --color-raised: #E0E4EB;
+    --color-ink: #0E1530;
+    --color-ink-muted: #454E6B;
+    --color-ink-subtle: #5A6382;
+    --color-ink-disabled: #8A91A6;
+    --color-line: #CDD2DC;
+    --color-line-strong: #737C97;
+    --color-accent: #B0103C;
+    --color-accent-hover: #8E0A30;
+    --color-on-accent: #FFFFFF;
+    --color-focus: #2340C4;
+    --color-brass: #8A6420;
+    --color-success: #11764A;
+    --color-danger: #B42318;
+    --color-selection: #F6C9D4;
+    --color-scrim: rgb(236 238 242 / 0.85);
+    --scene-stone-base: #2B2F3A;
+    --scene-stone-light: #7C8292;
+    --scene-sky: #FFFFFF;
+    --scene-ground: #9AA1B2;
+    --scene-shadow: rgb(14 21 48 / 0.16);
+    /* tokens:fallback-light:end */
+  }
+  :root[data-theme="dark"] {
+    /* tokens:fallback-dark:start */
+    --color-canvas: #0B1020;
+    --color-surface: #121833;
+    --color-raised: #1A2244;
+    --color-ink: #E8EBF2;
+    --color-ink-muted: #A3ACC2;
+    --color-ink-subtle: #8790AA;
+    --color-ink-disabled: #5B6480;
+    --color-line: #252E52;
+    --color-line-strong: #6B76A0;
+    --color-accent: #FF7A95;
+    --color-accent-hover: #FF9AB0;
+    --color-on-accent: #0B1020;
+    --color-focus: #F2C46D;
+    --color-brass: #C9A66B;
+    --color-success: #5FD4A0;
+    --color-danger: #FF8A7A;
+    --color-selection: #5A2238;
+    --color-scrim: rgb(11 16 32 / 0.85);
+    --scene-stone-base: #5A5E68;
+    --scene-stone-light: #B9BCC4;
+    --scene-sky: #E8EBF2;
+    --scene-ground: #0B1020;
+    --scene-shadow: rgb(0 0 0 / 0.45);
+    /* tokens:fallback-dark:end */
+  }
+}
+
+/* Yüksek kontrast tercihi (§6.3.4). Seçici özgüllüğü fallback bloğunu da ezer. */
+@media (prefers-contrast: more) {
+  :root,
+  :root[data-theme] {
+    --color-ink-muted: var(--color-ink);
+    --color-ink-subtle: var(--color-ink);
+    --color-line: var(--color-line-strong);
+    --color-scrim: color-mix(in srgb, var(--color-canvas) 95%, transparent);
+  }
+}
+
+/* ── 5. Temel katman ─────────────────────────────────────────────────────── */
+@layer base {
+  html {
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-synthesis: none;              /* sahte italik/kalın YASAK */
+    text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
+    accent-color: var(--color-accent);
+    scroll-padding-top: calc(var(--header-h) + 1rem);
+  }
+  body {
+    min-height: 100svh;
+    overflow-x: clip;                  /* clip kaydırma kabı oluşturmaz: sticky çalışır */
+    font-size: var(--text-base);
+    line-height: var(--leading-body);
+    font-weight: var(--body-wght);
+    font-feature-settings: "ss03";     /* kuyruklu l: I / l / İ ayrımı */
+  }
+  /* İçerik sahnenin üstünde; kendi z-index'i olan öğeler (header, menü, toast) bunu ezer */
+  :where(body > :not(#scene-layer)) {
+    position: relative;
+    z-index: var(--z-content);
+  }
+  h1, h2, h3, h4 {
+    text-wrap: balance;
+    overflow-wrap: break-word;
+    hyphens: manual;
+  }
+  p, li, dd, figcaption, blockquote { text-wrap: pretty; }
+  :lang(tr) { font-variant-ligatures: no-common-ligatures; }  /* "fi" birleşmesin (§6.2.6) */
+  :lang(tr) q { quotes: "“" "”" "‘" "’"; }
+  em, strong, b {
+    font-style: normal;
+    font-weight: var(--font-weight-strong);
+    color: var(--color-ink);
+  }
+  ::selection {
+    background-color: var(--color-selection);
+    color: var(--color-ink);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 3px;
+  }
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  summary,
+  label[for] { cursor: pointer; }
+  [aria-disabled="true"] { cursor: not-allowed; }
+
+  /* Hareket azaltma: site anahtarı veya (JS yoksa) işletim sistemi tercihi */
+  :root[data-motion="reduce"] *,
+  :root[data-motion="reduce"] *::before,
+  :root[data-motion="reduce"] *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    :root:not([data-motion]) *,
+    :root:not([data-motion]) *::before,
+    :root:not([data-motion]) *::after {
+      animation-duration: 1ms !important;
+      animation-delay: 0s !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 1ms !important;
+      transition-delay: 0s !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* ── 6. Bileşik metin stilleri ve yardımcılar ────────────────────────────── */
+@utility type-display {                /* yalnız hero adı (§6.2.4) */
+  font-family: var(--font-display);
+  font-size: var(--text-display);
+  line-height: var(--leading-display);
+  letter-spacing: var(--tracking-display);
+  font-weight: var(--font-weight-heavy);
+  font-stretch: 125%;
+  font-feature-settings: "ss01", "ss03";
+  @media (width >= 64rem) {
+    white-space: nowrap;
+    font-size: min(var(--text-display), calc((100vw - 2 * var(--spacing-margin)) / 7.3));
+  }
+}
+@utility type-h1 {
+  font-family: var(--font-display);
+  font-size: var(--text-5xl);
+  line-height: var(--leading-heading);
+  letter-spacing: -0.03em;
+  font-weight: var(--font-weight-bold);
+  font-stretch: 100%;
+  font-feature-settings: "ss01", "ss03";
+  @media (width >= 48rem) { font-stretch: 118%; }
+}
+@utility type-h2 {
+  font-family: var(--font-display);
+  font-size: var(--text-4xl);
+  line-height: var(--leading-heading);
+  letter-spacing: -0.025em;
+  font-weight: var(--font-weight-heading);
+  font-stretch: 100%;
+  max-width: 18ch;
+  @media (width >= 48rem) { font-stretch: 112.5%; }
+}
+@utility type-h3 {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-weight: var(--font-weight-semibold);
+  font-stretch: 100%;
+  @media (width >= 48rem) { font-stretch: 112.5%; }
+}
+@utility type-h4 {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  font-weight: var(--font-weight-strong);
+  font-stretch: 100%;
+  @media (width >= 48rem) { font-stretch: 112.5%; }
+}
+@utility type-title {
+  font-size: var(--text-xl);
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  font-weight: var(--font-weight-medium);
+}
+@utility type-lead {
+  font-size: var(--text-lg);
+  line-height: 1.5;
+  letter-spacing: -0.005em;
+  max-width: 42ch;
+}
+@utility type-body {
+  font-size: var(--text-base);
+  line-height: var(--leading-body);
+  max-width: 52ch;                     /* ≈ 70 Türkçe karakter (§6.2.5) */
+}
+@utility type-ui {
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  font-weight: var(--font-weight-book);
+}
+@utility type-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  line-height: 1.4;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;           /* doğru lang'e dayanır: i → İ (§3.8) */
+  font-stretch: 87.5%;
+  font-weight: var(--font-weight-book);
+  font-feature-settings: "case";
+  color: var(--color-ink-muted);
+}
+@utility type-meta {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: 1.45;
+  letter-spacing: var(--tracking-mono);
+  font-weight: var(--font-weight-book);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-ink-subtle);
+}
+@utility nums-tabular { font-variant-numeric: tabular-nums lining-nums; }
+
+/* Başlık satır maskeleri: İ noktası, Ğ breve'i, Ç/Ş çengeli kesilmesin (§6.2.6) */
+@utility mask-line {
+  padding-block: 0.2em;
+  margin-block: -0.2em;
+}
+
+/* Sahnenin üstündeki metin için emniyet plakası (§6.9); α ≥ 0.85 glif altında */
+@utility scrim-text {
+  background-color: var(--color-scrim);
+  box-shadow: 0 0 6rem 3rem var(--color-scrim);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+}
+
+/* Gövde içi bağlantı: her zaman altı çizili; hover'da 2 px katman soldan sağa çizilir */
+@utility link-inline {
+  color: var(--color-accent);
+  text-decoration-line: none;
+  background-image: linear-gradient(currentColor, currentColor), linear-gradient(currentColor, currentColor);
+  background-size: 100% 1px, 0% 2px;
+  background-position: 0 100%, 100% 100%;
+  background-repeat: no-repeat;
+  padding-bottom: 0.08em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  transition: color var(--dur-base) var(--ease-standard), background-size var(--dur-fast) var(--ease-in);
+  &:hover {
+    color: var(--color-accent-hover);
+    background-size: 100% 1px, 100% 2px;
+    background-position: 0 100%, 0 100%;
+    transition: color var(--dur-base) var(--ease-standard), background-size var(--dur-base) var(--ease-out);
+  }
+  @media (forced-colors: active) {
+    background-image: none;
+    text-decoration-line: underline;
+  }
+}
+
+/* Gezinme bağlantısı: durağanda çizgisiz; hover'da 1 px çizgi soldan sağa */
+@utility link-nav {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1px;
+  background-position: 100% 100%;
+  background-repeat: no-repeat;
+  padding-bottom: 0.12em;
+  transition: background-size var(--dur-fast) var(--ease-in);
+  &:hover {
+    background-size: 100% 1px;
+    background-position: 0 100%;
+    transition: background-size var(--dur-base) var(--ease-out);
+  }
+  @media (forced-colors: active) {
+    &:hover { text-decoration-line: underline; }
+  }
+}
+
+/* Sayfa ızgarası: 4 / 8 / 12 sütun (§6.4.2) */
+@utility container-page {
+  width: 100%;
+  max-width: var(--container-page);
+  margin-inline: auto;
+  padding-inline: max(var(--spacing-margin), env(safe-area-inset-left)) max(var(--spacing-margin), env(safe-area-inset-right));
+}
+@utility grid-page {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  column-gap: var(--spacing-gutter);
+  @media (width >= 48rem) { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+  @media (width >= 64rem) { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+}
+
+/* ── 7. Bileşen kancaları (sınıf adları §6.6'da) ─────────────────────────── */
+@layer components {
+  /* SplitText 3.15: maske = satır öğesinin klonu, sınıfı "-mask" ekiyle (linesClass: 'split-line') */
+  .split-line-mask {
+    padding-block: 0.2em;
+    margin-block: -0.2em;
+  }
+
+  /* Hero ikincil metinleri: yalnız CSS, JS beklemez; h1 ASLA bu sınıfı almaz (D-34) */
+  .hero-in {
+    animation: fade-up-sm 500ms var(--ease-out) both;
+    animation-delay: calc(120ms + var(--i, 0) * var(--stagger-line));
+  }
+  :root[data-motion="reduce"] .hero-in { animation: none; }
+  @media (prefers-reduced-motion: reduce) {
+    :root:not([data-motion="full"]) .hero-in { animation: none; }
+  }
+
+  /* Tema başına görsel (poster vb.): etkin olmayan tema hiç render edilmez */
+  :root[data-theme="dark"] .only-light,
+  :root[data-theme="light"] .only-dark { display: none; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) .only-light { display: none; }
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme]) .only-dark { display: none; }
+  }
+
+  /* Kalıcı sahne katmanı (D-18). Opaklığı yalnız --scene-opacity ile değişir (§5.1) */
+  #scene-layer {
+    position: fixed;
+    inset: 0 0 auto 0;
+    height: 100lvh;
+    z-index: var(--z-stage);
+    pointer-events: none;
+    opacity: var(--scene-opacity, 1);
+    view-transition-name: scene;
+  }
+
+  /* Ana sayfada layout'un full footer'ı gizlenir; compact footer contact bölümündedir (§8.4.4, §3.9.3) */
+  body:has([data-chapter="hero"]) [data-site-footer="full"] { display: none; }
+}
+
+/* ── 8. Route geçişi sabitleri (D-32; sayfa içeriği animasyonları §5.15) ──── */
+::view-transition-group(scene),
+::view-transition-new(scene),
+::view-transition-group(site-header),
+::view-transition-old(site-header),
+::view-transition-new(site-header) { animation: none; }
+::view-transition-old(scene) { display: none; }
+:root[data-motion="reduce"]::view-transition-group(*),
+:root[data-motion="reduce"]::view-transition-old(*),
+:root[data-motion="reduce"]::view-transition-new(*) { animation-duration: 0s !important; }
+
+/* ── 9. Baskı (CV'ye özgü kurallar §7.6) ─────────────────────────────────── */
+@media print {
+  :root,
+  :root[data-theme] { color-scheme: light; --body-wght: 400; }
+  #scene-layer { display: none !important; }
 }

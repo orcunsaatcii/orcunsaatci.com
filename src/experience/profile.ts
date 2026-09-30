@@ -248,6 +248,18 @@ export const INTENSITY: Readonly<Record<Intensity, IntensityParams>> = {
   },
 };
 
+/** Font hattında (§6.2.3) bulunan tip preset'leri. `editoryal` fontları eklenince listeye girer (§6.2.8). */
+export const AVAILABLE_TYPE_PRESETS: readonly TypePreset[] = ['hassas'];
+
+/**
+ * K-PERSONA-4: preset'in fontları yoksa `hassas`'a düşülür; build başarısız olmaz, uyarı yazılır (§4.17.2).
+ */
+export function resolveTypePreset(type: TypePreset): TypePreset {
+  if (AVAILABLE_TYPE_PRESETS.includes(type)) return type;
+  console.warn(`[profile] "${type}" tip preset'inin fontları yok; "hassas" kullanılıyor (§6.2.8).`);
+  return 'hassas';
+}
+
 /** Bilinmeyen değer → PROFILES.engineer (D-35 varsayılanı). */
 export function getExperienceProfile(persona: Persona): ExperienceProfile {
   return Object.hasOwn(PROFILES, persona) ? PROFILES[persona] : PROFILES.engineer;

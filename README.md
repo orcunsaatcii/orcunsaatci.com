@@ -26,6 +26,14 @@ npm run posters -- --qa    # 13 anahtar × 2 tema QA ızgarası → .lab-out/
 npm run posters -- --check # varlık + bütçe denetimi
 ```
 
+## Fontlar
+
+`src/fonts/*.woff2` ve `assets/fonts/ttf/*.ttf`, `assets/fonts/src/` altındaki kaynak TTF'lerden `npm run fonts` ile üretilip commit edilir. Python 3 + `fonttools==4.60.2` + `brotli` gerekir; başka yorumlayıcı için `PYTHON=/yol/python3 npm run fonts` (`product.md` §6.2.3).
+
+## Görsel regresyon tabanları
+
+`tests/e2e/__screenshots__/` yalnız CI'da, Linux'ta üretilir: GitHub Actions → `ci` → Run workflow → `update_snapshots`. Oluşan `visual-baselines` artefaktı indirilip commit edilir; macOS'ta üretilen tabanlar commit edilmez (`product.md` §13.4.2).
+
 ## İçerik düzenleme
 
 İçerik `content/` altındaki YAML ve MDX dosyalarındadır. Düzenleme akışı `product.md` §7.10'dadır.

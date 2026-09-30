@@ -47,6 +47,12 @@ describe('security headers (§12.5)', () => {
     expect(headers.map((h) => h.key)).toContain('Content-Security-Policy');
   });
 
+  it('local and CI builds (no VERCEL_ENV, plain http://localhost) omit upgrade-insecure-requests', () => {
+    const local = { nodeEnv: 'production', vercelEnv: undefined } as const;
+    expect(buildCsp(local, false)).toBe(PRODUCTION_CSP.replace('; upgrade-insecure-requests', ''));
+    expect(buildSecurityHeaders(local, true)[0]?.key).toBe('Content-Security-Policy');
+  });
+
   it('development allows unsafe-eval and the HMR websocket', () => {
     const csp = buildCsp(development, false);
     expect(directive(csp, 'script-src')).toContain("'unsafe-eval'");
