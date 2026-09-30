@@ -4015,7 +4015,9 @@ void main() {
 
 #### 5.4.5 `shadowMat`
 
-`PlaneGeometry(1, 1)`, `rotation.x = −π/2`; konum `y = −(uRadii.y + 0.02)`; ölçek `2.4 · uRadii.x` (XZ). `transparent: true`, `depthWrite: false`, `renderOrder: −1`. Hero'da H1'in cap çizgisinin arkasına düşer ("ismin üstünde duran bir kâğıt ağırlığı").
+`PlaneGeometry(1, 1)`, `rotation.x = −π/2`; konum `y = −(uRadii.y + 0.02)`; ölçek `2.4 · uRadii.x` (XZ). `transparent: false` + normal alfa karışımı (`CustomBlending`: `SrcAlpha`/`OneMinusSrcAlpha`, alfa `One`/`OneMinusSrcAlpha`), `depthWrite: false`, `renderOrder: −1`. Hero'da H1'in cap çizgisinin arkasına düşer ("ismin üstünde duran bir kâğıt ağırlığı").
+
+> SPEC-SAPMA: §5.4.5 (M1, 2026-09-30) — three saydam nesneleri `renderOrder`'dan bağımsız olarak opaklardan **sonra** çizer. Kapak hilesinde yazılan derinlik arka yüzün derinliği olduğundan, `transparent: true` gölge K3/K5/D1/D5'teki 62°/68° eğimde kesit yüzünün üstüne düştü (QA ızgarası, açık tema). Gölge bu yüzden opak listede, `renderOrder: −1` ile Taş'tan önce ve normal alfa karışımıyla çizilir; §5.2'nin istediği gibi Taş onu her zaman örter.
 
 ```ts
 // src/stage/gl/shaders/shadow.ts
@@ -4063,7 +4065,7 @@ export function disposeMaterials(m: ReturnType<typeof createMaterials>): void
 
 - `stone`: `{ vertexShader: stoneVert, fragmentShader: stoneFrag, uniforms: u, side: DoubleSide, defines: { OCTAVES: o.octaves, ['CAP_PATTERN_' + o.pattern.toUpperCase()]: '', ['SURFACE_' + o.surface.toUpperCase()]: '' } }`.
 - `ghost`: aynı vertex, `ghostFrag`, `transparent: true`, `depthWrite: false`.
-- `shadow`: `shadowVert`/`shadowFrag`, `transparent: true`, `depthWrite: false`.
+- `shadow`: `shadowVert`/`shadowFrag`, `transparent: false` + `CustomBlending` (normal alfa), `depthWrite: false` (§5.4.5 SPEC-SAPMA).
 - **ZORUNLU:** high kademede `octaves: 1` varyantı da oluşturulur ve görünmez (`visible={false}`) mesh'lere takılarak `compileAsync`'e dahil edilir. three r186'da `compile()` sahneyi `traverse` ile gezer, görünmez mesh'leri de derler (kaynakta doğrulandı). Step-down sırasında malzeme değişimi program önbelleğinden gelir ve takılma yapmaz.
 
 ### 5.5 Uniform referansı
@@ -4281,18 +4283,20 @@ Ekran üst kenarı (`y` = mevcut `window.scrollY`):
 Merkez ve çap:
 - `cx = left + width/2`.
 - Çap: `D = size × min(width, height)`. Mobilde `size = sizeMobile`. `rule: 'hero'` (≥ 64rem): `D = min(0.68·width, height − 24)`.
-- `align: 'center'` → `cy = top + height/2`. `align: 'bottom'` → `cy = top + height − 0.5·D·radii.y` (Taş cap çizgisinde "durur"; `radii.y` profil değeri, etkin `engineer`'da 0.8 (`neutral` 0.86); M1'de görsel olarak doğrulanır).
+- `align: 'center'` → `cy = top + height/2`. `align: 'bottom'` → `cy = top + height − 0.5·D·radii.y/R0` (Taş cap çizgisinde "durur"; `radii.y` profil değeri, etkin `engineer`'da 0.8 (`neutral` 0.86); `R0` aşağıdaki analitik ölçektekiyle aynıdır, `radii.y/R0` engineer'da 0.650, neutral'da 0.833).
 - Karışım: `c = lerp(cA, cB, anchorMix)`, `D = lerp(DA, DB, anchorMix)`. `anchorMix` damped'dir; anchor dikdörtgenleri **damped değildir** (Taş metinle birlikte kayar, geride kalmaz).
 - Route glide sırasında `anchorFrom = −1` sanal anchor'dır: gezinme anındaki `{cx, cy, D}` anlık görüntüsü (§5.15).
 
 Analitik ölçek (final.md §2.8.4):
 
 ```text
-scale = D · (2 · r · tan(fov/2)) / (2 · R0 · H)        R0 = radii.x (ölçek 1'de XZ yarıçapı), H = canvas yüksekliği
+scale = D · (2 · r · tan(fov/2)) / (2 · R0 · H)        R0 = footprintRadius(radii, n1), H = canvas yüksekliği
+footprintRadius = radii.x · 2^(1/2 − 1/n1)  (n1 ≥ 2; n1 < 2 ise radii.x)   XZ ayak izinin çevrel yarıçapı (§5.10)
 ```
 
 - `r` ve `fov` **damped** değerlerdir. Böylece dolly-zoom sırasında boyut sabit kalır ve yalnızca perspektif düzleşir.
-- Doğrulama örnekleri (1440×900): K0 `D = 362, r = 5.2, fov = 30` → 0.560; K2 `D = 515, r = 7.2, fov = 18` → 0.653. `anchors.test.ts` bu iki değeri ±0.001 ile doğrular.
+- Doğrulama örnekleri (1440×900, etkin `engineer`, R0 = 1.2311): K0 `D = 362, r = 5.2, fov = 30` → 0.455; K2 `D = 515, r = 7.2, fov = 18` → 0.530 (`neutral`, R0 = 1.0320: 0.543 ve 0.632). `anchors.test.ts` bu iki değeri ±0.001 ile doğrular.
+- SPEC-SAPMA: §5.7.5 (M1, 2026-09-30) — önceki tanım `R0 = radii.x` idi (0.560 / 0.653). Süperelips ayak izinin köşegeni eksenden `2^(1/2 − 1/n1)` kat uzundur: `engineer`'ın n1 = 5 "yuvarlatılmış zar"ında 1.231 kat. Bu yüzden Taş D'den %23 büyük çiziliyordu. Lab posterlerinde K1 kareden taştı ve kırpıldı; canlı sahnede anchor'ların %10 kenar payını yiyip metne yaklaşırdı (§5.1.1). Artık D, köşeli şekillerde de Taş'ın ekrandaki çapıdır. `neutral`'da fark %3'tür. §5.8.1 tablosundaki "scale" sütunu eski tanımla (R0 = 1) hesaplanmıştır; `engineer` için 1.2311'e bölünür. D değerleri değişmez.
 - Rig her karede `live.stone = { cx, cy, r: D/2, visible }` yazar. Tüketenler: dokunmatik tarama, yakınlık eğimi, kontrast probu, route glide anlık görüntüsü.
 
 #### 5.7.6 Object-space dönüşümleri (CPU, kare başına)
@@ -4973,6 +4977,8 @@ export function wrap180(a: number): number                     // a − 360·rou
 export function superNorm(u: number, v: number, n: number): number          // (|u|^n + |v|^n)^(1/n)
 /** |cut| ≥ radii.y → 0; aksi hâlde (1 − |cut/radii.y|^n2)^(1/n2) · radii.x (gürültü yok sayılır) */
 export function capRadius(cut: number, radii: readonly [number, number, number], n2: number): number
+/** XZ ayak izinin çevrel yarıçapı: radii.x · 2^(1/2 − 1/n1) (n1 ≥ 2), aksi hâlde radii.x. Analitik ölçeğin R0'ı (§5.7.5, SPEC-SAPMA M1) */
+export function footprintRadius(radii: readonly [number, number, number], n1: number): number
 /** dayOfYear / daysInYear, yerel saat. YALNIZCA client'ta, mount sonrası çağrılır (SSR'da asla). */
 export function arcFraction(d: Date): number
 /** growth deseni: normalize kümülatif kenarlar [0, …, 1]; uzunluk = weights.length + 1 (≤ 25) */
@@ -5006,6 +5012,7 @@ export function clockAngles(d: Date): { hourDeg: number; minuteDeg: number }  //
   - `bandOf` sıralı sonuç verir.
   - Her N ∈ 3..6 ve k için `(sectorOffset + (k + 0.5)·360/N + psi(k)) mod 360 === 180`.
   - `capRadius(0) = radii.x` ve `capRadius(±radii.y) = 0`.
+  - `footprintRadius`: n1 = 2'de `radii.x`; n1 ≥ 2'de 45° noktası süperelips üzerindedir (engineer 1.2311, neutral 1.0320).
   - `wrapNear` sonucu `ref`'e en fazla 180° uzaktır.
   - `arcFraction(new Date(2026, 0, 1)) ≈ 1/365`, `arcFraction(new Date(2026, 11, 31)) = 1`.
   - `ringEdges` sonucu 0 ile başlar, 1 ile biter ve monoton artandır.
@@ -5951,6 +5958,8 @@ await browser.close()
 
 - Birincil yakalama yolu `canvas.toDataURL()`'dir (`preserveDrawingBuffer` açık); şeffaflık sayfa zeminine bağlı kalmaz. Yedek yol `locator.screenshot({ omitBackground: true })`'dir (sayfa zemini şeffafken).
 - `quality` başlangıç değerleridir. 1080 AVIF 40 KB'ı aşarsa AVIF kalitesi 40'a indirilir; yine aşarsa `--check` başarısız olur.
+- `--qa` ayrıca her kareyi otomatik denetler: opak ve siyaha yakın piksel (NaN belirtisi) sayısı 0 olmalıdır; görünür içeriğin (alfa > 3) kare kenarına uzaklığı ≥ 16 px olmalıdır (kırpılma). QA PNG'leri sayfa zemini (`--color-canvas`) üzerine bindirilir; ayrıca her tema için 13 anahtarlık `grid-<tema>.png` üretilir.
+- SPEC-SAPMA: §5.16.3 (M1) — `package.json` `"type": "module"` taşımadığı için tsx betiği CommonJS olarak çalıştırır; üst düzey `await` kullanılamaz. Akış aynı sırayla `main()` içine alınmıştır.
 - ⚠️ DOĞRULANMADI: headless WebGL bayrakları. Kalite araştırmasında macOS arm64 üzerinde Playwright 1.63 headless shell'in WebGL2'yi SwiftShader ile sunduğu ölçülmüştür. GPU'suz Linux'ta `--use-angle=swiftshader --enable-unsafe-swiftshader` bayrakları gerekir; bayraksız Linux davranışı doğrulanmadı. Posterler yerelde üretilir; CI poster üretmez, varlıklarını ve boyutlarını `check-budgets.mjs` denetler (§9.4.2, §13.6.1).
 - **ZORUNLU:** Şu değişikliklerden sonra `npm run posters` yeniden çalıştırılır ve çıktı commit edilir:
   - profil (şekil, tohum, desen, yoğunluk);
@@ -5997,7 +6006,7 @@ export function ScenePoster({ posterKey }: { posterKey: 'k0' | 'k1' | 'k5' }) {
 ```
 
 - Hero posteri LCP öğesi olmamalıdır (D-34): masaüstünde H1 kutusundan küçüktür, mobilde bu V-39 ile doğrulanır ve gerekirse §9.5.4 çözüm sırası uygulanır; poster `fetchPriority="low"` taşır, açık `width/height` ile CLS üretmez (final.md §10.3).
-- `--stone-ry` profilden (`radii.y`) kök stile yazılır (§4.17).
+- `--stone-ry` profilden `radii.y / R0` olarak kök stile yazılır (`R0 = footprintRadius`, §5.7.5; `engineer` 0.650, `neutral` 0.833) (§4.17).
 - ⚠️ DOĞRULANMADI: `loading="lazy"` + `display: none` durumundaki etkin olmayan tema posterinin hiçbir motorda indirilmemesi. Playwright ağ günlüğüyle Chromium, WebKit ve Firefox'ta doğrulanır (§13.3). İndirilirse geri dönüş: tek `<picture>` + `<source media="(prefers-color-scheme: dark)">`. Bu yolda elle seçilen tema OS'tan farklıysa poster yanlış temada görünür; seçim sahibine raporlanır.
 
 ### 5.17 Context loss ve hata toleransı
@@ -16335,9 +16344,9 @@ Belgedeki her `⚠️ DOĞRULANMADI` maddesi, araştırma notlarındaki UNVERIFI
 | V-10 | Node 24'ün npm'inde `approve-scripts` uyarısı ve komutu vardır. | §2.2.9 #11 | `npm help approve-scripts` | Adım atlanır. | M0 — yanlış çıktı → SPEC-SAPMA §2.2.9: komut `npm install-scripts approve` (2026-09-29) |
 | V-11 | Deployment Protection "All Deployments" Hobby'de ücretsizdir. | §14.2.2 | Vercel panosu | M3'ten itibaren production D-36 nedeniyle deploy olmaz. M0–M2'de production iskeleti açık kalır; içerik yoktur ve `robots.txt` `Disallow: /` döner. | M0 — ✅ DOĞRULANDI (2026-09-29, Vercel panosu) |
 | V-12 | Deployment Checks Hobby'de vardır. | §14.2.2, kalite §14 #1 | Vercel panosu | Denetim PR aşamasında yapılır (§14.1 #6). | M0 — ✅ DOĞRULANDI (2026-09-30, Vercel panosu) |
-| V-13 | Next 16.3.7 (2026-09-30) kırıcı değişiklik içermez; güvenlik düzeltmelerini kapsar. | D-01, platform §13 | Sürüm notları + X1 PR'ında `npm run check` | Güvenlik yaması ertelenmez; kırılma `SPEC-SAPMA` ile giderilir. | X1 (≤ M1) |
-| V-14 | Headless Chromium, SwiftShader bayraklarıyla poster render'ı için WebGL2 sağlar (macOS'ta ölçüldü; Linux'ta bayraksız davranış bilinmiyor). | §5.16.3, final §13 #6 | M1'de yerel `npm run posters`; CI yalnız `--check` | Yakalama yedeği `locator.screenshot({ omitBackground: true })`. | M1 |
-| V-15 | `WebGLRenderer.debug.onShaderError`, `@types/three` 0.186.0'da vardır. | §5.12.4, §5.17 | Tip dosyası | `compileAsync` sonrası `gl.info.programs[].diagnostics.runnable === false` kontrolü. | M1 |
+| V-13 | Next 16.3.7 (2026-09-30) kırıcı değişiklik içermez; güvenlik düzeltmelerini kapsar. | D-01, platform §13 | Sürüm notları + X1 PR'ında `npm run check` | Güvenlik yaması ertelenmez; kırılma `SPEC-SAPMA` ile giderilir. | X1 (≤ M1) — ✅ DOĞRULANDI, düzeltmeyle (2026-09-30): kırıcı değişiklik yok (M0 ve M1'de 16.3.7 ile `npm run check` yeşil). SPEC-SAPMA: sürüm notu 2026-09-29 tarihlidir ve yalnız bir Turbopack hata düzeltmesinin backport'udur (#98931); güvenlik düzeltmesi listelenmez. En yüksek 16.3.x yine 16.3.7'dir, bu yüzden X1 ayrı PR gerektirmedi. |
+| V-14 | Headless Chromium, SwiftShader bayraklarıyla poster render'ı için WebGL2 sağlar (macOS'ta ölçüldü; Linux'ta bayraksız davranış bilinmiyor). | §5.16.3, final §13 #6 | M1'de yerel `npm run posters`; CI yalnız `--check` | Yakalama yedeği `locator.screenshot({ omitBackground: true })`. | M1 — ✅ DOĞRULANDI (2026-09-30, macOS arm64, Playwright 1.63 headless: 36 poster ve 26 QA karesi `toDataURL` ile üretildi; 26 lab e2e testi konsol hatasız) |
+| V-15 | `WebGLRenderer.debug.onShaderError`, `@types/three` 0.186.0'da vardır. | §5.12.4, §5.17 | Tip dosyası | `compileAsync` sonrası `gl.info.programs[].diagnostics.runnable === false` kontrolü. | M1 — ✅ DOĞRULANDI (2026-09-30, `WebGLDebug.onShaderError` tip dosyasında; lab `Scene.tsx` kullanıyor) |
 | V-16 | Safari (CoreText) `lang="tr"` ile `locl` TRK uygular ("fikir"de bağ yok). | §6.2.6 | iOS Safari ekran görüntüsü | Kural her durumda kalır; bulgu §6.2.6'ya yazılır. | M2 |
 | V-17 | `light-dark()` Safari/iOS 17.5 ile başlar; 17.0–17.4 desteklemez. | §2.5.3, §6.3.5 | caniuse "css-light-dark", MDN; iOS 17.0/17.4 simülatörü | `@supports not` yedek bloğu (§6.10) kalır; ya da T-03 ile taban 17.5 yapılır. | M2 |
 | V-18 | React 19 geliştirmede head'deki satır içi `<script>` için uyarı verebilir. | §8.4.3 | `npm run dev` konsolu | Üretimde görülürse `next/script` `beforeInteractive`; no-flash testi yeniden koşar. | M2 |
