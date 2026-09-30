@@ -87,7 +87,7 @@ export const palettes = {
       accent: '#FF7A95', accentHover: '#FF9AB0', onAccent: '#0B1020',
       focus: '#F2C46D', brass: '#C9A66B', success: '#5FD4A0', danger: '#FF8A7A', selection: '#5A2238',
       scrim: rgba('#0B1020', 0.85),
-      sceneStoneBase: '#5E6577', sceneStoneLight: '#D3D8E2', sceneSky: '#E8EBF2', sceneGround: '#0B1020',
+      sceneStoneBase: '#5A5E68', sceneStoneLight: '#B9BCC4', sceneSky: '#E8EBF2', sceneGround: '#0B1020',
       sceneShadow: rgba('#000000', 0.45),
     },
   },

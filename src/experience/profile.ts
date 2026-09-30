@@ -4,8 +4,9 @@ import type { PaletteName } from '../design/tokens';
 
 export type { PaletteName };
 export type Persona = 'neutral' | 'engineer' | 'designer' | 'architect' | 'researcher' | 'manager';
-export type Surface = 'graphite' | 'anodized' | 'agate' | 'travertine' | 'ice' | 'oak';
-export type CapPattern = 'rings' | 'contours' | 'agate' | 'poche' | 'growth';
+// 'geode' M1 revizyonunda eklendi (sahip kararı, issue #5): akik yumrusu kabuğu ve kesiti.
+export type Surface = 'graphite' | 'anodized' | 'agate' | 'travertine' | 'ice' | 'oak' | 'geode';
+export type CapPattern = 'rings' | 'contours' | 'agate' | 'poche' | 'growth' | 'geode';
 export type RingsSource = 'years' | 'publications' | 'teamSize';
 export type TypePreset = 'hassas' | 'editoryal';
 export type Intensity = 'calm' | 'standard' | 'expressive';
@@ -86,17 +87,19 @@ export const PROFILES: Readonly<Record<Persona, ExperienceProfile>> = {
     },
     work: WORK,
   },
+  // M1 revizyonu (2026-09-30, issue #5): "yuvarlatılmış zar" yerine akik yumrusu (jeot); dışı pürüzlü kaya,
+  // kesiti kabuk hattını izleyen akik bantları. Bantlar halkadır (yıllar); en eski yıl druzy kuvars çekirdek.
   engineer: {
     persona: 'engineer',
     stone: {
-      shape: [5, 5],
+      shape: [2.2, 2.3],
       radii: [1, 0.8, 1],
-      disp: 0.0,
+      disp: 0.045,
       noiseFreq: NOISE_FREQ,
       seed: SEED,
-      surface: 'anodized',
+      surface: 'geode',
     },
-    cap: { pattern: 'contours', ringWarp: RING_WARP, ringsSource: 'years' },
+    cap: { pattern: 'geode', ringWarp: RING_WARP, ringsSource: 'years' },
     palette: 'mekanizma',
     type: 'hassas',
     intensity: 'standard',

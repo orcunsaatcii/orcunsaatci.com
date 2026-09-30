@@ -128,6 +128,7 @@ const PATTERN_DEFINE: Readonly<Record<CapPattern, string>> = {
   agate: 'CAP_PATTERN_AGATE',
   poche: 'CAP_PATTERN_POCHE',
   growth: 'CAP_PATTERN_GROWTH',
+  geode: 'CAP_PATTERN_GEODE',
 };
 
 /** stone.surface → #define (§5.4.3) */
@@ -138,6 +139,7 @@ const SURFACE_DEFINE: Readonly<Record<Surface, string>> = {
   travertine: 'SURFACE_TRAVERTINE',
   ice: 'SURFACE_ICE',
   oak: 'SURFACE_OAK',
+  geode: 'SURFACE_GEODE',
 };
 
 /** GLSL float sabiti: "2" GLSL ES 3.00'te int'tir ve float parametreye örtük dönüşmez. */

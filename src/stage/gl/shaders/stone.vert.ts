@@ -1,6 +1,7 @@
 // src/stage/gl/shaders/stone.vert.ts — süperkuadrik Taş; şekil tamamen vertex shader'da kurulur (§5.3.3).
 // GLSL1 tarzı yazılır ve glslVersion ayarlanmaz: three r186 ShaderMaterial için #version 300 es önekini ekler.
-import { SNOISE3 } from './noise.glsl';
+// fbm, noise.glsl.ts'teki FBM3'tür: stone.frag akik bantlarında kabuk hattını aynı fonksiyonla izler.
+import { FBM3, SNOISE3 } from './noise.glsl';
 
 export const stoneVert = /* glsl */ `
 uniform vec2  uShape;      // süperkuadrik üsler: x = n1 (XZ yuvarlaklığı), y = n2 (Y). 2 = yuvarlak, 8 = köşeli
@@ -14,20 +15,7 @@ varying vec3 vNrm;         // object-space normal
 
 ${SNOISE3}
 
-// Oktav sayısından bağımsız olarak [-1, 1] aralığına normalize edilmiş fbm:
-// high ve medium yalnızca ince detayda ayrışır, genlikte ayrışmaz (posterler high ile üretilir).
-float fbm(vec3 p) {
-  float sum = 0.0;
-  float amp = 1.0;
-  float norm = 0.0;
-  for (int i = 0; i < OCTAVES; i++) {
-    sum += amp * snoise(p);
-    norm += amp;
-    p = p * 2.03 + 17.1;
-    amp *= 0.5;
-  }
-  return sum / norm;
-}
+${FBM3}
 
 vec3 shapeAt(vec3 d) {
   float xz = pow(pow(abs(d.x), uShape.x) + pow(abs(d.z), uShape.x), uShape.y / uShape.x);

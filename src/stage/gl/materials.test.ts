@@ -22,7 +22,7 @@ import {
   stoneProfileOf,
 } from './materials';
 import { ghostFrag } from './shaders/ghost.frag';
-import { SNOISE3 } from './shaders/noise.glsl';
+import { FBM3, SNOISE3, SNOISE3_GRAD } from './shaders/noise.glsl';
 import { shadowFrag, shadowVert } from './shaders/shadow';
 import { stoneFrag } from './shaders/stone.frag';
 import { stoneVert } from './shaders/stone.vert';
@@ -32,9 +32,9 @@ const engineer = stoneProfileOf(PROFILES.engineer);
 describe('createUniforms', () => {
   it('profil değerlerini taşır; kesilmemiş Taş’ta kapak yarıçapı 0’dır', () => {
     const u = createUniforms(engineer);
-    expect(u.uShape.value.toArray()).toEqual([5, 5]);
+    expect(u.uShape.value.toArray()).toEqual([2.2, 2.3]);
     expect(u.uRadii.value.toArray()).toEqual([1, 0.8, 1]);
-    expect(u.uDisp.value).toBe(0);
+    expect(u.uDisp.value).toBe(0.045);
     expect(u.uPlane.value.toArray()).toEqual([0, 1, 0, CUT_WHOLE]);
     expect(u.uCapRadius.value).toBe(0);
     expect(u.uRingWarp.value).toBe(0.04);
@@ -58,11 +58,11 @@ describe('createMaterials', () => {
     waveWidthPx: INTENSITY.standard.waveWidthPx,
   });
 
-  it('engineer varyantı: contours kapak, anodized yüzey, 2 oktav, float dalga kalınlığı', () => {
+  it('engineer varyantı: akik (geode) kapak ve kabuk, 2 oktav, float dalga kalınlığı', () => {
     expect(m.stone.defines).toEqual({
       OCTAVES: 2,
-      CAP_PATTERN_CONTOURS: '',
-      SURFACE_ANODIZED: '',
+      CAP_PATTERN_GEODE: '',
+      SURFACE_GEODE: '',
       WAVE_WIDTH_PX: '2.0',
     });
     expect(m.stone.side).toBe(DoubleSide);
@@ -115,6 +115,16 @@ describe('createMaterials', () => {
       SURFACE_GRAPHITE: '',
       WAVE_WIDTH_PX: '1.5',
     });
+    const machined = createMaterials(createUniforms(engineer), {
+      octaves: 2,
+      pattern: 'contours',
+      surface: 'anodized',
+    });
+    expect(machined.stone.defines).toEqual({
+      OCTAVES: 2,
+      CAP_PATTERN_CONTOURS: '',
+      SURFACE_ANODIZED: '',
+    });
   });
 });
 
@@ -159,6 +169,21 @@ describe('shader modülleri (§5.3, §5.4)', () => {
     expect(SNOISE3).toContain('Ashima Arts');
     expect(SNOISE3).toContain('Distributed under the MIT License');
     expect(SNOISE3).toContain('return 105.0 * dot( m*m, vec4( dot(p0,x0), dot(p1,x1), ');
+  });
+
+  it('gradyanlı snoise upstream gövdesidir; yardımcıları tekrar tanımlamaz', () => {
+    expect(SNOISE3_GRAD.trimStart().startsWith('float snoise(vec3 v, out vec3 gradient)')).toBe(
+      true,
+    );
+    expect(SNOISE3_GRAD).toContain('gradient *= 105.0;');
+    expect(SNOISE3_GRAD).not.toContain('vec4 permute(vec4 x)');
+  });
+
+  it('vertex ve akik kesiti aynı fbm’i kullanır (kabuk hattı)', () => {
+    expect(stoneVert).toContain(FBM3);
+    expect(stoneFrag).toContain(FBM3);
+    expect(stoneFrag).toContain('#ifdef CAP_PATTERN_GEODE');
+    expect(stoneFrag).toContain('#ifdef SURFACE_GEODE');
   });
 
   it('parçalar sRGB çıkışla biter ve varsayılan define’ları taşır', () => {

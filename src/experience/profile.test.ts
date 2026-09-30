@@ -99,15 +99,15 @@ describe('K-PERSONA-2', () => {
     });
   });
 
-  it('etkin persona engineer §4.17.2 sahne değerlerini taşır', () => {
+  it('etkin persona engineer §4.17.2 sahne değerlerini taşır (M1 revizyonu: akik yumrusu)', () => {
     const e = PROFILES.engineer;
     expect(e.stone).toMatchObject({
-      shape: [5, 5],
+      shape: [2.2, 2.3],
       radii: [1, 0.8, 1],
-      disp: 0,
-      surface: 'anodized',
+      disp: 0.045,
+      surface: 'geode',
     });
-    expect(e.cap.pattern).toBe('contours');
+    expect(e.cap.pattern).toBe('geode');
     expect(e.palette).toBe('mekanizma');
     expect(e.intensity).toBe('standard');
   });
