@@ -14509,6 +14509,8 @@ Kurallar:
 | Çağrı | `expect(page).toHaveScreenshot({ fullPage: true, mask: [page.locator('#scene-layer'), page.locator('[data-live-time]')] })`. `animations: 'disabled'` ve `maxDiffPixelRatio: 0.01` config'ten gelir. |
 | Taban dosyaları | `tests/e2e/__screenshots__/<proje>/linux/…` (§13.3.1 `snapshotPathTemplate`) |
 
+- SPEC-SAPMA: §13.4.2 (M5, 2026-09-30) — Maske `#scene-layer` yerine `#scene-layer canvas`'tır: katman §5.12.5 ile tam ekran fixed kutudur (`100lvh`) ve tamamı maskelenince tam sayfa görüntülerinin ilk ekranı magenta kutuyla kapanıyordu (M5 ilk taban koşusunda ölçüldü). Azaltılmış harekette canvas yoktur; posterler karşılaştırmaya girer. M4 tabanları footer'daki "Hareketi azalt" anahtarı eklenmeden önce üretilmişti (fark %0.35 < `maxDiffPixelRatio` 0.01); M5'te yeniden üretildi.
+
 Taban kuralları:
 - Tabanlar **yalnız CI'da, Linux'ta** üretilir: `ci.yml`, `workflow_dispatch` + `update_snapshots: true` (§13.6.1). Oluşan artefakt indirilir ve commit edilir.
 - **YASAK:** macOS'ta üretilen tabanları commit etmek.
