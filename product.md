@@ -338,7 +338,7 @@ Terimler tüm belgede bu anlamlarla kullanılır. Kod adları İngilizce kalır.
 
 | Terim | Kod adı / EN | Tanım | Ayrıntı |
 |---|---|---|---|
-| **Taş** | `stone`, `stoneMesh` | Sitenin tek 3D nesnesidir ve ziyaret boyunca aynı kalır. Süperkuadrik bir formdur; şekli, gürültüsü ve yüzeyi personadan gelir (§4.17.2): etkin `engineer`'da gürültüsüz "yuvarlatılmış zar" (`disp` 0, `anodized` yüzey), `neutral`'da düşük frekanslı gürültüyle hafifçe bozulmuş bir "çakıl". Şekil tamamen vertex shader'da kurulur. | §5.2, §5.3 |
+| **Taş** | `stone`, `stoneMesh` | Sitenin tek 3D nesnesidir ve ziyaret boyunca aynı kalır. Süperkuadrik bir formdur; şekli, gürültüsü ve yüzeyi personadan gelir (§4.17.2): etkin `engineer`'da bir **akik yumrusu (jeot)**: dışı pürüzlü, lekeli kaya kabuğu (`disp` 0.045, `geode` yüzey), kesiti kabuk hattını izleyen akik bantları (M1 revizyonu, #5), `neutral`'da düşük frekanslı gürültüyle hafifçe bozulmuş bir "çakıl". Şekil tamamen vertex shader'da kurulur. | §5.2, §5.3 |
 | **Kesit / kesme** | `cut` (= `uPlane.w`) | Taşı yatay bir düzlemle açma miktarıdır: `cut ∈ [−0.10, 1.10]`. 1.10 kesilmemiş, 0 yarı kesittir. Düzlemin üstündeki yarı çizilmez (`discard`). KESİT aynı zamanda konseptin adıdır. | §4.7, §5.4 |
 | **Kapak** (cap) | `shadeCap`, `uCapRadius` | Kesim düzleminde görünen düz yüzdür. Açıklıktan görünen iç arka yüzler düz kapak olarak gölgelenir ("cap trick"). Halkalar, dilimler, bant ve açık yay bu yüzeye çizilir. | §5.4 |
 | **Halka** | `uRings`, `ringIdx` | Kapaktaki eş merkezli çizgilerdir. Her biri bir çalışma yılıdır: 0 merkezdeki en eski yıl, `uRings−1` kenardaki bu yıl. `rings = clamp(currentYear − careerStartYear + 1, 4, 24)`. | §5.4, §5.10 |
@@ -1978,7 +1978,7 @@ Sitenin tüm ziyaret boyunca **tek bir nesnesi** vardır: **Taş**. Ziyaretçi k
 
 **Veri dürüstlüğü:**
 - Halka sayısı, bant aralıkları, dilim sayısı ve açık yay yalnızca CV ve alan içeriğinden hesaplanır.
-- **YASAK:** veriyle ilişkisi olmayan dekoratif halka, dilim ya da desen. İstisna: persona kapak deseninin malzeme dokusu (ör. `contours` mikro ızgarası; §4.17.2, §5.4.3) halka, dilim ve bant sayısını ya da konumunu değiştirmez ve bu yasağa girmez.
+- **YASAK:** veriyle ilişkisi olmayan dekoratif halka, dilim ya da desen. İstisna: persona kapak deseninin malzeme dokusu (ör. `geode` bant tonları, laminalar ve kristal çekirdek ya da `contours` mikro ızgarası; §4.17.2, §5.4.3) halka, dilim ve bant sayısını ya da konumunu değiştirmez ve bu yasağa girmez.
 - Yılı olmayan bir projenin bandı çizilmez (bant görünürlüğü 0 kalır).
 
 #### 4.1.3 Atmosfer
@@ -1986,7 +1986,7 @@ Sitenin tüm ziyaret boyunca **tek bir nesnesi** vardır: **Taş**. Ziyaretçi k
 **"Gece kadranı üzerinde bir mineral numune."** His editoryal, hassas ve sessizdir: bir müze kataloğu ile saat ustası tezgâhının kesişimi.
 
 - **Malzemeler:**
-  - ince taneli bir taş; yüzeyi personadan gelir (§4.17.2): etkin `engineer`'da `anodized` (grafit + ince doğrusal parlaklık), `neutral`'da mat grafit;
+  - ince taneli bir taş; yüzeyi personadan gelir (§4.17.2): etkin `engineer`'da `geode` (pürüzlü, lekeli kaya kabuğu; kesit yüzü cilalı akik bantları), `neutral`'da mat grafit;
   - kâğıt gibi okunan, açık renkli cilalı bir kesit yüzeyi;
   - mürekkep rengi kılcal çizgili halkalar;
   - **tek** yakut vurgu (`--color-accent`);
@@ -2961,6 +2961,10 @@ final.md'de bulunmayan ve uygulanabilirlik için eklenen değerler aşağıdadı
 | 16 | §4.16.3 | D1 / D2 / D3 poster karşılıkları: `SpecimenGlyph` / `DialFigure` / `RingsFigure`. |
 | 17 | §4.16.4 | "Hareketi azalt" anahtarı canlı geçer (≤ 1 s) ve görünen bölüm korunur. |
 | 18 | §4.17.4 | `intensity` çarpanları ve easing'leri. |
+| 19 | §4.17.2 `engineer` | Taş: akik yumrusu (jeot). `shape` [2.2, 2.3], `radii` (1, 0.8, 1), `disp` 0.045, `surface` `geode`, `cap.pattern` `geode`. M1'de onaylandı (2026-09-30, [#5](https://github.com/orcunsaatcii/orcunsaatci.com/issues/5#issuecomment-5907686488)). |
+| 20 | §5.4.3 `geode` | Kabuk: `CRUST_BUMP` 0.028, çukur tonu 0.70–1.06, lekelenme ±%12, demir tonu çarpanı (1.07, 1.0, 0.88). Akik: bant tonu `mix(capBase, mix(capBase, ringLine, 0.45), 0.15–0.70)`, laminalar %6, süt beyazı bant `t > 0.74` (%50), druzy ölçeği 34, kabuk şeridi `RIND_WIDTH` 0.035, cilalı parlama 0.10, kalsedon parıltısı %8, yıl çizgisi kontrastı ×0.5. M1'de onaylandı (2026-09-30, [#5](https://github.com/orcunsaatcii/orcunsaatci.com/issues/5#issuecomment-5907686488)). |
+| 21 | §6.3.6 | Taş tonları (`--scene-stone-base` / `--scene-stone-light`): açık `#2B2F3A` / `#7C8292`, koyu `#5A5E68` / `#B9BCC4`. M1'de onaylandı (2026-09-30, [#5](https://github.com/orcunsaatcii/orcunsaatci.com/issues/5#issuecomment-5907686488)). |
+| 22 | §5.4.1 not 3, §5.16 | Aktif bant vurgusu `mix(col, uAccent, 0.18)` + 1.5 px kenar; açık yay tarama aralığı 0.035; poster çerçevesi `POSTER_STONE_FRAC` 0.8 (R0 = `footprintRadius`, §5.7.5). M1'de onaylandı (2026-09-30, [#5](https://github.com/orcunsaatcii/orcunsaatci.com/issues/5#issuecomment-5907686488)). |
 
 ### 4.13 Derin sayfalar ve route geçiş koreografisi
 
@@ -3266,16 +3270,18 @@ Figürler `src/components/figures/` altındadır ve geometrileri `section-geomet
 
 | Parametre | `neutral` | `engineer` (varsayılan, etkin) | `designer` | `architect` | `researcher` | `manager` |
 |---|---|---|---|---|---|---|
-| `stone.shape` / `radii` | [2.2, 2.2] / (1, 0.86, 1): çakıl | [5, 5] / (1, 0.8, 1): yuvarlatılmış zar | [2.0, 2.0] / (1, 0.9, 1) | [6, 6] / (1, 0.7, 1): kaide | [2, 8] / (0.8, 1.4, 0.8): **karot silindiri** (yatay kesim = buz karotu kesiti) | [2, 8] / (1, 0.42, 1): **disk** (gövde dilimi) |
-| `stone.disp` (≤ 0.045) | 0.035 | 0.0 | 0.045 | 0.0 | 0.01 | 0.02 |
-| `stone.surface` | `graphite` | `anodized` (grafit + ince doğrusal parlaklık) | `agate` (saten) | `travertine` (hash gözenekler) | `ice` (soluk, hafif kenar) | `oak` (sıcak mat) |
-| `cap.pattern` | `rings` | `contours` (superelips ofsetleri + dik mikro grid) | `agate` (bükülmüş bantlar, %8 vurgu tonu) | `poche` (mürekkep dolgu + 45° tarama + plan konturları) | `rings`, `ringsSource: 'publications'` (halka kalınlığı yayına göre) | `growth` (halka kalınlığı ∝ ekip büyüklüğü, isteğe bağlı) |
+| `stone.shape` / `radii` | [2.2, 2.2] / (1, 0.86, 1): çakıl | [2.2, 2.3] / (1, 0.8, 1): **akik yumrusu (jeot)** | [2.0, 2.0] / (1, 0.9, 1) | [6, 6] / (1, 0.7, 1): kaide | [2, 8] / (0.8, 1.4, 0.8): **karot silindiri** (yatay kesim = buz karotu kesiti) | [2, 8] / (1, 0.42, 1): **disk** (gövde dilimi) |
+| `stone.disp` (≤ 0.045) | 0.035 | 0.045 | 0.045 | 0.0 | 0.01 | 0.02 |
+| `stone.surface` | `graphite` | `geode` (pürüzlü, lekeli kaya kabuğu; analitik gradyanla tümsek) | `agate` (saten) | `travertine` (hash gözenekler) | `ice` (soluk, hafif kenar) | `oak` (sıcak mat) |
+| `cap.pattern` | `rings` | `geode` (kabuk hattını izleyen akik bantları, laminalar, süt beyazı kalsedon bantları, druzy kuvars çekirdek, kesitte kabuk şeridi) | `agate` (bükülmüş bantlar, %8 vurgu tonu) | `poche` (mürekkep dolgu + 45° tarama + plan konturları) | `rings`, `ringsSource: 'publications'` (halka kalınlığı yayına göre) | `growth` (halka kalınlığı ∝ ekip büyüklüğü, isteğe bağlı) |
 | `palette` | `mekanizma` | `mekanizma` | `atolye` | `emaye` (açık tema önce) | `emaye` | `atolye` |
 | `type` | `hassas` | `hassas` | `hassas` | `hassas` | `editoryal` | `hassas` |
 | `labels.areas` | Çalışma alanları / Areas of work | Uzmanlık alanları / Areas of expertise | Disiplinler / Disciplines | Ölçekler ve tipolojiler / Scales and typologies | Araştırma alanları / Research areas | Liderlik alanları / Areas of leadership |
 | `labels.work` | Seçili projeler / Selected projects | Seçili projeler / Selected projects | Seçili işler / Selected work | Yapılar ve projeler / Buildings and projects | Yayınlar ve projeler / Publications and projects | Ekipler ve sonuçlar / Teams and outcomes |
 | `intensity` | `standard` | `standard` | `expressive` | `standard` | `calm` | `calm` |
 | `labels.contactLead` (yer tutucu) | Bir sonraki halkayı birlikte yazalım. / Let's write the next ring together. | Bir sonraki halkayı birlikte inşa edelim. / Let's build the next ring together. | … birlikte tasarlayalım. / … design … | … birlikte kuralım. / … raise … | … birlikte araştıralım. / … research … | … birlikte büyütelim. / … grow … |
+
+> **M1 revizyonu (2026-09-30, sahip kararı, issue #5):** `engineer`'ın ilk hâli "yuvarlatılmış zar"dı (`[5, 5]`, `disp` 0, `anodized`, `contours`). Sahip bunu taş olarak okumadı: "pürüzsüz bir kutu". Önerilen B yönü, akik yumrusu (jeot), seçildi. Dışı sade ve pürüzlü bir kaya, kesiti yıllar boyunca oluşmuş akik bantlarıdır; bu, "Dışı kimlik, içi emek" sloganıyla birebir örtüşür. Halkalar bantların sınırıdır, en eski yıl druzy kuvars çekirdektir. Eski `anodized` ve `contours` varyantları kodda İSTEĞE BAĞLI olarak kalır.
 
 **Tüm persona'larda ortak değerler:**
 - `stone.noiseFreq` 1.3, `stone.seed` 7.0, `cap.ringWarp` 0.04;
@@ -3294,8 +3300,8 @@ Figürler `src/components/figures/` altındadır ve geometrileri `section-geomet
 ```ts
 // src/experience/profile.ts — three-free; stage/, views/ ve figures/ buradan okur
 export type Persona = 'neutral' | 'engineer' | 'designer' | 'architect' | 'researcher' | 'manager';
-export type Surface = 'graphite' | 'anodized' | 'agate' | 'travertine' | 'ice' | 'oak';
-export type CapPattern = 'rings' | 'contours' | 'agate' | 'poche' | 'growth';
+export type Surface = 'graphite' | 'anodized' | 'agate' | 'travertine' | 'ice' | 'oak' | 'geode';   // geode: M1 revizyonu (#5)
+export type CapPattern = 'rings' | 'contours' | 'agate' | 'poche' | 'growth' | 'geode';
 export type RingsSource = 'years' | 'publications' | 'teamSize';
 export type PaletteName = 'mekanizma' | 'atolye' | 'emaye';
 export type TypePreset = 'hassas' | 'editoryal';
@@ -3669,6 +3675,8 @@ Geometri tek bir örnektir; `Stone` ve `Ghost` aynı `BufferGeometry`'yi paylaş
 |---|---|---|
 | `SNOISE3: string` | `float snoise(vec3 v)` ve yardımcıları `mod289(vec3)`, `mod289(vec4)`, `permute(vec4)`, `taylorInvSqrt(vec4)`. Çıktı ≈ [−1, 1]. | Ashima Arts / Stefan Gustavson, `webgl-noise` deposu, `src/noise3D.glsl` (https://github.com/stegu/webgl-noise), MIT. |
 | `HASH13: string` | `float hash13(vec3 p3)` (sinüssüz hash) | Dave Hoskins, "Hash without Sine" (https://www.shadertoy.com/view/4djSRW), MIT. |
+| `SNOISE3_GRAD: string` | `float snoise(vec3 v, out vec3 gradient)`: analitik gradyanlı simplex. Yardımcıları `SNOISE3`'ten gelir, bu yüzden ondan sonra eklenir. | Aynı depo, `src/noise3Dgrad.glsl`, MIT. Gövde olduğu gibi kopyalanır; başlık ve yardımcılar `noise3D.glsl` ile bayt bayt aynıdır (M1 revizyonu, `geode` kabuğu). |
+| `FBM3: string` | `float fbm(vec3 p)`: §5.3.3'teki fbm, `OCTAVES` define'ıyla | Bu proje. Vertex (şekil) ve fragment (`geode` bantlarının kabuk hattı) aynı fonksiyonu paylaşır. |
 
 - **ZORUNLU:** `snoise` gövdesi upstream dosyadan **olduğu gibi kopyalanır** (MIT başlık yorumu korunur); elle yeniden yazılmaz. Doğrulama: M1'deki shader derleme smoke testi (§5.19) ve `/lab/stage` görüntüsü.
 - `HASH13` gövdesi (kısa olduğu için burada sabitlenmiştir):
@@ -3739,6 +3747,7 @@ void main() {
 ```
 
 Kısıtlar:
+- Uygulamada `fbm`, `noise.glsl.ts`'teki `FBM3` sabitindedir (yukarıdaki kodla aynı). `stone.frag`'in `geode` deseni kabuk hattını izlemek için aynı fonksiyonu kullanır (M1 revizyonu).
 - **ZORUNLU:** `materials.ts` `uDisp`'i `Math.min(profile.disp, 0.045)` ile sınırlar. Daha içbükey bir preset klasik stencil-cap tekniği (+2 draw) gerektirir; planlanmamıştır.
 - Normal, `shapeAt`'in sonlu farklarıyla hesaplanır (vertex başına 3 fbm). Kutuplardaki çakışık vertex'ler için `t1` seçimi `abs(d.y) > 0.99` koşuluyla korunur.
 
@@ -3971,7 +3980,8 @@ Profil (§4.17) `cap.pattern` değerini seçer; `materials.ts` bunu `defines`'a 
 | `cap.pattern` | Define | Halka fonksiyonu | Ek katman | v1 durumu |
 |---|---|---|---|---|
 | `rings` | `CAP_PATTERN_RINGS` | `(ρ + snoise(açı, ρ)·uRingWarp)·R` | — | **ZORUNLU** (`#else` varsayılan dalı; `neutral`, `researcher`) |
-| `contours` | `CAP_PATTERN_CONTOURS` | `ρ·R` (süperelips ofsetleri) | 0.05 aralıklı dik mikro ızgara, %12 | **ZORUNLU** (etkin persona `engineer`, M1) |
+| `contours` | `CAP_PATTERN_CONTOURS` | `ρ·R` (süperelips ofsetleri) | 0.05 aralıklı dik mikro ızgara, %12 | **İSTEĞE BAĞLI** (uygulandı; M1 revizyonuna kadar `engineer`'ındı) |
+| `geode` | `CAP_PATTERN_GEODE` | `(ρ′ + 0.012·snoise(uv·3.7))·R`. ρ′ kabuk hattını izler (`geodeRho`: kapak yarıçapı + vertex'teki fbm ofseti). | Akik: halka başına deterministik ton, bant içi laminalar, ara ara süt beyazı kalsedon bandı, en eski yılda druzy kuvars çekirdek (Voronoi + faset parıltısı), kenarda %3.5 kabuk şeridi, cilalı parlama, merkeze doğru kalsedon parıltısı. Yıl sınırı çizgisi yarı kontrasttır (yıllar bant tonlarıyla da okunur). | **ZORUNLU** (etkin persona `engineer`, M1 revizyonu #5) |
 | `agate` | `CAP_PATTERN_AGATE` | `(ρ + 0.08·snoise(uv·2.5))·R` | çift halkalarda %8 vurgu tonu | **İSTEĞE BAĞLI** |
 | `poche` | `CAP_PATTERN_POCHE` | `ρ·R` | %85 mürekkep dolgu, çizgiler ters renk | **İSTEĞE BAĞLI** |
 | `growth` | `CAP_PATTERN_GROWTH` | `uRingEdges[25]` ile ağırlıklı halka genişliği (`ringsSource` = `'publications'` veya `'teamSize'`) | — | **İSTEĞE BAĞLI** |
@@ -3983,7 +3993,8 @@ Seçilen persona v1'de desteklenmeyen bir desen gerektirirse o desenin satırı 
 | `stone.surface` | Define | Katman | v1 durumu |
 |---|---|---|---|
 | `graphite` | `SURFACE_GRAPHITE` | yok (temel `shadeSurface`) | **ZORUNLU** (`neutral`) |
-| `anodized` | `SURFACE_ANODIZED` | ince doğrusal parlaklık (§5.4.1 kodu) | **ZORUNLU** (etkin persona `engineer`, M1) |
+| `anodized` | `SURFACE_ANODIZED` | ince doğrusal parlaklık (§5.4.1 kodu) | **İSTEĞE BAĞLI** (uygulandı; M1 revizyonuna kadar `engineer`'ındı) |
+| `geode` | `SURFACE_GEODE` | Pürüzlü kabuk: üç oktav analitik gradyanlı gürültüyle tümsek (`CRUST_BUMP` 0.028; türev gerektirmez, `gl_FrontFacing` seçiminin içinde güvenli). Çukurlar koyu; büyük ölçekli lekelenme ve hafif demir lekesi sıcaklığı. | **ZORUNLU** (etkin persona `engineer`, M1 revizyonu #5) |
 | `agate`, `travertine`, `ice`, `oak` | `SURFACE_<AD>` | §4.17.2 tanımı | **İSTEĞE BAĞLI** (desenlerle aynı kural: persona seçilirse M1 kapsamına alınır) |
 
 Yüzey değişimi de `npm run posters` gerektirir (§5.16).
@@ -4015,7 +4026,9 @@ void main() {
 
 #### 5.4.5 `shadowMat`
 
-`PlaneGeometry(1, 1)`, `rotation.x = −π/2`; konum `y = −(uRadii.y + 0.02)`; ölçek `2.4 · uRadii.x` (XZ). `transparent: true`, `depthWrite: false`, `renderOrder: −1`. Hero'da H1'in cap çizgisinin arkasına düşer ("ismin üstünde duran bir kâğıt ağırlığı").
+`PlaneGeometry(1, 1)`, `rotation.x = −π/2`; konum `y = −(uRadii.y + 0.02)`; ölçek `2.4 · uRadii.x` (XZ). `transparent: false` + normal alfa karışımı (`CustomBlending`: `SrcAlpha`/`OneMinusSrcAlpha`, alfa `One`/`OneMinusSrcAlpha`), `depthWrite: false`, `renderOrder: −1`. Hero'da H1'in cap çizgisinin arkasına düşer ("ismin üstünde duran bir kâğıt ağırlığı").
+
+> SPEC-SAPMA: §5.4.5 (M1, 2026-09-30) — three saydam nesneleri `renderOrder`'dan bağımsız olarak opaklardan **sonra** çizer. Kapak hilesinde yazılan derinlik arka yüzün derinliği olduğundan, `transparent: true` gölge K3/K5/D1/D5'teki 62°/68° eğimde kesit yüzünün üstüne düştü (QA ızgarası, açık tema). Gölge bu yüzden opak listede, `renderOrder: −1` ile Taş'tan önce ve normal alfa karışımıyla çizilir; §5.2'nin istediği gibi Taş onu her zaman örter.
 
 ```ts
 // src/stage/gl/shaders/shadow.ts
@@ -4045,8 +4058,8 @@ void main() {
 ```ts
 // src/stage/gl/materials.ts (arayüz)
 import type { ShaderMaterial } from 'three'
-export type CapPattern = 'rings' | 'contours' | 'agate' | 'poche' | 'growth'
-export type Surface = 'graphite' | 'anodized' | 'agate' | 'travertine' | 'ice' | 'oak'   // §4.17.3 ile aynı
+export type CapPattern = 'rings' | 'contours' | 'agate' | 'poche' | 'growth' | 'geode'
+export type Surface = 'graphite' | 'anodized' | 'agate' | 'travertine' | 'ice' | 'oak' | 'geode'   // §4.17.3 ile aynı
 export interface StoneProfile {                 // experience/profile.ts → stone + cap (§4.17)
   shape: readonly [number, number]; radii: readonly [number, number, number]
   disp: number; noiseFreq: number; seed: number; ringWarp: number; pattern: CapPattern; surface: Surface
@@ -4063,7 +4076,7 @@ export function disposeMaterials(m: ReturnType<typeof createMaterials>): void
 
 - `stone`: `{ vertexShader: stoneVert, fragmentShader: stoneFrag, uniforms: u, side: DoubleSide, defines: { OCTAVES: o.octaves, ['CAP_PATTERN_' + o.pattern.toUpperCase()]: '', ['SURFACE_' + o.surface.toUpperCase()]: '' } }`.
 - `ghost`: aynı vertex, `ghostFrag`, `transparent: true`, `depthWrite: false`.
-- `shadow`: `shadowVert`/`shadowFrag`, `transparent: true`, `depthWrite: false`.
+- `shadow`: `shadowVert`/`shadowFrag`, `transparent: false` + `CustomBlending` (normal alfa), `depthWrite: false` (§5.4.5 SPEC-SAPMA).
 - **ZORUNLU:** high kademede `octaves: 1` varyantı da oluşturulur ve görünmez (`visible={false}`) mesh'lere takılarak `compileAsync`'e dahil edilir. three r186'da `compile()` sahneyi `traverse` ile gezer, görünmez mesh'leri de derler (kaynakta doğrulandı). Step-down sırasında malzeme değişimi program önbelleğinden gelir ve takılma yapmaz.
 
 ### 5.5 Uniform referansı
@@ -4072,9 +4085,9 @@ export function disposeMaterials(m: ReturnType<typeof createMaterials>): void
 
 | Uniform | Tip | Varsayılan / aralık | Sürücü | Güncelleme | Kullanan |
 |---|---|---|---|---|---|
-| `uShape` | vec2 | profilden (§4.17.2): etkin `engineer` (5, 5); `neutral` (2.2, 2.2) | profil | boot | stone, ghost |
+| `uShape` | vec2 | profilden (§4.17.2): etkin `engineer` (2.2, 2.3); `neutral` (2.2, 2.2) | profil | boot | stone, ghost |
 | `uRadii` | vec3 | profilden: etkin `engineer` (1, 0.8, 1); `neutral` (1, 0.86, 1) | profil | boot | stone, ghost, shadow (CPU konum/ölçek) |
-| `uDisp` | float | profilden: etkin `engineer` 0.0; `neutral` 0.035 (her personada ≤ 0.045) | profil | boot | stone, ghost |
+| `uDisp` | float | profilden: etkin `engineer` 0.045; `neutral` 0.035 (her personada ≤ 0.045) | profil | boot | stone, ghost |
 | `uNoiseFreq` | float | 1.3 | profil | boot | stone, ghost |
 | `uSeed` | float | 7.0 | profil | boot | stone, ghost |
 | `uPlane` | vec4 | ((0,1,0), cut); cut ∈ [−0.10, 1.10]; 1.10 = kesilmemiş, 0 = yarım kesit | track `cut` + yakınlık `cutBreath` | kare | stone, ghost |
@@ -4281,18 +4294,20 @@ Ekran üst kenarı (`y` = mevcut `window.scrollY`):
 Merkez ve çap:
 - `cx = left + width/2`.
 - Çap: `D = size × min(width, height)`. Mobilde `size = sizeMobile`. `rule: 'hero'` (≥ 64rem): `D = min(0.68·width, height − 24)`.
-- `align: 'center'` → `cy = top + height/2`. `align: 'bottom'` → `cy = top + height − 0.5·D·radii.y` (Taş cap çizgisinde "durur"; `radii.y` profil değeri, etkin `engineer`'da 0.8 (`neutral` 0.86); M1'de görsel olarak doğrulanır).
+- `align: 'center'` → `cy = top + height/2`. `align: 'bottom'` → `cy = top + height − 0.5·D·radii.y/R0` (Taş cap çizgisinde "durur"; `radii.y` profil değeri, etkin `engineer`'da 0.8 (`neutral` 0.86); `R0` aşağıdaki analitik ölçektekiyle aynıdır, `radii.y/R0` engineer'da 0.775, neutral'da 0.833).
 - Karışım: `c = lerp(cA, cB, anchorMix)`, `D = lerp(DA, DB, anchorMix)`. `anchorMix` damped'dir; anchor dikdörtgenleri **damped değildir** (Taş metinle birlikte kayar, geride kalmaz).
 - Route glide sırasında `anchorFrom = −1` sanal anchor'dır: gezinme anındaki `{cx, cy, D}` anlık görüntüsü (§5.15).
 
 Analitik ölçek (final.md §2.8.4):
 
 ```text
-scale = D · (2 · r · tan(fov/2)) / (2 · R0 · H)        R0 = radii.x (ölçek 1'de XZ yarıçapı), H = canvas yüksekliği
+scale = D · (2 · r · tan(fov/2)) / (2 · R0 · H)        R0 = footprintRadius(radii, n1), H = canvas yüksekliği
+footprintRadius = radii.x · 2^(1/2 − 1/n1)  (n1 ≥ 2; n1 < 2 ise radii.x)   XZ ayak izinin çevrel yarıçapı (§5.10)
 ```
 
 - `r` ve `fov` **damped** değerlerdir. Böylece dolly-zoom sırasında boyut sabit kalır ve yalnızca perspektif düzleşir.
-- Doğrulama örnekleri (1440×900): K0 `D = 362, r = 5.2, fov = 30` → 0.560; K2 `D = 515, r = 7.2, fov = 18` → 0.653. `anchors.test.ts` bu iki değeri ±0.001 ile doğrular.
+- Doğrulama örnekleri (1440×900; etkin `engineer` ve `neutral`, n1 = 2.2 → R0 = 1.0320): K0 `D = 362, r = 5.2, fov = 30` → 0.543; K2 `D = 515, r = 7.2, fov = 18` → 0.632. `anchors.test.ts` bu iki değeri ±0.001 ile doğrular.
+- SPEC-SAPMA: §5.7.5 (M1, 2026-09-30) — önceki tanım `R0 = radii.x` idi (0.560 / 0.653). Süperelips ayak izinin köşegeni eksenden `2^(1/2 − 1/n1)` kat uzundur: M1'deki ilk `engineer` şeklinde (n1 = 5, "yuvarlatılmış zar") bu 1.231 kattı. Bu yüzden Taş D'den %23 büyük çiziliyordu. Lab posterlerinde K1 kareden taştı ve kırpıldı; canlı sahnede anchor'ların %10 kenar payını yiyip metne yaklaşırdı (§5.1.1). Artık D, köşeli şekillerde de Taş'ın ekrandaki çapıdır. `neutral`'da fark %3'tür. §5.8.1 tablosundaki "scale" sütunu eski tanımla (R0 = 1) hesaplanmıştır; R0'a bölünür (M1 revizyonundan sonra etkin `engineer`'da n1 = 2.2 → 1.0320). D değerleri değişmez.
 - Rig her karede `live.stone = { cx, cy, r: D/2, visible }` yazar. Tüketenler: dokunmatik tarama, yakınlık eğimi, kontrast probu, route glide anlık görüntüsü.
 
 #### 5.7.6 Object-space dönüşümleri (CPU, kare başına)
@@ -4973,6 +4988,8 @@ export function wrap180(a: number): number                     // a − 360·rou
 export function superNorm(u: number, v: number, n: number): number          // (|u|^n + |v|^n)^(1/n)
 /** |cut| ≥ radii.y → 0; aksi hâlde (1 − |cut/radii.y|^n2)^(1/n2) · radii.x (gürültü yok sayılır) */
 export function capRadius(cut: number, radii: readonly [number, number, number], n2: number): number
+/** XZ ayak izinin çevrel yarıçapı: radii.x · 2^(1/2 − 1/n1) (n1 ≥ 2), aksi hâlde radii.x. Analitik ölçeğin R0'ı (§5.7.5, SPEC-SAPMA M1) */
+export function footprintRadius(radii: readonly [number, number, number], n1: number): number
 /** dayOfYear / daysInYear, yerel saat. YALNIZCA client'ta, mount sonrası çağrılır (SSR'da asla). */
 export function arcFraction(d: Date): number
 /** growth deseni: normalize kümülatif kenarlar [0, …, 1]; uzunluk = weights.length + 1 (≤ 25) */
@@ -5006,6 +5023,7 @@ export function clockAngles(d: Date): { hourDeg: number; minuteDeg: number }  //
   - `bandOf` sıralı sonuç verir.
   - Her N ∈ 3..6 ve k için `(sectorOffset + (k + 0.5)·360/N + psi(k)) mod 360 === 180`.
   - `capRadius(0) = radii.x` ve `capRadius(±radii.y) = 0`.
+  - `footprintRadius`: n1 = 2'de `radii.x`; n1 ≥ 2'de 45° noktası süperelips üzerindedir (engineer 1.2311, neutral 1.0320).
   - `wrapNear` sonucu `ref`'e en fazla 180° uzaktır.
   - `arcFraction(new Date(2026, 0, 1)) ≈ 1/365`, `arcFraction(new Date(2026, 11, 31)) = 1`.
   - `ringEdges` sonucu 0 ile başlar, 1 ile biter ve monoton artandır.
@@ -5951,6 +5969,8 @@ await browser.close()
 
 - Birincil yakalama yolu `canvas.toDataURL()`'dir (`preserveDrawingBuffer` açık); şeffaflık sayfa zeminine bağlı kalmaz. Yedek yol `locator.screenshot({ omitBackground: true })`'dir (sayfa zemini şeffafken).
 - `quality` başlangıç değerleridir. 1080 AVIF 40 KB'ı aşarsa AVIF kalitesi 40'a indirilir; yine aşarsa `--check` başarısız olur.
+- `--qa` ayrıca her kareyi otomatik denetler: opak ve siyaha yakın piksel (NaN belirtisi) sayısı 0 olmalıdır; görünür içeriğin (alfa > 3) kare kenarına uzaklığı ≥ 16 px olmalıdır (kırpılma). QA PNG'leri sayfa zemini (`--color-canvas`) üzerine bindirilir; ayrıca her tema için 13 anahtarlık `grid-<tema>.png` üretilir.
+- SPEC-SAPMA: §5.16.3 (M1) — `package.json` `"type": "module"` taşımadığı için tsx betiği CommonJS olarak çalıştırır; üst düzey `await` kullanılamaz. Akış aynı sırayla `main()` içine alınmıştır.
 - ⚠️ DOĞRULANMADI: headless WebGL bayrakları. Kalite araştırmasında macOS arm64 üzerinde Playwright 1.63 headless shell'in WebGL2'yi SwiftShader ile sunduğu ölçülmüştür. GPU'suz Linux'ta `--use-angle=swiftshader --enable-unsafe-swiftshader` bayrakları gerekir; bayraksız Linux davranışı doğrulanmadı. Posterler yerelde üretilir; CI poster üretmez, varlıklarını ve boyutlarını `check-budgets.mjs` denetler (§9.4.2, §13.6.1).
 - **ZORUNLU:** Şu değişikliklerden sonra `npm run posters` yeniden çalıştırılır ve çıktı commit edilir:
   - profil (şekil, tohum, desen, yoğunluk);
@@ -5997,7 +6017,7 @@ export function ScenePoster({ posterKey }: { posterKey: 'k0' | 'k1' | 'k5' }) {
 ```
 
 - Hero posteri LCP öğesi olmamalıdır (D-34): masaüstünde H1 kutusundan küçüktür, mobilde bu V-39 ile doğrulanır ve gerekirse §9.5.4 çözüm sırası uygulanır; poster `fetchPriority="low"` taşır, açık `width/height` ile CLS üretmez (final.md §10.3).
-- `--stone-ry` profilden (`radii.y`) kök stile yazılır (§4.17).
+- `--stone-ry` profilden `radii.y / R0` olarak kök stile yazılır (`R0 = footprintRadius`, §5.7.5; `engineer` 0.775, `neutral` 0.833) (§4.17).
 - ⚠️ DOĞRULANMADI: `loading="lazy"` + `display: none` durumundaki etkin olmayan tema posterinin hiçbir motorda indirilmemesi. Playwright ağ günlüğüyle Chromium, WebKit ve Firefox'ta doğrulanır (§13.3). İndirilirse geri dönüş: tek `<picture>` + `<source media="(prefers-color-scheme: dark)">`. Bu yolda elle seçilen tema OS'tan farklıysa poster yanlış temada görünür; seçim sahibine raporlanır.
 
 ### 5.17 Context loss ve hata toleransı
@@ -6640,8 +6660,8 @@ Ek hesaplar (aynı betik):
 | `uAccent` | `--color-accent` | `#B0103C` | `#FF7A95` | Etkin sektör, bant kenarı, açık yay, dalga |
 | `uRimColor` | `--color-brass` | `#8A6420` | `#C9A66B` | Sıcak kenar ışığı |
 | `uGhostColor` | `--color-line-strong` | `#737C97` | `#6B76A0` | Hayalet dış çizgi |
-| `uStoneBase` | `--scene-stone-base` | `#2B2F3A` | `#5E6577` | Sanat yönetimi başlangıç değeri |
-| `uStoneLight` | `--scene-stone-light` | `#7C8292` | `#D3D8E2` | Sanat yönetimi başlangıç değeri |
+| `uStoneBase` | `--scene-stone-base` | `#2B2F3A` | `#5A5E68` | Sanat yönetimi değeri; koyu ton M1 revizyonunda #5E6577'den (#5) |
+| `uStoneLight` | `--scene-stone-light` | `#7C8292` | `#B9BCC4` | Sanat yönetimi değeri; koyu ton M1 revizyonunda #D3D8E2'den: akik yumrusu kabuğu kar beyazı değil lekeli kireçtaşı tonundadır (#5) |
 | `uSky` | `--scene-sky` | `#FFFFFF` | `#E8EBF2` | Yarıküre üstü |
 | `uGround` | `--scene-ground` | `#9AA1B2` | `#0B1020` | Yarıküre altı |
 | `uShadowColor` / `uShadowAlpha` | `--scene-shadow` | `rgb(14 21 48 / 0.16)` | `rgb(0 0 0 / 0.45)` | Temas gölgesi; `tokens.ts`'te `{ rgb, alpha }` |
@@ -7438,8 +7458,8 @@ Dosyanın bölümleri:
 
   /* Sahne token'ları: sahne değerleri tokens.ts'ten okur; burada parite ve DOM içindir (§6.3.6) */
   /* tokens:scene:start */
-  --scene-stone-base: light-dark(#2B2F3A, #5E6577);
-  --scene-stone-light: light-dark(#7C8292, #D3D8E2);
+  --scene-stone-base: light-dark(#2B2F3A, #5A5E68);
+  --scene-stone-light: light-dark(#7C8292, #B9BCC4);
   --scene-sky: light-dark(#FFFFFF, #E8EBF2);
   --scene-ground: light-dark(#9AA1B2, #0B1020);
   --scene-shadow: light-dark(rgb(14 21 48 / 0.16), rgb(0 0 0 / 0.45));
@@ -7500,8 +7520,8 @@ Dosyanın bölümleri:
     --color-danger: #FF8A7A;
     --color-selection: #5A2238;
     --color-scrim: rgb(11 16 32 / 0.85);
-    --scene-stone-base: #5E6577;
-    --scene-stone-light: #D3D8E2;
+    --scene-stone-base: #5A5E68;
+    --scene-stone-light: #B9BCC4;
     --scene-sky: #E8EBF2;
     --scene-ground: #0B1020;
     --scene-shadow: rgb(0 0 0 / 0.45);
@@ -7949,7 +7969,7 @@ export const palettes = {
       accent: '#FF7A95', accentHover: '#FF9AB0', onAccent: '#0B1020',
       focus: '#F2C46D', brass: '#C9A66B', success: '#5FD4A0', danger: '#FF8A7A', selection: '#5A2238',
       scrim: rgba('#0B1020', 0.85),
-      sceneStoneBase: '#5E6577', sceneStoneLight: '#D3D8E2', sceneSky: '#E8EBF2', sceneGround: '#0B1020',
+      sceneStoneBase: '#5A5E68', sceneStoneLight: '#B9BCC4', sceneSky: '#E8EBF2', sceneGround: '#0B1020',
       sceneShadow: rgba('#000000', 0.45),
     },
   },
@@ -15376,7 +15396,7 @@ Gerçek `check-content` M3'te geldiği andan itibaren, içerikte `{{…}}` kald�
 | Konu | Kural |
 |---|---|
 | Ne sunulur | 1. `npm run posters -- --qa` çıktısından K0, K1a, K1b, K1, K2, K3, K4, K5 × açık/koyu = 16 PNG (`.lab-out/`). 2. Preview'da 36 üretim posteri, ör. `/stage/k0-dark-1600.avif`, `/stage/k5-light-1080.webp`. 3. Her anahtar için tek satırlık açıklama (§4.2 imza anları, §5.8.1). 4. **İSTEĞE BAĞLI:** K0 ve K2'nin `atolye` ve `emaye` paletlerindeki hâli ve `calm`/`expressive` yoğunluk karşılaştırması (§4.17.4, §6.3.7). Bu, Ek A.1 #16'nın "ilk görsel önizlemeler" maddesidir. |
-| Girdi verisi | Tohum değerleri: `careerStartYear = 2014`, derleme yılı 2026 → 13 halka; N = 4 dilim; `engineer` persona (Q-01; şekil, `contours` kapak deseni ve yüzey §4.17.2); `mekanizma` paleti (§7.2.5, §5.10). Sunumda bu varsayım açıkça yazılır: gerçek kariyer yılı ve alan sayısı gelince posterler yeniden üretilir (§5.16.3). |
+| Girdi verisi | Tohum değerleri: `careerStartYear = 2014`, derleme yılı 2026 → 13 halka; N = 4 dilim; `engineer` persona (Q-01; M1 revizyonundan sonra `geode` şekli, kapak deseni ve yüzeyi, §4.17.2); `mekanizma` paleti (§7.2.5, §5.10). Sunumda bu varsayım açıkça yazılır: gerçek kariyer yılı ve alan sayısı gelince posterler yeniden üretilir (§5.16.3). |
 | Nerede | GitHub'da "M1 kapısı: K0–K5 poster onayı" başlıklı bir issue. Görseller issue'ya eklenir, M1 PR'ı issue'ya bağlanır. |
 | Karar biçimi | Sahip issue'ya yazılı olarak yanıt verir: **Onay** ("Onaylıyorum") · **Revizyon** (anahtar ve istek listesi) · **Red** (kavram düzeyinde). Onay metni G14'ün kanıtıdır (§1.8). |
 | Revizyon döngüsü | Önce §4.12.4 [SABİT] değerleri ve `profile.ts` parametreleri değiştirilir: şekil yarıçapları, `stone.disp ≤ 0.045`, kapak deseni, yoğunluk, palet. Keyframe kamera değerleri (§5.8) değişirse aynı PR'da §4 ve §5.8 tabloları güncellenir. Ardından `npm run posters` ve `--qa` yeniden çalıştırılır, issue'ya yeni set eklenir. |
@@ -15598,7 +15618,7 @@ Her D-xx kararı en az bir milestone kabul kriterinde ya da §13 testinde doğru
 3. **Renk tokenları.** `src/design/tokens.ts`, §6.10.3'teki hâliyle, üç palet ve sahne tokenları (§6.3.6) dâhil. Parite testi (`tokens.test.ts`) `globals.css` ile birlikte M2'de eklenir.
 4. **Keyframe'ler.** `src/stage/keyframes.ts`: K0, K1a, K1b, K1, K2, K3, K4, K5 ve D1–D5 (§5.8.1, §5.8.2, §5.8.4). Mobil geçersiz kılmalar M6'dadır. D6/`clock` anahtarı yoktur (D-42).
 5. **Kalite tablosu.** `src/stage/quality.ts`: `TIERS` tablosu (§5.11.1). `stepDown`/`stepUp` M5'tedir.
-6. **Shader modülleri.** `src/stage/gl/shaders/{noise.glsl.ts, stone.vert.ts, stone.frag.ts, ghost.frag.ts, shadow.ts}` (§5.3, §5.4). TS şablon dizeleri kullanılır (D-14). Etkin persona `engineer` olduğu için `CAP_PATTERN_CONTOURS` varyantı (§5.4.3) bu görevde uygulanır ve QA ızgarasından geçer (§4.17.2).
+6. **Shader modülleri.** `src/stage/gl/shaders/{noise.glsl.ts, stone.vert.ts, stone.frag.ts, ghost.frag.ts, shadow.ts}` (§5.3, §5.4). TS şablon dizeleri kullanılır (D-14). Etkin persona `engineer` olduğu için `CAP_PATTERN_CONTOURS` varyantı (§5.4.3) bu görevde uygulandı. M1 revizyonunda (#5) `engineer` `CAP_PATTERN_GEODE` + `SURFACE_GEODE`'a geçti; bunlar da uygulanır ve QA ızgarasından geçer (§4.17.2).
 7. **Malzemeler ve mesh'ler.** `src/stage/gl/materials.ts` (§5.4.6, §5.5 uniform referansı, §5.6.6 tema uygulama) ve `src/stage/gl/{Stone,Ghost,Shadow}.tsx` (§5.2 sahne grafiği).
 8. **Kamera ve lab modu.**
    - `src/stage/gl/StageRig.tsx`: lab modunda anahtarın `r/az/el/fov` değerlerinden kamera ve `clearViewOffset()` (§5.7.1–§5.7.2). Damping ve anchor'lar M5'tedir.
@@ -16335,9 +16355,9 @@ Belgedeki her `⚠️ DOĞRULANMADI` maddesi, araştırma notlarındaki UNVERIFI
 | V-10 | Node 24'ün npm'inde `approve-scripts` uyarısı ve komutu vardır. | §2.2.9 #11 | `npm help approve-scripts` | Adım atlanır. | M0 — yanlış çıktı → SPEC-SAPMA §2.2.9: komut `npm install-scripts approve` (2026-09-29) |
 | V-11 | Deployment Protection "All Deployments" Hobby'de ücretsizdir. | §14.2.2 | Vercel panosu | M3'ten itibaren production D-36 nedeniyle deploy olmaz. M0–M2'de production iskeleti açık kalır; içerik yoktur ve `robots.txt` `Disallow: /` döner. | M0 — ✅ DOĞRULANDI (2026-09-29, Vercel panosu) |
 | V-12 | Deployment Checks Hobby'de vardır. | §14.2.2, kalite §14 #1 | Vercel panosu | Denetim PR aşamasında yapılır (§14.1 #6). | M0 — ✅ DOĞRULANDI (2026-09-30, Vercel panosu) |
-| V-13 | Next 16.3.7 (2026-09-30) kırıcı değişiklik içermez; güvenlik düzeltmelerini kapsar. | D-01, platform §13 | Sürüm notları + X1 PR'ında `npm run check` | Güvenlik yaması ertelenmez; kırılma `SPEC-SAPMA` ile giderilir. | X1 (≤ M1) |
-| V-14 | Headless Chromium, SwiftShader bayraklarıyla poster render'ı için WebGL2 sağlar (macOS'ta ölçüldü; Linux'ta bayraksız davranış bilinmiyor). | §5.16.3, final §13 #6 | M1'de yerel `npm run posters`; CI yalnız `--check` | Yakalama yedeği `locator.screenshot({ omitBackground: true })`. | M1 |
-| V-15 | `WebGLRenderer.debug.onShaderError`, `@types/three` 0.186.0'da vardır. | §5.12.4, §5.17 | Tip dosyası | `compileAsync` sonrası `gl.info.programs[].diagnostics.runnable === false` kontrolü. | M1 |
+| V-13 | Next 16.3.7 (2026-09-30) kırıcı değişiklik içermez; güvenlik düzeltmelerini kapsar. | D-01, platform §13 | Sürüm notları + X1 PR'ında `npm run check` | Güvenlik yaması ertelenmez; kırılma `SPEC-SAPMA` ile giderilir. | X1 (≤ M1) — ✅ DOĞRULANDI, düzeltmeyle (2026-09-30): kırıcı değişiklik yok (M0 ve M1'de 16.3.7 ile `npm run check` yeşil). SPEC-SAPMA: sürüm notu 2026-09-29 tarihlidir ve yalnız bir Turbopack hata düzeltmesinin backport'udur (#98931); güvenlik düzeltmesi listelenmez. En yüksek 16.3.x yine 16.3.7'dir, bu yüzden X1 ayrı PR gerektirmedi. |
+| V-14 | Headless Chromium, SwiftShader bayraklarıyla poster render'ı için WebGL2 sağlar (macOS'ta ölçüldü; Linux'ta bayraksız davranış bilinmiyor). | §5.16.3, final §13 #6 | M1'de yerel `npm run posters`; CI yalnız `--check` | Yakalama yedeği `locator.screenshot({ omitBackground: true })`. | M1 — ✅ DOĞRULANDI (2026-09-30, macOS arm64, Playwright 1.63 headless: 36 poster ve 26 QA karesi `toDataURL` ile üretildi; 26 lab e2e testi konsol hatasız) |
+| V-15 | `WebGLRenderer.debug.onShaderError`, `@types/three` 0.186.0'da vardır. | §5.12.4, §5.17 | Tip dosyası | `compileAsync` sonrası `gl.info.programs[].diagnostics.runnable === false` kontrolü. | M1 — ✅ DOĞRULANDI (2026-09-30, `WebGLDebug.onShaderError` tip dosyasında; lab `Scene.tsx` kullanıyor) |
 | V-16 | Safari (CoreText) `lang="tr"` ile `locl` TRK uygular ("fikir"de bağ yok). | §6.2.6 | iOS Safari ekran görüntüsü | Kural her durumda kalır; bulgu §6.2.6'ya yazılır. | M2 |
 | V-17 | `light-dark()` Safari/iOS 17.5 ile başlar; 17.0–17.4 desteklemez. | §2.5.3, §6.3.5 | caniuse "css-light-dark", MDN; iOS 17.0/17.4 simülatörü | `@supports not` yedek bloğu (§6.10) kalır; ya da T-03 ile taban 17.5 yapılır. | M2 |
 | V-18 | React 19 geliştirmede head'deki satır içi `<script>` için uyarı verebilir. | §8.4.3 | `npm run dev` konsolu | Üretimde görülürse `next/script` `beforeInteractive`; no-flash testi yeniden koşar. | M2 |
