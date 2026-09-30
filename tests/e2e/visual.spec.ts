@@ -64,9 +64,11 @@ test.describe('K-GEN-10 görsel regresyon', { tag: ['@reduced-motion', '@pixel-7
         await page.emulateMedia({ colorScheme: theme });
         await page.goto(path);
         await page.evaluate(() => document.fonts.ready);
+        // SPEC-SAPMA §13.4.2 (M5): #scene-layer §5.12.5'ten beri tam ekran fixed kutudur; tamamı maskelenirse tam sayfa
+        // görüntüsünün ilk ekranı kapanır. Yalnız canvas maskelenir (azaltılmış harekette canvas yoktur, posterler dahil)
         await expect(page).toHaveScreenshot({
           fullPage: true,
-          mask: [page.locator('#scene-layer'), page.locator('[data-live-time]')],
+          mask: [page.locator('#scene-layer canvas'), page.locator('[data-live-time]')],
         });
       });
     }

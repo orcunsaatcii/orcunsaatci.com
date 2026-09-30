@@ -2299,6 +2299,8 @@ Sunucuda render edilir ve ilk boyamada görünürdür. DOM sırası görsel sır
 | Sahne çapası | `<div data-stage-anchor="hero-rest" data-anchor-kind="flow" data-anchor-align="bottom" aria-hidden="true">` | — | k8–12. Alt kenarı H1'in büyük harf çizgisinde (aynı grid satırı); üstü header + 16 px. |
 | Posterler | Çapanın içinde iki `<img>` (açık/koyu) | `public/stage/k0-{light,dark}-{640,1080,1600}.{avif,webp}` | Kare, `alt=""`, `loading="lazy"`, `fetchpriority="low"`, açık `width`/`height` (CLS yok). Etkin olmayan tema `display: none` (⚠️ §5.16). Optimizer'dan geçmez (D-31). Boyut = canlı taşın `D`'si. |
 
+- SPEC-SAPMA: §4.6.2, §4.6.3 (M5, 2026-09-30) — K-HERO-6 için masaüstünde (≥ 64rem) sahne kutusu satır aralığı + H1 kutusunun üstünden büyük harf çizgisine uzaklık kadar aşağı uzanır: `margin-bottom: calc(-1 × (1.5rem + 0.111 × --text-display-fit))` (Mona Sans, `line-height` 0.92; 1024–1920 px'te Chromium, WebKit ve Firefox'ta ölçüldü). Çapanın alt kenarı büyük harf çizgisindedir (1440×900'de 537.98 / 538 px); M4 notundaki "H1'in üstüne kadar" ifadesinin yerini alır. H1 `position: relative` alır: DOM'da önce gelen sahne kutusundan sonra boyanır, Taş'ın gölgesi harflerin arkasında kalır. Duraklatma düğmesi masaüstünde CTA satırının sağındadır (tel çerçeve; 1. satırın sağ altı Taş'ın üstüne düşerdi); 64rem altında sahne bandının sağ altında kalır. Not: analitik alt hizalama (`cy = alt − 0.5·D·ry`, §5.7.5) yüzey kabartısını (`disp` 0.045) ve 12° kamera eğimini içermez; opak Taş tabanı büyük harf çizgisinin ≈ 7 px altına iner ve "tçi" harflerinin tepesine değer. Kontrast probu H1 kutusunu 2.5–2.96:1 ölçer (büyük metin eşiği 3.0; §5.18.2). İnce ayar M8 görsel QA'sındadır.
+
 #### 4.6.4 3D durumu: K0 `hero`
 
 | Çapa | r | az | el | fov | D | rotY | rotX | cut | ringContrast | sectorMix | ghost | arcGlow | Işık az/el | tone |
@@ -2312,6 +2314,8 @@ Sunucuda render edilir ve ilk boyamada görünürdür. DOM sırası görsel sır
   - İşaretçi ya da kaydırma girdisiyle yeniden başlar.
   - Yalnızca hero etkin bölümken (`s < 30`) birikir.
   - **ZORUNLU:** `s = 100`'de render edilen `rotY`, K1b değerinden (30°) en fazla 1° sapar. Biriken açının nasıl sönümleneceği §5.9'dadır.
+
+- SPEC-SAPMA: §4.6.4 (M5, 2026-09-30) — "İşaretçi ya da kaydırma girdisi": `live.lastInput` ince işaretçide `pointermove`, her türlü `pointerdown` ve `scroll` ile yazılır (`src/stage/pointer.ts` `trackInput`; store'daki `trackPointer()`'ın yerini alır). İzleyici yalnız canlı sahne mount'ken çalışır ve ilk pakete girmez. Drift hızının zarfı (`idleS`) gerçek süreyle söner (kare başına ≤ 1 s): kare süresi 1/30 s'yi aşan cihazda kırpılmış dt, 20 s'deki duruşu 10+ kat uzatıyordu (CI SwiftShader ≈ 2 fps'te 40 s). Açı birikimi kırpılmış dt ile kalır: yavaş karede drift hızı düşer (SwiftShader'da ≈ 1.3°/s), sıçrama olmaz.
 
 #### 4.6.5 Yükleme sekansı
 
@@ -3256,6 +3260,8 @@ Figürler `src/components/figures/` altındadır ve geometrileri `section-geomet
 - **Context kaybında** posterler hemen geri gelir (§5.17).
 - Poster, canlı taşla aynı `D`'de boyutlanır. Böylece crossfade hizalı olur ve "pop" etkisi oluşmaz.
 
+- SPEC-SAPMA: §4.16.3 (M5, 2026-09-30) — Crossfade kuralı `:root:has(#scene-layer[data-phase="ready"])` posterlerle birlikte çapa figürlerini de (work-specimen, journey-core ve pin etkinken areas-dial) 600 ms'de söndürür; faz `ready` dışına çıkınca (`poster`, `fallback`) geçişsiz geri gelirler.
+
 #### 4.16.4 "Hareketi azalt" anahtarı (`MotionToggle`)
 
 - **Biçim:** `<button type="button" aria-pressed>`. Metin "Hareketi azalt" / "Reduce motion". `aria-pressed = (data-motion === 'reduce')`.
@@ -4196,6 +4202,8 @@ Ara değerler ve aralıklar §5.9.4 track tablosundadır.
 - `<html>` üzerinde `data-theme` için `MutationObserver` (`attributeFilter: ['data-theme']`) → `applyTheme` → `invalidate()`.
 - **YASAK:** Renkleri `getComputedStyle` ile okumak (`light-dark()` çözümlemesi tarayıcılar arasında ⚠️ DOĞRULANMADI; final.md §2.7). `tokens.ts` ↔ `globals.css` eşliği `tokens.test.ts` ile korunur (§13.2).
 
+- SPEC-SAPMA: §5.6.6, §5.19 (M5, 2026-09-30) — "Kapak rengi `--color-surface` ile ΔE < 2" ölçütü `rings` desenine göredir. Engineer personası `geode` desenini kullanır (M1, issue #5): bant tonları `capBase`'i `ringLine`'a %15–70 karıştırdığından kapak yüzey renginden bilinçli olarak ayrılır (ölçüm: açık ΔE ≈ 9.5, koyu ≈ 33). Tema bağlaması bu yüzden "çalışma anında tema değişimi = o temada doğrudan yükleme (ΔE < 2)" olarak test edilir (`stage.spec.ts`).
+
 #### 5.6.7 Yoğunluk (`intensity`) çarpanları
 
 `profile.intensity` (§4.17) aşağıdaki değerleri seçer. Değerler `INTENSITY[profile.intensity]`'den (`IntensityParams`, §4.17.3) okunur; sayıların sahibi §4.17.4'tür (**[SABİT]**), bu tablo onun kopyasıdır ve değişiklik önce §4.17.4'te yapılır. `waveWidthPx`, `materials.ts` tarafından `stoneMat` define'larına `WAVE_WIDTH_PX` olarak verilir (shader varsayılanı 2.0). Etkin persona `engineer` → `standard`.
@@ -4325,6 +4333,8 @@ footprintRadius = radii.x · 2^(1/2 − 1/n1)  (n1 ≥ 2; n1 < 2 ise radii.x)   
 - Doğrulama örnekleri (1440×900; etkin `engineer` ve `neutral`, n1 = 2.2 → R0 = 1.0320): K0 `D = 362, r = 5.2, fov = 30` → 0.543; K2 `D = 515, r = 7.2, fov = 18` → 0.632. `anchors.test.ts` bu iki değeri ±0.001 ile doğrular.
 - SPEC-SAPMA: §5.7.5 (M1, 2026-09-30) — önceki tanım `R0 = radii.x` idi (0.560 / 0.653). Süperelips ayak izinin köşegeni eksenden `2^(1/2 − 1/n1)` kat uzundur: M1'deki ilk `engineer` şeklinde (n1 = 5, "yuvarlatılmış zar") bu 1.231 kattı. Bu yüzden Taş D'den %23 büyük çiziliyordu. Lab posterlerinde K1 kareden taştı ve kırpıldı; canlı sahnede anchor'ların %10 kenar payını yiyip metne yaklaşırdı (§5.1.1). Artık D, köşeli şekillerde de Taş'ın ekrandaki çapıdır. `neutral`'da fark %3'tür. §5.8.1 tablosundaki "scale" sütunu eski tanımla (R0 = 1) hesaplanmıştır; R0'a bölünür (M1 revizyonundan sonra etkin `engineer`'da n1 = 2.2 → 1.0320). D değerleri değişmez.
 - Rig her karede `live.stone = { cx, cy, r: D/2, visible }` yazar. Tüketenler: dokunmatik tarama, yakınlık eğimi, kontrast probu, route glide anlık görüntüsü.
+
+- SPEC-SAPMA: §5.7.4, §5.7.5 (M5, 2026-09-30) — (1) Sticky ölçümde çapanın S içindeki ofseti sticky hâlde okunur; `position: static` yalnız S'nin doğal konumu içindir (static'te masaüstü `.areas-dial` gibi `position: absolute` torunlar belgeye göre yerleşiyor, K2'de Taş ekran dışına düşüyordu). (2) `anchorScreen(a, y, stoneRy, out?)` alt hizalama için `stoneRy` alır. (3) `anchorScreen` ve `stoneScale` `src/stage/anchor-screen.ts`'tedir: yalnız rig kullanır, ilk pakete girmez. (4) Anchor indeksi: −1 sanal, −2 ölçülmemiş ya da eksik (`ANCHOR_MISSING`).
 
 #### 5.7.6 Object-space dönüşümleri (CPU, kare başına)
 
@@ -4567,6 +4577,8 @@ export function currentSceneOpacity(): number
 /** İnce işaretçi + mouse için pasif, rAF-birleştirilmiş pointermove; live.pointer/lastInput yazar. Temizlik döner (§5.12.3). */
 export function trackPointer(): () => void
 ```
+
+- SPEC-SAPMA: §5.9.2 (M5, 2026-09-30) — Rig'in damped kopyası `rendered` store'dan dışa aktarılır (yalnız rig yazar; `?debug` ve testler okur). `live`'a test kancaları eklenir: `frames` (rig kare sayacı) ve `idleAngle` (§13.3.3).
 
 #### 5.9.3 Track modeli ve değerlendirme algoritması
 
@@ -5156,6 +5168,8 @@ export function assignTier(s: ProbeSignals): Tier {
 - ⚠️ DOĞRULANMADI: iOS Safari'nin `navigator.hardwareConcurrency` değeri. 4 veya daha az raporlanırsa bütün iPhone'lar `low` alır. M8'de iPhone 12+ üzerinde `?debug` panelindeki `cores` ve atanan kademe kontrol edilir; gerekirse "`cores ≤ 4` ve kaba" koşulu detect-gpu kademesine bırakılır.
 - Kademe oturum boyunca `stageStore`'da tutulur: kalıcı layout sayesinde client navigasyonlarında yoklama tekrarlanmaz. Tam sayfa yükleme (dil değişimi dahil, D-08) yeni oturumdur. D-38 dışında depolama anahtarı eklenmez.
 
+- SPEC-SAPMA: §5.11.2, §5.11.3 (M5, 2026-09-30) — Yazılım render'ı `static`'tir: yoklama bağlamının maskesiz renderer adı (`WEBGL_debug_renderer_info`, yoksa `RENDERER`) `SOFTWARE_RENDERER` ile eşleşirse (SwiftShader, llvmpipe, lavapipe, softpipe, "Basic Render Driver", "Apple Software Renderer") detect-gpu istenmez ve `assignTier` `static` döndürür (`ProbeSignals.software`). Gerekçe V-41: Chrome, ANGLE/Vulkan üzerindeki SwiftShader'ı `failIfMajorPerformanceCaveat` ile reddetmiyor; detect-gpu'nun kara listesi de "google, swiftshader device" adını eşleştirmiyor (FALLBACK → çekirdek kuralıyla `medium`/`high`). CI'da sahne doğal yolda boot ediyor, LHCI `/` TBT'si 4.8 s'ye çıkıyordu. `?tier=` geçersiz kılması yazılım render'ında da sahneyi açar (§13.3.3).
+
 #### 5.11.4 Çalışma zamanı düzeltmesi: drei `PerformanceMonitor`
 
 drei 10.7.9 kaynağında doğrulanan davranış:
@@ -5331,6 +5345,8 @@ class StageErrorBoundary extends Component<{ children: ReactNode }, { failed: bo
 
 `trackPointer()` (`store.ts`): yalnız `(hover: hover) and (pointer: fine)` ve `pointerType === 'mouse'`. `pointermove` pasif dinleyicisi rAF ile birleştirilir; `live.pointer.{x, y, px, py, active}` ve `live.lastInput` yazılır, `invalidate()` çağrılır. `document` `pointerout` + `relatedTarget === null` durumunda `active = false` olur. Temizlik fonksiyonu döner.
 
+- SPEC-SAPMA: §5.12.3 (M5, 2026-09-30) — (1) `StageRoot` `persona` prop'u alır (layout'lar `PROFILE.persona` geçirir); sahne ve `?debug` personanın profilini kullanır. (2) `probeCapabilities` ve `initialQuality` `os:stage-probe`'dan sonra dinamik import edilir: ilk JS PB-1 sınırına (170 KB) tarayıcıda 1 KB aşıyordu. (3) Azaltılmış harekete geçiş kalıcı bir fallback nedenini (`context-loss`, `perf`, `error`, `probe`, `query`) ezmez; aksi hâlde azalt → tam geçişi oturum boyu `static` kuralını delip yeniden boot ederdi.
+
 #### 5.12.4 `FirstFrame` (`src/stage/gl/Scene.tsx`)
 
 ```tsx
@@ -5361,6 +5377,8 @@ function FirstFrame() {
 ```
 
 - **ÖNERİLİR:** Shader derleme hatasında da `static` kademeye düşmek için `gl.debug.onShaderError` kullanılır. Geri çağrı konsola yazar ve `toFallback('error')` çağırır. ⚠️ DOĞRULANMADI: `WebGLRenderer.debug.onShaderError` alanının r186 tiplerinde varlığı; `@types/three` 0.186.0'da kontrol edilir. Yoksa `compileAsync` sonrasında `gl.info.programs` içindeki `diagnostics.runnable === false` kontrol edilir.
+
+- SPEC-SAPMA: §5.12.4 (M5, 2026-09-30) — `PrecompileVariants` ayrı bileşen değildir: `FirstFrame` ilk `ready`'den sonra düşük oktav varyantlarını ayrık bir `Group` üzerinde `compileAsync`'e sokar (sahne ağacına eklenmez). `LoopPolicy` `never`'e geçerken R3F'in bekleyen kare sayacını (`internal.frames`) sıfırlar: R3F döngüsü bekleyen kareleri `frameloop`'tan bağımsız çizer ve opaklığı 0 olan sahnede bir kare daha çiziliyordu (§5.19, "2 s boyunca `useFrame` yok").
 
 #### 5.12.5 Katman CSS'i
 
@@ -6112,6 +6130,8 @@ Amaç: WebGL'in önündeki metnin kontrastını ölçmek (axe canvas'ı örnekle
 7. `?debug&probe=all`, K0–K5 anahtar konumlarına sırayla kaydırıp probu çalıştırır. Playwright her bölümde 10 kaydırma konumu × 2 tema × 3 viewport (360, 768, 1440) için `probeContrast()` çağırır. Gövde metninde < 4.5 **başarısızlıktır** (§13.3.4 `contrast.spec.ts`).
 
 Beklenen referans (final.md risk #10): açık temada hero H1, %16 `#0E1530` temas gölgesinin çekirdeğinde ≈ 11.1:1 verir.
+
+- SPEC-SAPMA: §5.18.2 (M5, 2026-09-30) — Prob, ata öğenin opaklığı ya da görünürlüğüyle gizlenen metni atlar (`checkVisibility({ opacityProperty, visibilityProperty })`): crossfade'de gizlenen SVG figür etiketleri denetlenmez. X8 ilk koşusu (M5): `/`'de 394 öğe, gövde metninde başarısızlık yok; yalnız K0'da H1 kutusu (2.5–2.96:1, büyük metin eşiği 3.0; §4.6.3 notu). Derin sayfalar (`/hakkimda`, `/projeler/ornek-proje-1`, `/iletisim`) M7'ye kadar `none` preset'tedir: denetlenecek öğe yoktur.
 
 ### 5.19 Kabul kriterleri
 
@@ -11560,6 +11580,8 @@ const measure = () => {
 
 - SPEC-SAPMA: §9.4.3 PB-2, PB-5 (M4, 2026-09-30) — Next 16 `<Link>` görünüm alanı prefetch'i hero CTA'sının hedef route'unun (`/projeler`) chunk'ını ilk boşlukta, motion import'uyla aynı anda ister. Bu route chunk'ları (herhangi bir route HTML'inin başlangıçta yüklediği dosyalar) PB-2 penceresinden ve PB-5'in "load sonrası betik yok" kuralından hariç tutulur; lazy (motion/stage) chunk'lar hariç tutulmaz. PB-2 pencereleri birleşimdir: iki pencerede başlayan istek bir kez sayılır (motion ve lenis pencereleri örtüşür). `BASE_URL` ile dosyalar okunamazsa filtre boştur. Ölçüm (2026-09-30, yerel): motion grubu 46.8 KB (gsap + ScrollTrigger + SplitText) + 5.3 KB (lenis) = 52.1 KB ≤ 60 KB; `check-budgets` motion grubu 50.9 KB.
 
+- SPEC-SAPMA: §9.4.3 PB-6, PB-7 (M5, 2026-09-30) — "`os:stage-tier`'dan sonra başlayan betik yok" kuralı da route chunk'larını hariç tutar (PB-5 ile aynı gerekçe). V-44 PB-3'te ağ kaydıyla denetlenir: pencere dışında başlayan betiklerin hiçbiri `WebGLRenderer` içermez. Ölçüm (2026-09-30, yerel): ilk JS `/` 168.4 KB (`check-budgets`), stage grubu 251.6 KB, motion 50.9 KB; PB-1…PB-7 yeşil.
+
 #### 9.4.4 Bütçe aşıldığında
 
 | Aşım | Önce bak | Sonra |
@@ -11769,6 +11791,8 @@ Kurallar:
 - Her iki denetim ≥ 44 × 44 px'tir ve klavyeyle kullanılır. Etkinleştirmeden sonra odak düğmede kalır.
 - `PauseButton` yalnız `data-motion="full"` iken ve hidrasyondan sonra render edilir; mutlak konumludur, CLS üretmez (§4.6.3).
 - `MotionToggle` footer'da, mobil menüde ve `global-not-found`'un minimal footer'ında bulunur (§4.16.4).
+
+- SPEC-SAPMA: §10.2.2, §4.16.4 (M5, 2026-09-30) — P8 (≤ 100 ms, 4× CPU) için `MotionToggle` tıklamada yalnız `localStorage`'ı yazar; `<html data-motion>` ve `os-motion-change` tıklamanın boyamasından sonraki göreve ertelenir (`requestAnimationFrame` → `setTimeout`). Eşzamanlı hâli tıklama görevini 120–200 ms'ye uzatıyordu. Öznitelik ve olay aynı görevde kalır: pin düzeni değişince doğan kaydırma olayı sönmüş Lenis'e ulaşmaz (aksi hâlde Lenis'in bekleyen zamanlayıcısı `destroy()`'dan sonra `lenis` sınıfını geri yazıyordu).
 
 #### 10.2.3 Kendiliğinden hareket envanteri (WCAG 2.2.2)
 
@@ -14405,6 +14429,8 @@ Kurallar:
 | `visual.spec.ts` | `@reduced-motion`, `@pixel-7` (dosyada `test.use({ reducedMotion: 'reduce' })`), `@desktop-chromium` (yalnız başlık kırpıntıları) | §13.4.2 | K-GEN-10 |
 | `work-viewer.spec.ts` | `@desktop-chromium`, `@desktop-webkit`, `@desktop-firefox` (son ikisi yalnız `PW_CROSS=1`) | Work görüntüleyicisinin figür sütununun ekran görüntüsü ve tüm figürlerin kutu geometrisi. Tarayıcılar arası fark ≤ 2 px. | K-WORK-10, final.md §13 #8 |
 
+- SPEC-SAPMA: §13.3.4 (M5, 2026-09-30) — `perf-smoke.spec.ts` P8 etkileşimleri `/?tier=static`'te ölçer (SwiftShader'ın CPU'da çizdiği WebGL karesi GPU maliyetini temsil etmez; CI doğal yolu V-41'e bağlıdır). Yalnız `interactionId > 0` olan event girdileri sayılır; her etkileşim 5–6 kez ölçülür ve medyan bütçeyle karşılaştırılır. "4× CPU kısıtı" referans geliştirme makinesine (M-serisi Mac; kalibrasyon iş yükü medyanı 46 ms) göredir: kısıt her ölçüm grubundan önce aynı iş yüküyle yeniden kalibre edilir (`4 × 46 / ölçülen`, 1–4×). CI koşucusu 4× sabit kısıtta tema değişimini 128–256 ms ölçüyordu; etkin cihaz hızı böylece makineden ve paralel işçilerin yükünden bağımsız kalır. `stage.spec.ts` K-HERO-7'deki "hero'nun CLS katkısı 0" ölçümü sahne boot'undan (`os:stage-probe`) sonraki kaymaları kapsar; ilk boyamadaki font değişimi (CI'da soğuk önbellekte 0.0116) sayfanın tamamıyla P5'te ve LHCI'da ölçülür. `posters.spec.ts` Firefox'ta temayı `localStorage['os-theme']` ile verir: Playwright Firefox'ta `colorScheme` öykünmesi head betiğinin `matchMedia`'sına yansımıyor (ölçüldü).
+
 #### 13.3.5 final.md §5 değişmezlerinin testleri
 
 | # | Değişmez | Test | Yöntem ve eşik |
@@ -14484,6 +14510,8 @@ Kurallar:
 | Hazırlık | `goto`'dan önce `page.clock.install({ time: new Date('2026-01-01T09:00:00+03:00') })`. Sonra `await page.evaluate(() => document.fonts.ready)`. |
 | Çağrı | `expect(page).toHaveScreenshot({ fullPage: true, mask: [page.locator('#scene-layer'), page.locator('[data-live-time]')] })`. `animations: 'disabled'` ve `maxDiffPixelRatio: 0.01` config'ten gelir. |
 | Taban dosyaları | `tests/e2e/__screenshots__/<proje>/linux/…` (§13.3.1 `snapshotPathTemplate`) |
+
+- SPEC-SAPMA: §13.4.2 (M5, 2026-09-30) — Maske `#scene-layer` yerine `#scene-layer canvas`'tır: katman §5.12.5 ile tam ekran fixed kutudur (`100lvh`) ve tamamı maskelenince tam sayfa görüntülerinin ilk ekranı magenta kutuyla kapanıyordu (M5 ilk taban koşusunda ölçüldü). Azaltılmış harekette canvas yoktur; posterler karşılaştırmaya girer. M4 tabanları footer'daki "Hareketi azalt" anahtarı eklenmeden önce üretilmişti (fark %0.35 < `maxDiffPixelRatio` 0.01); M5'te yeniden üretildi.
 
 Taban kuralları:
 - Tabanlar **yalnız CI'da, Linux'ta** üretilir: `ci.yml`, `workflow_dispatch` + `update_snapshots: true` (§13.6.1). Oluşan artefakt indirilir ve commit edilir.
@@ -16476,13 +16504,13 @@ Belgedeki her `⚠️ DOĞRULANMADI` maddesi, araştırma notlarındaki UNVERIFI
 | V-38 | Aynı grid alanında örtüşen sticky öğeler Safari, Chrome ve Firefox'ta aynı davranır. | §4.9.3, final §13 #8 | `PW_CROSS=1 work-viewer.spec.ts`; gerçek Safari/Firefox (§9.6) | Yedek tanımlı değil; farklılık Ö1/Ö2 ise düzen akışa döner ve karar §16.3.2'ye taşınır. | M4 → M8 — M4 ✅ (2026-09-30): `PW_CROSS=1 work-viewer.spec.ts` Chromium, WebKit (Playwright 1.63) ve Firefox 155'te geçer: her makalede figür kutuları formülle ±2 px, tam olarak bir figür açık. Gerçek Safari/Firefox M8'de (§9.6). |
 | V-39 | Mobil hero'da LCP öğesi poster değil H1'dir. | §4.6.9, §9.5.4, 3D araştırması §11 | `pixel-7`, `iphone-15`, 360 × 640, 390 × 844; LHCI denetimi | §9.5.4 çözüm sırası (U-10). | M4 → M8 — M4 ilk ölçüm ❌ (2026-09-30, Lighthouse 12.6.1 mobil, yerel): 390 × 844, 360 × 640 ve 412 × 915'te LCP öğesi hero posteri (`picture.stage-poster > img`), LCP 3.5 s (simülasyon), Perf 0.91, CLS 0. Masaüstünde H1, 0.7 s, Perf 1.0. H1 kutuları: 320 × 141 (360 × 640), 348 × 147 (390 × 844); poster `<img>` kutusu D/0.8 olduğundan (POSTER_STONE_FRAC) §9.5.4 adım 2 sınırı `D ≤ 0.8·⌊√(0.8·A_h1)⌋ ≈ 151 px` olur. Sahip kararı (M3): LCP işi M8'de (font kırpma + poster boyutu); K-HERO-1 mobil M8'de kapanır. |
 | V-40 | `svh`/`lvh` A sınıfı tarayıcıların tamamında desteklenir. | §2.5.3 | caniuse "viewport-unit-variants"; `iphone-15`'te ölçülen yükseklik | Önce `vh` yedek bildirimi yazılır. | M4 → M8 — M4 ✅ (2026-09-30): Chromium, WebKit ve Firefox (Playwright) `svh`/`lvh`, `1lh`, `subgrid` ve `:has()` destekler; gerçek iOS M8'de. |
-| V-41 | `failIfMajorPerformanceCaveat: true` SwiftShader'da bağlam vermez; CI'da doğal yol `static`'e düşer. | §13.3.3, §9.1 | `desktop-chromium` ile `/` açılır, `data-tier` okunur | Beklenen davranıştır; mutlu yol testleri `?tier=high`/`medium` ile. | M5 |
-| V-42 | Linux CI'da SwiftShader bayraklı Chromium `/?tier=high`'da `ready`'ye ulaşır. | §13.3.1, kalite §14 #2 | `stage.spec.ts` CI koşusu | Bayraklar zorunludur; ulaşmazsa `stage.spec.ts` beklentisi `fallback`'i kabul eder ve 3D yol yalnız gerçek cihazda doğrulanır. | M5 |
-| V-43 | Linux WebKit'te WebGL2 vardır. | §13.3.1 | `iphone-15` `stage.spec.ts` | Testler `ready` ya da `fallback`'i kabul eder. | M5 |
-| V-44 | Turbopack bir async modülün bütün chunk'larını paralel ister (PB-3 100 ms penceresi). | §9.4.3 | PB-3 ağ kaydı | Pencere `os:stage-compiled`'a kadar genişletilir. | M5 |
-| V-45 | Lenis (`autoRaf`) açıkken programatik `window.scrollTo` Lenis durumuyla senkron kalır. | §13.3.2 | `scrollToSvh` sonrası `readStage().scrollY === window.scrollY` (±1 px) | `scrollToSvh` `page.mouse.wheel` adımlarına geçer. | M5 |
-| V-46 | `loading="lazy"` + `display: none` olan etkin olmayan tema posteri hiçbir motorda indirilmez. | §5.16.4, §9.3.2, final §13 #3 | `posters.spec.ts` (Chromium, WebKit; Firefox `PW_CROSS=1`) | Tek `<picture>` + `<source media="(prefers-color-scheme: dark)">`; sonuç sahibe raporlanır. | M5 |
-| V-47 | Kapak renginin her piksel için hesaplanmasının (`fwidth` kuralı) ek maliyeti kabul edilebilir. | §5.4.1 | `?debug` kare süresi; gerçek cihaz (§9.6) | Kapak yalnız `!gl_FrontFacing` dalında; kesit kenarı görsel QA. | M5 → M8 |
+| V-41 | `failIfMajorPerformanceCaveat: true` SwiftShader'da bağlam vermez; CI'da doğal yol `static`'e düşer. | §13.3.3, §9.1 | `desktop-chromium` ile `/` açılır, `data-tier` okunur | Beklenen davranıştır; mutlu yol testleri `?tier=high`/`medium` ile. | M5 — ❌ iddia tutmadı, düzeltmeyle (2026-09-30): SwiftShader bayraklı Chromium (yerel macOS ve Linux CI) `failIfMajorPerformanceCaveat` ile bağlam **verir**; detect-gpu ANGLE adını kara listeyle eşleştirmez (FALLBACK → çekirdek kuralı). CI'da sahne doğal yolda boot ediyor, LHCI `/` TBT 4.8 s, performans 0.61 oluyordu. Düzeltme: yazılım renderer'ı `static` (§5.11.3 SPEC-SAPMA). Sonuç: CI doğal yol `fallback`/`static` (`stage.spec.ts` V-41 bildirimi), LHCI yeşil |
+| V-42 | Linux CI'da SwiftShader bayraklı Chromium `/?tier=high`'da `ready`'ye ulaşır. | §13.3.1, kalite §14 #2 | `stage.spec.ts` CI koşusu | Bayraklar zorunludur; ulaşmazsa `stage.spec.ts` beklentisi `fallback`'i kabul eder ve 3D yol yalnız gerçek cihazda doğrulanır. | M5 — ✅ (2026-09-30): Linux CI'da SwiftShader bayraklı Chromium `?tier=high`'da `ready`'ye ulaşır (`stage.spec.ts` masaüstü testleri yeşil; yazılım render'ı ≈ 2 fps) |
+| V-43 | Linux WebKit'te WebGL2 vardır. | §13.3.1 | `iphone-15` `stage.spec.ts` | Testler `ready` ya da `fallback`'i kabul eder. | M5 — ✅ (2026-09-30): Linux WebKit'te (`iphone-15`) WebGL2 vardır: `?tier=medium` → `ready` / `medium` |
+| V-44 | Turbopack bir async modülün bütün chunk'larını paralel ister (PB-3 100 ms penceresi). | §9.4.3 | PB-3 ağ kaydı | Pencere `os:stage-compiled`'a kadar genişletilir. | M5 — ✅ DOĞRULANDI (2026-09-30, PB-3 ağ kaydı: `[os:stage-import, +100 ms]` dışında başlayan betiklerde `WebGLRenderer` yok) |
+| V-45 | Lenis (`autoRaf`) açıkken programatik `window.scrollTo` Lenis durumuyla senkron kalır. | §13.3.2 | `scrollToSvh` sonrası `readStage().scrollY === window.scrollY` (±1 px) | `scrollToSvh` `page.mouse.wheel` adımlarına geçer. | M5 — ✅ DOĞRULANDI (2026-09-30, `stage.spec.ts`: K2–K4'e programatik kaydırmadan sonra director `scrollY` = `window.scrollY` ± 1 px) |
+| V-46 | `loading="lazy"` + `display: none` olan etkin olmayan tema posteri hiçbir motorda indirilmez. | §5.16.4, §9.3.2, final §13 #3 | `posters.spec.ts` (Chromium, WebKit; Firefox `PW_CROSS=1`) | Tek `<picture>` + `<source media="(prefers-color-scheme: dark)">`; sonuç sahibe raporlanır. | M5 — ✅ DOĞRULANDI (2026-09-30, `posters.spec.ts`: Chromium, WebKit ve Firefox `PW_CROSS=1`; yalnız etkin temanın posterleri istenir, tema değişiminde diğer temanın her dosyası en çok bir kez) |
+| V-47 | Kapak renginin her piksel için hesaplanmasının (`fwidth` kuralı) ek maliyeti kabul edilebilir. | §5.4.1 | `?debug` kare süresi; gerçek cihaz (§9.6) | Kapak yalnız `!gl_FrontFacing` dalında; kesit kenarı görsel QA. | M5 → M8 — M5'te ölçülmedi (SwiftShader kare süresi GPU maliyetini temsil etmez); gerçek cihaz matrisi M8 (§9.6) |
 | V-48 | Flow anchor'larda Taş, masaüstünde (Lenis) metinle ≤ 1 kare sapmayla hareket eder. | §5.19 | Ekran kaydı / `?debug` | "Tek saat" varyantı (`frameloop="never"` + `gsap.ticker`) değerlendirilir. | M6 |
 | V-49 | Safari'de canlı canvas `::view-transition-new(scene)` içinde güncellenir; tipsiz geçişte `scene` grubu metnin üstüne boyanmaz. | §4.13.3, §5.15.1, §9.5.5, final §13 #1 | WebKit Playwright (`transitions.spec.ts`) + gerçek iPhone ve masaüstü Safari kaydı (S4) | Süzülme `transition.finished`'ta başlar. | M7 |
 | V-50 | React `<ViewTransition>` olay prop'larıyla `transition.finished`'a erişilebilir. | §5.15.1 | Uygulamada deneme | 360 ms sabit gecikme. | M7 |

@@ -1,5 +1,5 @@
 // src/app/en/layout.tsx — EN kök layout (§8.4.4). M3 hâli: buildRootMetadata, listPages türetmesi ve persona paleti.
-// M4: ScrollDirector / MotionRoot / LenisProvider (§8.5.1 sırası). StageRoot (M5) ve SiteAnalytics (M9) sonra eklenir.
+// §8.5.1 sırası: SkipLink, StageRoot, header, main > ScrollDirector, footer, MotionRoot, LenisProvider. SiteAnalytics M9'da.
 import '../globals.css';
 import type { Metadata, Viewport } from 'next';
 import type { CSSProperties, ReactNode } from 'react';
@@ -17,6 +17,7 @@ import { headScript } from '@/lib/head-script';
 import { footprintRadius } from '@/lib/section-geometry';
 import { buildRootMetadata, listEnPaths } from '@/lib/seo/metadata';
 import { ScrollDirector } from '@/stage/ScrollDirector';
+import { StageRoot } from '@/stage/StageRoot';
 
 const LOCALE = 'en' as const;
 const PROFILE = getExperienceProfile(getSite().persona); // build zamanı palet seçimi (§4.17, §6.3.7)
@@ -52,6 +53,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       </head>
       <body>
         <SkipLink label={dict.a11y.skipToContent} />
+        <StageRoot persona={PROFILE.persona} />
         <SiteHeader locale={LOCALE} enPaths={enPaths} />
         <main id="main" tabIndex={-1}>
           <ScrollDirector>{children}</ScrollDirector>

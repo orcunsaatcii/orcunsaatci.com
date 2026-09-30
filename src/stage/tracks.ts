@@ -3,7 +3,7 @@
 // DOM'a YAZMAZ (K-GEN-3); measureLayout yalnız okur. Mobil anahtar geçersiz kılmaları (anchor bantları) M6'dadır.
 import { INTENSITY, type Intensity } from '@/experience/profile';
 import { psiDeg, wrapNear } from '@/lib/section-geometry';
-import type { AnchorId, MeasuredAnchor } from './anchors';
+import { measureAnchors, type AnchorId, type MeasuredAnchor } from './anchors';
 import { contentCtx, type Keyframe, type StageContentCtx } from './keyframes';
 import type { ChapterId, PresetName, StageData, StageTarget } from './store';
 
@@ -91,7 +91,7 @@ export interface Layout {
   maxScroll: number;
   mobile: boolean;
   phases: readonly PhaseRange[]; // DOM sırasıyla
-  anchors: readonly MeasuredAnchor[]; // M5
+  anchors: readonly MeasuredAnchor[]; // §5.7.4 (refresh'te ölçülür)
   activation: { work: number[]; journey: number[]; cv: number[] }; // "top 55%" çizgileri: docTop − 0.55·vh
   areas: { bodyY0: number; bodyLen: number; S: number; N: number } | null; // null = pin yok (liste modu)
   heroExit: number;
@@ -510,7 +510,7 @@ const docTop = (el: Element): number => el.getBoundingClientRect().top + window.
 
 /**
  * Fazlar, "top 55%" aktivasyon çizgileri, areas pin geometrisi ve heroExit (§5.9.3). Seçiciler daima kapsamlıdır
- * (root = [data-stage-scope], §5.13.6 kural 2). Anchor ölçümü M5'tedir (anchors: []).
+ * (root = [data-stage-scope], §5.13.6 kural 2). Anchor'lar da burada ölçülür (§5.7.4).
  */
 export function measureLayout(root: HTMLElement, preset: PresetName): Layout {
   const vh = window.innerHeight;
@@ -559,5 +559,6 @@ export function measureLayout(root: HTMLElement, preset: PresetName): Layout {
       };
     }
   }
-  return { vh, maxScroll, mobile, phases, anchors: [], activation, areas, heroExit };
+  const anchors = preset === 'none' ? [] : measureAnchors(root, mobile);
+  return { vh, maxScroll, mobile, phases, anchors, activation, areas, heroExit };
 }

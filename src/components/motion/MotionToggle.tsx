@@ -41,11 +41,19 @@ export function setMotionPref(next: MotionPref): void {
   } catch {
     // depolama kapalı: tercih yalnız bu sayfada geçerli (D-38)
   }
-  const anchor = captureAnchor();
-  document.documentElement.setAttribute('data-motion', next);
-  window.dispatchEvent(new Event(PREF_EVENTS.motion));
-  // düzen (pin yükseklikleri) değişti: iki kare sonra aynı bölüme geri konumla
-  requestAnimationFrame(() => requestAnimationFrame(() => restoreAnchor(anchor)));
+  // P8 (≤ 100 ms, §9.1): geçiş (reveal/Lenis/ScrollTrigger kurulum-sökümü, sahne, pin düzeni) tıklamanın boyamasından
+  // sonraki göreve ertelenir; eşzamanlı hâli tıklama görevini 4× CPU kısıtında 120–200 ms'ye uzatıyordu. Öznitelik ve
+  // olay aynı görevde kalır: pin düzeni değişince doğan kaydırma olayı sönmüş Lenis'e ulaşmaz (aksi hâlde Lenis'in
+  // bekleyen isScrolling zamanlayıcısı destroy()'dan sonra html'e `lenis` sınıfını geri yazıyordu).
+  requestAnimationFrame(() =>
+    setTimeout(() => {
+      const anchor = captureAnchor();
+      document.documentElement.setAttribute('data-motion', next);
+      window.dispatchEvent(new Event(PREF_EVENTS.motion));
+      // düzen (pin yükseklikleri) değişti: iki kare sonra aynı bölüme geri konumla
+      requestAnimationFrame(() => requestAnimationFrame(() => restoreAnchor(anchor)));
+    }, 0),
+  );
 }
 
 export function MotionToggle({

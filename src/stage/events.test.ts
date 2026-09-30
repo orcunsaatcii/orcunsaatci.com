@@ -522,10 +522,22 @@ describe('stageStore (§5.9.1)', () => {
     expect(s().paused).toBe(true);
     s().setPhase('probing');
     expect(s().phase).toBe('probing');
-    s().startLoading('high', { gpu: 'apple m2' }, 'probe');
+    const signals = {
+      webgl2: true,
+      saveData: false,
+      deviceMemory: null,
+      cores: 8,
+      coarse: false,
+      fine: true,
+      narrow: false,
+      gpu: { type: 'BENCHMARK' as const, tier: 3, name: 'apple m2' },
+      software: false,
+      query: null,
+    };
+    s().startLoading('high', signals, 'probe');
     expect(s()).toMatchObject({
       tier: 'high',
-      signals: { gpu: 'apple m2' },
+      signals: { gpu: { name: 'apple m2' } },
       tierReason: 'probe',
       phase: 'loading',
     });
@@ -538,16 +550,22 @@ describe('stageStore (§5.9.1)', () => {
     expect(s().quality).toBe(q);
   });
 
-  it('bağlam kaybı → poster ve sayaç; geri gelince canvasKey++ ve loading', () => {
+  it('bağlam kaybı → poster ve sayaç; geri gelince canvasKey++ ve loading; ikinci kayıp static', () => {
     s().onContextLost();
-    s().onContextLost();
-    expect(s()).toMatchObject({ contextLost: true, contextLosses: 2, phase: 'poster' });
+    expect(s()).toMatchObject({ contextLost: true, contextLosses: 1, phase: 'poster' });
     s().onContextRestored();
     expect(s()).toMatchObject({
       contextLost: false,
-      contextLosses: 2,
+      contextLosses: 1,
       canvasKey: 1,
       phase: 'loading',
+    });
+    s().onContextLost();
+    expect(s()).toMatchObject({
+      contextLosses: 2,
+      tier: 'static',
+      tierReason: 'context-loss',
+      phase: 'fallback',
     });
   });
 

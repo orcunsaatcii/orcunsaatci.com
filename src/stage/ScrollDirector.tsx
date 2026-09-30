@@ -2,7 +2,8 @@
 // src/stage/ScrollDirector.tsx — tek örnek; <div data-stage-scope> sayfa içeriğini sarar ve koşulsuz render edilir
 // (§5.13.5, §8.5.2 kural 1). Runtime + preset + veri varken: ölçüm (yalnız refresh'te), track değerlendirme, event'ler,
 // kesme kuralı (§5.9.7), --scene-opacity ve DOM olayları (about:cut, areas:step, work:active, journey:active).
-// Kaydırma döngüsünde React render'ı ve bellek ayırma yoktur. Anchor ölçümü ve invalidate M5'te bağlanır.
+// Kaydırma döngüsünde React render'ı ve bellek ayırma yoktur. Anchor'lar refresh'te ölçülür (live.anchors, §5.7.4);
+// her güncelleme sahneden kare ister (invalidate).
 import { useEffect, useRef, type ReactNode } from 'react';
 import { useMotionRuntime } from '@/components/motion/MotionRoot';
 import {
@@ -20,7 +21,9 @@ import {
 } from './events';
 import { keyframes, type Keyframe } from './keyframes';
 import { presetDef } from './presets';
+import type { AnchorId } from './anchors';
 import {
+  ANCHOR_MISSING,
   currentSceneOpacity,
   directorApi,
   live,
@@ -57,8 +60,6 @@ const INSTANT_SCROLL_VH = 1.5;
 const OPACITY_EPS = 0.001;
 const LOOP_EPS = 0.01;
 const RESIZE_DEBOUNCE_MS = 150;
-
-const noAnchor = () => -1; // M5: ölçülmüş anchor listesindeki indeks
 
 export function ScrollDirector({ children }: { children: ReactNode }) {
   const scope = useRef<HTMLDivElement>(null);
@@ -101,6 +102,9 @@ export function ScrollDirector({ children }: { children: ReactNode }) {
         cutProgress: 0,
       };
       const owned = (p: TrackProp, y: number) => layout !== null && eventOwned(layout, p, y);
+      // anchor id → ölçülmüş listedeki indeks (slot 0); eksik → ANCHOR_MISSING (refresh'te kurulur)
+      let anchorIdx = new Map<AnchorId, number>();
+      const anchorIndex = (id: AnchorId) => anchorIdx.get(id) ?? ANCHOR_MISSING;
 
       const writeCssVars = () => {
         const o = currentSceneOpacity();
@@ -127,8 +131,8 @@ export function ScrollDirector({ children }: { children: ReactNode }) {
         live.inHero = preset === 'home' && y < layout.heroExit;
         const next = computeIndices(layout, y, bufs[flip]);
         flip ^= 1;
-        applyBase(stageTarget, base, noAnchor, next.fillWindow); // §5.9.3 adım 1
-        evaluateTracks(groups, y, stageTarget, noAnchor, owned);
+        applyBase(stageTarget, base, anchorIndex, next.fillWindow); // §5.9.3 adım 1
+        evaluateTracks(groups, y, stageTarget, anchorIndex, owned);
         applyEvents(rt, preset, resolveEvents(preset, next, data, cctx, targets), next, prevIx, {
           instant,
         });
@@ -213,7 +217,12 @@ export function ScrollDirector({ children }: { children: ReactNode }) {
       };
 
       const refresh = () => {
-        layout = measureLayout(root, preset); // fazlar, aktivasyon çizgileri, areas pin'i
+        layout = measureLayout(root, preset); // fazlar, anchor'lar, aktivasyon çizgileri, areas pin'i
+        anchorIdx = new Map();
+        layout.anchors.forEach((a, i) => {
+          if (a.slot === 0) anchorIdx.set(a.id, i);
+        });
+        live.anchors = layout.anchors;
         cctx = stageCtx(data, layout);
         base = def.base ? keyframes(cctx)[def.base] : null; // refresh'te bir kez (§5.13.5)
         groups = resolveTracks(
