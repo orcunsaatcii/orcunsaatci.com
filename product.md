@@ -1659,8 +1659,8 @@ export function LanguageSwitcher({ locale, enPaths, labels }: LanguageSwitcherPr
 | Durum | Render eden dosya | Layout | HTTP |
 |---|---|---|---|
 | Hiçbir route'a uymayan URL (`/yok`, `/en/yok`, `/tr`, `/en/projeler`) | `src/app/global-not-found.tsx` (`experimental.globalNotFound: true`, §8.6) | Kendi `<html lang="tr">`'si; iki dilli | 404 + otomatik `noindex` |
-| Sayfa içinde `notFound()` çağrısı: EN içerik yok, `lab` kapalı, alan sayfası kapalı | `(tr)/not-found.tsx` / `en/not-found.tsx` | Ağacın kök layout'u (header, footer, `lang`) | 404 + otomatik `noindex` |
-| `dynamicParams = false` altında bilinmeyen parametre (`/projeler/yok`, `/en/projects/yok`) | ⚠️ **DOĞRULANMADI:** ağaç `not-found.tsx` mı, `global-not-found.tsx` mı render edilir? Doğrulama M3'te: `curl localhost:3000/projeler/yok \| grep data-404`. | — | 404 + `noindex` **ZORUNLU** (her iki durumda) |
+| Sayfa içinde `notFound()` çağrısı: EN içerik yok, `lab` kapalı, alan sayfası kapalı | `(tr)/not-found.tsx` / `en/not-found.tsx` | Ağacın kök layout'u (header, footer, `lang`) | 404 + otomatik `noindex`. ⚠️ M2 gözlemi (V-21): Next 16.3.7 bu yolun statik HTML'ini boş bir hata kabuğu (`<html id="__next_error__">`) olarak üretir; ağaç 404'ü yalnız istemcide çizilir (JS'siz ziyaretçi boş sayfa görür, durum kodu ve `noindex` doğrudur). Aynı davranış tek kök layout'lu en küçük Next 16.3.7 uygulamasında da görüldü; karar M3'te V-21 ile verilir. |
+| `dynamicParams = false` altında bilinmeyen parametre (`/projeler/yok`, `/en/projects/yok`) | ⚠️ **DOĞRULANMADI:** ağaç `not-found.tsx` mı, `global-not-found.tsx` mı render edilir? Doğrulama M3'te: `curl localhost:3000/projeler/yok \| grep data-404`. M2 gözlemi (boş parametre listeleriyle): `global-not-found.tsx` (`data-404="global"`), tam SSR. | — | 404 + `noindex` **ZORUNLU** (her iki durumda) |
 
 İçerik:
 - **Başlık:** H1 "Sayfa bulunamadı" / "Page not found".
@@ -1697,9 +1697,9 @@ import { MotionToggle } from '@/components/motion/MotionToggle';   // §10.2.2: 
 import { getContact, getSite } from '@/lib/content';
 import { staticRoutes } from '@/i18n/config';
 
+// robots yazılmaz: Next 404 yanıtına noindex'i kendisi ekler; ikincisi çift etiket üretir (SPEC-SAPMA M2)
 export const metadata: Metadata = {
   title: 'Sayfa bulunamadı · Page not found — Orçun Saatçi',
-  robots: { index: false, follow: true },
 };
 
 export default function GlobalNotFound() {
@@ -1714,7 +1714,12 @@ export default function GlobalNotFound() {
         <main id="main" data-404="global">
           <ClockFigure />
           <h1>
-            Sayfa bulunamadı{hasEn && <span lang="en"> · Page not found</span>}
+            Sayfa bulunamadı
+            {hasEn && (
+              <span lang="en" className="block text-ink-muted">
+                <span className="sr-only"> · </span>Page not found
+              </span>
+            )}
           </h1>
           <p>Bu kesit boş, ama saat doğru.</p>
           <ul>
@@ -1740,12 +1745,15 @@ export default function GlobalNotFound() {
 }
 ```
 
+> SPEC-SAPMA: §3.7 (M2, 2026-09-30) — `global-not-found` metadata'sı `robots` yazmaz: Next 16.3 404 yanıtlarına `<meta name="robots" content="noindex">`'i kendisi ekler, ikinci bir `robots` etiketi çift meta üretir ve testlerde tek öğe beklentisini bozar. Başlığın EN kısmı ikinci satırdadır (`block`); ayraç ` · ` görsel olarak gizlidir, erişilebilir ad "Sayfa bulunamadı · Page not found" kalır. Metinler `getDictionary('tr' | 'en').notFound`'tan okunur.
+
 Hata sınırı:
 - **ÖNERİLİR:** Her ağaçta bir `error.tsx` bulunur: `src/app/(tr)/error.tsx`, `src/app/en/error.tsx`.
 - Dosya `'use client'` ile başlar. Beklenmeyen bir istemci hatasında Next'in varsayılan beyaz ekranı yerine ağacın dilinde şunları gösterir:
   - "Bir şeyler ters gitti" / "Something went wrong";
-  - `reset()` çağıran "Tekrar dene" / "Try again" düğmesi;
+  - `retry()` çağıran "Tekrar dene" / "Try again" düğmesi;
   - ana sayfa bağlantısı.
+- SPEC-SAPMA: §3.7 (M2, 2026-09-30) — Next 16.3 `error.js` belgesi `reset()` yerine `retry()`'ı önerir ("In most cases, you should use `retry()`"): segmenti yeniden çekip çizer. Metinler istemci bileşeninde `getDictionary` kullanılamadığı için (§8.3 kural 3) `src/i18n/dictionaries/error-text.ts` modülündedir; iki sözlüğün `error` ad alanı aynı modüle bağlıdır, sözlüğün tamamı istemciye gitmez.
 - Stage hataları bu sınıra ulaşmaz; stage kendi hata toleransına sahiptir (§5.17).
 
 ### 3.8 Türkçe'ye özgü kurallar
@@ -6221,15 +6229,15 @@ Doğrulanmış olgular (fontTools 4.60.2 + HarfBuzz, 2026-09-28; design-directio
 
 | Dosya | Eksen / örnek | Boyut | Tüketici |
 |---|---|---|---|
-| `MonaSans-trim.woff2` | wdth 100–125, wght 350–800 | ≈ 100.9 KB | Tüm sayfalar (preload) |
-| `MartianMono-trim.woff2` | wdth 87.5–100, wght 400–500 | ≈ 23.8 KB | Tüm sayfalar (preload) |
-| `MonaSans-WideBold.ttf` | wdth 125, wght 760 | 43.0 KB | OG başlığı, PDF'te ad |
-| `MonaSans-Text.ttf` | wdth 100, wght 450 | 43.1 KB | OG alt başlığı ve alt satırı, PDF gövdesi |
-| `MonaSans-TextSemibold.ttf` | wdth 100, wght 620 | 43.0 KB | PDF bölüm başlıkları ve rol satırları |
-| `MartianMono-Regular.ttf` | wdth 100, wght 400 | 17.8 KB | OG eyebrow ve URL, PDF tarihleri |
+| `MonaSans-trim.woff2` | wdth 100–125, wght 350–800 | ≈ 98.0 KB | Tüm sayfalar (preload) |
+| `MartianMono-trim.woff2` | wdth 87.5–100, wght 400–500 | ≈ 23.1 KB | Tüm sayfalar (preload) |
+| `MonaSans-WideBold.ttf` | wdth 125, wght 760 | 42.2 KB | OG başlığı, PDF'te ad |
+| `MonaSans-Text.ttf` | wdth 100, wght 450 | 42.2 KB | OG alt başlığı ve alt satırı, PDF gövdesi |
+| `MonaSans-TextSemibold.ttf` | wdth 100, wght 620 | 42.2 KB | PDF bölüm başlıkları ve rol satırları |
+| `MartianMono-Regular.ttf` | wdth 100, wght 400 | 17.5 KB | OG eyebrow ve URL, PDF tarihleri |
 
-- Web font toplamı ≈ 125 KB, iki dosya ve iki preload.
-- `U_TTF`, U+20AC (€) içerir (§16.1.1 U-06); küme, §7.6.4'teki PDF karakter korumasıyla birebir aynı tutulur. Yukarıdaki TTF boyutları bu eklemeden önce ölçüldü; M2'de `npm run fonts` yeniden çalıştırılınca güncellenir.
+- Web font toplamı ≈ 121 KB, iki dosya ve iki preload.
+- `U_TTF`, U+20AC (€) içerir (§16.1.1 U-06); küme, §7.6.4'teki PDF karakter korumasıyla birebir aynı tutulur. Tablodaki boyutlar M2'de (2026-09-30, fontTools 4.60.2, `google/fonts` `main`) € eklenmiş kümeyle yeniden ölçüldü: 100,392 / 23,692 / 43,212 / 43,252 / 43,232 / 17,968 bayt. fontTools her kayıtta `head.modified` zaman damgasını yenilediği için WOFF2 baytları çalıştırmadan çalıştırmaya birkaç on bayt oynar; TTF boyutları sabittir. Mona'nın 2026-09-28 ölçümünden (≈ 100.9 KB) küçük olması kaynak TTF'in güncel sürümündendir.
 - Bu, quality-perf araştırmasındaki "dosya başına ≤ 50 KB" genel önerisini Mona için aşar. Ödünleşim bilinçlidir: tek değişken dosya hem display hem metin rolünü taşır, ayrıca Google'ın `latin` + `latin-ext` çifti (131 KB) daha büyüktür. Bütçe kontrolü §9.3 ve §9.4'tedir.
 
 **`scripts/subset-fonts.sh`** (`npm run fonts`). Tek seferlik çalışır; CI'da çalışmaz, çıktılar commit edilir. Betik bu metinle birebir çalıştırıldı ve doğrulama adımı `fontlar OK` verdi.
@@ -6458,7 +6466,7 @@ Tailwind'in yerleşik `max-w-prose` sınıfı (65ch) **YASAK**. Bu yüzden kapsa
    - Her maske sarmalayıcısı `padding-block: 0.2em; margin-block: -0.2em` alır (`mask-line` yardımcısı ve SplitText için `.split-line-mask`, §6.10).
    - Dolgu yüzünden maskeli satırın başlangıç konumu `yPercent: 130`'dur (§6.5.4).
    - Dolgu `em` cinsindendir, `px` değil. Böylece WCAG 1.4.12 metin aralığı ayarı maskeleri bozmaz.
-3. **Bağlar.** Tabanda `:lang(tr) { font-variant-ligatures: no-common-ligatures; }` vardır. Mona Sans'ın `locl` TRK özelliği zaten "fi" bağını engeller. Bu kural, `lang`'den `locl` uygulamayan bir motor için ek güvencedir.
+3. **Bağlar.** Tabanda `:lang(tr) { font-variant-ligatures: no-common-ligatures; }` vardır. Mona Sans'ın `locl` TRK özelliği zaten "fi" bağını engeller. Bu kural, `lang`'den `locl` uygulamayan bir motor için ek güvencedir. ✅ V-16 (2026-09-30): WebKit (CoreText) ve Chromium `lang="tr"` altında `locl` TRK uygular; bağlar açıkken bile "fikir"de bağ oluşmaz, `lang="en"` bağ kurar. Kural yine kalır.
    - ⚠️ DOĞRULANMADI: Safari'nin (CoreText) `lang="tr"` ile `locl` TRK uyguladığı. Doğrulama: M2'de iOS Safari'de "fikir" sözcüğünün kural kapalıyken ekran görüntüsü. Kural her durumda kalır.
 4. **Kesme işareti** özel adlarda `’` (U+2019) olur: `Orçun’un`, `Saatçi’nin`, `İstanbul’da`. Düz `'` **YASAK**. **Tırnaklar** `“…”` ve `‘…’`; `<q>` için `:lang(tr) q { quotes: "“" "”" "‘" "’"; }` tanımlıdır.
 5. **Aralıklar.** `2021 – 2024` yazımında boşluklar şöyledir: U+00A0 (bölünmez boşluk), U+2013, normal boşluk. İnce boşluk (U+2009) **YASAK**: iki fontta da glifi yoktur (ölçüldü) ve sistem fontuna düşer. Süren görev "Halen" / "Present" olarak yazılır (§3.8, `cv.present`).
@@ -7824,6 +7832,9 @@ Dosyanın bölümleri:
     opacity: var(--scene-opacity, 1);
     view-transition-name: scene;
   }
+
+  /* Ana sayfada layout'un full footer'ı gizlenir; compact footer contact bölümündedir (§8.4.4, §3.9.3) */
+  body:has([data-chapter="hero"]) [data-site-footer="full"] { display: none; }
 }
 
 /* ── 8. Route geçişi sabitleri (D-32; sayfa içeriği animasyonları §5.15) ──── */
@@ -7844,6 +7855,8 @@ Dosyanın bölümleri:
   #scene-layer { display: none !important; }
 }
 ```
+
+> SPEC-SAPMA: §6.10.1 (M2, 2026-09-30) — §8.4.4 ana sayfada `full` footer'ı gizleyen kuralın "globals.css'te" olduğunu söylüyordu, ama §6.10.1'in tam dosyasında yoktu. Kural 7. bölüme (bileşen kancaları) eklendi; dosya ile bu blok yine birebir aynıdır.
 
 #### 6.10.2 Derleme doğrulaması ve bakım kuralları
 
@@ -10629,11 +10642,12 @@ Ek davranışlar:
 
 #### 8.4.3 Enjeksiyon kuralları
 
-- **ZORUNLU:** Betik, iki kök layout'ta ve `src/app/global-not-found.tsx`'te `<head>`'in **ilk çocuğu** olarak şöyle render edilir: `<script dangerouslySetInnerHTML={{ __html: headScript }} />`. `async`, `defer`, `type="module"` ve `next/script` **YASAK**tır; betik ayrıştırıcıyı bloklayarak body'den önce çalışmalıdır.
+- **ZORUNLU:** Betik, iki kök layout'ta ve `src/app/global-not-found.tsx`'te JSX'te `<head>`'in **ilk çocuğu** olarak şöyle render edilir: `<script dangerouslySetInnerHTML={{ __html: headScript }} />`. `async`, `defer`, `type="module"` ve `next/script` **YASAK**tır; betik ayrıştırıcıyı bloklayarak body'den önce çalışmalıdır.
+- SPEC-SAPMA: §8.4.3 ve §8.9 (M2, 2026-09-30) — React 19, `<head>`'in çocuklarından önce `charset`/`viewport` meta'larını, font preload'larını, stil sayfalarını ve Next'in `async` chunk betiklerini yazar. Bu yüzden HTML'de head script `<head>`'in ilk çocuğu ya da ilk `<script>`'i değil, **ilk senkron** betiğidir (`src`, `async`, `defer`, `nomodule`, `type="module"` taşımayan). `async` betikler ayrıştırıcıyı bloklamaz; head script yine body'den önce çalışır ve flaş yok testi geçer.
 - **ZORUNLU:** `<html>` öğesi `suppressHydrationWarning` taşır. Betik `class` ve `data-*` ekler; React hidrasyonda bu farkı düzeltmeye çalışmaz ve kök öğenin `className` prop'u değişmediği için sonraki render'larda da dokunmaz.
 - CSP: statik CSP `script-src 'unsafe-inline'` içerir (D-25, §12.5); ek ayar gerekmez.
-- ⚠️ DOĞRULANMADI: React 19'un geliştirme modunda head'deki satır içi `<script>` için "Encountered a script tag…" uyarısı verip vermediği. Yalnız dev uyarısıdır; e2e production build'e karşı koştuğu için testleri düşürmez (§13.3). Doğrulama: M2'de `npm run dev` konsolu. Uyarı üretim build'inde görülürse betik `next/script` `strategy="beforeInteractive"` ile verilir ve ilk boyama öncesi çalıştığı `no-flash` testiyle (§8.9) yeniden doğrulanır.
-- **Flaş yok testi:** Playwright'ta `page.addInitScript(() => localStorage.setItem('os-theme', 'dark'))` + `emulateMedia({ colorScheme: 'light' })` ile açılan sayfada, `DOMContentLoaded` anında `document.documentElement.dataset.theme === 'dark'` ve `getComputedStyle(document.body).backgroundColor` koyu `canvas` değeridir.
+- ✅ DOĞRULANDI (2026-09-30, `npm run dev` + Playwright konsolu): Normal sayfalarda ve `global-not-found`'da "Encountered a script tag…" uyarısı yoktur. Uyarı yalnız sayfa içi `notFound()` sonrası belge istemcide yeniden çizildiğinde görülür (V-21 hata kabuğu yolu); React bu uyarıyı üretimde yazmaz. `next/script` yedeğine gerek kalmadı.
+- **Flaş yok testi:** Playwright'ta `page.addInitScript(() => localStorage.setItem('os-theme', 'dark'))` + `emulateMedia({ colorScheme: 'light' })` ile açılan sayfada, `DOMContentLoaded` anında `document.documentElement.dataset.theme === 'dark'` ve `getComputedStyle(document.documentElement).backgroundColor` koyu `canvas` değeridir. (SPEC-SAPMA M2: §6.10.1 zemini `html`'e verir, `body` saydamdır; önceki `document.body` ifadesi `rgba(0, 0, 0, 0)` okuyordu.)
 
 #### 8.4.4 Kök layout iskeleti
 
@@ -10906,8 +10920,10 @@ blob-report/
 package-lock.json
 content/**/*.mdx
 product.md
+src/app/globals.css
 ```
 
+- SPEC-SAPMA: §8.6.3 (M2, 2026-09-30) — `src/app/globals.css` biçimlenmez. §6.12 dosyanın §6.10.1 ile birebir aynı olmasını ister; Prettier ise onaltılık renkleri küçük harfe çevirip tırnakları ve satır düzenini değiştirerek 351 satırı farklılaştırır.
 - Tailwind v4'te sınıf sıralaması için eklentinin tema dosyasını bilmesi gerekir; yol `tailwindStylesheet` ile verilir. ✅ DOĞRULANDI (2026-09-29, paket README'si): seçeneğin adı `tailwindStylesheet`'tir.
 - İçerik MDX'i biçimlenmez: sahibin metni yeniden akıtılmaz. YAML dosyaları biçimlenir.
 - `postcss.config.mjs` create-next-app'teki hâliyle kalır: `export default { plugins: { '@tailwindcss/postcss': {} } }`.
@@ -11117,7 +11133,7 @@ Kurallar:
 - [ ] `src/views/**` ve `src/components/chapters/**` altında hiçbir dosya `'use client'` ile başlamaz.
 - [ ] Temiz klonda `npm ci && npm run check` yeşil biter; `public/detect-gpu/` en az bir JSON içerir.
 - [ ] `next build` çıktısında yalnız ○/● route vardır; iki kök layout da `export const dynamic = 'error'` içerir.
-- [ ] Her sayfanın SSR HTML'inde `<head>`'in ilk `<script>` öğesi head script'tir; `<html>` `lang` özniteliğini ve font değişken sınıflarını taşır; production konsolunda hidrasyon uyarısı yoktur.
+- [ ] Her sayfanın SSR HTML'inde `<head>`'in ilk senkron `<script>` öğesi (`src`/`async`/`defer`/`nomodule`/`type="module"` taşımayan) head script'tir (SPEC-SAPMA §8.4.3); `<html>` `lang` özniteliğini ve font değişken sınıflarını taşır; production konsolunda hidrasyon uyarısı yoktur.
 - [ ] `head-script.test.ts` §8.4.2'deki 6 satırlık tablonun tamamını geçer; betik dizesi ≤ 1.5 KB'tır.
 - [ ] Flaş yok testi (§8.4.3) `desktop-chromium` ve `iphone-15` projelerinde geçer: `os-theme=dark` + OS açıkken ilk boyamada koyu `canvas` görülür; `os-motion=reduce` iken `DOMContentLoaded` anında `data-motion="reduce"`'dur.
 - [ ] `no-js` projesinde `<html>` `js` sınıfı taşımaz ve hiçbir içerik gizli değildir; JS açık projelerde hidrasyondan sonra `data-hydrated` vardır.
@@ -11153,7 +11169,7 @@ Bütün KB değerleri **gzip** boyutudur ve 1 KB = 1,024 bayttır (D-33). "Lab m
 | P12 | Stage chunk | **≤ 300 KB** (three + R3F + drei `PerformanceMonitor` + maath + `gl/**`) | lazy | `perf-budgets.spec.ts` (kesin), `budgets` (alt sınır) | D-33; tahmin ≈ 256 KB (§5.1.4) |
 | P13 | Motion chunk | **≤ 60 KB** (gsap + ScrollTrigger + SplitText + lenis); `load`'dan önce **asla** istenmez | lazy | aynı | D-33 |
 | P14 | Tam boot sonrası toplam JS | ≤ 550 KB (ana sayfa, canlı sahneyle) | ana sayfa | `perf-budgets.spec.ts` | kalite araştırması §2.4 |
-| P15 | Fontlar | 2 dosya, toplam ≤ 130 KB (`MonaSans-trim.woff2` ≤ 105 KB, `MartianMono-trim.woff2` ≤ 26 KB) | kritik yol | `budgets` | ölçüm: 100.9 + 23.8 KB (§6.2.3) |
+| P15 | Fontlar | 2 dosya, toplam ≤ 130 KB (`MonaSans-trim.woff2` ≤ 105 KB, `MartianMono-trim.woff2` ≤ 26 KB) | kritik yol | `budgets` | ölçüm (M2): 98.0 + 23.1 KB (§6.2.3) |
 | P16 | Posterler | her `*-1080.avif` ≤ 40 KB | `public/stage/` | `budgets` | final.md §10.1 |
 | P17 | Sahne kare süresi | kaydırma sırasında p95 ≤ 16.7 ms (60 Hz) atanan kademede; Düşük Güç Modu'nda ≤ 33.3 ms | R1, R3, R6 cihazları (§9.6) | `?debug` paneli | hedef; GPU süreleri §5.11.1 (⚠️ DOĞRULANMADI) |
 | P18 | Sahne hazır süresi | `os:stage-ready − load`: masaüstü referansında ≤ 3,000 ms, orta segment telefonda ≤ 5,000 ms | ana sayfa | User Timing (§9.2.5), §9.6 | hedef; M8 ölçümüyle §16.2'ye yazılır |
@@ -11298,7 +11314,7 @@ Kurallar:
 
 #### 9.3.4 Fontlar
 
-- Tam iki WOFF2 dosyası kritik yoldadır. İkisi de `next/font/local` ile preload edilir (§6.2.3). Ölçülen boyutlar: `MonaSans-trim.woff2` 100.9 KB, `MartianMono-trim.woff2` 23.8 KB.
+- Tam iki WOFF2 dosyası kritik yoldadır. İkisi de `next/font/local` ile preload edilir (§6.2.3). Ölçülen boyutlar (M2): `MonaSans-trim.woff2` 98.0 KB, `MartianMono-trim.woff2` 23.1 KB.
 - `display: 'swap'` + `adjustFontFallback: 'Arial'`: ilk boya yedek fontla olur; LCP geciktirilmez. Hero H1 iki `<span>` ile yazıldığı için satır kırılımı fonttan bağımsızdır (§6.2.3, CLS önlemi).
 - **YASAK:** üçüncü bir font dosyası, `next/font/google` (D-21), kaydırmaya bağlı `font-variation-settings` animasyonu.
 - `assets/fonts/ttf/` altındaki statik TTF'ler yalnız build'de okunur (OG, PDF); tarayıcıya gönderilmez.
@@ -12131,8 +12147,8 @@ Kalıplar ek uyumu kuralına uyar (§3.8 #8): yer tutucudan sonra ek gelmez. "{{
 | Dosya | Çıktı | Kural |
 |---|---|---|
 | `src/app/icon.tsx` | `/icon`, 32×32 PNG | `ImageResponse`. `#0B1020` zemin üzerinde halka + yakut ibre motifi; `renderDial()` ile (§11.5). |
-| `src/app/apple-icon.tsx` | `/apple-icon`, 180×180 PNG | Aynı motif, 24 px iç boşluk. |
-| `src/app/favicon.ico` | `/favicon.ico`, 32×32 | M2'de `/icon` çıktısından bir kez üretilir ve commit edilir. |
+| `src/app/apple-icon.tsx` | `/apple-icon`, 180×180 PNG | Aynı motif, 24 px iç boşluk. İki ikonda ibre açısı sabit 45°'dir (`ICON_DIAL_ANGLE`, saat 12'den saat yönünde; küçük boyutta en okunur yön). |
+| `src/app/favicon.ico` | `/favicon.ico`, 32×32 | M2'de `/icon` çıktısından bir kez üretilir ve commit edilir. ✅ M2 (2026-09-30): `/icon` PNG'si tek girişli bir ICO kabına (PNG-in-ICO, 1,127 bayt) sarıldı. |
 | `src/app/manifest.ts` | `/manifest.webmanifest` | Aşağıdaki gibi. PWA hedeflenmez. |
 
 ```ts
@@ -12408,7 +12424,8 @@ export async function coverDataUri(publicSrc: string, box = OG_COVER_BOX): Promi
   return `data:image/jpeg;base64,${out.toString('base64')}`;
 }
 
-/** 60 çentikli kadran + yakut ibre (inline <svg>); OG'de 180 px, ikonlarda 32/180 px. */
+/** 60 çentikli kadran + yakut ibre (inline <svg>); OG'de 180 px, ikonlarda 32/180 px.
+ *  64 px altında yalnız 12 ana çentik çizilir (SPEC-SAPMA M2: 60 çentik 32 px'te gri lekeye dönüşür). */
 export declare function renderDial(opts: { size: number; angleDeg: number }): ReactElement;
 
 export async function renderOg(input: OgInput): Promise<ImageResponse> {
@@ -13804,7 +13821,10 @@ export function buildCsp(env: CspEnv, reportOnly: boolean): string {
 
   const parts = directives.map(([name, values]) => `${name} ${values.join(' ')}`);
   // Report-Only politikada tarayıcılar bu direktifi yok sayar ve konsola uyarı yazar; bu yüzden yalnız zorunlu modda eklenir.
-  if (!reportOnly) parts.push('upgrade-insecure-requests');
+  // SPEC-SAPMA §12.5.2: yalnız Vercel'de (her ortamı https). Yerel/CI http://localhost'ta WebKit alt kaynakları
+  // https'e yükseltip TLS hatasıyla düşürür (M2, iphone-15 e2e); Chromium localhost'u yükseltmez.
+  const https = env.vercelEnv !== undefined;
+  if (!reportOnly && https) parts.push('upgrade-insecure-requests');
   return parts.join('; ');
 }
 
@@ -13868,7 +13888,7 @@ default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-
 | `base-uri` | `'self'` | `<base>` enjeksiyonunu engeller |
 | `form-action` | `'self'` | v1.1 formu aynı kökene `POST` yapar (JS'siz yol dâhil) |
 | `frame-ancestors` | `'none'` | Tıklama kaçırmaya karşı. Site hiçbir yerde çerçeve içinde gösterilmez. |
-| `upgrade-insecure-requests` | — (yalnız zorunlu modda) | Olası `http://` alt kaynakları yükseltir. Report-Only'de desteklenmez (§12.5.2 yorum satırı). |
+| `upgrade-insecure-requests` | — (yalnız zorunlu modda ve Vercel'de, `VERCEL_ENV` tanımlıyken) | Olası `http://` alt kaynakları yükseltir. Report-Only'de desteklenmez (§12.5.2 yorum satırı). Yerel ve CI build'i (`http://localhost`) bu direktifi göndermez: WebKit localhost alt kaynaklarını https'e yükseltip TLS hatasıyla düşürür (SPEC-SAPMA M2, `iphone-15` e2e'de ölçüldü). |
 
 Bilinçli olarak **eklenmeyenler:**
 - `report-uri` / `report-to`: Rapor toplayacak bir uç nokta yoktur. Fonksiyon eklemek D-06'ya ters düşer; üçüncü taraf rapor toplayıcı da YASAK'tır. İhlaller tarayıcı konsolundan ve Playwright konsol denetiminden okunur.
@@ -13925,7 +13945,7 @@ CSP'ye yeni bir köken eklemek bir mimari değişikliktir. Aynı PR'da şunlar b
 
 | Test | Doğrulananlar |
 |---|---|
-| `src/lib/security-headers.test.ts` (Vitest) | - `buildCsp({ nodeEnv: 'production', vercelEnv: 'production' }, false)` §12.5.2'deki diziye **birebir** eşittir.<br>- Production çıktısında `unsafe-eval`, `vercel.live`, `blob:` (worker-src dışında) ve `*` yoktur.<br>- Preview + `reportOnly=true`: başlık adı `Content-Security-Policy-Report-Only`; `upgrade-insecure-requests` yok; `https://vercel.live` var.<br>- `nodeEnv: 'development'`: `'unsafe-eval'` ve `ws:` var.<br>- HSTS değeri `preload` içermez.<br>- Başlık anahtarları benzersizdir. |
+| `src/lib/security-headers.test.ts` (Vitest) | - `buildCsp({ nodeEnv: 'production', vercelEnv: 'production' }, false)` §12.5.2'deki diziye **birebir** eşittir.<br>- Production çıktısında `unsafe-eval`, `vercel.live`, `blob:` (worker-src dışında) ve `*` yoktur.<br>- Preview + `reportOnly=true`: başlık adı `Content-Security-Policy-Report-Only`; `upgrade-insecure-requests` yok; `https://vercel.live` var.<br>- Yerel/CI (`vercelEnv` yok): zorunlu CSP, `upgrade-insecure-requests` yok (SPEC-SAPMA M2).<br>- `nodeEnv: 'development'`: `'unsafe-eval'` ve `ws:` var.<br>- HSTS değeri `preload` içermez.<br>- Başlık anahtarları benzersizdir. |
 | `tests/e2e/headers.spec.ts` (§13.3.4) | Şu yollarda tüm başlıklar vardır ve CSP başlığının adı `Content-Security-Policy`'dir: `/`, ilk proje sayfası, `/sitemap.xml`, `/yok` (404) ve `/files/orcun-saatci-cv-tr.pdf`. `x-powered-by` yoktur. Yerelde doğrulandı (2026-09-29, `headers.spec.ts` `/yok` yeşil): `headers()` 404 yanıtlarına da uygulanır. ⚠️ **DOĞRULANMADI:** production'da aynı davranış; §14.7 tekrarlar. |
 | Konsol denetimi | Tüm e2e testlerinde CSP ihlali bir konsol hatasıdır ve testi düşürür (§13.3.2). |
 | Üretim | securityheaders.com ve Mozilla Observatory'de hedef not **A**'dır. `'unsafe-inline'` puan kaybettirir; statik render için bu kabul edilir (§14.7). |
@@ -14259,6 +14279,7 @@ Yardımcılar (`tests/e2e/helpers/`):
 | `urls.ts` | `sitemapPaths(request)` | `/sitemap.xml`'i okur. `<loc>` değerlerinin **path** kısmını tekilleştirip döndürür (köken atılır). |
 | | `NOINDEX_PATHS` | `['/gizlilik', '/en/privacy']`. Testler yalnız 200 dönenleri kullanır. |
 | | `NOT_FOUND_PATHS` | `['/yok', '/en/yok', '/tr', '/en/projeler', '/projeler/yok', '/en/projects/yok']` (§3.7) |
+| | `SHELL_PATHS` (geçici, M2) | M2 kabuk sayfalarının TR + EN listesi. Sitemap M3'te gelince "her route" döngüleri `sitemapPaths(request)` + `NOINDEX_PATHS`'e geçer ve liste silinir (§15.0.6). |
 | `stage.ts` | `waitForStagePhase(page, phases, timeout = 20_000)` | `#scene-layer`'ın `data-phase` değeri listeden birine ulaşana kadar bekler |
 | | `readStage(page)` | `window.__stage` (§5.18.1; yalnız `?debug` ile) arayüzünün **tek** sarmalayıcısıdır. `store.getState()`'ten `phase`, `tier`, `preset`, `loop`, `paused`; `target`'ın (`StageTarget`, §5.9.2) kopyasını `values` olarak; `live.scrollY`'ı döndürür. §5.18 değişirse yalnız bu dosya değişir. |
 | `scroll.ts` | `scrollToSvh(page, s)` | `window.scrollTo({ top: s × innerHeight / 100, behavior: 'instant' })`, ardından `settle()` |
@@ -14267,6 +14288,8 @@ Yardımcılar (`tests/e2e/helpers/`):
 | `axe.ts` | `expectNoAxeViolations(page, label)` | §13.4.1 |
 
 ⚠️ **DOĞRULANMADI:** Lenis (`autoRaf`) açıkken programatik `window.scrollTo`'nun Lenis durumuyla senkron kaldığı. Doğrulama: M5'te `scrollToSvh` sonrası `readStage().scrollY` değeri `window.scrollY`'a eşit olmalıdır (±1 px). Değilse `scrollToSvh` `page.mouse.wheel` adımlarına geçirilir.
+
+**WebKit klavyesi.** WebKit (`iphone-15`) Safari gibi Tab ile bağlantılara uğramaz; bağlantılar dahil gezinme `Alt+Tab`'dır. Klavye testleri tuşu `browserName === 'webkit' ? 'Alt+Tab' : 'Tab'` ile seçer (M2, `mobile.spec.ts`). WebKit ayrıca hızlı art arda `goto` sırasında yarıda kesilen RSC ön-yüklemelerini `pageerror` olarak raporlar; sayfa listesi gezen WebKit testleri `waitUntil: 'networkidle'` kullanır.
 
 **Etiketler.** Her test ya da `describe` bloğu, koşacağı projeleri `tag` ile bildirir:
 
@@ -15444,6 +15467,14 @@ Bazı dosyalar build zincirinin (§8.7.1) ilk günden çalışması için geçic
 | Kök layout iskeletleri ve tek `<h1>`'li sayfalar | M0 (§2.2.9 madde 2) | M2 (layout), M3 (sayfalar) | §8.4.4, §3.4.3 |
 | Kök layout'ta `engineer` persona paleti (`mekanizma`) ve statik route'lardan `enPaths` | M2 | M3 (`getSite()`, `listPages()`) | §8.4.4 |
 | Boş `generateStaticParams` dönen dinamik kabuklar | M2 | M3 (içerikten) | §3.4.3 |
+| `content-collections.ts` + `content/site/person.yaml`: yalnız `name` alanlı `person` singleton'ı | M2 | M3 | §7.3.4, §7.3.2 |
+| `src/lib/content/index.ts`: yalnız `getSite()` (`locales`), `getPerson()` (`name`) ve statik route'lardan `getEnPaths()` | M2 | M3 (tam erişimciler, `listPages()`) | §7.3.5, §8.4.4 |
+| View kabukları (`src/views/**`): H1 sözlükten ya da persona etiketinden, gövde boş; ana sayfada yalnız hero H1'i, boş bölüm çapaları ve compact footer | M2 | M3 | §4.5–§4.11, §7.7 |
+| `ExpertiseView`, `tokens.test.ts` ve `src/lib/seo/og.tsx`'te `engineer` persona sabiti | M2 | M3 (`getSite().persona`) | §4.17, §6.10.4, §11.5 |
+| `src/lib/seo/og.tsx`: yalnız `loadOgFonts`, `renderDial`, `OG_COLORS`, `ICON_DIAL_ANGLE` | M2 | M3 (`renderOg`, `fitTitle`, `coverDataUri`, `angleFor`) | §11.5.3 |
+| `global-not-found.tsx` ve `NotFoundView` e-posta bağlantısı ve "Son projeler" olmadan; minimal footer'da `MotionToggle` yok | M2 | M3 (e-posta, liste), M4 (`MotionToggle`) | §3.7 |
+| `SiteFooter`'da e-posta, sosyal bağlantılar, CV ve `LocalTime` yok | M2 | M3 | §3.9.3 |
+| E2E: `SHELL_PATHS` listesi; `not-found.spec.ts` ve `i18n.spec.ts` yalnız M2 kapsamında | M2 | M3 (`sitemapPaths`, §13.3.4'teki tam kapsam) | §13.3.2, §13.3.4 |
 | `headers.spec.ts` yalnız `/` ve `/yok` ile | M0 | M3 (beş yol) | §12.5.7 |
 | `lhci` bilgi amaçlı | M0–M2 | M3'ten itibaren kapı | §13.5, §16.1.1 U-09 |
 | Lab sayfasında sabit `StageData` | M1 | M3 (`getStageData('home')`) | §5.16.2 |
@@ -16358,17 +16389,17 @@ Belgedeki her `⚠️ DOĞRULANMADI` maddesi, araştırma notlarındaki UNVERIFI
 | V-13 | Next 16.3.7 (2026-09-30) kırıcı değişiklik içermez; güvenlik düzeltmelerini kapsar. | D-01, platform §13 | Sürüm notları + X1 PR'ında `npm run check` | Güvenlik yaması ertelenmez; kırılma `SPEC-SAPMA` ile giderilir. | X1 (≤ M1) — ✅ DOĞRULANDI, düzeltmeyle (2026-09-30): kırıcı değişiklik yok (M0 ve M1'de 16.3.7 ile `npm run check` yeşil). SPEC-SAPMA: sürüm notu 2026-09-29 tarihlidir ve yalnız bir Turbopack hata düzeltmesinin backport'udur (#98931); güvenlik düzeltmesi listelenmez. En yüksek 16.3.x yine 16.3.7'dir, bu yüzden X1 ayrı PR gerektirmedi. |
 | V-14 | Headless Chromium, SwiftShader bayraklarıyla poster render'ı için WebGL2 sağlar (macOS'ta ölçüldü; Linux'ta bayraksız davranış bilinmiyor). | §5.16.3, final §13 #6 | M1'de yerel `npm run posters`; CI yalnız `--check` | Yakalama yedeği `locator.screenshot({ omitBackground: true })`. | M1 — ✅ DOĞRULANDI (2026-09-30, macOS arm64, Playwright 1.63 headless: 36 poster ve 26 QA karesi `toDataURL` ile üretildi; 26 lab e2e testi konsol hatasız) |
 | V-15 | `WebGLRenderer.debug.onShaderError`, `@types/three` 0.186.0'da vardır. | §5.12.4, §5.17 | Tip dosyası | `compileAsync` sonrası `gl.info.programs[].diagnostics.runnable === false` kontrolü. | M1 — ✅ DOĞRULANDI (2026-09-30, `WebGLDebug.onShaderError` tip dosyasında; lab `Scene.tsx` kullanıyor) |
-| V-16 | Safari (CoreText) `lang="tr"` ile `locl` TRK uygular ("fikir"de bağ yok). | §6.2.6 | iOS Safari ekran görüntüsü | Kural her durumda kalır; bulgu §6.2.6'ya yazılır. | M2 |
-| V-17 | `light-dark()` Safari/iOS 17.5 ile başlar; 17.0–17.4 desteklemez. | §2.5.3, §6.3.5 | caniuse "css-light-dark", MDN; iOS 17.0/17.4 simülatörü | `@supports not` yedek bloğu (§6.10) kalır; ya da T-03 ile taban 17.5 yapılır. | M2 |
-| V-18 | React 19 geliştirmede head'deki satır içi `<script>` için uyarı verebilir. | §8.4.3 | `npm run dev` konsolu | Üretimde görülürse `next/script` `beforeInteractive`; no-flash testi yeniden koşar. | M2 |
-| V-19 | `globals.css` gerçek tarayıcılarda doğru görünür. | §6.10.2 | `desktop-chromium`, `iphone-15`, `pixel-7` iki temada; `prefers-contrast: more`, `forcedColors` | Bulgu §6.10'a işlenir ve düzeltilir. | M2 |
-| V-20 | `editoryal` fontlarının kırpılmış boyutları (yalnız `researcher` persona). | §6.2.8 | `subset-fonts.sh` genişletilir ve ölçülür | Build `hassas`'a düşer (K-PERSONA-4). | M2 (koşullu) |
-| V-21 | Parametresiz statik sayfada build sırasında `notFound()` statik 404 üretir (HTTP 404 + `noindex`). | §3.4.3 | `about.en.mdx` geçici silinir → build → `curl -sI localhost:3000/en/about` | Yedek tanımlı değil; sonuç §3.4.3'e işlenir. | M3 |
-| V-22 | `generateStaticParams` `[]` döndürdüğünde `dynamicParams = false` ile build geçer. | §3.4.3 | M2 kabuklarında (`[]` dönen bütün dinamik segmentler) ve M3'te `areaPages: false` ile build; `/calisma-alanlari/x` 404 | Sonuç §3.4.3'e işlenir. | M2 → M3 |
-| V-23 | `dynamicParams = false` altındaki bilinmeyen parametrede hangi not-found'un render edildiği. | §3.7 | `curl localhost:3000/projeler/yok \| grep data-404` | İki durumda da 404 + `noindex` ZORUNLU; test beklentisi sonuca göre yazılır. | M3 |
+| V-16 | Safari (CoreText) `lang="tr"` ile `locl` TRK uygular ("fikir"de bağ yok). | §6.2.6 | iOS Safari ekran görüntüsü | Kural her durumda kalır; bulgu §6.2.6'ya yazılır. | M2 — ✅ DOĞRULANDI (2026-09-30, Playwright WebKit `iPhone 15` profili, macOS CoreText): `font-variant-ligatures: normal` ile bile `lang="tr"` "fikir"de bağ oluşmaz (`locl` TRK `i`'yi noktalı varyanta çevirir); `lang="en"` bağ kurar. Genişlikler 107.97 / 108.35 px, Chromium'da aynı. `:lang(tr)` kuralı kalır. Gerçek iOS cihaz turu R6 ile M8'de. |
+| V-17 | `light-dark()` Safari/iOS 17.5 ile başlar; 17.0–17.4 desteklemez. | §2.5.3, §6.3.5 | caniuse "css-light-dark", MDN; iOS 17.0/17.4 simülatörü | `@supports not` yedek bloğu (§6.10) kalır; ya da T-03 ile taban 17.5 yapılır. | M2 — ✅ DOĞRULANDI (2026-09-30, MDN browser-compat-data `css.types.color.light-dark`): Safari 17.5 (iOS aynası), Chrome 123, Firefox 120. 17.0–17.4 desteklemez; yedek blok kalır (T-03 → a). Yedek bloğun paritesi `tokens.test.ts` ile denetlenir; iOS 17.0/17.4 simülatörü bu ortamda yok, görsel kontrol M8 cihaz turunda. |
+| V-18 | React 19 geliştirmede head'deki satır içi `<script>` için uyarı verebilir. | §8.4.3 | `npm run dev` konsolu | Üretimde görülürse `next/script` `beforeInteractive`; no-flash testi yeniden koşar. | M2 — ✅ DOĞRULANDI (2026-09-30): `/`, `/hakkimda`, `/en/about`, `/yok` dev konsolunda uyarı yok. Uyarı yalnız sayfa içi `notFound()` sonrası belge istemcide yeniden çizilirken görülür (V-21 hata kabuğu); üretimde yazılmaz. |
+| V-19 | `globals.css` gerçek tarayıcılarda doğru görünür. | §6.10.2 | `desktop-chromium`, `iphone-15`, `pixel-7` iki temada; `prefers-contrast: more`, `forcedColors` | Bulgu §6.10'a işlenir ve düzeltilir. | M2 — ✅ DOĞRULANDI, düzeltmeyle (2026-09-30): 360/768/1440 × iki tema, `iPhone 15` (WebKit) ve `Pixel 7` iki temada, `contrast: more` iki temada ve `forcedColors` ekran görüntüleriyle. `globals.css` değişmedi. Bileşen düzeltmeleri: forced-colors'ta `ThemeToggle` seçili bölümü görünmüyordu → `Highlight`/`HighlightText` + `forced-color-adjust: none` (§10.5.3); header'da geçerli sayfanın renkten başka ipucu yoktu → kalıcı 1 px alt çizgi (§6.6.1). |
+| V-20 | `editoryal` fontlarının kırpılmış boyutları (yalnız `researcher` persona). | §6.2.8 | `subset-fonts.sh` genişletilir ve ölçülür | Build `hassas`'a düşer (K-PERSONA-4). | M2 (koşullu) — koşul oluşmadı (2026-09-30): etkin persona `engineer` (`hassas`). `resolveTypePreset` editoryal isteğini uyarıyla `hassas`'a düşürür (K-PERSONA-4, `profile.test.ts`). Persona değişirse ölçülür. |
+| V-21 | Parametresiz statik sayfada build sırasında `notFound()` statik 404 üretir (HTTP 404 + `noindex`). | §3.4.3 | `about.en.mdx` geçici silinir → build → `curl -sI localhost:3000/en/about` | Yedek tanımlı değil; sonuç §3.4.3'e işlenir. | M3 — ⚠️ M2 ön gözlemi (2026-09-30, `/lab/stage` bayraksız): HTTP 404 ve `noindex` doğru, ama statik HTML boş bir hata kabuğudur (`<html id="__next_error__">`, boş `<body>`); ağaç `not-found.tsx` yalnız istemcide çizilir. Tek kök layout'lu en küçük Next 16.3.7 uygulamasında da aynı. JS'siz ziyaretçi ve tema/hareket betiği bu sayfalarda devre dışı kalır; M3'te içerik kapılı sayfalar için karar verilir. |
+| V-22 | `generateStaticParams` `[]` döndürdüğünde `dynamicParams = false` ile build geçer. | §3.4.3 | M2 kabuklarında (`[]` dönen bütün dinamik segmentler) ve M3'te `areaPages: false` ile build; `/calisma-alanlari/x` 404 | Sonuç §3.4.3'e işlenir. | M2 → M3 — M2 kısmı ✅ (2026-09-30): dört dinamik kabuk `[]` ile build'i geçer ve ○ olarak listelenir; `/calisma-alanlari/yok` 404 + `noindex` döner. |
+| V-23 | `dynamicParams = false` altındaki bilinmeyen parametrede hangi not-found'un render edildiği. | §3.7 | `curl localhost:3000/projeler/yok \| grep data-404` | İki durumda da 404 + `noindex` ZORUNLU; test beklentisi sonuca göre yazılır. | M3 — M2 ön gözlemi (boş parametre listeleriyle): `data-404="global"`, tam SSR. Gerçek parametrelerle M3'te yinelenir. |
 | V-24 | React 19 `<title>` hoisting ağaç 404'ünde çift `<title>` üretmez. | §3.7 | Build çıktısı | İSTEĞE BAĞLI başlık uygulanmaz. | M3 |
 | V-25 | Route group içindeki `[slug]` altındaki `opengraph-image.tsx` statik (●) üretilir. | §11.5.4 #1 | Build çıktısı | a) OG dosyasına `dynamicParams = false` + aynı `generateStaticParams`; b) build betiğiyle `public/og/<locale>/<slug>.png`. | M3 |
-| V-26 | Satori satır içi `<svg>` (kadran motifi) çizer. | §11.5.4 #2, §6.8 | `/opengraph-image` çıktısına bakılır | `data:image/svg+xml` kaynaklı `<img>`. | M3 |
+| V-26 | Satori satır içi `<svg>` (kadran motifi) çizer. | §11.5.4 #2, §6.8 | `/opengraph-image` çıktısına bakılır | `data:image/svg+xml` kaynaklı `<img>`. | M3 — M2 ön gözlemi (2026-09-30): `/icon` ve `/apple-icon` `renderDial()`'ın satır içi `<svg>`'sini doğru çizer (halka, çentikler, ibre). OG çıktısıyla M3'te kapanır. |
 | V-27 | Satori'nin değişken font ve `locl`/`liga` desteği. | §11.5.4 #4, tasarım §13 | OG'de "fi", "İ", "Ğ" görsel kontrolü | Riski liga'sız statik TTF'ler zaten azaltır; bulgu §11.5'e yazılır. | M3 |
 | V-28 | `@content-collections/mdx` `MDXContent`, Next 16.3 RSC içinde render eder. | §7.3.4 #8, içerik §11 #10 | `/hakkimda` build'i (MDX gövdesi; projelerde MDX yok, D-48); `no-js` projesinde gövde `h2`'si HTML'de | `next-mdx-remote-client/rsc` 2.1.12 ile `doc.content`, aynı bileşen haritası. | M3 |
 | V-29 | GitHub Actions `ubuntu-latest`'te `pdftotext` hazırdır. | §7.6.4 | CI'da `pdftotext -v` | Adım atlanır (İSTEĞE BAĞLI). | M3 |
@@ -16400,7 +16431,7 @@ Belgedeki her `⚠️ DOĞRULANMADI` maddesi, araştırma notlarındaki UNVERIFI
 | V-55 | iOS Safari'nin `navigator.hardwareConcurrency` değeri iPhone'ları `low` tier'a itmez. | §5.11.3, §9.5.5 | R1/R2'de `?debug` `cores` ve atanan tier | "`cores ≤ 4` ve kaba" koşulu detect-gpu tier'ına bırakılır. | M8 |
 | V-56 | iOS doğal momentumunda `ScrollTrigger.getVelocity()` kaydırma sallanması için yeterince kalitelidir. | §4.14 #1, §5.9.6, final §13 #5 | Gerçek iPhone'da gözlem | Sallanma kapatılır. | M8 |
 | V-57 | iOS 26 Safari'nin yüzen araç çubuğu `100lvh` sabit katmanla sorun çıkarmaz. | §9.5.5, 3D araştırması §11 | R2'de S2 senaryosu | Yedek tanımlı değil; bulgu Ö1/Ö2 ise §9.5'e çözüm yazılır. | M8 |
-| V-58 | `lang="tr"` altında CSS `text-transform: uppercase` `i`'yi `İ`'ye çevirir (Chrome, Safari, Firefox). | §3.8 #3, içerik §11 #4 | Üç motorda görsel QA | Eyebrow'lar JS'te `upper(s, 'tr')` ile büyütülür. | M8 |
+| V-58 | `lang="tr"` altında CSS `text-transform: uppercase` `i`'yi `İ`'ye çevirir (Chrome, Safari, Firefox). | §3.8 #3, içerik §11 #4 | Üç motorda görsel QA | Eyebrow'lar JS'te `upper(s, 'tr')` ile büyütülür. | M8 — M2 ön ölçümü (2026-09-30): Chromium ve WebKit'te `type-eyebrow` "İLETİŞİM · ÖZGEÇMİŞ · ÇALIŞMA ALANLARI · KESİT" ve EN içinde `lang="tr"` "SAATÇİ" doğru. Firefox M8'de. |
 | V-59 | Next `<Link>` görünüm alanı prefetch'leri LCP'den önce başlamaz. | §9.2.4 #9 | LHCI ağ şelalesi | Footer ve gövde bağlantılarına `prefetch={false}`. | M8 |
 | V-60 | Yedek fonttan Mona Sans'a geçiş başlıklarda satır sayısını değiştirip CLS üretmez. | §6.2.3 | Mobil Lighthouse + `layout-shift` kaydı (CLS ≤ 0.05) | Başlık kırılımı sabitlenir; sonra `display: 'optional'` denenir. | M8 |
 | V-61 | Form içeren `/iletisim` build'de ○ kalır. | §12.2.1 | `npm run build` çıktısı (CI) | Karar T-02; form açılmaz. | M9 |
@@ -16494,7 +16525,7 @@ Aşağıdaki kararlar bir D-xx kararını değiştirir ya da yorumlar. Bu yüzde
 |---|---|---|---|---|---|
 | T-01 | CSP'den `'wasm-unsafe-eval'` ve `worker-src 'self' blob:` kaldırılsın mı? D-14 GLTF, Draco ve dokuyu yasakladığı için v1'de WASM ve worker yoktur. | a) D-25 olduğu gibi · b) ikisi de kaldırılır, D-25 güncellenir | a) | **b)**: politika sıkılaşır. `security-headers.test.ts` ve §12.5.3 aynı PR'da güncellenir. | M10 görev 6'dan önce |
 | T-02 | V-61 ya da V-62 başarısız olursa v1.1 formu nasıl çalışsın? | a) Route Handler `POST /api/contact` (ƒ; D-06'nın "yalnız ○/●" kuralına istisna) · b) `headers()` ve `checkRateLimit` olmadan yalnız WAF panosundaki yol tabanlı kural (uygulanabilirliği §12.2.8'e göre doğrulanır) · c) form v2'ye ertelenir | c) (form kapalı kalır) | Test sonucuna göre M9'da | M9 |
-| T-03 | Tarayıcı tabanı iOS Safari ≥ 17 mi kalsın, ≥ 17.5'e mi çıksın? | a) 17 + `@supports not` yedek bloğu (§6.10) · b) 17.5; yedek blok ve parite kontrolleri kaldırılır | a) | V-17 sonucuna göre | M2 |
+| T-03 | Tarayıcı tabanı iOS Safari ≥ 17 mi kalsın, ≥ 17.5'e mi çıksın? | a) 17 + `@supports not` yedek bloğu (§6.10) · b) 17.5; yedek blok ve parite kontrolleri kaldırılır | a) | V-17 sonucuna göre | M2 — a) uygulandı (2026-09-30, V-17): yedek blok kalır. |
 | T-04 | Stage chunk bütçesi (≤ 300 KB) aşılırsa R3F yerine vanilla three'ye geçilsin mi? | a) R3F'de kalınır ve §9.4.4 uygulanır · b) vanilla three (≈ 133 KB; D-14 değişikliği) | a) | Yalnız P12 M5 ya da M8'de başarısız olursa | M8 |
 | T-05 | CI'da Lighthouse `is-crawlable` atlansın mı? D-33 SEO 1.0 ister; CI build'i `Disallow: /` döner. | a) CI'da atla, üretimde PSI ile SEO 100 (§13.5.1) · b) CI'da SEO eşiğini düşür | a) | a) (§13.5.1'de uygulandı) | M3 |
 | T-06 | Proje sayfasındaki ikinci folio çapası için ayrı bir id (`page-folio-next`) eklensin mi? | a) iki `page-folio`, etkini director seçer · b) adlandırma kaydına yeni id | a) | a); karmaşıklık artarsa b) | M7 |

@@ -9,4 +9,5 @@ blob-report/
 package-lock.json
 content/**/*.mdx
 product.md
+src/app/globals.css
 coverage/

@@ -53,7 +53,10 @@ export function buildCsp(env: CspEnv, reportOnly: boolean): string {
 
   const parts = directives.map(([name, values]) => `${name} ${values.join(' ')}`);
   // Report-Only politikada tarayıcılar bu direktifi yok sayar ve konsola uyarı yazar; bu yüzden yalnız zorunlu modda eklenir.
-  if (!reportOnly) parts.push('upgrade-insecure-requests');
+  // SPEC-SAPMA §12.5.2: yalnız Vercel'de (her ortamı https). Yerel/CI http://localhost'ta WebKit alt kaynakları
+  // https'e yükseltip TLS hatasıyla düşürür (M2, iphone-15 e2e); Chromium localhost'u yükseltmez.
+  const https = env.vercelEnv !== undefined;
+  if (!reportOnly && https) parts.push('upgrade-insecure-requests');
   return parts.join('; ');
 }
 
