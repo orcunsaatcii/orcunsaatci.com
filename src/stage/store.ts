@@ -1,12 +1,16 @@
 // src/stage/store.ts — sahne durumu (§5.9.1–§5.9.2). Three-free; ilk pakete girebilir.
 // stageStore: nadir değişen React durumu (zustand vanilla). stageTarget / live / directorApi / nav: kaydırma
 // döngüsünde yazılan, React dışı değiştirilebilir nesneler (kaydırma hiçbir render'a yol açmaz, §5.1.1).
-// M4: three-free koreografi motoru. WebGL'e özgü alanlar (quality, canvasKey, bağlam kaybı) M5'te bağlanır.
+// Faz geçişleri §5.9.1 tablosundadır; kaydırma sırasında setState çağrılmaz (istisna setLoop, eşik geçişinde).
 import { useStore } from 'zustand';
 import { createStore } from 'zustand/vanilla';
 import type { Intensity } from '@/experience/profile';
 import { NO_BAND } from '@/lib/section-geometry';
+import type { MeasuredAnchor } from './anchors';
+import type { ProbeSignals } from './capabilities';
 import type { QualityState, Tier } from './quality';
+
+export type { ProbeSignals } from './capabilities';
 
 export type { Tier } from './quality';
 
@@ -15,9 +19,6 @@ export type TierReason =
   'probe' | 'query' | 'reduced-motion' | 'context-loss' | 'perf' | 'error' | 'timeout';
 export type PresetName =
   'home' | 'folio' | 'plan-small' | 'cv-core' | 'about-page' | 'contact-page' | 'none';
-
-/** Yetenek yoklamasının sinyalleri; tam tip M5'te capabilities.ts ile gelir (§5.11.2). */
-export type ProbeSignals = Readonly<Record<string, unknown>>;
 
 export interface StageData {
   // sunucuda içerikten üretilir, StagePreset prop'u (JSON)
@@ -86,7 +87,18 @@ export const stageStore = createStore<StageState>()((set) => ({
   setLoop: (loop) => set({ loop }),
   setQuality: (quality) => set({ quality }),
   onContextLost: () =>
-    set((s) => ({ contextLost: true, contextLosses: s.contextLosses + 1, phase: 'poster' })),
+    set((s) =>
+      s.contextLosses === 0
+        ? { contextLost: true, contextLosses: 1, phase: 'poster' }
+        : // §5.17: aynı ziyarette ikinci kayıp → canvas unmount, oturumun geri kalanında static
+          {
+            contextLost: false,
+            contextLosses: s.contextLosses + 1,
+            tier: 'static',
+            tierReason: 'context-loss',
+            phase: 'fallback',
+          },
+    ),
   onContextRestored: () =>
     set((s) => ({ contextLost: false, canvasKey: s.canvasKey + 1, phase: 'loading' })),
 }));
@@ -189,6 +201,9 @@ export const stageTarget: StageTarget = {
   opacityReading: 1,
 };
 
+/** Rig'in kare başına damped kopyası (§5.9.8); debug paneli ve testler okur, yalnız rig yazar. */
+export const rendered: StageTarget = { ...stageTarget };
+
 export const live = {
   scrollY: 0,
   velocity: 0, // px/s (ScrollTrigger.getVelocity)
@@ -199,7 +214,15 @@ export const live = {
   inHero: true, // idle drift kapısı (home, y < layout.heroExit; §4.6.4)
   snapNextFrame: true, // true → rig bir sonraki karede rendered = target yapar
   virtualAnchor: { cx: 0, cy: 0, D: 0 }, // anchorFrom === -1 iken kullanılır
+  /** director'ün son refresh'te ölçtüğü anchor'lar (§5.7.4); rig kare başına yalnız okur */
+  anchors: [] as readonly MeasuredAnchor[],
+  frames: 0, // rig'in çizdiği kare sayısı (§5.19: opaklık < 0.01 ve gizli sekmede 2 s kare yok; ?debug testleri okur)
+  idleAngle: 0, // idle drift açısı, derece (K-HERO-9 testleri okur)
 };
+
+/** Anchor indeksi: −1 sanal (route glide anlık görüntüsü), −2 ölçülmemiş/eksik (§5.7.4) */
+export const ANCHOR_VIRTUAL = -1;
+export const ANCHOR_MISSING = -2;
 
 /** Ana sayfa bölüm kimlikleri; derin sayfalarda tek sentetik 'page' fazı vardır (§5.9.3). */
 export type ChapterId =

@@ -187,6 +187,8 @@
   --rise-card: 24px;
   --lift-hover: 2px;
   --reveal-line-from: 130%;
+  /* ≥ 64rem tek satırlık hero adı (§4.6.3); type-display ve hero çapası (K-HERO-6) paylaşır */
+  --text-display-fit: min(var(--text-display), calc((100vw - 2 * var(--spacing-margin)) / 7.3));
 
   --z-stage: 0;
   --z-content: 10;
@@ -369,7 +371,7 @@
   font-feature-settings: "ss01", "ss03";
   @media (width >= 64rem) {
     white-space: nowrap;
-    font-size: min(var(--text-display), calc((100vw - 2 * var(--spacing-margin)) / 7.3));
+    font-size: var(--text-display-fit);
   }
 }
 @utility type-h1 {
@@ -579,15 +581,41 @@
     :root:not([data-theme]) .only-dark { display: none; }
   }
 
-  /* Kalıcı sahne katmanı (D-18). Opaklığı yalnız --scene-opacity ile değişir (§5.1) */
+  /* Kalıcı sahne katmanı (D-18, §5.12.5). Opaklığı yalnız --scene-opacity ile değişir; geçiş YOK (kaydırmayla ya da
+     tween ile sürülür). iOS araç çubuğu çökerken yeniden boyutlanmaz: 100lvh; dvh YASAK. */
   #scene-layer {
     position: fixed;
-    inset: 0 0 auto 0;
+    inset: 0 auto auto 0;
+    width: 100%;
+    height: 100vh;
     height: 100lvh;
     z-index: var(--z-stage);
     pointer-events: none;
+    contain: strict;
     opacity: var(--scene-opacity, 1);
     view-transition-name: scene;
+  }
+  #scene-layer .stage-canvas {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 600ms var(--ease-out);
+  }
+  #scene-layer[data-phase="ready"] .stage-canvas { opacity: 1; }
+  /* Poster / figür → canvas çapraz geçişi yalnız 'ready'ye giderken (ilk derlenmiş kare ve kaydırma durumuna atlama
+     sonrası, §4.16.3); bağlam kaybında (phase 'poster') posterler geçişsiz, anında geri gelir (§5.17). */
+  .stage-poster,
+  .arc-overlay,
+  .stage-anchor .anchor-figure { transition: none; }
+  :root:has(#scene-layer[data-phase="ready"]) :is(
+      .stage-poster,
+      .arc-overlay,
+      [data-stage-anchor="work-specimen"] .anchor-figure,
+      [data-stage-anchor="journey-core"] .anchor-figure,
+      [data-areas-pinned] [data-stage-anchor="areas-dial"] .anchor-figure
+    ) {
+    opacity: 0;
+    transition: opacity 600ms var(--ease-out);
   }
 
   /* Ana sayfada layout'un full footer'ı gizlenir; compact footer contact bölümündedir (§8.4.4, §3.9.3) */

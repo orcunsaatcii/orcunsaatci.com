@@ -519,7 +519,8 @@
   }
 }
 @media (min-width: 64rem) {
-  /* çapa header + 16 px'ten H1'in üstüne kadar (k8–12); H1, lead, CTA'lar ve ipucu altta (§4.6.2) */
+  /* çapa header + 16 px'ten H1'in büyük harf çizgisine kadar (k8–12); eyebrow 1. satırın altında; H1, lead, CTA'lar
+     ve ipucu altta (§4.6.2) */
   [data-chapter='hero'] {
     grid-template-rows: minmax(12rem, 1fr) auto auto auto auto;
   }
@@ -527,6 +528,13 @@
     grid-row: 1;
     height: auto;
     align-self: stretch;
+    /* K-HERO-6 (±4 px): satır aralığı (gap-y-6) + H1 kutusunun üstünden büyük harf çizgisine uzaklık kadar aşağı
+       uzanır; satır izleri değişmez. Mona Sans, line-height 0.92: 0.111 × font-size (1024–1920 px, üç motorda ölçüldü) */
+    margin-bottom: calc(-1 * (1.5rem + 0.111 * var(--text-display-fit)));
+  }
+  /* Taş'ın gölgesi "Saatçi"nin arkasında kalır: konumlu H1, DOM'da önce gelen sahneden sonra boyanır */
+  [data-chapter='hero'] > h1 {
+    position: relative;
   }
   [data-chapter='hero'] > .type-eyebrow {
     grid-row: 1;
@@ -563,7 +571,8 @@
   margin-bottom: 0.12em;
 }
 
-/* Duraklatma düğmesi: sahneyle aynı grid alanında, sağ altta (satır yüksekliğini sahne belirler: CLS yok) */
+/* Duraklatma düğmesi: 64rem altında sahne bandıyla aynı grid alanında, sağ altta (satır yüksekliğini sahne
+   belirler: CLS yok) */
 [data-chapter='hero'] > .hero-pause {
   grid-row: 1;
   grid-column: 1 / -1;
@@ -572,8 +581,13 @@
   z-index: 1;
 }
 @media (min-width: 64rem) {
+  /* Masaüstünde CTA satırının sağında (§4.6.2 tel çerçeve): çapa büyük harf çizgisine uzandığından 1. satırın sağ
+     altı Taş'ın üstüne düşerdi. Satırı CTA'lar (48 px) belirler; 44 px düğme CLS yapmaz. İpucu satırı 12 kolon
+     kapladığından otomatik yerleşim düğmenin varlığından etkilenmez. */
   [data-chapter='hero'] > .hero-pause {
-    grid-column: 8 / 13;
+    grid-row: 4;
+    grid-column: 9 / 13;
+    align-self: center;
   }
 }
 @media (max-width: 63.99rem) and (max-height: 499.98px) {

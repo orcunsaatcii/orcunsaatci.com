@@ -1,6 +1,6 @@
-// src/stage/anchors.ts — sahne çapası tipleri ve ANCHORS kaydı (§5.7.3).
-// DOM öznitelikleri bu kayıttan üretilir (StageAnchor). measureAnchors() ve anchorScreen() M5'te eklenir;
-// MeasuredAnchor tipi M4'te director'ün Layout'u için buradadır (liste M4'te boştur).
+// src/stage/anchors.ts — sahne çapaları: ANCHORS kaydı ve ölçüm (§5.7.3–§5.7.4). Three-free. DOM öznitelikleri bu
+// kayıttan üretilir (StageAnchor). Ölçüm YALNIZ refresh'te (§5.7.4). Kare başına ekran dikdörtgeni ve analitik ölçek
+// anchor-screen.ts'tedir (yalnız sahne chunk'ı kullanır; ilk pakete girmez).
 
 export type AnchorId =
   | 'hero-rest'
@@ -44,15 +44,87 @@ export const PAGE_FOLIO_SIZE = {
   'contact-page': 0.8,
 } as const;
 
-/** Ölçülmüş anchor (§5.7.4). M4'te Layout.anchors boştur; alanlar M5'te measureAnchors() ile doldurulur. */
+/** Refresh'te üretilir; kare başına yalnız aritmetik (§5.7.3). */
 export interface MeasuredAnchor {
   id: AnchorId;
+  slot: number; // aynı id'nin DOM sırası (page-folio: 0 başlık, 1 "Sonraki proje")
   kind: AnchorKind;
-  /** belge koordinatında dikdörtgen (px) */
-  docTop: number;
-  docLeft: number;
+  size: number;
+  align: 'center' | 'bottom';
+  rule?: 'hero';
+  left: number;
   width: number;
   height: number;
-  size: number; // sizeFrac
-  align: 'center' | 'bottom';
+  docTop: number; // flow / sticky: belge koordinatı
+  chapterOffsetTop?: number; // viewport: bölüm üstüne göre ofset
+  sticky?: { naturalDocTop: number; top: number; height: number; containerDocBottom: number };
+}
+
+/** Ata zincirinde (öğenin kendisi dahil) ilk sticky öğe */
+function stickyAncestor(el: HTMLElement): HTMLElement | null {
+  for (let x: HTMLElement | null = el; x; x = x.parentElement) {
+    if (getComputedStyle(x).position === 'sticky') return x;
+  }
+  return null;
+}
+
+/**
+ * §5.7.4: anchor dikdörtgenleri belge koordinatında. Sticky kapsayıcı geçici olarak `position: static` yapılarak
+ * doğal konumu okunur (aynı senkron görevde; arada boyama yok). Görünmeyen / kindMobile null anchor atlanır.
+ */
+export function measureAnchors(root: ParentNode, mobile: boolean): MeasuredAnchor[] {
+  const out: MeasuredAnchor[] = [];
+  const slots = new Map<AnchorId, number>();
+  const y = window.scrollY;
+  for (const el of root.querySelectorAll<HTMLElement>('[data-stage-anchor]')) {
+    const id = el.dataset.stageAnchor as AnchorId;
+    const def = ANCHORS[id];
+    if (!def) continue;
+    const kind = mobile ? def.kindMobile : def.kind;
+    if (!kind) continue;
+    const r = el.getBoundingClientRect();
+    if (r.width === 0 || r.height === 0) continue; // display: none, liste modu
+    const slot = slots.get(id) ?? 0;
+    slots.set(id, slot + 1);
+    const a: MeasuredAnchor = {
+      id,
+      slot,
+      kind,
+      size: mobile ? def.sizeMobile : Number(el.dataset.anchorSize) || def.size,
+      align: mobile ? 'center' : def.align,
+      ...(mobile || !def.rule ? {} : { rule: def.rule }),
+      left: r.left,
+      width: r.width,
+      height: r.height,
+      docTop: r.top + y,
+    };
+    if (kind === 'viewport') {
+      const chapter = el.closest('[data-chapter]');
+      a.chapterOffsetTop = chapter ? a.docTop - (chapter.getBoundingClientRect().top + y) : 0;
+    } else if (kind === 'sticky') {
+      const S = stickyAncestor(el);
+      if (S) {
+        const top = Number.parseFloat(getComputedStyle(S).top) || 0; // ÖNCE okunur
+        // Çapanın S içindeki ofseti sticky hâlde ölçülür (yapışıkken de aynı). static'te S konumlandırılmış kapsayıcı
+        // olmaktan çıkar: position: absolute torunlar (masaüstü .areas-dial) belgeye göre yerleşir, okunmaz.
+        const offset = r.top - S.getBoundingClientRect().top;
+        const prev = S.style.position;
+        S.style.position = 'static';
+        const sr = S.getBoundingClientRect();
+        a.docTop = sr.top + y + offset;
+        const parent = S.parentElement;
+        const pb = parent ? Number.parseFloat(getComputedStyle(parent).paddingBottom) || 0 : 0;
+        const bottom = parent ? parent.getBoundingClientRect().bottom + y - pb : sr.bottom + y;
+        a.sticky = {
+          naturalDocTop: sr.top + y,
+          top,
+          height: sr.height,
+          containerDocBottom: bottom,
+        };
+        S.style.position = prev;
+      }
+    }
+    out.push(a);
+  }
+  return out;
 }

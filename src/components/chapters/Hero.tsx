@@ -83,7 +83,8 @@ export function Hero({ locale }: { locale: Locale }) {
           frozenSuffix={dict.contact.localTimeSuffix}
         />
       </div>
-      {/* DOM'da sonda (§4.6.3 sırası); görsel olarak sahne bölgesinin sağ altında, aynı grid alanında (home.css) */}
+      {/* DOM'da sonda (§4.6.3 sırası); görsel olarak mobilde sahne bandının sağ altında, masaüstünde CTA satırının
+          sağında (home.css) */}
       <PauseButton
         labels={{ pause: dict.motion.pause, play: dict.motion.play }}
         className="hero-pause"

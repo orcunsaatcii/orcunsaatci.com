@@ -16,7 +16,10 @@ export async function settle(page: Page, quietMs = 300): Promise<void> {
       new Promise<boolean>((resolve) => {
         const read = () => {
           const stage = (window as unknown as { __stage?: { target: unknown } }).__stage;
-          return JSON.stringify([window.scrollY, stage ? stage.target : null]);
+          // GSAP tween'leri hedefe döngüsel `_gsap` alanı ekler: iç alanlar atlanır
+          return JSON.stringify([window.scrollY, stage ? stage.target : null], (k, v: unknown) =>
+            k.startsWith('_') ? undefined : v,
+          );
         };
         let last = read();
         let since = performance.now();

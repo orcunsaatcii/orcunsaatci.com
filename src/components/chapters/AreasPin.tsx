@@ -211,16 +211,20 @@ export function AreasPin({ sectionId, n }: { sectionId: string; n: number }) {
     };
 
     /** Pin CSS kapısı + sığma (scrollHeight > clientHeight, fontlardan sonra) → liste modu (§4.8.8) */
+    const pin = (on: boolean) => {
+      setPinned(on);
+      section.toggleAttribute('data-areas-pinned', on); // canlı Taş kadranı devralır (poster/figür geçişi)
+    };
     const check = () => {
       if (disposed) return;
       section.removeAttribute('data-areas-fit');
       const on = getComputedStyle(stage).position === 'sticky';
       if (on && text.scrollHeight > text.clientHeight + 1) {
         section.setAttribute('data-areas-fit', 'list');
-        setPinned(false);
+        pin(false);
         return;
       }
-      setPinned(on);
+      pin(on);
       if (!on) return;
       measureGeo();
       cur = -1;
@@ -229,7 +233,7 @@ export function AreasPin({ sectionId, n }: { sectionId: string; n: number }) {
         if (disposed || !pinned) return;
         if (text.scrollHeight > text.clientHeight + 1) {
           section.setAttribute('data-areas-fit', 'list');
-          setPinned(false);
+          pin(false);
           return;
         }
         compute();
@@ -278,6 +282,7 @@ export function AreasPin({ sectionId, n }: { sectionId: string; n: number }) {
       offStep();
       offRefresh();
       setPinned(false);
+      section.removeAttribute('data-areas-pinned');
       geo = null;
     };
   }, [sectionId, n, pref]);

@@ -1,5 +1,5 @@
 // src/lib/on-idle.ts — `load` sonrası boşlukta geri çağırma (§5.12.2) ve boot gecikme sabitleri (§9.2.3).
-// Başka hiçbir yerde boot gecikme değeri yazılmaz. STAGE_IDLE M5'te (StageRoot) eklenir.
+// Başka hiçbir yerde boot gecikme değeri yazılmaz; tek istisna StageRoot'taki BOOT_TIMEOUT_MS'tir.
 
 export interface IdleOptions {
   afterLoadDelayMs?: number;
@@ -12,6 +12,13 @@ export const MOTION_IDLE: IdleOptions = {
   afterLoadDelayMs: 0,
   idleTimeoutMs: 1000,
   fallbackDelayMs: 50,
+};
+
+/** Stage: load + 1 s + boşluk; en geç 2 s içinde. Safari'de load + 1 s + 300 ms. */
+export const STAGE_IDLE: IdleOptions = {
+  afterLoadDelayMs: 1000,
+  idleTimeoutMs: 2000,
+  fallbackDelayMs: 300,
 };
 
 /** cb'yi `load` olayından (gerekirse afterLoadDelayMs sonra) ilk boşlukta çağırır. Temizlik fonksiyonu döner. */
