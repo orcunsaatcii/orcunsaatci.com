@@ -14550,6 +14550,7 @@ Ortam kararları:
 - ✅ **DOĞRULANDI (M3, 2026-09-30, V-33):** Best Practices bütün kapı URL'lerinde 1.0; `valid-source-maps` denetimi geçer. `productionBrowserSourceMaps` açılmadı.
 - SPEC-SAPMA: §13.5.1 (M3, 2026-09-30) — kapı URL'leri **SwiftShader bayrakları olmadan** (varsayılan başsız Chrome) ölçülür; `?tier=medium` uyarı koşusu ayrı yapılandırmadadır (`lighthouserc.tier.json`, SwiftShader'lı; `lighthouse.yml`'de ikinci adım). SwiftShader'lı koşuda GPU başlatması ilk boyamayı ~1 s geciktiriyor, Lantern bu sürede değerlendirilen bütün JS'i LCP'nin kritik yoluna katıyordu (her URL'de LCP ≈ 3.3 s). Kapı URL'leri zaten sahnesiz deneyimi ölçtüğü için (static tier) ölçülen şey değişmez.
 - M3 ölçümü (2026-09-30, yerel, kapı ayarı): Perf 0.92–0.98, A11y 1.0, BP 1.0, SEO 1.0, CLS 0, TBT ≤ 200 ms; **LCP 2.3–3.3 s**. Lantern, gözlenen ilk boyamadan önce biten font (122 KB) ve JS (~150 KB) isteklerini yavaş 4G'de yeniden oynatır; kerning'siz fontlarla (61 KB) metin-LCP'li sayfalar ~2.0–2.3 s'ye iner. Görsel-LCP'li sayfalar (ana sayfa posteri, `/projeler` küçük görseli, `/hakkimda` şekli) 2.9–3.3 s'dir. LCP kapısı için karar sahibe sunuldu (M3 PR #7).
+- SPEC-SAPMA: §13.5.1 / §15.4.3 (M3, 2026-09-30, sahip kararı) — `largest-contentful-paint` kapı URL'lerinde **M8'e kadar `warn`**'dur; Perf ≥ 0.85, A11y 1.0, BP ≥ 0.95, SEO 1.0, CLS ≤ 0.05, TBT ve `errors-in-console` kapı olarak kalır. Seçenekler: (A) kerning'siz font (122 → 61 KB) + mobil hero posteri ~210 px + üst görsellere öncelik, (B) M8'e erteleme; sahip B'yi seçti (kerning ve hero tasarımı korunur). M8'de font stratejisi (kerning korunarak alt küme / eksen daraltma), V-39 mobil hero kararı ve görsel-LCP sayfalarının önceliğiyle ele alınır; M8 kabulünde `error`'a döner (§13.10). CI medyanları (M3): LCP 2.94–3.17 s, Perf 0.93–0.95, TBT ~50 ms, CLS 0.
 - Raporlar `uploadArtifacts: true` ile GitHub artefaktı olarak saklanır. **YASAK:** `temporaryPublicStorage: true`; raporlar herkese açık bir kovaya yüklenir ve taslak içerik sızar.
 
 #### 13.5.2 Bütçeler
@@ -15526,6 +15527,7 @@ Bazı dosyalar build zincirinin (§8.7.1) ilk günden çalışması için geçic
 | `HydrationMark` (`data-hydrated` yazan yaprak, iki kök layout) | M3 | M4 (`MotionRoot` ilk effect'i) | §8.4.2 |
 | `a11y-keyboard.spec.ts`'te çapa sonrası `h2` odağı yerine sıralı odak başlangıç noktası | M3 | M4 (`scrollToChapter`, §5.13.4) | §10.3.2 |
 | `cv.spec.ts`'te baskıda `RingsFigure` ve ≥ 80rem taş çapası maddeleri yok | M3 | M4 (SVG figürler), M5 (Stage) | §13.3.4 |
+| `lighthouserc.json`'da `largest-contentful-paint` `warn` (sahip kararı) | M3 | M8 (`error`) | §13.5.1, §9.1 |
 
 #### 15.0.7 Karar → milestone eşlemesi
 
