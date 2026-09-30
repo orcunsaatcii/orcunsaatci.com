@@ -1,5 +1,6 @@
 // tests/e2e/a11y-reflow.spec.ts — yeniden akış, yakınlaştırma ve metin aralığı (§10.5.4; WCAG 1.4.4, 1.4.10,
 // 1.4.12, 1.3.4). Sayfa listesi: sitemap + NOINDEX_PATHS (pagePaths).
+import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { pagePaths } from './helpers/urls';
 
@@ -14,6 +15,15 @@ const TEXT_SPACING = `
 p { margin-bottom: 2em !important; }
 `;
 
+/**
+ * Yerleşim ölçümü görsel yüklemesini beklemez: görseller width/height ile yer ayırır. `load` beklemek her görünüm
+ * genişliğinde soğuk görsel optimizasyonunu (AVIF) tetikleyip tek testin 60 s bütçesini tüketiyordu (§13.1.1 #6).
+ */
+async function open(page: Page, path: string): Promise<void> {
+  await page.goto(path, { waitUntil: 'domcontentloaded' });
+  await page.evaluate(() => document.fonts.ready.then(() => undefined));
+}
+
 test.describe('§10.5.4 yeniden akış', { tag: ['@desktop-chromium'] }, () => {
   for (const vp of VIEWPORTS) {
     test(`1.4.10 ${vp.width}×${vp.height} her route’ta yatay taşma yok`, async ({
@@ -23,7 +33,7 @@ test.describe('§10.5.4 yeniden akış', { tag: ['@desktop-chromium'] }, () => {
       await page.setViewportSize(vp);
       for (const path of await pagePaths(request)) {
         await test.step(path, async () => {
-          await page.goto(path);
+          await open(page, path);
           const [scrollWidth, innerWidth] = await page.evaluate(() => [
             document.documentElement.scrollWidth,
             window.innerWidth,
@@ -38,7 +48,7 @@ test.describe('§10.5.4 yeniden akış', { tag: ['@desktop-chromium'] }, () => {
     await page.setViewportSize({ width: 320, height: 640 });
     for (const path of await pagePaths(request)) {
       await test.step(path, async () => {
-        await page.goto(path);
+        await open(page, path);
         await page.addStyleTag({ content: TEXT_SPACING });
         const clipped = await page.evaluate(() =>
           [...document.querySelectorAll<HTMLElement>('body *')]
