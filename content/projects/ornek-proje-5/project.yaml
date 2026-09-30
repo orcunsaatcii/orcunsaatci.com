@@ -1,0 +1,11 @@
+# yaml-language-server: $schema=../../../.schemas/project.json
+# Tohum: yalnız zorunlu alanlar (künye, bağlantı, galeri yok) → boş bölümler çizilmez.
+title: { tr: "{{PROJE_5_BAŞLIK}}" }
+summary: { tr: "{{PROJE_5_ÖZET}}" }
+start: "2018-01" # {{PROJE_5_BAŞLANGIÇ}}
+role: { tr: "{{PROJE_5_ROL}}" }
+areas: [alan-2]
+cover:
+  src: /media/placeholder/cover-16x10.jpg
+  alt: { tr: "{{PROJE_5_KAPAK_ALT}}" }
+publishedAt: "2018-06" # {{PROJE_5_YAYIN_TARİHİ}}

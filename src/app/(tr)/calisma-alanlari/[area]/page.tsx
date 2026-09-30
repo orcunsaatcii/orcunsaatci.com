@@ -1,13 +1,27 @@
-// src/app/(tr)/calisma-alanlari/[area]/page.tsx — M2 kabuğu (§15.3.1 #6): parametre listesi boş, sayfa üretilmez; M3'te §3.4.3 kalıbı.
+// src/app/(tr)/calisma-alanlari/[area]/page.tsx — §3.4.3 kalıbı. Liste features.areaPages kapalıysa ya da hasPage'li alan yoksa boştur (V-22).
+import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import { getAreaPage, getAreaPageIds } from '@/lib/content';
+import { areaMetadata } from '@/lib/seo/metadata';
 import { AreaView } from '@/views/area/AreaView';
 
 export const dynamicParams = false;
 
-export function generateStaticParams(): { area: string }[] {
-  return []; // M3: getAreaPageIds('tr').map((id) => ({ area: id }))
+export function generateStaticParams() {
+  return getAreaPageIds('tr').map((id) => ({ area: id }));
+}
+
+export async function generateMetadata({
+  params,
+}: PageProps<'/calisma-alanlari/[area]'>): Promise<Metadata> {
+  const { area: id } = await params;
+  const area = getAreaPage(id, 'tr');
+  return area ? areaMetadata(area, 'tr') : {};
 }
 
 export default async function Page({ params }: PageProps<'/calisma-alanlari/[area]'>) {
-  const { area } = await params;
-  return <AreaView id={area} locale="tr" />;
+  const { area: id } = await params;
+  const area = getAreaPage(id, 'tr');
+  if (!area) notFound();
+  return <AreaView area={area} locale="tr" />;
 }

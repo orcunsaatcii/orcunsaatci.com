@@ -1,19 +1,20 @@
 // src/app/global-not-found.tsx — eşleşmeyen her URL için iki dilli 404 (D-19, §3.7). Kendi <html>/<body>'si vardır;
 // globals.css, fontlar ve head script'i kendisi yükler. StageRoot, Lenis, GSAP, site header'ı ve footer'ı YOKTUR.
-// M2 hâli: e-posta bağlantısı M3'te (getContact), MotionToggle'lı minimal footer M4'te eklenir (§10.2.2).
+// E-posta bağlantısı yalnız TR listesinde (§3.7 iskeleti); MotionToggle'lı minimal footer M4'te eklenir (§10.2.2).
 import './globals.css';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ClockFigure } from '@/components/figures/ClockFigure';
+import { EmailLink } from '@/components/ui/EmailLink';
 import { fontVariables } from '@/fonts';
 import { staticRoutes, type Locale } from '@/i18n/config';
 import { getDictionary } from '@/i18n/get-dictionary';
-import { getPerson, getSite } from '@/lib/content';
+import { getContact, getPerson, isLocaleEnabled } from '@/lib/content';
 import { headScript } from '@/lib/head-script';
 
 const tr = getDictionary('tr');
 const en = getDictionary('en');
-const hasEn = getSite().locales.includes('en');
+const hasEn = isLocaleEnabled('en');
 
 // robots yazılmaz: Next 404 yanıtlarına noindex'i kendisi ekler; ikinci bir robots meta'sı çift etiket üretir
 // (SPEC-SAPMA §3.7).
@@ -21,7 +22,7 @@ export const metadata: Metadata = {
   title: `${tr.meta.notFound}${hasEn ? ` · ${en.meta.notFound}` : ''} — ${getPerson().name}`,
 };
 
-function Links({ locale }: { locale: Locale }) {
+function Links({ locale, email }: { locale: Locale; email?: string }) {
   const t = locale === 'tr' ? tr.notFound : en.notFound;
   const links = [
     { href: staticRoutes.home[locale], label: t.home },
@@ -37,6 +38,11 @@ function Links({ locale }: { locale: Locale }) {
           </Link>
         </li>
       ))}
+      {email ? (
+        <li className="inline-flex min-h-11 items-center">
+          <EmailLink email={email} className="type-ui" />
+        </li>
+      ) : null}
     </ul>
   );
 }
@@ -64,7 +70,7 @@ export default function GlobalNotFound() {
               )}
             </h1>
             <p className="mt-stack type-lead">{tr.notFound.lead}</p>
-            <Links locale="tr" />
+            <Links locale="tr" email={getContact().email} />
             {hasEn && (
               <div lang="en" className="mt-stack">
                 <p className="type-lead">{en.notFound.lead}</p>

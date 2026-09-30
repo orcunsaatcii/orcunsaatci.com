@@ -1,0 +1,83 @@
+# yaml-language-server: $schema=../../.schemas/experience.json
+# Tohum (§7.2.5): 6 web kaydı (1 sürüyor, 1 gönüllü) + 1 pdf-only (SPEC-SAPMA §7.2.5: E = 6 için).
+items:
+  - id: deneyim-1
+    organization: "{{KURUM_1}}"
+    role: { tr: "{{DENEYİM_1_ROL}}", en: "{{EXPERIENCE_1_ROLE}}" }
+    employmentType: full-time
+    location: { tr: "{{ŞEHİR}}", en: "{{ŞEHİR_EN}}" }
+    period: { start: "2023-01" } # {{DENEYİM_1_TARİHLER}}
+    summary: { tr: "{{DENEYİM_1_ÖZET}}", en: "{{EXPERIENCE_1_SUMMARY}}" }
+    highlights:
+      tr: ["{{DENEYİM_1_SONUÇ_1}}", "{{DENEYİM_1_SONUÇ_2}}"]
+      en: ["{{EXPERIENCE_1_RESULT_1}}", "{{EXPERIENCE_1_RESULT_2}}"]
+    projects: [ornek-proje-1, ornek-proje-2]
+    skills: [yetkinlik-1, yetkinlik-3]
+  - id: deneyim-2
+    organization: "{{KURUM_2}}"
+    role: { tr: "{{DENEYİM_2_ROL}}", en: "{{EXPERIENCE_2_ROLE}}" }
+    employmentType: full-time
+    location: { tr: "{{ŞEHİR}}", en: "{{ŞEHİR_EN}}" }
+    period: { start: "2020-03", end: "2022-12" } # {{DENEYİM_2_TARİHLER}}
+    summary: { tr: "{{DENEYİM_2_ÖZET}}", en: "{{EXPERIENCE_2_SUMMARY}}" }
+    highlights:
+      tr: ["{{DENEYİM_2_SONUÇ_1}}", "{{DENEYİM_2_SONUÇ_2}}"]
+      en: ["{{EXPERIENCE_2_RESULT_1}}", "{{EXPERIENCE_2_RESULT_2}}"]
+    projects: [ornek-proje-3]
+    skills: [yetkinlik-2]
+  - id: deneyim-3
+    organization: "{{KURUM_3}}"
+    role: { tr: "{{DENEYİM_3_ROL}}", en: "{{EXPERIENCE_3_ROLE}}" }
+    employmentType: contract
+    location: { tr: "{{ŞEHİR}}", en: "{{ŞEHİR_EN}}" }
+    period: { start: "2018-06", end: "2020-02" } # {{DENEYİM_3_TARİHLER}}
+    summary: { tr: "{{DENEYİM_3_ÖZET}}", en: "{{EXPERIENCE_3_SUMMARY}}" }
+    highlights:
+      tr: ["{{DENEYİM_3_SONUÇ_1}}", "{{DENEYİM_3_SONUÇ_2}}"]
+      en: ["{{EXPERIENCE_3_RESULT_1}}", "{{EXPERIENCE_3_RESULT_2}}"]
+    skills: [yetkinlik-4]
+  - id: deneyim-4
+    organization: "{{KURUM_4}}"
+    role: { tr: "{{DENEYİM_4_ROL}}", en: "{{EXPERIENCE_4_ROLE}}" }
+    employmentType: freelance
+    location: { tr: "{{ŞEHİR}}", en: "{{ŞEHİR_EN}}" }
+    period: { start: "2017-01", end: "2018-05" } # {{DENEYİM_4_TARİHLER}}
+    summary: { tr: "{{DENEYİM_4_ÖZET}}", en: "{{EXPERIENCE_4_SUMMARY}}" }
+    highlights:
+      tr: ["{{DENEYİM_4_SONUÇ_1}}", "{{DENEYİM_4_SONUÇ_2}}"]
+      en: ["{{EXPERIENCE_4_RESULT_1}}", "{{EXPERIENCE_4_RESULT_2}}"]
+    remote: true
+  - id: deneyim-5
+    organization: "{{KURUM_5}}"
+    role: { tr: "{{DENEYİM_5_ROL}}", en: "{{EXPERIENCE_5_ROLE}}" }
+    employmentType: volunteer
+    location: { tr: "{{ŞEHİR}}", en: "{{ŞEHİR_EN}}" }
+    period: { start: "2016-01", end: "2019-12" } # {{DENEYİM_5_TARİHLER}}
+    summary: { tr: "{{DENEYİM_5_ÖZET}}", en: "{{EXPERIENCE_5_SUMMARY}}" }
+    highlights:
+      tr: ["{{DENEYİM_5_SONUÇ_1}}", "{{DENEYİM_5_SONUÇ_2}}"]
+      en: ["{{EXPERIENCE_5_RESULT_1}}", "{{EXPERIENCE_5_RESULT_2}}"]
+    showOnHome: true
+  - id: deneyim-6
+    organization: "{{KURUM_6}}"
+    role: { tr: "{{DENEYİM_6_ROL}}", en: "{{EXPERIENCE_6_ROLE}}" }
+    employmentType: full-time
+    location: { tr: "{{ŞEHİR}}", en: "{{ŞEHİR_EN}}" }
+    period: { start: "2014-09", end: "2016-12" } # {{DENEYİM_6_TARİHLER}}
+    summary: { tr: "{{DENEYİM_6_ÖZET}}", en: "{{EXPERIENCE_6_SUMMARY}}" }
+    highlights:
+      tr: ["{{DENEYİM_6_SONUÇ_1}}", "{{DENEYİM_6_SONUÇ_2}}"]
+      en: ["{{EXPERIENCE_6_RESULT_1}}", "{{EXPERIENCE_6_RESULT_2}}"]
+    skills: [yetkinlik-5]
+  - id: deneyim-7
+    organization: "{{KURUM_7}}"
+    role: { tr: "{{DENEYİM_7_ROL}}", en: "{{EXPERIENCE_7_ROLE}}" }
+    employmentType: part-time
+    location: { tr: "{{ŞEHİR}}", en: "{{ŞEHİR_EN}}" }
+    period: { start: "2015-01", end: "2015-06" } # {{DENEYİM_7_TARİHLER}}
+    summary: { tr: "{{DENEYİM_7_ÖZET}}", en: "{{EXPERIENCE_7_SUMMARY}}" }
+    highlights:
+      tr: ["{{DENEYİM_7_SONUÇ_1}}", "{{DENEYİM_7_SONUÇ_2}}"]
+      en: ["{{EXPERIENCE_7_RESULT_1}}", "{{EXPERIENCE_7_RESULT_2}}"]
+    visibility: pdf-only
+    showOnHome: false

@@ -47,7 +47,12 @@ const tr = {
     siteLinks: 'Site haritası',
     copyright: '© {year} {name}',
   },
-  og: { projectEyebrow: 'Proje', cvEyebrow: 'Özgeçmiş' }, // OG eyebrow'ları; büyük harfe renderOg çevirir
+  og: {
+    projectEyebrow: 'Proje',
+    cvEyebrow: 'Özgeçmiş',
+    homeAlt: '{name} — kişisel site: projeler, özgeçmiş ve iletişim',
+    projectAlt: '{name} — proje kartı',
+  }, // OG eyebrow'ları; büyük harfe renderOg çevirir
   a11y: {
     skipToContent: 'İçeriğe geç',
     skipSection: 'Bu bölümü atla',
@@ -69,6 +74,17 @@ const tr = {
     fullCv: 'Tam özgeçmiş',
     facts: { location: 'Konum', experience: 'Deneyim', languages: 'Diller', now: 'Şu an' },
     years: { one: '{count} yıl', other: '{count} yıl' },
+    allAreas: 'Tüm çalışma alanları',
+    allContact: 'Tüm iletişim seçenekleri',
+    awardsTalks: 'Ödüller ve konuşmalar',
+    testimonials: 'Referanslar',
+    areaProjectsCount: 'Bu alandaki projeler ({count})',
+  },
+  area: {
+    capabilities: 'Neler yapıyorum',
+    skills: 'İlgili yetkinlikler',
+    projects: 'Bu alandaki projeler',
+    testimonial: 'Referans',
   },
   projects: {
     filterAll: 'Tümü',
@@ -78,7 +94,7 @@ const tr = {
     clearFilter: 'Filtreyi temizle',
   },
   project: {
-    facts: { role: 'Rol', dates: 'Tarih', status: 'Durum', areas: 'Alanlar' },
+    facts: { role: 'Rol', dates: 'Tarih', status: 'Durum', areas: 'Alanlar', kind: 'Tür' },
     statuses: {
       live: 'Yayında',
       done: 'Tamamlandı',
@@ -113,6 +129,17 @@ const tr = {
     remote: 'Uzaktan çalışmaya açık',
     verify: 'Doğrula',
     with: 'ile: {names}',
+    tools: 'Araçlar',
+    relatedProjects: 'Projeler',
+    remoteShort: 'Uzaktan',
+    grade: 'Not',
+    thesis: 'Tez',
+    courses: 'Dersler',
+    expires: 'Geçerlilik',
+    duration: {
+      years: { one: '{count} yıl', other: '{count} yıl' },
+      months: { one: '{count} ay', other: '{count} ay' },
+    },
     sections: {
       profile: 'Profil',
       experience: 'Deneyim',
@@ -172,6 +199,28 @@ const tr = {
     cvPdf: 'CV (PDF)',
     localTime: 'Yerel saat',
     localTimeSuffix: ' (yerel saat)',
+    cta: 'Yeni projeler, iş birlikleri ya da bir sohbet için yazabilirsiniz.',
+    email: 'E-posta',
+    profiles: 'Profiller',
+  },
+  social: {
+    linkedin: 'LinkedIn',
+    github: 'GitHub',
+    x: 'X',
+    instagram: 'Instagram',
+    behance: 'Behance',
+    dribbble: 'Dribbble',
+    youtube: 'YouTube',
+    vimeo: 'Vimeo',
+    medium: 'Medium',
+    orcid: 'ORCID',
+    scholar: 'Google Scholar',
+    researchgate: 'ResearchGate',
+    mastodon: 'Mastodon',
+    bluesky: 'Bluesky',
+    threads: 'Threads',
+    website: 'Web sitesi',
+    other: 'Bağlantı',
   },
   availability: {
     open: 'Yeni fırsatlara açığım',

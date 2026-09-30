@@ -1,44 +1,29 @@
-// src/views/home/HomeView.tsx — ana sayfa gövdesi. M2 kabuğu (§15.3.1 #6): hero H1'i ve bölüm çapaları; bölüm
-// içerikleri, StagePreset ve hero'nun geri kalanı M3–M6'da. Compact footer contact bölümünün içindedir (§3.9.3, §4.11);
-// layout'taki full footer data-chapter="hero" varken CSS ile gizlenir (§8.4.4).
-import { SiteFooter } from '@/components/layout/SiteFooter';
-import { chapterAnchors, type Locale } from '@/i18n/config';
-import { getEnPaths, getPerson } from '@/lib/content';
-
-// M3'te About, Areas, Work, Journey bileşenleriyle dolar; şimdilik header çapaları boşa düşmesin diye yalnız hedefler
-const BODY_CHAPTERS = ['about', 'areas', 'work', 'journey'] as const;
+// src/views/home/HomeView.tsx — ana sayfa gövdesi (§4.5–§4.11). Server; bölümler akış düzeninde (M3).
+// Layout'taki full footer data-chapter="hero" varken CSS ile gizlenir; compact footer Contact bölümündedir (§8.4.4).
+// StagePreset M4/M5'te eklenir. Tek JSON-LD betiği view'dadır (§11.6.1).
+import { About } from '@/components/chapters/About';
+import { Areas } from '@/components/chapters/Areas';
+import { Contact } from '@/components/chapters/Contact';
+import { Hero } from '@/components/chapters/Hero';
+import { Journey } from '@/components/chapters/Journey';
+import { Testimonials } from '@/components/chapters/Testimonials';
+import { Work } from '@/components/chapters/Work';
+import { JsonLd } from '@/components/seo/JsonLd';
+import type { Locale } from '@/i18n/config';
+import { jsonLdFor } from '@/lib/seo/jsonld';
 
 export function HomeView({ locale }: { locale: Locale }) {
-  const { name } = getPerson();
-  const cut = name.lastIndexOf(' ');
-  const first = cut > 0 ? name.slice(0, cut) : name;
-  const last = cut > 0 ? name.slice(cut + 1) : '';
-
+  const graph = jsonLdFor({ key: 'home' }, locale);
   return (
     <>
-      <section
-        id={chapterAnchors.hero[locale]}
-        data-chapter="hero"
-        aria-labelledby="hero-title"
-        className="container-page flex min-h-[calc(100svh-var(--header-h))] items-center py-block"
-      >
-        {/* İki <span>: satır kırılımı fonttan bağımsız (§6.2.3, CLS); EN'de ad Türkçe işaretlenir (§3.8 #2) */}
-        <h1 id="hero-title" className="type-display" lang={locale === 'en' ? 'tr' : undefined}>
-          <span className="block lg:inline">{first}</span>
-          {last && (
-            <>
-              {' '}
-              <span className="block lg:inline">{last}</span>
-            </>
-          )}
-        </h1>
-      </section>
-      {BODY_CHAPTERS.map((chapter) => (
-        <section key={chapter} id={chapterAnchors[chapter][locale]} data-chapter={chapter} />
-      ))}
-      <section id={chapterAnchors.contact[locale]} data-chapter="contact">
-        <SiteFooter locale={locale} enPaths={getEnPaths()} variant="compact" />
-      </section>
+      {graph ? <JsonLd graph={graph} /> : null}
+      <Hero locale={locale} />
+      <About locale={locale} />
+      <Areas locale={locale} />
+      <Work locale={locale} />
+      <Journey locale={locale} />
+      <Testimonials locale={locale} />
+      <Contact locale={locale} />
     </>
   );
 }

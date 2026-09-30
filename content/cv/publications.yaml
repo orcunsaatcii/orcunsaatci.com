@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../.schemas/publications.json
+items:
+  - id: yayin-1
+    type: article
+    title: { tr: "{{YAYIN_1}}", en: "{{PUBLICATION_1}}" }
+    venue: "{{YAYIN_1_YERİ}}"
+    date: "2024-02" # {{YAYIN_1_TARİH}}
+    url: "https://example.com/{{YAYIN_1_ADRESİ}}"
+  - id: yayin-2
+    type: paper
+    title: { tr: "{{YAYIN_2}}", en: "{{PUBLICATION_2}}" }
+    venue: "{{YAYIN_2_YERİ}}"
+    date: "2022-06" # {{YAYIN_2_TARİH}}
+    doi: "10.1234/{{DOI}}"
+    coAuthors: ["{{ORTAK_YAZAR_1}}"]
+  - id: yayin-3
+    type: talk
+    title: { tr: "{{KONUŞMA_1}}", en: "{{TALK_1}}" }
+    venue: "{{ETKİNLİK_1}}"
+    date: "2025-04" # {{KONUŞMA_1_TARİH}}
+    location: { tr: "{{ŞEHİR}}", en: "{{ŞEHİR_EN}}" }
+    featured: true

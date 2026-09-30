@@ -1,7 +1,15 @@
-// src/app/robots.ts — M0 geçici hâli (§15.0.6): her ortamda Disallow: /.
-// M3'te §11.4.3'teki ortam kapılı dosyayla birebir değiştirilir.
+// src/app/robots.ts
 import type { MetadataRoute } from 'next';
+import { SITE_URL, metaRoutes } from '@/i18n/config';
 
 export default function robots(): MetadataRoute.Robots {
-  return { rules: [{ userAgent: '*', disallow: '/' }] };
+  const indexable =
+    process.env.VERCEL_ENV === 'production' && process.env.SITE_INDEXABLE === 'true';
+  if (!indexable) {
+    return { rules: [{ userAgent: '*', disallow: '/' }] };
+  }
+  return {
+    rules: [{ userAgent: '*', allow: '/', disallow: ['/lab'] }],
+    sitemap: `${SITE_URL}${metaRoutes.sitemap}`,
+  };
 }

@@ -1,7 +1,7 @@
 // tests/e2e/a11y-focus.spec.ts — odak görünürlüğü ve örtülmeme (§10.3.3; WCAG 2.4.7, 2.4.11).
-// M2: kabuk sayfaları; M3'te sitemapPaths(request) + NOINDEX_PATHS.
+// Sayfa listesi: sitemap + NOINDEX_PATHS (pagePaths).
 import { expect, test } from './fixtures';
-import { SHELL_PATHS } from './helpers/urls';
+import { pagePaths } from './helpers/urls';
 
 interface Stop {
   label: string;
@@ -14,8 +14,11 @@ test.describe(
   '§10.3.3 odak halkası ve örtülmeme',
   { tag: ['@desktop-chromium', '@pixel-7'] },
   () => {
-    test('her Tab durağında ≥ 2 px halka; öğe sabit katmanca örtülmez', async ({ page }) => {
-      for (const path of SHELL_PATHS) {
+    test('her Tab durağında ≥ 2 px halka; öğe sabit katmanca örtülmez', async ({
+      page,
+      request,
+    }) => {
+      for (const path of await pagePaths(request)) {
         await test.step(path, async () => {
           await page.goto(path);
           const limit =
@@ -35,8 +38,9 @@ test.describe(
               w.__focusSeen ??= new WeakSet();
               const repeat = w.__focusSeen.has(el);
               w.__focusSeen.add(el);
-              // ThemeToggle: halka ve vuruş kutusu radyonun etiketindedir (:has(:focus-visible))
-              const box = (el.closest('label') ?? el) as HTMLElement;
+              // ThemeToggle: halka ve vuruş kutusu radyonun etiketindedir (:has(:focus-visible)).
+              // ProjectCard / ProjectRow: gerilmiş bağlantının halkası [data-focus-ring] kapsayıcıdadır (M3).
+              const box = (el.closest('label, [data-focus-ring]') ?? el) as HTMLElement;
               const cs = getComputedStyle(box);
               const ring = cs.outlineStyle !== 'none' && Number.parseFloat(cs.outlineWidth) >= 2;
               box.scrollIntoView({ block: 'nearest' });

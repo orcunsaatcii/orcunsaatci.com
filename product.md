@@ -1240,11 +1240,11 @@ export default function Page() {
 }
 ```
 
-- ⚠️ **DOĞRULANMADI:** Parametresiz statik bir sayfada build sırasında `notFound()` çağrılırsa, o yolun statik bir 404 olarak (HTTP 404 + `noindex`) üretilmesi beklenir. Doğrulama (M3):
-  1. `content/pages/about.en.mdx` geçici olarak silinir.
-  2. `npm run build && npx next start` çalıştırılır.
-  3. `curl -sI localhost:3000/en/about` → `404` beklenir.
-- ⚠️ **DOĞRULANMADI:** `generateStaticParams` `[]` döndürdüğünde ve `dynamicParams = false` ise build'in hatasız geçmesi beklenir. Bu durum `features.areaPages: false` ile ve TR-only lansmanda oluşur. `output: 'export'` modunda boş dizi hata verir; bu projede o mod kullanılmaz. Doğrulama: M3'te `areaPages: false` ile build alınır; `/calisma-alanlari/x` için 404 beklenir.
+- ⚠️ **KISMEN DOĞRULANDI (M3, 2026-09-30, V-21):** Parametresiz statik bir sayfada build sırasında `notFound()` çağrılınca yol HTTP 404 + `noindex` döner, ama statik HTML bir hata kabuğudur (`<html id="__next_error__">`, gövdesi boş); ağaç `not-found.tsx` yalnız istemcide çizilir, JS'siz ziyaretçi boş sayfa görür. Deneme: `about.en.mdx` geçici silindi → `npm run build && npx next start` → `/en/about` 404. Karar:
+  1. SPEC-SAPMA: §7.5.2 (M3) — EN açıkken `about.en.mdx` yoksa C07 dev'de uyarı, strict'te hata verir (`privacy.en.mdx` kuralıyla aynı). Böylece production'da içerik kapılı EN sayfası kabuğa düşmez.
+  2. TR-only build'de `/en/*` yolları aynı kabuktur (HTTP 404 + `noindex`); hiçbir sayfa bu yollara bağlanmaz ve sitemap/hreflang onları içermez (M3'te `locales: [tr]` build'iyle doğrulandı).
+  3. SPEC-SAPMA: §11.2.1 (M3) — kök metadata `robots` yazmaz; kabukta Next'in `noindex`'i tek robots etiketi kalır.
+- ✅ **DOĞRULANDI (M2 kabukları + M3, 2026-09-30, V-22):** `generateStaticParams` `[]` döndürdüğünde ve `dynamicParams = false` iken build hatasız geçer. Tohum içerikte (`areaPages: false`) `/calisma-alanlari/alan-1` ve `/calisma-alanlari/yok` 404 + `noindex` döner; `areaPages: true` build'inde `/calisma-alanlari/alan-1` ● olarak üretilir ve 200 döner, EN gövdesi olmayan `/en/expertise/alan-1` 404'tür. `output: 'export'` modunda boş dizi hata verir; bu projede o mod kullanılmaz.
 
 ### 3.5 Route haritası (`src/i18n/config.ts`) ve sözlükler
 
@@ -1660,7 +1660,7 @@ export function LanguageSwitcher({ locale, enPaths, labels }: LanguageSwitcherPr
 |---|---|---|---|
 | Hiçbir route'a uymayan URL (`/yok`, `/en/yok`, `/tr`, `/en/projeler`) | `src/app/global-not-found.tsx` (`experimental.globalNotFound: true`, §8.6) | Kendi `<html lang="tr">`'si; iki dilli | 404 + otomatik `noindex` |
 | Sayfa içinde `notFound()` çağrısı: EN içerik yok, `lab` kapalı, alan sayfası kapalı | `(tr)/not-found.tsx` / `en/not-found.tsx` | Ağacın kök layout'u (header, footer, `lang`) | 404 + otomatik `noindex`. ⚠️ M2 gözlemi (V-21): Next 16.3.7 bu yolun statik HTML'ini boş bir hata kabuğu (`<html id="__next_error__">`) olarak üretir; ağaç 404'ü yalnız istemcide çizilir (JS'siz ziyaretçi boş sayfa görür, durum kodu ve `noindex` doğrudur). Aynı davranış tek kök layout'lu en küçük Next 16.3.7 uygulamasında da görüldü; karar M3'te V-21 ile verilir. |
-| `dynamicParams = false` altında bilinmeyen parametre (`/projeler/yok`, `/en/projects/yok`) | ⚠️ **DOĞRULANMADI:** ağaç `not-found.tsx` mı, `global-not-found.tsx` mı render edilir? Doğrulama M3'te: `curl localhost:3000/projeler/yok \| grep data-404`. M2 gözlemi (boş parametre listeleriyle): `global-not-found.tsx` (`data-404="global"`), tam SSR. | — | 404 + `noindex` **ZORUNLU** (her iki durumda) |
+| `dynamicParams = false` altında bilinmeyen parametre (`/projeler/yok`, `/en/projects/yok`) | ✅ **DOĞRULANDI (M3, 2026-09-30, V-23):** `global-not-found.tsx` (`data-404="global"`), tam SSR. Gerçek parametre listeleriyle de aynıdır (`/projeler/yok`, `/en/projects/yok`, EN sayfası olmayan TR projesinin `/en/projects/<slug>`'ı, `/calisma-alanlari/yok`). Ağaç `not-found.tsx` yalnız sayfa içi `notFound()` kabuğunda (V-21) istemcide çizilir. | — | 404 + `noindex` **ZORUNLU** (her iki durumda) |
 
 İçerik:
 - **Başlık:** H1 "Sayfa bulunamadı" / "Page not found".
@@ -1683,7 +1683,7 @@ Kurallar:
   - tema/hareket head script'i (`src/lib/head-script.ts`, §8.4).
   İç bağlantılar `<Link>` ile yazılır; `<a>` kullanılırsa ESLint `@next/next/no-html-link-for-pages` hata verir.
 - **ZORUNLU:** `global-not-found` EN bloğunu yalnız `site.locales` içinde `en` varsa gösterir. EN bloğu `lang="en"` taşır.
-- Ağaç `not-found.tsx` metadata export etmez; Next `noindex`'i kendisi ekler. **İSTEĞE BAĞLI:** `NotFoundView` içinde React 19 `<title>` hoisting ile "Sayfa bulunamadı — Orçun Saatçi" başlığı verilebilir. ⚠️ **DOĞRULANMADI:** Layout başlığıyla çift `<title>` üretmediği build çıktısında kontrol edilir; çift üretiyorsa uygulanmaz.
+- Ağaç `not-found.tsx` metadata export etmez; Next `noindex`'i kendisi ekler. **İSTEĞE BAĞLI:** `NotFoundView` içinde React 19 `<title>` hoisting ile "Sayfa bulunamadı — Orçun Saatçi" başlığı verilebilir. M3 kararı (V-24): **uygulanmadı.** Ağaç 404'ü yalnız V-21 kabuğunda istemcide çizilir (V-23); başlığı global-not-found ve Next'in 404 kabuğu verir, doğrulamaya gerek kalmadı.
 
 ```tsx
 // src/app/global-not-found.tsx
@@ -5989,6 +5989,8 @@ await browser.close()
 
 #### 5.16.4 Yerleşim ve yükleme kuralları (`ScenePoster`)
 
+SPEC-SAPMA: §5.16.4 (M3) — Aşağıdaki CSS `globals.css`'e değil `src/stage/scene-poster.css`'e yazıldı ve `ScenePoster.tsx` tarafından import edilir (poster kuralları bileşenle birlikte taşınır; `globals.css` Prettier dışıdır). `--stone-ry` iki kök layout'ta `<html style>` ile yazılır (engineer 0.775).
+
 ```tsx
 // src/stage/ScenePoster.tsx (sunucu uyumlu)
 const W = [640, 1080, 1600] as const
@@ -6756,7 +6758,7 @@ Emaye'de odak rengi (kırmızı) `danger`'a yakındır. Hata durumları bu yüzd
 | `--spacing-margin` | `clamp(1.25rem, 0.3333rem + 4.0741vw, 4rem)` | 20 → 64 | `px-margin` | Sayfa yan boşluğu (güvenli alanla birlikte `container-page` içinde) |
 | `--spacing-gutter` | `clamp(0.75rem, 0.5rem + 1.1111vw, 1.5rem)` | 12 → 24 | `gap-gutter` | Sütun arası |
 | `--spacing-section` | `clamp(6rem, 4rem + 8.8889vw, 12rem)` | 96 → 192 | `py-section` | Derin sayfalarda bölümler arası |
-| `--spacing-block` | `clamp(3rem, 2rem + 4.4444vw, 6rem)` | 48 → 96 | `mt-block` | Bölüm içi bloklar arası |
+| `--spacing-block` | `clamp(3rem, 2rem + 4.4444vw, 6rem)` | 48 → 96 | `mt-block` | Bölüm içi bloklar arası. SPEC-SAPMA: §6.4 (M3, 2026-09-30) — Tailwind v4 bu token'ı mantıksal boyut yardımcısıyla birleştirir: `inline-block` sınıfı `display: inline-block`'a ek olarak `inline-size: var(--spacing-block)` üretir ve öğeyi 48–96 px'e kilitler (↗ simgesi, bağlantılar, LocalTime M2'den beri etkileniyordu). `inline-block` sınıfı kullanılmaz; görünüm `[display:inline-block]` ile verilir, `tests/lint/tailwind-collisions.test.ts` bunu korur. |
 | `--spacing-stack` | `clamp(1.5rem, 1.1667rem + 1.4815vw, 2.5rem)` | 24 → 40 | `mt-stack` | Başlık → gövde |
 | `--spacing-header` | `clamp(3.5rem, 3.3333rem + 0.7407vw, 4rem)` | 56 → 64 | `h-header` | Başlık çubuğu yüksekliği (`--header-h` bunun takma adı) |
 
@@ -7191,7 +7193,7 @@ Bölüm içeriği, düzeni ve koreografisi §4.6–§4.11'dedir. Aşağıdaki ta
 - **Fontlar:** `assets/fonts/ttf/` altındaki statik TTF'ler (§6.2.3). Toplam ≈ 104 KB ile Satori'nin 500 KB paket sınırının altındadır. WOFF2 **YASAK** (Satori desteklemez).
 - **Satori yerleşimi:** yalnız flexbox (grid yok); birden çok çocuğu olan her `div` `display: 'flex'` alır.
 - **Motif geometrisi** `section-geometry.ts`'ten gelir. Açık yay build tarihine göre çizilir.
-  - ⚠️ DOĞRULANMADI: Satori'nin satır içi `<svg>` çizimi. Doğrulama: M3'te `/opengraph-image` çıktısında motif görünmeli. Görünmezse motif `data:image/svg+xml` kaynaklı `<img>` olarak verilir.
+  - ✅ DOĞRULANDI (M3, 2026-09-30, V-26): Satori satır içi `<svg>` motifini (halkalar, dilim çizgileri, bant, açık yay) doğru çizer; `data:image/svg+xml` yedeğine gerek kalmadı.
 - **Renkler** her zaman etkin paletin koyu değerlerinden alınır; alternatif palette de aynı düzen korunur.
 - **Görsel QA dizgisi:** "Orçun Saatçi — İletişim, Özgeçmiş, Çalışma alanları, Işık, Ğ". Tüm glifler doğru ve "fi" bağsız görünmelidir.
 - `alt` dışa aktarımı ve aynı görselle `twitter-image` §11.5'tedir.
@@ -8394,6 +8396,9 @@ Kodlama ajanı M3'te (§15) aşağıdaki tohum içeriği yer tutucularla oluştu
 
 Tohum slug'ları (`alan-N`, `ornek-proje-N`) production'da C01 hatası verir (§7.5.2).
 
+- SPEC-SAPMA: §7.2.5 (M3, 2026-09-30) — `cv/experience.yaml` 7 kayıt taşır: 6'sı web'de görünür (E = 6; 1'i süren, 1'i `volunteer`, 1'i `remote`), 7'ncisi `pdf-only`. Tablodaki "6 deneyim, 1'i `pdf-only`" ana sayfada E = 5 verir ve final.md varsayılanıyla çelişirdi.
+- SPEC-SAPMA: §7.2.5 (M3) — §11.2.3 açıklama kalıplarındaki ve EN ana sayfa / hakkımda metinlerindeki uzun yer tutucular şema uzunluk sınırlarına (160 / 420 karakter) sığsın diye kısaltıldı: `{{CITY}}`, `{{AREA_1}}`…`{{AREA_3}}`, `{{ALAN_1}}`…`{{ALAN_3}}`, `{{BAŞLANGIÇ_YILI}}`, `{{START_YEAR}}`. Yer tutucular YAML'da çift tırnak içindedir.
+
 ### 7.3 Şemalar
 
 #### 7.3.1 Ortak kurallar
@@ -9044,8 +9049,9 @@ Kurallar (core 0.15.3 kaynağı, `.d.ts` ve yerel çalıştırmayla doğrulandı
 8. **MDX derleme ve render.**
    - `compileMDX` build'de mdx-bundler ile derler. v1'de remark/rehype eklentisi **yoktur**, bu yüzden GFM tabloları desteklenmez ve liste kullanılır (§7.7.3).
    - Render, `@content-collections/mdx/react`'ten `MDXContent` ile yapılır. Paketin `react-server` export koşulu vardır. Kod build ve prerender sırasında sunucuda değerlendirilir ve istemciye MDX JS'i gitmez.
-   - ⚠️ **DOĞRULANMADI:** `MDXContent`'in Next 16.3 RSC içinde render'ı. M3'te `/hakkimda` sayfasını `next build` ile üretip `no-js` Playwright projesinde gövde başlığının (`h2`) HTML'de olduğunu doğrulayın. Başarısız olursa yedek yol `next-mdx-remote-client/rsc` (2.1.12) ile `doc.content`'i aynı bileşen haritasıyla derlemektir.
+   - ✅ **DOĞRULANDI (M3, 2026-09-30, V-28):** `MDXContent` Next 16.3.7 RSC içinde prerender'da çizilir: `/hakkimda` ve `/gizlilik` ham HTML'inde MDX gövdesinin `h2`'leri vardır; `content-visibility.spec.ts` `no-js` projesinde geçer. `next-mdx-remote-client/rsc` yedeğine gerek kalmadı.
 9. **Önbellek.** `imageMeta` önbelleğe alınmaz, çünkü `ctx.cache` girdi anahtarlıdır ve aynı yolla değişen bir dosya bayat kalırdı. Deneme içeriğinde (D-48 sonrası 16 koleksiyon, 20 belge, sharp meta okuması dahil) CLI build'i 140–280 ms sürdü.
+   - SPEC-SAPMA: §7.3.3 (M3, 2026-09-30) — `person` ve `testimonials` transform'larında görseller koşullu yayma (`...(doc.portrait ? { portrait: … } : {})`) yerine doğrudan atamayla (`portrait: doc.portrait ? await imageMeta(doc.portrait) : undefined`) zenginleştirilir. Koşullu yayma üretilen tipi `ImageRef | ImageAsset` birleşimi yapıyor, `width`/`height`/`dominant` erişimi tip hatası veriyordu (`projects` transform'u zaten bu biçimdedir).
 
 #### 7.3.5 Çapraz referans doğrulaması
 
@@ -9119,7 +9125,8 @@ export function getCvSummary(locale: Locale): {                            // ya
   credentials: { name: string; issuer: string; url?: string }[];
   awards: string[];                                                        // "Ödül — Veren, Yıl"
 };
-export function getStageData(preset: Exclude<PresetName, 'none'>, slug?: string): StageData; // StagePreset/LabStage verisi (§5.9.1); folio'da slug ZORUNLU; 'none' → data={null}
+export function getStageData(preset: Exclude<PresetName, 'none'>, slug?: string, locale: Locale = 'tr'): StageData; // StagePreset/LabStage verisi (§5.9.1); folio'da slug ZORUNLU; 'none' → data={null}
+// SPEC-SAPMA: §7.3.6 (M3) — `locale` parametresi eklendi: ana sayfa öne çıkan listesi dile göre değişir (TR P = 4, EN P = 3); OG kök görselleri ve EN ağacı kendi dilinin verisini ister. Varsayılan 'tr'.
 // Dönüş tipleri (SiteDoc, PersonDoc, AreaDoc …) de bu modülden export edilir; §11.2 AreaDoc'u kullanır.
 ```
 
@@ -9342,6 +9349,13 @@ for (const i of issues) {
 console.log(`check-content: ${errors.length} hata, ${issues.length - errors.length} uyarı/bilgi (mod: ${STRICT ? 'strict' : 'dev'})`);
 process.exit(errors.length ? 1 : 0);
 ```
+
+M3 uygulaması (2026-09-30): C01–C12'nin tamamı bu kalıpla yazıldı. §7.11'deki 12 bozulma denemesi `--strict` altında tablodaki seviyede bulgu üretti (sonuçlar M3 PR'ında). Seviyesi tabloda verilmeyen ya da tabloyu genişleten noktalar:
+- SPEC-SAPMA: §7.5.2 (M3) — C05 oran (±%1) ve en küçük boyut ihlali `strictly` seviyesindedir (dev'de uyarı, strict'te hata); tabloda seviye yoktu. Galeri ve MDX `<Figure>` için yalnız "uzun kenar ≥ 1600" denetlenir.
+- SPEC-SAPMA: §7.5.2 (M3) — `content/README.md` ham metin taramasına (C01, C09) girmez: koleksiyonlara dahil olmayan sahip kılavuzudur ve yer tutucu / ticari dil kurallarını örnekleriyle anlatır.
+- SPEC-SAPMA: §7.5.2 (M3, V-21) — C07'ye satır eklendi: EN açıkken `about.en.mdx` yoksa dev'de uyarı, strict'te hata (`privacy.en.mdx` kuralıyla aynı). Aksi hâlde `/en/about` build'de `notFound()` ile JS'siz boş 404 kabuğu olur (§3.4.3).
+- C06'nın EN-kritik olmayan eksikleri ve yalnız TR projeler "EN tamlık raporu" bloğunda listelenir (bilgi; özet sayısına girmez).
+- `import` satırı çözümlenemeyen bir modüle gidiyorsa (`import X from 'x'`) zincir C12'den önce adım 1'de (MDX derlemesi) durur; çözümlenen bir import'u (`import React from 'react'`) C12 yakalar.
 
 #### 7.5.3 Medya özellikleri (C05'in ve Ek A'nın tek kaynağı)
 
@@ -9575,10 +9589,16 @@ function collectStrings(value: unknown): string[] {
 `collectStrings` yalnızca PDF'e giden seçimi tarar; URL'ler de bu taramaya girer ve ASCII aralığındadır. `scripts/jsonresume.d.ts` içeriği şudur:
 `declare module '@jsonresume/schema' { const m: { validate(json: unknown, cb: (err: unknown, ok: boolean) => void): void }; export default m; }`
 
+M3 uygulaması (2026-09-30), iskelete göre farklar:
+- SPEC-SAPMA: §7.6.4 (M3) — karakter koruması yalnız `sections`'ı değil başlık bloğunu da (ad, unvan, şehir, iletişim satırı, altbilgi, bölüm başlıkları; `headerStrings()`) tarar ve hatada karakteri `U+XXXX` koduyla yazar. `ł`/`Ł` denemesi exit 1 verdi.
+- SPEC-SAPMA: §7.6.4 (M3) — react-pdf 4.9.0'da `lineHeight` `Page` stilinde olunca `render`'lı sabit altbilgi çok sayfalı belgede hiç çizilmiyor; View'da birimsiz `lineHeight` ise varsayılan 18 pt'ye göre çözülüyor. Satır aralığı bu yüzden içerik sarmalayıcısında `fontSize: 10, lineHeight: 1.4` olarak ve farklı boyutlu metin stillerinde (unvan, bölüm başlığı, tarih) ayrıca verilir. Altbilgi her sayfada "Orçun Saatçi — Özgeçmiş · n/toplam" olarak doğrulandı.
+- SPEC-SAPMA: §7.6.4 (M3) — `scripts/` ESM olduğu için CJS'e derlenen sözlüklerin default export'u doğrudan alınamıyor; `cv-document.tsx` sözlüğü `cv.ts`'in adlandırılmış `cvDictionary(locale)` export'uyla alır.
+- Tohum içerikle PDF 3 sayfadır (yer tutucu uzunlukları); "hedef ≤ 2" uyarısı yazılır, build durmaz.
+
 **PDF kalite kontrolü (M3 ve her CV şablonu değişikliğinde):**
 - Sayfa sayısı `PAGE_RE` ile sayılır. Bu yöntem react-pdf çıktısında doğrulandı **[TEST EDİLDİ]**.
 - Görsel kontrol için sayfa PNG'ye çevrilip incelenir: macOS'ta `qlmanage -t -s 1000 -o . <pdf>`, Linux'ta `pdftoppm -png -r 100 <pdf> out`. Türkçe karakterler, adın satır aralığı ve fotoğraf kırpımı kontrol edilir.
-- ⚠️ **DOĞRULANMADI:** GitHub Actions `ubuntu-latest` imajında `pdftotext` (poppler-utils) hazır mı? Nasıl doğrulanır: CI'da `pdftotext -v` adımı çalıştırılır. Varsa `pdftotext public/files/orcun-saatci-cv-tr.pdf - | grep -q "Saatçi"` ile metin iddiası eklenir (**İSTEĞE BAĞLI**, §13.6).
+- ❌ **DOĞRULANDI: yok (M3, 2026-09-30, V-29):** GitHub Actions `ubuntu-latest` imajında `pdftotext` (poppler-utils) kurulu değil (CI notu: "V-29 pdftotext yok"). Adım yoklukta atlanır (**İSTEĞE BAĞLI**, §13.6); metin iddiası `pdftotext` varsa çalışır. Yerelde metin PDFKit ile çıkarılıp doğrulandı (altbilgi, Türkçe glifler).
 
 #### 7.6.5 JSON Resume eşlemesi
 
@@ -9623,7 +9643,7 @@ Proje sayfası yalın bir "proje sayfası"dır; uzun anlatı (vaka çalışması
 | # | Bölüm | Kaynak | Kural |
 |---|---|---|---|
 | 1 | Breadcrumb | route | Ana sayfa › Projeler › {başlık}. JSON-LD §11.6'dadır. |
-| 2 | Hero | `title` (`<h1>`), `summary`, `cover` | ≥ 64rem'de `cover` (16:10) kullanılır. < 64rem'de `mobileCover` (4:5) varsa `getImageProps` ile sanat yönetimli `<picture>` kullanılır. Kapak sayfanın LCP görselidir ve `preload` alır (D-31, §9.3). D1 `folio` anchor'ı H1 bloğunun yanındadır (§4.13). Metin animasyon beklemeden görünür. |
+| 2 | Hero | `title` (`<h1>`), `summary`, `cover` | ≥ 64rem'de `cover` (16:10) kullanılır. < 64rem'de `mobileCover` (4:5) varsa `getImageProps` ile sanat yönetimli `<picture>` kullanılır. Kapak sayfanın LCP görselidir ve `preload` alır (D-31, §9.3). SPEC-SAPMA: §7.7.1 (M3) — `mobileCover` varken iki `ReactDOM.preload` yazılır, medya sorguları birbirini dışlar (`(min-width: 64rem)` / `(max-width: 63.99rem)`); her genişlikte tek kapak indirilir, "sayfa başına en çok bir preload'lu görsel" kuralı genişlik başına sağlanır. D1 `folio` anchor'ı H1 bloğunun yanındadır (§4.13). Metin animasyon beklemeden görünür. |
 | 3 | Künye şeridi (`<dl>`) | `role` · tarih aralığı (`start`–`end`) · `status` · alan çipleri; ardından `facts[]` (≤ 4 satır) | Tarih ay hassasiyetinde `format.ts` ile yazılır: "Mart 2022 – Halen" / "March 2022 – Present" (§3.8, §7.4.5). `status` sözlük etiketiyle yazılır (`project.statuses.*`, §7.9.6). Alan çipleri alan sayfasına (varsa) veya `/projeler?alan=<id>` adresine bağlanır. `facts` satırları aynı `<dl>` içinde `<dt>`/`<dd>` çifti olarak durur. Boş satır çizilmez. |
 | 4 | Mağaza bağlantıları | `links[kind=live]` | Görünür metin `label`dır (mağaza adı): "App Store ↗", "Google Play ↗", "AppGallery ↗". `links` sırası korunur. Grup `aria-label` olarak `project.stores` etiketini taşır (§7.9.6). Dış bağlantılar ↗ işareti taşır ve aynı sekmede açılır. Hiç yoksa bölüm çizilmez. |
 | 5 | Galeri | `gallery[]` | Başlık `project.gallery`. Ekran görüntüleri `next/image` ile, `ImageAsset` boyutlarıyla çizilir. Dikey telefon ekran görüntüleri özgün oranında durur ve kırpılmaz; maket plakası ve `plateTint` §6.7'dedir. Lightbox v1'de yoktur. Boşsa çizilmez. |
@@ -9672,7 +9692,7 @@ Render: `<MDXContent code={body.mdx} components={createMdxComponents(ctx)} />`. 
 | `Gallery` | ≥ 64rem'de 2 veya 3 sütun, altında 1 sütun. Lightbox v1'de yoktur (**İSTEĞE BAĞLI**, v2). |
 | `Callout` | `<aside role="note">` ve görünür başlık: `title`, yoksa "Not" / "Note" (`callout.note`). |
 | `Quote` | `testimonial="id"` ise izinli kayıt (alıntı, ad, rol, kurum) çizilir. Satır içi kullanımda `by` ve `source` (herkese açık bir kaynağın https URL'si) + içerik gerekir. İkisi de yoksa C12 hata verir. Biçim: `<figure><blockquote cite>…</blockquote><figcaption>…</figcaption></figure>`. |
-| `a` (Markdown bağlantısı) | `/` ile başlıyorsa `next/link`. `http(s)` ise ↗ işareti ve `rel="noopener noreferrer"` ile, aynı sekmede açılır. Görünüm §6.6'dadır. |
+| `a` (Markdown bağlantısı) | `/` ile başlıyorsa `next/link`. `http(s)` ise ↗ işareti ve `rel="noopener noreferrer"` ile, aynı sekmede açılır. Görünüm §6.6'dadır. M3: bileşen JSX olduğu için `src/components/mdx/MdxLink.tsx`'tedir (`index.ts` `createElement` ile çocukları prop olarak geçemez, `react/no-children-prop`). |
 
 Başlık, paragraf, liste, alıntı, kalın ve satır içi kod düz Markdown'dır. Stilleri §6.2 ve §6.6'dadır.
 
@@ -9751,7 +9771,7 @@ publishedAt: "2025-07" # {{PROJE_1_YAYIN_TARİHİ}}
 | Konu | Kural |
 |---|---|
 | JS'siz | Tüm projeler görünür. Filtre çipleri HTML'de **yoktur**. |
-| Bileşen | `ProjectFilter` istemci bileşeni `useSearchParams()` okur ve `<Suspense fallback={null}>` içindedir. Liste `<Suspense>` **dışında** sunucuda çizilir. Her öğe `<li data-project data-areas="alan-a alan-b">` taşır. |
+| Bileşen | `ProjectFilter` istemci bileşeni `useSearchParams()` okur ve `<Suspense fallback={null}>` içindedir. Liste `<Suspense>` **dışında** sunucuda çizilir. Her öğe `<li data-project data-areas="alan-a alan-b">` taşır. SPEC-SAPMA: §7.8.2 (M3, 2026-09-30) — statik sayfada `useSearchParams` filtreyi istemci render'ına erteliyor, çipler hidrasyonda gelip listeyi itiyordu (LHCI CLS 0.093). Filtre sunucuda "Tümü" seçili çizilir, kapsayıcı `hidden js:flex` taşır (JS'siz görünümde çip görünmez); `?alan=` `useSyncExternalStore` ile `location.search`'ten okunur (sunucu anlık görüntüsü `null`, hidrasyon uyumsuzluğu yok). `<Suspense>` kaldırıldı. |
 | Çipler | `<div role="group" aria-label="Alana göre filtrele">` içinde `<button aria-pressed>` çipleri: "Tümü (n)" ve bu dilde en az 1 projesi olan her alan için "Alan (n)", `order` sırasıyla. Projesi olmayan alanın çipi çizilmez. |
 | Uygulama | Seçimde eşleşmeyen `li` öğelerine `hidden` verilir. URL `window.history.replaceState` ile `?alan=<id>` olur (seçim "Tümü" ise parametre kaldırılır); Next `useSearchParams` ile senkron kalır. Canlı bölge (`role="status"`) "4 proje" / "4 projects" duyurur (§7.9.6). |
 | Geçersiz değer | Bilinmeyen `?alan=` yok sayılır ve "Tümü" uygulanır. |
@@ -10584,7 +10604,7 @@ Vitest, ESLint Node API'si ile (`new ESLint({ cwd })` → `lintText(code, { file
 | `data-theme-pref` | `system \| light \| dark` | head script; sonra `ThemeToggle` | ilk boyamadan önce |
 | `data-theme` | `light \| dark` (çözülmüş) | head script; `system` tercihinde OS değişimini head script dinler; elle seçimde `ThemeToggle` | ilk boyamadan önce |
 | `data-motion` | `full \| reduce` | head script; OS değişimini (kayıt yoksa) head script dinler; `MotionToggle` (§5.13.2) | ilk boyamadan önce |
-| `data-hydrated` | var / yok | `MotionRoot` ilk effect'inde | hidrasyon sonrası |
+| `data-hydrated` | var / yok | `MotionRoot` ilk effect'inde. Geçici (§15.0.6, M3 → M4): `MotionRoot` gelene kadar iki kök layout'taki `HydrationMark` yaprağı yazar; aksi hâlde `js` sınıfı 4 s sonra kalkıyor ve `js:` ile açılan denetimler (Kopyala, Yazdır, filtre çipleri) kayboluyordu (M3'te `contact.spec.ts` ile bulundu). | hidrasyon sonrası |
 | `.motion-ready` | var / yok | `armReveals()` kurulumdan **sonra** (§5.14.3); `teardownMotion()` kaldırır | `load` sonrası; asla önce değil |
 | `data-scroll-behavior` | **yazılmaz** | — | Lenis kaydırmanın sahibidir (§5.13.3) |
 
@@ -10866,7 +10886,7 @@ Bilinçli olarak **ayarlanmayan** anahtarlar:
 | `trailingSlash` | Varsayılan `false`; canonical ve sitemap aynı yardımcıyla üretilir (§11.3) |
 
 Doğrulanacaklar:
-- ⚠️ DOĞRULANMADI: `images.localPatterns` tanımlıyken statik importlu görsellerin (`/_next/static/media/**`) ayrıca listelenmesi gerekip gerekmediği. İkinci girdi zararsızdır; M3'te statik importlu bir görselin optimizer URL'si 200 dönmelidir.
+- ⚠️ DOĞRULANMADI: `images.localPatterns` tanımlıyken statik importlu görsellerin (`/_next/static/media/**`) ayrıca listelenmesi gerekip gerekmediği. İkinci girdi zararsızdır ve tanımlıdır. M3 notu (V-30): sitede statik importlu görsel yoktur (içerik görselleri `/media/**` yoludur, posterler optimizer'dan geçmez); koşul oluştuğunda optimizer URL'sinin 200 döndüğü denetlenir.
 - ✅ DOĞRULANDI (2026-09-29, `next build` + `curl -sI localhost:3000/`): `next.config.ts` içinden göreli `.ts` import'u (`./src/lib/security-headers`) Next 16.3.7 yapılandırma yükleyicisiyle çalışır; CSP başlığı yanıtta birebir görünür.
 - `withContentCollections` sarmalayıcısı `next dev` sırasında içeriği izler (§7.3.4).
 
@@ -10918,10 +10938,12 @@ playwright-report/
 blob-report/
 .lighthouseci/
 package-lock.json
-content/**/*.mdx
+content/**
 product.md
 src/app/globals.css
 ```
+
+SPEC-SAPMA: §8.6.3 (M3, 2026-09-30) — `content/**/*.mdx` satırı `content/**` oldu: Prettier YAML'daki çift tırnakları tek tırnağa çevirip akış eşlemlerini açıyordu; sahibin github.dev'de düzenlediği içerik PR'ları yalnız biçim yüzünden `prettier --check`'te kırılırdı. İçerik biçimi şema ve check-content ile denetlenir.
 
 - SPEC-SAPMA: §8.6.3 (M2, 2026-09-30) — `src/app/globals.css` biçimlenmez. §6.12 dosyanın §6.10.1 ile birebir aynı olmasını ister; Prettier ise onaltılık renkleri küçük harfe çevirip tırnakları ve satır düzenini değiştirerek 351 satırı farklılaştırır.
 - Tailwind v4'te sınıf sıralaması için eklentinin tema dosyasını bilmesi gerekir; yol `tailwindStylesheet` ile verilir. ✅ DOĞRULANDI (2026-09-29, paket README'si): seçeneğin adı `tailwindStylesheet`'tir.
@@ -11575,7 +11597,7 @@ const measure = () => {
 2. LHCI mobil koşusunda `largest-contentful-paint-element` denetimi H1'i göstermelidir.
 
 **Çözüm sırası (doğrulama başarısızsa):**
-1. **H1 tek LCP adayı olsun:** 64rem altındaki satır kırılımı `display: block` span'lar yerine `<br>` ile yapılır (tek metin bloğu, §6.2.3 güncellenir). Yeniden ölçülür.
+1. **H1 tek LCP adayı olsun:** 64rem altındaki satır kırılımı `display: block` span'lar yerine `<br>` ile yapılır (tek metin bloğu, §6.2.3 güncellenir). Yeniden ölçülür. **M3 (2026-09-30): uygulandı** (`<br className="lg:hidden" />`). LHCI mobil emülasyonunda (412 × 823) poster 354 × 354 px ≈ 125.000 px², H1 kutusu 368 × 152 px ≈ 56.000 px²; LCP öğesi hâlâ posterdir. Adım 2'ye göre `D ≤ floor(√(0.8 × 56.000)) ≈ 211 px` olur; karar V-39 ile (M4 → M8) sahibe sunulur.
 2. **Poster alanı sınırlanır:** mobil hero bandında `D ≤ floor(sqrt(0.8 × A_h1))`. `A_h1`, 360 × 640 ve 390 × 844'te ölçülen en küçük H1 kutusu alanıdır. Sonuç px değeri §4.15.2'ye ve §5.8.3 mobil geçersiz kılmasına yazılır; poster ve canlı taş aynı `D`'yi kullanmaya devam eder.
 3. 1 ve 2 sahip tarafından reddedilirse karar §16.3'e açık soru olarak yazılır. Poster `fetchpriority="low"` kalır; LCP süresi yine ≤ 2.5 s olmalıdır.
 
@@ -11645,7 +11667,7 @@ Bu bölüm erişilebilirlik hedefinin, kriter bazında uygulama eşlemesinin, ha
 - **ZORUNLU:** Her iki dildeki bütün HTML sayfaları ve bütün durumları **WCAG 2.2 AA** ile uyumludur. Durumlar: tam hareket, azaltılmış hareket, JS'siz, static kademe, mobil menü açık, filtre etkin, areas pininin her adımı, ağaç 404'ü ve `global-not-found`, v1.1 formunun hata ve başarı durumları.
 - **ZORUNLU:** Lighthouse Accessibility puanı 1.0'dır (D-33). axe-core (WCAG 2.2 AA etiketleri) 0 ihlal verir (§10.6).
 - **Kapsam dışı:** WebGL canvas'ı. Dekoratiftir, `aria-hidden`'dır ve hiçbir bilgi taşımaz (§5.1.1). Aynı bilgi her zaman DOM'dadır.
-- **CV PDF'i:** `/cv` HTML sayfası CV'nin erişilebilir birincil sürümüdür. PDF ek bir indirmedir ve bağlantı metni biçimi söyler. ⚠️ DOĞRULANMADI: `@react-pdf/renderer` 4.9.0'ın etiketli (tagged) PDF üretip üretmediği. Doğrulama: M3'te PDF, Acrobat "Erişilebilirlik denetimi" veya PAC ile açılır. Etiketsizse bu durum gizlilik/erişilebilirlik notuna değil, yalnız bu alt bölüme yazılır; HTML sürümü eşdeğer içerik sağladığı için AA kapsamı korunur.
+- **CV PDF'i:** `/cv` HTML sayfası CV'nin erişilebilir birincil sürümüdür. PDF ek bir indirmedir ve bağlantı metni biçimi söyler. **M3 sonucu (V-31, 2026-09-30):** `@react-pdf/renderer` 4.9.0 **etiketsiz** PDF üretir (`/StructTreeRoot` ve `/MarkInfo` yok; `/Lang (tr)` / `(en)` var, metin seçilebilir). HTML `/cv` sürümü eşdeğer içerik sağladığı için AA kapsamı korunur; PDF bağlantı metni biçimi söyler.
 - WCAG 2.2'de 4.1.1 (Ayrıştırma) kaldırılmıştır; tabloda yer almaz. AAA olan 2.3.3 (Etkileşimden animasyon) MotionToggle ile ayrıca karşılanır.
 
 **Kriter eşlemesi** (A ve AA; 2.2'de yürürlükteki bütün kriterler):
@@ -11792,6 +11814,7 @@ export function SkipLink({ label }: { label: string }) {
 - JS ve runtime varken: `scrollToChapter()` tamamlanınca (`onComplete`) hedef bölümün ilk `h2`'si `tabIndex = -1` alır ve `focus({ preventScroll: true })` ile odaklanır (§5.13.4 adım 3). Aynı anda hedef ve üstündeki reveal'lar anında açılır (§5.14.6).
 - JS'siz ve azaltılmış harekette: yerel çapa atlaması; `scroll-padding-top` başlığın header altında görünmesini sağlar (§6.4). Tarayıcı sıralı odak başlangıç noktasını hedefe taşır.
 - Başka sayfadan gelen hash (`/#iletisim`): hedef hazır olunca aynı odak kuralı uygulanır (⚠️ §5.13.4'teki Lenis + `<Link>` hash doğrulamasıyla birlikte test edilir).
+- M3 notu: `scrollToChapter()` (runtime) M4'tedir. M3'te çapalar yerel atlamadır; `a11y-keyboard.spec.ts` sıralı odak başlangıç noktasının hedef bölüme taşındığını doğrular (sonraki Tab bölümün içindedir). `h2` odağı maddesi M4'te bu spec'e eklenir.
 
 #### 10.3.3 Odak görünürlüğü ve örtülmeme
 
@@ -12065,9 +12088,12 @@ export declare function listPages(): PageEntry[];                               
 
 - `title.template` alt segmentlere uygulanır. Sayfa `'Projeler'` verirse sonuç "Projeler — Orçun Saatçi" olur. Ana sayfa `title.absolute` kullanır.
 - **ZORUNLU:** `alternates` kök layout'ta **tanımlanmaz**. Canonical ve hreflang sayfaya özeldir (§11.3).
-- **ZORUNLU:** Sayfa `openGraph` nesnesi, üst `openGraph`'ı **tamamen değiştirir** (sığ birleştirme). Bu yüzden sayfa oluşturucuları `siteName`, `locale`, `url`, `title`, `description` ve `type` alanlarının tamamını yeniden verir. `og:image` bundan etkilenmez: dosya tabanlı `opengraph-image` önceliklidir ve alt sayfalara miras kalır (prototipte TR proje sayfaları TR kök görselini devraldı).
+- **ZORUNLU:** Sayfa `openGraph` nesnesi, üst `openGraph`'ı **tamamen değiştirir** (sığ birleştirme). Bu yüzden sayfa oluşturucuları `siteName`, `locale`, `url`, `title`, `description` ve `type` alanlarının tamamını yeniden verir. ~~`og:image` bundan etkilenmez~~ — SPEC-SAPMA: §11.2.1 / §11.5.1 (M3, 2026-09-30): Next 16.3.7'de sayfa `openGraph` yazınca üst segmentin dosya tabanlı `opengraph-image`'ı da düşer; `/hakkimda`, `/cv`, `/en/cv` gibi sayfalarda `og:image` yoktu (`seo.spec.ts`). Çözüm §11.5.1'dedir.
+- SPEC-SAPMA: §11.2.1 (M3, V-21) — `buildRootMetadata` `robots` yazmaz. Her sayfa oluşturucu kendi `robots`'unu yazar (`pageMetadata`); kökteki `index, follow` yalnız 404 kabuklarında Next'in `noindex`'iyle çelişen ikinci bir etiket üretiyordu (M2'nin global-not-found kararıyla aynı gerekçe, §3.7).
 
 #### 11.2.2 Sayfa başına başlık ve metadata tablosu
+
+SPEC-SAPMA: §11.2.2 (M3) — `BRAND` sabit dize değil içerikten okunur: `export const BRAND = getPerson().name` (§7.1 kural 1: sahibe ait veri koda gömülmez). Değer tohumda ve üretimde "Orçun Saatçi"dir.
 
 | Anahtar | `<title>` TR | `<title>` EN | Açıklama kaynağı | robots | `og:type` |
 |---|---|---|---|---|---|
@@ -12175,6 +12201,8 @@ export default function manifest(): MetadataRoute.Manifest {
 
 `#0B1020`, `mekanizma` paletinin koyu `--color-canvas` değeridir (§6.3). Palet değişirse bu değer de `src/design/tokens.ts`'teki koyu `canvas` değeriyle güncellenir.
 
+SPEC-SAPMA: §11.2.5 (M3) — `manifest.ts` rengi elle yazmaz: `themeColors(getExperienceProfile(getSite().persona).palette, 'dark').canvas` okunur (§6.3.2 onaltılık renk literali yalnız `tokens.ts` ve `globals.css`'te; palet değişince bu dosyaya dokunulmaz); `name` / `short_name` `getPerson().name`'den gelir.
+
 ### 11.3 Canonical ve hreflang
 
 | # | Kural |
@@ -12259,6 +12287,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 ```
 
 - Çıktı `xmlns:xhtml` ve her URL için `<xhtml:link rel="alternate" hreflang=…>` içerir (prototipte doğrulandı). Çift yoksa `xhtml:link` yazılmaz.
+- SPEC-SAPMA: §11.4.2 (M3, 2026-09-30) — kök URL sitemap'te sondaki `/` olmadan yazılır (`https://www.orcunsaatci.com`): Next metadata'sı canonical, hreflang ve `og:url`'de kökü bu biçime normalize eder ve §11.8.1 #4 birebir dize eşitliği ister. Diğer yollar `absoluteUrl()` ile aynıdır.
 - Proje girdileri: TR URL'si her projede vardır. EN URL'si ve `tr`/`en`/`x-default` alternatifleri yalnız EN `title` + EN `summary`'si olan projede yazılır (`pageLocales`, §3.4.1, D-48).
 - `lastModified` yalnız içerik tarihinden gelir (`YYYY`, `YYYY-MM` veya `YYYY-MM-DD`; W3C Datetime). Tarih yoksa alan yazılmaz. **YASAK:** `new Date()`.
 - `changefreq` ve `priority` yazılmaz.
@@ -12313,7 +12342,7 @@ PDF ve JSON Resume dosyaları indekslenmez. Sıralamada öne çıkması gereken 
 ```
 
 ⚠️ **DOĞRULANMADI:** `next.config.ts` `headers()` kurallarının Vercel'de `public/` dosyalarına uygulanması beklenir. Doğrulama iki adımlıdır:
-1. Yerel: `curl -sI localhost:3000/files/orcun-saatci-cv-tr.pdf | grep -i x-robots-tag`.
+1. Yerel: `curl -sI localhost:3000/files/orcun-saatci-cv-tr.pdf | grep -i x-robots-tag`. ✅ M3 (2026-09-30): PDF ve JSON Resume yerelde `X-Robots-Tag: noindex` taşır (`seo.spec.ts`, `cv.spec.ts`).
 2. Preview: aynı istek preview URL'sine gönderilir. Preview'da Vercel'in kendi `noindex` başlığı da bulunur, bu yüzden **üretimde** ayrıca kontrol edilir (§14.7).
 
 ### 11.5 OG ve Twitter görselleri (uygulama)
@@ -12331,6 +12360,8 @@ Görsel şablon (yerleşim, tipografi, kadran motifi, varyantlar) §6.8'dedir. B
 | `src/lib/seo/og.tsx` | Ortak render: `renderOg`, `renderDial`, `fitTitle`, `coverDataUri`, `loadOgFonts`, `angleFor` | Yalnız görsel route'ları ve `icon.tsx` / `apple-icon.tsx` import eder |
 | İSTEĞE BAĞLI: `(tr)/cv/opengraph-image.tsx`, `en/cv/opengraph-image.tsx` | `cv` (eyebrow "ÖZGEÇMİŞ" / "CV") | §6.8 varyantı; v1 için zorunlu değil |
 
+SPEC-SAPMA: §11.5.1 (M3, 2026-09-30) — "Kendi görseli olmayan tüm sayfalar kök görseli miras alır" varsayımı Next 16.3.7'de tutmadı (§11.2.1). Her statik sayfa segmentine kök görseli yeniden dışa aktaran bir dosya eklendi: `(tr)/{hakkimda,cv,projeler,calisma-alanlari,iletisim,gizlilik}/opengraph-image.tsx` ve `en/{about,cv,projects,expertise,contact,privacy}/opengraph-image.tsx` (`export { alt, contentType, default, size } from '../opengraph-image'`). Alan sayfası segmentleri (`calisma-alanlari/[area]`, `en/expertise/[area]`) ayrıca `dynamicParams = false` ve `getAreaPageIds` ile `generateStaticParams` taşır (V-25). Görseller build'de ○/● olarak üretilir; her sitemap URL'sinde 1200×630 `og:image` vardır (`seo.spec.ts`).
+
 #### 11.5.2 Kısıtlar
 
 | Konu | Değer |
@@ -12345,6 +12376,8 @@ Görsel şablon (yerleşim, tipografi, kadran motifi, varyantlar) §6.8'dedir. B
 | Renkler | Paylaşım görseli her zaman koyudur. Renkler `src/design/tokens.ts` içindeki aktif paletin **koyu** değerlerinden okunur. `mekanizma` için referans değerler: zemin `#0B1020`, başlık `#E8EBF2`, eyebrow ve alt başlık `#A3ACC2`, çizgi `#252E52`, yakut ibre `#FF7A95` (§6.3, §6.8). |
 
 #### 11.5.3 `src/lib/seo/og.tsx`
+
+SPEC-SAPMA: §11.5.3 (M3) — Yerleşimin sahibi §6.8'dir: başlık sütunu 760 / 520 px (kapaklı proje), `fitTitle` boyutları 76 / 60 / 48 px (§6.8 karakter eşikleri), kesit motifi 220 px ve kapaklı varyantta altbilgi satırında 64 px motif; aşağıdaki iskelet bu ölçülerle uygulandı. `renderSection({ size, motif })` motifi `getStageData` verisiyle (halkalar, dilimler, bant, açık yay) çizer.
 
 ```tsx
 // src/lib/seo/og.tsx
@@ -12513,17 +12546,18 @@ EN eşleri aynı kalıptadır; farklar:
 
 EN'de eyebrow parçasının `lang` değeri `t(person.jobTitle, 'en').lang`'dir: EN unvan yoksa TR yedeği `lang: 'tr'` ile büyütülür (§7.4.4).
 
-⚠️ **DOĞRULANMADI:**
-1. Route group içindeki `[slug]` altında duran `opengraph-image.tsx`'in, sayfanın `generateStaticParams` değerleriyle **statik** üretilmesi beklenir. Belgelenen davranış budur; prototipte yalnız ağaç kökündeki görsel denendi.
+M3 sonuçları (2026-09-30): madde 1 ✅ yedek (a) ile (V-25); madde 2 ✅ (V-26); madde 4 ✅ (V-27); madde 3 üretimde (§14.7).
+
+1. Route group içindeki `[slug]` altında duran `opengraph-image.tsx`'in, sayfanın `generateStaticParams` değerleriyle **statik** üretilmesi beklenir. Belgelenen davranış budur; prototipte yalnız ağaç kökündeki görsel denendi. **M3 (V-25):** OG dosyasında `generateStaticParams` yokken route `ƒ` (dinamik) olur ve D-06'yı bozar; yedek (a) uygulandı: iki proje OG dosyası `dynamicParams = false` ve sayfanın `generateStaticParams`'ını taşır, route ● olarak slug listesiyle üretilir.
    - Doğrulama (M3): `next build` çıktısında proje OG route'u ● olarak ve slug listesiyle görünmeli.
    - Görünmezse sırasıyla denenir:
      a. OG dosyasına da `export const dynamicParams = false` ve aynı `generateStaticParams` eklenir.
      b. Son çare: proje OG PNG'leri build betiğiyle `public/og/<locale>/<slug>.png` olarak üretilir ve `projectMetadata` içinde `openGraph.images` ile verilir.
 2. Satori'nin inline `<svg>` (kadran) çizimi M3'te gözle doğrulanır. Sorun varsa SVG dizgesi `data:image/svg+xml;base64,…` olarak `<img>` içine konur.
 3. Vercel CDN'in metadata görsel route'larını ne kadar önbelleğe aldığı bilinmiyor (`next start` `max-age=0, must-revalidate` döndü). Üretimde `curl -sI` ile kontrol edilir; işlevsel bir engel değildir.
-4. Satori'nin OpenType `locl` desteği bilinmiyor. `liga` içermeyen statik TTF'lerle risk azaltılmıştır (§6.2).
+4. Satori'nin OpenType `locl` desteği bilinmiyor. `liga` içermeyen statik TTF'lerle risk azaltılmıştır (§6.2). **M3 (V-27):** QA dizgisi ve "fi fl ffi" denemesi: "fi" noktalı iki glif olarak çizilir (bağ yok, Türkçe için doğru); İ, Ğ, Ş, ı, ç doğru; eyebrow büyütmesi JS'te `upper(…, 'tr')` ile yapıldığından "PROFİL", "PROJE" doğru çıkar.
 
-Twitter/X: **İSTEĞE BAĞLI.** X kartı `og:image`'a düşmüyorsa (§11.2.4) her `opengraph-image.tsx` yanına aynı içerikte bir `twitter-image.tsx` eklenir. Önce yeniden export (`export { default, size, contentType, alt } from './opengraph-image'`) denenir. ⚠️ Bu biçimin desteklendiği doğrulanmadı; desteklenmiyorsa dosya kopyalanır.
+Twitter/X: **İSTEĞE BAĞLI.** X kartı `og:image`'a düşmüyorsa (§11.2.4) her `opengraph-image.tsx` yanına aynı içerikte bir `twitter-image.tsx` eklenir. Önce yeniden export (`export { default, size, contentType, alt } from './opengraph-image'`) denenir. ✅ Yeniden export biçimi çalışır (M3: statik sayfa segmentlerindeki `opengraph-image.tsx` dosyaları kök görseli bu biçimle bağlar, §11.5.1).
 
 ### 11.6 Yapısal veri (JSON-LD)
 
@@ -12952,6 +12986,7 @@ Kurallar:
 Birim testleri için iki not (§13.2):
 - `src/lib/seo/*` ve `get-dictionary.ts` `server-only` import eder. Bu paket `react-server` koşulu dışında içe aktarıldığında hata fırlatır. `vitest.config.ts` bu yüzden `resolve.alias` ile `server-only`'yi boş bir modüle yönlendirir.
 - `@/lib/content` testlerde `vi.mock` ile küçük bir fixture'a bağlanır. Fixture en az şunları içerir: bir çift dilli proje (EN `title` + `summary`), bir yalnız TR proje (`title.en` var, `summary.en` yok), bir `seo.noindex: true` proje ve `site.locales` varyantları.
+- SPEC-SAPMA: §11.8.1 (M3) — Fixture bir alt katmanda bağlanır: `vi.mock('content-collections', () => import('tests/fixtures/content'))`. Erişimciler (`src/lib/content/index.ts`) gerçek kodla fixture üzerinde koşar; hem erişimciler test edilir hem sahibin içerik PR'ları birim testlerini etkilemez. Varyantlar testte nesne üzerinde değiştirilir, `resetFixture()` geri alır.
 
 `seo.spec.ts` sayfa listesini `/sitemap.xml`'den okur. Bunun nedeni: `src/lib/seo/*` `server-only` import ettiği için Playwright'tan çağrılamaz. `<loc>` kökeni `http://localhost:3000` ile değiştirilir. Her URL için doğrulananlar:
 1. HTTP 200; `html[lang]` = `/en` önekine göre `en`, değilse `tr`.
@@ -12969,7 +13004,7 @@ Ek istekler:
 - `/robots.txt` (yerel build, `VERCEL_ENV` yok) → `Disallow: /` içerir.
 - `/sitemap.xml` → 200, XML, `xmlns:xhtml` içerir.
 
-⚠️ **DOĞRULANMADI:** Lighthouse `is-crawlable` denetimi robots.txt'yi de değerlendiriyorsa, CI'daki yerel build (`robots.txt` = `Disallow: /`, D-28) SEO skorunu 1.0'ın altına düşürür. CI'da `VERCEL_ENV=production` verilemez, çünkü `check-content` o durumda yer tutucularla build'i durdurur (D-36).
+✅ **DOĞRULANDI (M3, V-32):** Lighthouse `is-crawlable` denetimi robots.txt'yi değerlendirir; CI'daki yerel build (`robots.txt` = `Disallow: /`, D-28) SEO skorunu 0.66'ya düşürür, bu yüzden denetim CI'da atlanır. CI'da `VERCEL_ENV=production` verilemez, çünkü `check-content` o durumda yer tutucularla build'i durdurur (D-36).
 - Doğrulama: M3'te LHCI bir kez çalıştırılır.
 - `is-crawlable` CI'da baştan atlanır (`skipAudits`, §13.5.1; §16.3.2 T-05 a) ve SEO eşiği kalan denetimlerle 1.0 olarak korunur. Üretimde bu denetim PageSpeed Insights ile dâhil ölçülür (§14.7).
 - Üretimde SEO 1.0 ayrıca PageSpeed Insights ile doğrulanır (§14.7).
@@ -14277,6 +14312,8 @@ Yardımcılar (`tests/e2e/helpers/`):
 | Dosya | Export | Davranış |
 |---|---|---|
 | `urls.ts` | `sitemapPaths(request)` | `/sitemap.xml`'i okur. `<loc>` değerlerinin **path** kısmını tekilleştirip döndürür (köken atılır). |
+| | `pagePaths(request)` (M3) | `sitemapPaths` + `NOINDEX_PATHS`'ten 200 dönenler; "her route" döngüleri bunu kullanır. |
+| | `sitemapEntries(request)`, `localPath(url)` (M3) | `<url>` girdileri `{ loc, path, alternates }` (hreflang → URL) olarak; üretim URL'sini yerel yola çevirir (`seo.spec.ts`, `i18n.spec.ts`). |
 | | `NOINDEX_PATHS` | `['/gizlilik', '/en/privacy']`. Testler yalnız 200 dönenleri kullanır. |
 | | `NOT_FOUND_PATHS` | `['/yok', '/en/yok', '/tr', '/en/projeler', '/projeler/yok', '/en/projects/yok']` (§3.7) |
 | | `SHELL_PATHS` (geçici, M2) | M2 kabuk sayfalarının TR + EN listesi. Sitemap M3'te gelince "her route" döngüleri `sitemapPaths(request)` + `NOINDEX_PATHS`'e geçer ve liste silinir (§15.0.6). |
@@ -14507,10 +14544,13 @@ Değerlerin kaynağı ve gerekçeler:
 
 Ortam kararları:
 - **Varsayılan ayarlar mobildir** (Lighthouse'un simüle edilmiş 4× CPU ve yavaş 4G yapılandırması). `preset` verilmez; D-33 "mobil lab" ister.
-- **`skipAudits: ["is-crawlable"]`.** CI build'i production olmadığı için `robots.txt` `Disallow: /` döner (D-28). `is-crawlable` bunu engelleme sayar ve SEO kategorisini 1.0'ın altına düşürür (⚠️ **DOĞRULANMADI:** Lighthouse 12.6'da denetimin `robots.txt`'i okuduğu; M3'te ilk LHCI koşusunda görülür). Atlanan denetim kategori puanından çıkarılır. Üretimde bu denetim PageSpeed Insights ile doğrulanır (§14.7). Bu, §11.8.1'deki ⚠️ maddesinin çözümüdür.
+- **`skipAudits: ["is-crawlable"]`.** CI build'i production olmadığı için `robots.txt` `Disallow: /` döner (D-28). `is-crawlable` bunu engelleme sayar ve SEO kategorisini 1.0'ın altına düşürür (✅ **DOĞRULANDI** (M3, 2026-09-30, V-32): Lighthouse 12.6.1 `is-crawlable` `robots.txt`'in 1. satırını kaynak gösterir; dahil edilince SEO 0.66'ya düşer). Atlanan denetim kategori puanından çıkarılır. Üretimde bu denetim PageSpeed Insights ile doğrulanır (§14.7). Bu, §11.8.1'deki ⚠️ maddesinin çözümüdür.
 - **Canonical kökeni.** `lighthouse.yml` build'i `NEXT_PUBLIC_SITE_URL=http://localhost:3000` ile yapar. Canonical, hreflang ve OG adresleri denetlenen kökenle aynı olur ve `canonical` denetiminin köken farkına takılma riski ortadan kalkar. `ci.yml`'deki e2e build'i bu değişkeni vermez; varsayılan kökendir (§3.5).
 - **Tier.** CI Chromium'u SwiftShader kullanır ve yetenek yoklaması `failIfMajorPerformanceCaveat` yüzünden `static` kademeye düşer (§5.11.3, §9.1 notu). Kapı URL'leri bu yüzden **sahnesiz** deneyimi ölçer (LCP, CLS, TBT). 3D boot maliyeti ayrıca `/?tier=medium` uyarı koşusuyla, `perf-budgets.spec.ts` PB-3/PB-4 ile ve gerçek cihazlarda (§9.6) izlenir. `assertMatrix` girdileri birbirinden bağımsız uygulanır; bir URL'ye uyan tüm girdiler değerlendirilir.
-- ⚠️ **DOĞRULANMADI:** "Missing source maps for large first-party JavaScript" uyarısının Best Practices puanına etkisi. Puan 0.95'in altına düşerse §8.6'da `productionBrowserSourceMaps: true` açılır. Kaynak haritaları yalnız DevTools açıkken indirilir, ilk JS aktarımını değiştirmez.
+- ✅ **DOĞRULANDI (M3, 2026-09-30, V-33):** Best Practices bütün kapı URL'lerinde 1.0; `valid-source-maps` denetimi geçer. `productionBrowserSourceMaps` açılmadı.
+- SPEC-SAPMA: §13.5.1 (M3, 2026-09-30) — kapı URL'leri **SwiftShader bayrakları olmadan** (varsayılan başsız Chrome) ölçülür; `?tier=medium` uyarı koşusu ayrı yapılandırmadadır (`lighthouserc.tier.json`, SwiftShader'lı; `lighthouse.yml`'de ikinci adım). SwiftShader'lı koşuda GPU başlatması ilk boyamayı ~1 s geciktiriyor, Lantern bu sürede değerlendirilen bütün JS'i LCP'nin kritik yoluna katıyordu (her URL'de LCP ≈ 3.3 s). Kapı URL'leri zaten sahnesiz deneyimi ölçtüğü için (static tier) ölçülen şey değişmez.
+- M3 ölçümü (2026-09-30, yerel, kapı ayarı): Perf 0.92–0.98, A11y 1.0, BP 1.0, SEO 1.0, CLS 0, TBT ≤ 200 ms; **LCP 2.3–3.3 s**. Lantern, gözlenen ilk boyamadan önce biten font (122 KB) ve JS (~150 KB) isteklerini yavaş 4G'de yeniden oynatır; kerning'siz fontlarla (61 KB) metin-LCP'li sayfalar ~2.0–2.3 s'ye iner. Görsel-LCP'li sayfalar (ana sayfa posteri, `/projeler` küçük görseli, `/hakkimda` şekli) 2.9–3.3 s'dir. LCP kapısı için karar sahibe sunuldu (M3 PR #7).
+- SPEC-SAPMA: §13.5.1 / §15.4.3 (M3, 2026-09-30, sahip kararı) — `largest-contentful-paint` kapı URL'lerinde **M8'e kadar `warn`**'dur; Perf ≥ 0.85, A11y 1.0, BP ≥ 0.95, SEO 1.0, CLS ≤ 0.05, TBT ve `errors-in-console` kapı olarak kalır. Seçenekler: (A) kerning'siz font (122 → 61 KB) + mobil hero posteri ~210 px + üst görsellere öncelik, (B) M8'e erteleme; sahip B'yi seçti (kerning ve hero tasarımı korunur). M8'de font stratejisi (kerning korunarak alt küme / eksen daraltma), V-39 mobil hero kararı ve görsel-LCP sayfalarının önceliğiyle ele alınır; M8 kabulünde `error`'a döner (§13.10). CI medyanları (M3): LCP 2.94–3.17 s, Perf 0.93–0.95, TBT ~50 ms, CLS 0.
 - Raporlar `uploadArtifacts: true` ile GitHub artefaktı olarak saklanır. **YASAK:** `temporaryPublicStorage: true`; raporlar herkese açık bir kovaya yüklenir ve taslak içerik sızar.
 
 #### 13.5.2 Bütçeler
@@ -15484,6 +15524,10 @@ Bazı dosyalar build zincirinin (§8.7.1) ilk günden çalışması için geçic
 | `CSP_REPORT_ONLY_ON_PREVIEW = true` | M0 | M10 (`false`) | §12.5.5 |
 | `SITE_INDEXABLE=false`, Deployment Protection "All Deployments" | M0 | M10 | §14.2.2, §14.6 |
 | `features.contactForm: false` | M3 | v1.1 etkinleştirmesi (M10 sonrası) | §12.2.1 |
+| `HydrationMark` (`data-hydrated` yazan yaprak, iki kök layout) | M3 | M4 (`MotionRoot` ilk effect'i) | §8.4.2 |
+| `a11y-keyboard.spec.ts`'te çapa sonrası `h2` odağı yerine sıralı odak başlangıç noktası | M3 | M4 (`scrollToChapter`, §5.13.4) | §10.3.2 |
+| `cv.spec.ts`'te baskıda `RingsFigure` ve ≥ 80rem taş çapası maddeleri yok | M3 | M4 (SVG figürler), M5 (Stage) | §13.3.4 |
+| `lighthouserc.json`'da `largest-contentful-paint` `warn` (sahip kararı) | M3 | M8 (`error`) | §13.5.1, §9.1 |
 
 #### 15.0.7 Karar → milestone eşlemesi
 
@@ -16394,21 +16438,21 @@ Belgedeki her `⚠️ DOĞRULANMADI` maddesi, araştırma notlarındaki UNVERIFI
 | V-18 | React 19 geliştirmede head'deki satır içi `<script>` için uyarı verebilir. | §8.4.3 | `npm run dev` konsolu | Üretimde görülürse `next/script` `beforeInteractive`; no-flash testi yeniden koşar. | M2 — ✅ DOĞRULANDI (2026-09-30): `/`, `/hakkimda`, `/en/about`, `/yok` dev konsolunda uyarı yok. Uyarı yalnız sayfa içi `notFound()` sonrası belge istemcide yeniden çizilirken görülür (V-21 hata kabuğu); üretimde yazılmaz. |
 | V-19 | `globals.css` gerçek tarayıcılarda doğru görünür. | §6.10.2 | `desktop-chromium`, `iphone-15`, `pixel-7` iki temada; `prefers-contrast: more`, `forcedColors` | Bulgu §6.10'a işlenir ve düzeltilir. | M2 — ✅ DOĞRULANDI, düzeltmeyle (2026-09-30): 360/768/1440 × iki tema, `iPhone 15` (WebKit) ve `Pixel 7` iki temada, `contrast: more` iki temada ve `forcedColors` ekran görüntüleriyle. `globals.css` değişmedi. Bileşen düzeltmeleri: forced-colors'ta `ThemeToggle` seçili bölümü görünmüyordu → `Highlight`/`HighlightText` + `forced-color-adjust: none` (§10.5.3); header'da geçerli sayfanın renkten başka ipucu yoktu → kalıcı 1 px alt çizgi (§6.6.1). |
 | V-20 | `editoryal` fontlarının kırpılmış boyutları (yalnız `researcher` persona). | §6.2.8 | `subset-fonts.sh` genişletilir ve ölçülür | Build `hassas`'a düşer (K-PERSONA-4). | M2 (koşullu) — koşul oluşmadı (2026-09-30): etkin persona `engineer` (`hassas`). `resolveTypePreset` editoryal isteğini uyarıyla `hassas`'a düşürür (K-PERSONA-4, `profile.test.ts`). Persona değişirse ölçülür. |
-| V-21 | Parametresiz statik sayfada build sırasında `notFound()` statik 404 üretir (HTTP 404 + `noindex`). | §3.4.3 | `about.en.mdx` geçici silinir → build → `curl -sI localhost:3000/en/about` | Yedek tanımlı değil; sonuç §3.4.3'e işlenir. | M3 — ⚠️ M2 ön gözlemi (2026-09-30, `/lab/stage` bayraksız): HTTP 404 ve `noindex` doğru, ama statik HTML boş bir hata kabuğudur (`<html id="__next_error__">`, boş `<body>`); ağaç `not-found.tsx` yalnız istemcide çizilir. Tek kök layout'lu en küçük Next 16.3.7 uygulamasında da aynı. JS'siz ziyaretçi ve tema/hareket betiği bu sayfalarda devre dışı kalır; M3'te içerik kapılı sayfalar için karar verilir. |
-| V-22 | `generateStaticParams` `[]` döndürdüğünde `dynamicParams = false` ile build geçer. | §3.4.3 | M2 kabuklarında (`[]` dönen bütün dinamik segmentler) ve M3'te `areaPages: false` ile build; `/calisma-alanlari/x` 404 | Sonuç §3.4.3'e işlenir. | M2 → M3 — M2 kısmı ✅ (2026-09-30): dört dinamik kabuk `[]` ile build'i geçer ve ○ olarak listelenir; `/calisma-alanlari/yok` 404 + `noindex` döner. |
-| V-23 | `dynamicParams = false` altındaki bilinmeyen parametrede hangi not-found'un render edildiği. | §3.7 | `curl localhost:3000/projeler/yok \| grep data-404` | İki durumda da 404 + `noindex` ZORUNLU; test beklentisi sonuca göre yazılır. | M3 — M2 ön gözlemi (boş parametre listeleriyle): `data-404="global"`, tam SSR. Gerçek parametrelerle M3'te yinelenir. |
-| V-24 | React 19 `<title>` hoisting ağaç 404'ünde çift `<title>` üretmez. | §3.7 | Build çıktısı | İSTEĞE BAĞLI başlık uygulanmaz. | M3 |
-| V-25 | Route group içindeki `[slug]` altındaki `opengraph-image.tsx` statik (●) üretilir. | §11.5.4 #1 | Build çıktısı | a) OG dosyasına `dynamicParams = false` + aynı `generateStaticParams`; b) build betiğiyle `public/og/<locale>/<slug>.png`. | M3 |
-| V-26 | Satori satır içi `<svg>` (kadran motifi) çizer. | §11.5.4 #2, §6.8 | `/opengraph-image` çıktısına bakılır | `data:image/svg+xml` kaynaklı `<img>`. | M3 — M2 ön gözlemi (2026-09-30): `/icon` ve `/apple-icon` `renderDial()`'ın satır içi `<svg>`'sini doğru çizer (halka, çentikler, ibre). OG çıktısıyla M3'te kapanır. |
-| V-27 | Satori'nin değişken font ve `locl`/`liga` desteği. | §11.5.4 #4, tasarım §13 | OG'de "fi", "İ", "Ğ" görsel kontrolü | Riski liga'sız statik TTF'ler zaten azaltır; bulgu §11.5'e yazılır. | M3 |
-| V-28 | `@content-collections/mdx` `MDXContent`, Next 16.3 RSC içinde render eder. | §7.3.4 #8, içerik §11 #10 | `/hakkimda` build'i (MDX gövdesi; projelerde MDX yok, D-48); `no-js` projesinde gövde `h2`'si HTML'de | `next-mdx-remote-client/rsc` 2.1.12 ile `doc.content`, aynı bileşen haritası. | M3 |
-| V-29 | GitHub Actions `ubuntu-latest`'te `pdftotext` hazırdır. | §7.6.4 | CI'da `pdftotext -v` | Adım atlanır (İSTEĞE BAĞLI). | M3 |
-| V-30 | `images.localPatterns` tanımlıyken statik importlu görseller ayrıca listelenmek zorunda değildir. | §8.6.1 | Statik importlu görselin optimizer URL'si 200 | İkinci girdi eklenir. | M3 |
-| V-31 | `@react-pdf/renderer` 4.9.0 etiketli (tagged) PDF üretir. | §10.1 | Acrobat "Erişilebilirlik denetimi" ya da PAC | Durum §10.1'e yazılır; HTML `/cv` eşdeğer içeriği sağlar. | M3 |
-| V-32 | Lighthouse 12.6 `is-crawlable` denetimi `robots.txt`'i okur. | §11.8.1, §13.5.1 | İlk LHCI koşusu | `skipAudits` zaten uygulanır; üretimde PSI (T-05). | M3 |
-| V-33 | "Missing source maps" uyarısı Best Practices puanını 0.95'in altına düşürmez. | §13.5.1 | LHCI BP puanı | `productionBrowserSourceMaps: true` (§8.6). | M3 → M8 |
-| V-34 | `next.config.ts` `headers()` kuralı Vercel'de `public/` dosyalarına (`/files/*`) uygulanır. | §11.4.4 | Yerel `curl -sI`; Preview; üretimde §14.7 | Yedek tanımlı değil; sonuç §11.4.4'e işlenir. | M3 → M10 |
-| V-35 | `timeZoneName: 'shortOffset'` hedef tarayıcılarda desteklenir. | §4.14 #15 | Playwright (`desktop-chromium`, `iphone-15`) | İçerikteki statik ofset etiketi kullanılır. | M3 |
+| V-21 | Parametresiz statik sayfada build sırasında `notFound()` statik 404 üretir (HTTP 404 + `noindex`). | §3.4.3 | `about.en.mdx` geçici silinir → build → `curl -sI localhost:3000/en/about` | Yedek tanımlı değil; sonuç §3.4.3'e işlenir. | M3 — ⚠️ kısmen (2026-09-30): HTTP 404 + `noindex` doğru; gövde `__next_error__` kabuğu, ağaç 404'ü yalnız istemcide. Karar: C07 EN açıkken `about.en.mdx`'i strict'te zorunlu kılar; kök metadata `robots` yazmaz (tek `noindex`); TR-only build'de `/en/*` kabukları bağlanmaz ve sitemap dışıdır (§3.4.3) |
+| V-22 | `generateStaticParams` `[]` döndürdüğünde `dynamicParams = false` ile build geçer. | §3.4.3 | M2 kabuklarında (`[]` dönen bütün dinamik segmentler) ve M3'te `areaPages: false` ile build; `/calisma-alanlari/x` 404 | Sonuç §3.4.3'e işlenir. | M2 → M3 — ✅ (2026-09-30): `areaPages: false` tohum build'i geçer, `/calisma-alanlari/alan-1` 404; `areaPages: true` build'inde alan sayfası ● ve 200, e2e takımı yeşil |
+| V-23 | `dynamicParams = false` altındaki bilinmeyen parametrede hangi not-found'un render edildiği. | §3.7 | `curl localhost:3000/projeler/yok \| grep data-404` | İki durumda da 404 + `noindex` ZORUNLU; test beklentisi sonuca göre yazılır. | M3 — ✅ (2026-09-30): bilinmeyen parametrede (gerçek listelerle de) `global-not-found` (`data-404="global"`), tam SSR; `not-found.spec.ts` sonucu not eder |
+| V-24 | React 19 `<title>` hoisting ağaç 404'ünde çift `<title>` üretmez. | §3.7 | Build çıktısı | İSTEĞE BAĞLI başlık uygulanmaz. | M3 — uygulanmadı (2026-09-30): İSTEĞE BAĞLI başlık eklenmedi; ağaç 404'ü yalnız V-21 kabuğunda istemcide çizilir |
+| V-25 | Route group içindeki `[slug]` altındaki `opengraph-image.tsx` statik (●) üretilir. | §11.5.4 #1 | Build çıktısı | a) OG dosyasına `dynamicParams = false` + aynı `generateStaticParams`; b) build betiğiyle `public/og/<locale>/<slug>.png`. | M3 — ✅ yedek (a) (2026-09-30): OG dosyasında `generateStaticParams` yokken route `ƒ` olur; `dynamicParams = false` + aynı `generateStaticParams` ile ● (§11.5.4) |
+| V-26 | Satori satır içi `<svg>` (kadran motifi) çizer. | §11.5.4 #2, §6.8 | `/opengraph-image` çıktısına bakılır | `data:image/svg+xml` kaynaklı `<img>`. | M3 — ✅ (2026-09-30): OG motifi (halkalar, dilim çizgileri, bant, açık yay) satır içi `<svg>` olarak doğru çizilir |
+| V-27 | Satori'nin değişken font ve `locl`/`liga` desteği. | §11.5.4 #4, tasarım §13 | OG'de "fi", "İ", "Ğ" görsel kontrolü | Riski liga'sız statik TTF'ler zaten azaltır; bulgu §11.5'e yazılır. | M3 — ✅ (2026-09-30): QA dizgisi ve "fi fl ffi" denemesi: bağ yok ("fi" noktalı), İ Ğ Ş ı ç doğru; eyebrow büyütmesi `upper(…, 'tr')` ile ("PROJE", "PROFİL") |
+| V-28 | `@content-collections/mdx` `MDXContent`, Next 16.3 RSC içinde render eder. | §7.3.4 #8, içerik §11 #10 | `/hakkimda` build'i (MDX gövdesi; projelerde MDX yok, D-48); `no-js` projesinde gövde `h2`'si HTML'de | `next-mdx-remote-client/rsc` 2.1.12 ile `doc.content`, aynı bileşen haritası. | M3 — ✅ (2026-09-30): `/hakkimda` ve `/gizlilik` ham HTML'inde MDX `h2`'leri var; `no-js` e2e yeşil |
+| V-29 | GitHub Actions `ubuntu-latest`'te `pdftotext` hazırdır. | §7.6.4 | CI'da `pdftotext -v` | Adım atlanır (İSTEĞE BAĞLI). | M3 — ❌ yok (2026-09-30): `ubuntu-latest`'te `pdftotext` kurulu değil; adım atlanır (İSTEĞE BAĞLI) |
+| V-30 | `images.localPatterns` tanımlıyken statik importlu görseller ayrıca listelenmek zorunda değildir. | §8.6.1 | Statik importlu görselin optimizer URL'si 200 | İkinci girdi eklenir. | M3 — koşul oluşmadı (2026-09-30): statik importlu görsel yok; ikinci `localPatterns` girdisi tanımlı |
+| V-31 | `@react-pdf/renderer` 4.9.0 etiketli (tagged) PDF üretir. | §10.1 | Acrobat "Erişilebilirlik denetimi" ya da PAC | Durum §10.1'e yazılır; HTML `/cv` eşdeğer içeriği sağlar. | M3 — ❌ (2026-09-30): etiketsiz (`/StructTreeRoot` ve `/MarkInfo` yok; `/Lang` var). HTML `/cv` eşdeğer içerik sağlar (§10.1) |
+| V-32 | Lighthouse 12.6 `is-crawlable` denetimi `robots.txt`'i okur. | §11.8.1, §13.5.1 | İlk LHCI koşusu | `skipAudits` zaten uygulanır; üretimde PSI (T-05). | M3 — ✅ (2026-09-30): `is-crawlable` robots.txt'i okur (dahil edilince SEO 0.66); `skipAudits` gerekli |
+| V-33 | "Missing source maps" uyarısı Best Practices puanını 0.95'in altına düşürmez. | §13.5.1 | LHCI BP puanı | `productionBrowserSourceMaps: true` (§8.6). | M3 → M8 — ✅ M3 (2026-09-30): BP 1.0, `valid-source-maps` geçer; source map açılmadı |
+| V-34 | `next.config.ts` `headers()` kuralı Vercel'de `public/` dosyalarına (`/files/*`) uygulanır. | §11.4.4 | Yerel `curl -sI`; Preview; üretimde §14.7 | Yedek tanımlı değil; sonuç §11.4.4'e işlenir. | M3 → M10 — yerel ✅ (2026-09-30): `/files/*.pdf` ve `/files/*.json` `X-Robots-Tag: noindex` (`seo.spec.ts`, `cv.spec.ts`); Preview/üretim §14.7 |
+| V-35 | `timeZoneName: 'shortOffset'` hedef tarayıcılarda desteklenir. | §4.14 #15 | Playwright (`desktop-chromium`, `iphone-15`) | İçerikteki statik ofset etiketi kullanılır. | M3 — ✅ (2026-09-30): `desktop-chromium` ve `iphone-15` (WebKit) `shortOffset` ile "GMT+3" verir |
 | V-36 | Safari/iOS `scrollend` olayını destekler. | §2.5.3, §5.13.4, §5.14.6, §9.5.5 | `iphone-15`: `'onscrollend' in window` | 150 ms debounce'lu `scroll` + 1,200 ms üst sınır. | M4 |
 | V-37 | `gsapVersions` ve `lenis-smooth` işaretçileri yalnız lazy chunk'ta ve kütüphane kodunda geçer. | §9.4.2 | `grep -l <işaretçi> .next/static/chunks/**/*.js` | Daha özgül bir dize seçilir, tablo güncellenir. | M4 |
 | V-38 | Aynı grid alanında örtüşen sticky öğeler Safari, Chrome ve Firefox'ta aynı davranır. | §4.9.3, final §13 #8 | `PW_CROSS=1 work-viewer.spec.ts`; gerçek Safari/Firefox (§9.6) | Yedek tanımlı değil; farklılık Ö1/Ö2 ise düzen akışa döner ve karar §16.3.2'ye taşınır. | M4 → M8 |

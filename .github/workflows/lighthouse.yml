@@ -56,13 +56,15 @@ jobs:
           {
             echo 'list<<EOF'
             echo 'http://localhost:3000/'
-            echo 'http://localhost:3000/?tier=medium'
             for p in "$(pick '^/projeler$')" "$(pick '^/projeler/[^/]+$')" "$(pick '^/cv$')" "$(pick '^/en$')"; do
               if [ -n "$p" ]; then echo "http://localhost:3000$p"; fi
             done
             echo 'EOF'
           } >> "$GITHUB_OUTPUT"
 
+      # Kapı URL'leri sahnesiz deneyimi ölçer (§13.5.1): varsayılan başsız Chrome. SwiftShader bayrakları yalnız 3D
+      # boot'unu ölçen uyarı koşusundadır; kapı koşusunda ilk boyamayı GPU başlatmasıyla ~1 s geciktirip
+      # JS'i LCP'nin kritik yoluna sokuyordu (SPEC-SAPMA §13.5.1).
       - name: Lighthouse CI
         uses: treosh/lighthouse-ci-action@v12
         with:
@@ -70,4 +72,16 @@ jobs:
           configPath: ./lighthouserc.json
           runs: 3
           uploadArtifacts: true
+          artifactName: lighthouse-results
+          temporaryPublicStorage: false
+
+      - name: Lighthouse CI (?tier=medium, uyarı)
+        if: ${{ always() }}
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          urls: http://localhost:3000/?tier=medium
+          configPath: ./lighthouserc.tier.json
+          runs: 3
+          uploadArtifacts: true
+          artifactName: lighthouse-results-tier
           temporaryPublicStorage: false

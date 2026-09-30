@@ -77,10 +77,12 @@ jobs:
       - name: CV PDF text
         shell: bash
         run: |
+          # V-29: ubuntu-latest imajında poppler-utils var mı? Sürüm ya da yokluk günlüğe yazılır.
           if command -v pdftotext > /dev/null; then
+            echo "::notice::V-29 $(pdftotext -v 2>&1 | head -1)"
             pdftotext public/files/orcun-saatci-cv-tr.pdf - | grep -q 'Saatçi'
           else
-            echo 'pdftotext yok; PDF metin denetimi atlandı'
+            echo '::notice::V-29 pdftotext yok; PDF metin denetimi atlandı'
           fi
 
       - name: Bundle budgets

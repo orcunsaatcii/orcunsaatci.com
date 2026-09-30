@@ -1,14 +1,57 @@
-// src/views/projects/ProjectsView.tsx — /projeler gövdesi. M2 kabuğu: H1 sözlükten, gövde boş (§15.3.1 #6); içerik M3'te.
-import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
+// src/views/projects/ProjectsView.tsx — /projeler (§7.8). Server; liste sunucuda tam çizilir.
+// ?alan= yalnız istemcide okunur (D-06): ProjectFilter sunucuda "Tümü" ile çizilir, JS'siz görünümde gizlidir.
+import { PageHeader } from '@/components/layout/PageHeader';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { ProjectFilter } from '@/components/ui/ProjectFilter';
+import { ProjectRow } from '@/components/ui/ProjectRow';
 import type { Locale } from '@/i18n/config';
 import { getDictionary } from '@/i18n/get-dictionary';
+import { getAreas, getProjects, t } from '@/lib/content';
+import { jsonLdFor } from '@/lib/seo/jsonld';
 
 export function ProjectsView({ locale }: { locale: Locale }) {
   const dict = getDictionary(locale);
+  const projects = getProjects(locale);
+  const graph = jsonLdFor({ key: 'projects' }, locale);
+  const areas = getAreas()
+    .map((a) => {
+      const title = t(a.title, locale);
+      return {
+        id: a.id,
+        title: title.text,
+        lang: title.fallback ? title.lang : undefined,
+        count: projects.filter((p) => p.areas.includes(a.id)).length,
+      };
+    })
+    .filter((a) => a.count > 0); // projesi olmayan alanın çipi çizilmez (§7.8.2)
+
   return (
-    <div className="container-page pt-block pb-section">
-      <Breadcrumbs pageRef={{ key: 'projects' }} locale={locale} />
-      <h1 className="mt-stack type-h1">{dict.meta.projects}</h1>
-    </div>
+    <>
+      {graph ? <JsonLd graph={graph} /> : null}
+      <PageHeader pageRef={{ key: 'projects' }} locale={locale} title={dict.meta.projects} />
+      <div className="container-page pt-block pb-section">
+        {projects.length === 0 ? (
+          <p className="type-body text-ink-muted">{dict.projects.empty}</p>
+        ) : (
+          <>
+            <ProjectFilter
+              locale={locale}
+              areas={areas}
+              total={projects.length}
+              labels={{
+                group: dict.a11y.filterGroup,
+                all: dict.projects.filterAll,
+                count: dict.projects.count,
+              }}
+            />
+            <ul className="mt-stack border-t border-line">
+              {projects.map((p) => (
+                <ProjectRow key={p.slug} project={p} locale={locale} />
+              ))}
+            </ul>
+          </>
+        )}
+      </div>
+    </>
   );
 }

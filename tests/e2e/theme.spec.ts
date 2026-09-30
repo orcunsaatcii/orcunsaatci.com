@@ -5,7 +5,8 @@ import type { Page } from '@playwright/test';
 import { palettes } from '../../src/design/tokens';
 import { headScript, STORAGE_KEYS } from '../../src/lib/head-script';
 import { allowConsole, expect, test } from './fixtures';
-import { SHELL_PATHS } from './helpers/urls';
+import { waitForAnimations } from './helpers/axe';
+import { pagePaths } from './helpers/urls';
 
 const rgb = (hex: string) => {
   const n = Number.parseInt(hex.slice(1), 16);
@@ -273,11 +274,15 @@ test.describe('§6.12 tasarım sistemi', { tag: ['@desktop-chromium'] }, () => {
   });
 
   for (const theme of ['light', 'dark'] as const) {
-    test(`axe color-contrast: ${theme} temada tüm route’larda 0 ihlal`, async ({ page }) => {
+    test(`axe color-contrast: ${theme} temada tüm route’larda 0 ihlal`, async ({
+      page,
+      request,
+    }) => {
       await page.emulateMedia({ colorScheme: theme });
-      for (const path of SHELL_PATHS) {
+      for (const path of await pagePaths(request)) {
         await test.step(path, async () => {
           await page.goto(path);
+          await waitForAnimations(page); // hero-in giriş animasyonu ara renk ölçtürür
           const { violations } = await new AxeBuilder({ page })
             .withRules(['color-contrast'])
             .analyze();

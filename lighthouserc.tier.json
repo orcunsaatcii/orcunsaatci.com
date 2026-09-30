@@ -1,0 +1,61 @@
+{
+  "ci": {
+    "collect": {
+      "numberOfRuns": 3,
+      "settings": {
+        "chromeFlags": "--use-angle=swiftshader --enable-unsafe-swiftshader",
+        "skipAudits": ["is-crawlable"]
+      }
+    },
+    "assert": {
+      "assertMatrix": [
+        {
+          "matchingUrlPattern": "^http://localhost:3000/\\?tier=medium$",
+          "assertions": {
+            "categories:performance": [
+              "warn",
+              {
+                "minScore": 0.85,
+                "aggregationMethod": "median-run"
+              }
+            ],
+            "largest-contentful-paint": [
+              "warn",
+              {
+                "maxNumericValue": 2500,
+                "aggregationMethod": "median-run"
+              }
+            ],
+            "cumulative-layout-shift": [
+              "warn",
+              {
+                "maxNumericValue": 0.05,
+                "aggregationMethod": "median-run"
+              }
+            ],
+            "total-blocking-time": [
+              "warn",
+              {
+                "maxNumericValue": 350,
+                "aggregationMethod": "median-run"
+              }
+            ],
+            "resource-summary:script:size": [
+              "warn",
+              {
+                "maxNumericValue": 600000
+              }
+            ],
+            "errors-in-console": [
+              "error",
+              {
+                "minScore": 1,
+                "aggregationMethod": "pessimistic"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

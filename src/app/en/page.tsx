@@ -1,9 +1,17 @@
-// src/app/en/page.tsx — /en → HomeView. M2 kabuğu (§15.3.1 #6); M3'te bölümler ve metadata bağlanır.
+// src/app/en/page.tsx — §3.4.3 kalıbı: EN varlığı içeriğe bağlı (pageLocales, §7.4.3); yoksa build'de notFound() (V-21).
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getSite } from '@/lib/content';
+import { pageLocales } from '@/lib/content';
+import { staticPageMetadata } from '@/lib/seo/metadata';
 import { HomeView } from '@/views/home/HomeView';
 
+const ref = { key: 'home' } as const;
+
+export function generateMetadata(): Metadata {
+  return pageLocales(ref).includes('en') ? staticPageMetadata(ref, 'en') : {};
+}
+
 export default function Page() {
-  if (!getSite().locales.includes('en')) notFound();
+  if (!pageLocales(ref).includes('en')) notFound();
   return <HomeView locale="en" />;
 }

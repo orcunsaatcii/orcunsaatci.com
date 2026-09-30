@@ -2,6 +2,7 @@
 // Zincir trail(ref) ile kurulur; son öğe bağlantı değildir ve aria-current="page" taşır.
 // JSON-LD BreadcrumbList aynı adlarla M3'te üretilir (§11.6).
 import Link from 'next/link';
+import { HIT_AREA_FLUSH } from '@/components/ui/hit-area';
 import { getDictionary } from '@/i18n/get-dictionary';
 import { pathOf, trail, type Locale, type PageRef } from '@/i18n/config';
 
@@ -25,23 +26,26 @@ export function Breadcrumbs({ pageRef, locale, title }: BreadcrumbsProps) {
 
   return (
     <nav aria-label={dict.breadcrumb.label} className="type-meta">
-      <ol className="flex flex-wrap items-center gap-x-2">
+      <ol>
         {chain.map((ref, i) => {
           const last = i === chain.length - 1;
           const href = pathOf(ref, locale);
           return (
-            <li key={`${ref.key}-${i}`} className="inline-flex items-center gap-x-2">
+            <li key={`${ref.key}-${i}`} className="inline">
               {i > 0 && (
-                <span aria-hidden="true" className="text-ink-subtle">
+                <span aria-hidden="true" className="mx-2 text-ink-subtle">
                   /
                 </span>
               )}
               {last || href === null ? (
-                <span aria-current={last ? 'page' : undefined} className="text-ink">
+                <span
+                  aria-current={last ? 'page' : undefined}
+                  className="[overflow-wrap:anywhere] text-ink"
+                >
                   {name(ref)}
                 </span>
               ) : (
-                <Link href={href} className="text-ink-muted hover:text-ink">
+                <Link href={href} className={`${HIT_AREA_FLUSH} text-ink-muted hover:text-ink`}>
                   {name(ref)}
                 </Link>
               )}

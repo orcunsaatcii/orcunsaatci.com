@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../.schemas/home.json
+# Ana sayfa bölüm metinleri (§4.6–§4.11). Başlık ve eyebrow varsayılanları persona etiketlerinden gelir (§4.17).
+about:
+  lede: { tr: "{{HAKKIMDA_LEDE}}", en: "{{ABOUT_LEDE}}" }
+  paragraphs:
+    - { tr: "{{BİYOGRAFİ_PARAGRAF_1}}", en: "{{BIO_PARAGRAPH_1}}" }
+    - { tr: "{{BİYOGRAFİ_PARAGRAF_2}}", en: "{{BIO_PARAGRAPH_2}}" }
+  now: { tr: "{{ŞU_AN}}", en: "{{NOW}}" }
+areas:
+  statement: { tr: "{{ALANLAR_CÜMLESİ}}", en: "{{AREAS_STATEMENT}}" }
+work:
+  intro: { tr: "{{PROJELER_CÜMLESİ}}", en: "{{WORK_INTRO}}" }
+journey:
+  intro: { tr: "{{YOLCULUK_CÜMLESİ}}", en: "{{JOURNEY_INTRO}}" }

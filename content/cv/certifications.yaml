@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=../../.schemas/certifications.json
+items:
+  - id: sertifika-1
+    name: { tr: "{{SERTİFİKA_1}}", en: "{{CERTIFICATE_1}}" }
+    issuer: "{{SERTİFİKA_1_VEREN}}"
+    date: "2024-05" # {{SERTİFİKA_1_TARİH}}
+    url: "https://example.com/{{SERTİFİKA_1_DOĞRULAMA}}"
+  - id: sertifika-2
+    name: { tr: "{{SERTİFİKA_2}}", en: "{{CERTIFICATE_2}}" }
+    issuer: "{{SERTİFİKA_2_VEREN}}"
+    date: "2021-10" # {{SERTİFİKA_2_TARİH}}
+    expires: "2024-10"
+    visibility: web-only # tohum: PDF'te ve JSON Resume'da yok
