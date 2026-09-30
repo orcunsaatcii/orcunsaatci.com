@@ -16,7 +16,24 @@ export interface ProbeSignals {
     tier: number;
     name?: string;
   } | null;
+  /** Renderer bir yazılım rasterleştiricisi (SwiftShader, llvmpipe…): failIfMajorPerformanceCaveat onu reddetmiyor */
+  software: boolean;
   query: Tier | null; // ?tier=… (yalnız client'ta okunur, D-06)
+}
+
+/**
+ * Yazılım render'ı (SPEC-SAPMA §5.11.3, M5): Chrome SwiftShader'ı (ANGLE/Vulkan) ve Mesa llvmpipe'ı
+ * failIfMajorPerformanceCaveat ile reddetmiyor; detect-gpu'nun kara listesi de ANGLE'ın "google, swiftshader device"
+ * adını eşleştirmiyor (V-41). Yazılım render'ında sahne ana iş parçacığını saniyelerce bloklar (LHCI TBT 4.8 s).
+ */
+export const SOFTWARE_RENDERER =
+  /swiftshader|llvmpipe|lavapipe|softpipe|software rasterizer|basic render driver|apple software renderer/i;
+
+/** Maskesiz renderer adı: WEBGL_debug_renderer_info varsa oradan, yoksa RENDERER (Firefox maskesiz döndürür) */
+function rendererName(gl: WebGL2RenderingContext): string {
+  const ext = gl.getExtension('WEBGL_debug_renderer_info');
+  const name: unknown = gl.getParameter(ext ? ext.UNMASKED_RENDERER_WEBGL : gl.RENDERER);
+  return typeof name === 'string' ? name : '';
 }
 
 const TIERS: readonly Tier[] = ['static', 'low', 'medium', 'high'];
@@ -61,6 +78,7 @@ export async function probeCapabilities(): Promise<{ tier: Tier; signals: ProbeS
     fine: mm('(hover: hover) and (pointer: fine)'),
     narrow: mm('(max-width: 63.99rem)'),
     gpu: null,
+    software: false,
     query,
   };
   if (query) {
@@ -73,6 +91,11 @@ export async function probeCapabilities(): Promise<{ tier: Tier; signals: ProbeS
   const gl = webgl2(true); // yazılım render (SwiftShader vb.) → null
   s.webgl2 = !!gl;
   if (!gl || s.saveData || (s.deviceMemory !== null && s.deviceMemory <= 2)) {
+    release(gl);
+    return { tier: 'static', signals: s };
+  }
+  s.software = SOFTWARE_RENDERER.test(rendererName(gl));
+  if (s.software) {
     release(gl);
     return { tier: 'static', signals: s };
   }
@@ -89,7 +112,8 @@ export async function probeCapabilities(): Promise<{ tier: Tier; signals: ProbeS
 
 /** Saf kademe ataması (§5.11.3 tablosu; capabilities.test.ts). Yukarıdan aşağı ilk eşleşen. */
 export function assignTier(s: ProbeSignals): Tier {
-  if (!s.webgl2 || s.saveData || (s.deviceMemory !== null && s.deviceMemory <= 2)) return 'static';
+  if (!s.webgl2 || s.software || s.saveData || (s.deviceMemory !== null && s.deviceMemory <= 2))
+    return 'static';
   const g = s.gpu;
   if (g && (g.type === 'BLOCKLISTED' || g.type === 'WEBGL_UNSUPPORTED')) return 'static';
   // detect-gpu benchmark verisi Şubat 2025'te biter: bilinmeyen GPU → FALLBACK (tier 1). Cezalandırma; 2 say.

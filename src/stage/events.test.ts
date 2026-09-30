@@ -531,6 +531,7 @@ describe('stageStore (§5.9.1)', () => {
       fine: true,
       narrow: false,
       gpu: { type: 'BENCHMARK' as const, tier: 3, name: 'apple m2' },
+      software: false,
       query: null,
     };
     s().startLoading('high', signals, 'probe');

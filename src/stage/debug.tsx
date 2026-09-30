@@ -191,7 +191,7 @@ export function mountDebug(persona: Persona = 'engineer'): void {
       `phase ${s.phase} · tier ${s.tier} (${s.tierReason ?? '—'}) · preset ${s.preset}`,
       `paused ${s.paused} · loop ${s.loop} · losses ${s.contextLosses}`,
       q ? `dpr ${q.dpr} · ghost ${q.ghost} · oct ${q.octaves} · seg ${q.segments}` : 'quality —',
-      `gpu ${s.signals?.gpu ? `${s.signals.gpu.type}/${s.signals.gpu.tier} ${s.signals.gpu.name ?? ''}` : '—'}`,
+      `gpu ${s.signals?.gpu ? `${s.signals.gpu.type}/${s.signals.gpu.tier} ${s.signals.gpu.name ?? ''}` : '—'}${s.signals?.software ? ' · yazılım render' : ''}`,
       `stone ${fmt(live.stone.cx)},${fmt(live.stone.cy)} r ${fmt(live.stone.r)} ${live.stone.visible ? '' : '(gizli)'}`,
       `anchors ${live.anchors.map((a) => a.id).join(' ')}`,
       ...keys.map(

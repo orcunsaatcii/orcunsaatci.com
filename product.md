@@ -5168,6 +5168,8 @@ export function assignTier(s: ProbeSignals): Tier {
 - ⚠️ DOĞRULANMADI: iOS Safari'nin `navigator.hardwareConcurrency` değeri. 4 veya daha az raporlanırsa bütün iPhone'lar `low` alır. M8'de iPhone 12+ üzerinde `?debug` panelindeki `cores` ve atanan kademe kontrol edilir; gerekirse "`cores ≤ 4` ve kaba" koşulu detect-gpu kademesine bırakılır.
 - Kademe oturum boyunca `stageStore`'da tutulur: kalıcı layout sayesinde client navigasyonlarında yoklama tekrarlanmaz. Tam sayfa yükleme (dil değişimi dahil, D-08) yeni oturumdur. D-38 dışında depolama anahtarı eklenmez.
 
+- SPEC-SAPMA: §5.11.2, §5.11.3 (M5, 2026-09-30) — Yazılım render'ı `static`'tir: yoklama bağlamının maskesiz renderer adı (`WEBGL_debug_renderer_info`, yoksa `RENDERER`) `SOFTWARE_RENDERER` ile eşleşirse (SwiftShader, llvmpipe, lavapipe, softpipe, "Basic Render Driver", "Apple Software Renderer") detect-gpu istenmez ve `assignTier` `static` döndürür (`ProbeSignals.software`). Gerekçe V-41: Chrome, ANGLE/Vulkan üzerindeki SwiftShader'ı `failIfMajorPerformanceCaveat` ile reddetmiyor; detect-gpu'nun kara listesi de "google, swiftshader device" adını eşleştirmiyor (FALLBACK → çekirdek kuralıyla `medium`/`high`). CI'da sahne doğal yolda boot ediyor, LHCI `/` TBT'si 4.8 s'ye çıkıyordu. `?tier=` geçersiz kılması yazılım render'ında da sahneyi açar (§13.3.3).
+
 #### 5.11.4 Çalışma zamanı düzeltmesi: drei `PerformanceMonitor`
 
 drei 10.7.9 kaynağında doğrulanan davranış:

@@ -1,6 +1,12 @@
 // src/stage/capabilities.test.ts — kademe ataması tablo testleri (§5.11.3) ve ?tier= önceliği (§5.18.1).
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { assignTier, probeCapabilities, readTierQuery, type ProbeSignals } from './capabilities';
+import {
+  assignTier,
+  probeCapabilities,
+  readTierQuery,
+  SOFTWARE_RENDERER,
+  type ProbeSignals,
+} from './capabilities';
 
 const getGPUTier = vi.fn();
 vi.mock('detect-gpu', () => ({ getGPUTier: (...a: unknown[]) => getGPUTier(...a) }));
@@ -14,6 +20,7 @@ const base: ProbeSignals = {
   fine: true,
   narrow: false,
   gpu: { type: 'BENCHMARK', tier: 3, name: 'apple m1' },
+  software: false,
   query: null,
 };
 const s = (o: Partial<ProbeSignals>): ProbeSignals => ({ ...base, ...o });
@@ -21,6 +28,7 @@ const s = (o: Partial<ProbeSignals>): ProbeSignals => ({ ...base, ...o });
 describe('assignTier (§5.11.3)', () => {
   it.each<[string, Partial<ProbeSignals>, string]>([
     ['WebGL2 yok', { webgl2: false }, 'static'],
+    ['yazılım render’ı', { software: true }, 'static'],
     ['Save-Data', { saveData: true }, 'static'],
     ['deviceMemory ≤ 2', { deviceMemory: 2 }, 'static'],
     ['BLOCKLISTED', { gpu: { type: 'BLOCKLISTED', tier: 0 } }, 'static'],
@@ -44,6 +52,23 @@ describe('assignTier (§5.11.3)', () => {
   });
 });
 
+describe('SOFTWARE_RENDERER (SPEC-SAPMA §5.11.3)', () => {
+  it.each([
+    [
+      'ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)',
+      true,
+    ],
+    ['Google SwiftShader', true],
+    ['llvmpipe (LLVM 15.0.7, 256 bits)', true],
+    ['Microsoft Basic Render Driver', true],
+    ['ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)', false],
+    ['Adreno (TM) 640', false],
+    ['Mali-G78', false],
+  ])('%s → %s', (name, soft) => {
+    expect(SOFTWARE_RENDERER.test(name)).toBe(soft);
+  });
+});
+
 describe('readTierQuery', () => {
   it('yalnız geçerli kademe adlarını okur', () => {
     expect(readTierQuery('?tier=medium')).toBe('medium');
@@ -56,11 +81,13 @@ describe('readTierQuery', () => {
 describe('probeCapabilities', () => {
   const lose = vi.fn();
   let contexts: { fail: boolean }[];
+  let renderer: string;
   let webgl: 'none' | 'software' | 'hardware';
 
   beforeEach(() => {
     contexts = [];
     webgl = 'hardware';
+    renderer = 'ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)';
     getGPUTier.mockReset();
     lose.mockReset();
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(function (
@@ -71,7 +98,14 @@ describe('probeCapabilities', () => {
         ?.failIfMajorPerformanceCaveat;
       contexts.push({ fail });
       if (webgl === 'none' || (webgl === 'software' && fail)) return null;
-      return { getExtension: () => ({ loseContext: lose }) } as unknown as RenderingContext;
+      return {
+        RENDERER: 0x1f01,
+        getExtension: (name: string) =>
+          name === 'WEBGL_debug_renderer_info'
+            ? { UNMASKED_RENDERER_WEBGL: 0x9246 }
+            : { loseContext: lose },
+        getParameter: (p: number) => (p === 0x9246 ? renderer : 'WebKit WebGL'),
+      } as unknown as RenderingContext;
     } as never);
     vi.stubGlobal('matchMedia', (q: string) => ({ matches: q.includes('hover: hover') }));
     // jsdom makinenin çekirdek sayısını döndürür (yerel 8+, CI 4): sinyal sabitlenir
@@ -110,6 +144,16 @@ describe('probeCapabilities', () => {
     expect(r.tier).toBe('static');
     expect(r.signals.webgl2).toBe(false);
     expect(getGPUTier).not.toHaveBeenCalled();
+  });
+
+  it('doğal yol: yazılım renderer’ı (bayraklı SwiftShader bağlam verir) → static, detect-gpu istenmez', async () => {
+    renderer =
+      'ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)';
+    const r = await probeCapabilities();
+    expect(r.tier).toBe('static');
+    expect(r.signals).toMatchObject({ webgl2: true, software: true, gpu: null });
+    expect(getGPUTier).not.toHaveBeenCalled();
+    expect(lose).toHaveBeenCalled();
   });
 
   it('doğal yol: detect-gpu kendi sunucumuzdan, sonuç assignTier ile', async () => {
