@@ -424,6 +424,35 @@ test.describe('§5.12 kalıcı sahne (masaüstü, ?tier=high)', { tag: ['@deskto
     expect((await readLive(page)).idleAngle, 'drift durdu').toBe(b.idleAngle);
   });
 
+  test('§5.9.6 yakınlık eğimi: işaretçi Taş merkezine 1.5·r içindeyken ≤ 6°, kesik Taşta nefes; dışarıda 0', async ({
+    page,
+  }) => {
+    await page.goto(HIGH);
+    await waitForStagePhase(page, ['ready']);
+    // about BODY: Taş kesik (cut < 1)
+    await scrollToY(page, await chapterY(page, 'about'));
+    const { stone } = await readLive(page);
+    type Tilt = { x: number; y: number; breath: number };
+    const tilt = () =>
+      page.evaluate(
+        () => (window as unknown as { __stage: { live: { tilt: Tilt } } }).__stage.live.tilt,
+      );
+    // sağ alt çeyrek, 0.6·r: nx = ny = 0.4 → hedef 2.4°
+    await page.mouse.move(stone.cx + 0.6 * stone.r, stone.cy + 0.6 * stone.r);
+    await expect.poll(async () => (await tilt()).y, { timeout: 10_000 }).toBeGreaterThan(1);
+    const t = await tilt();
+    expect(t.y).toBeLessThanOrEqual(6);
+    expect(t.x).toBeGreaterThan(1);
+    expect(t.x).toBeLessThanOrEqual(6);
+    expect(t.breath).toBeLessThan(0);
+    // 1.5·r dışında sıfıra döner
+    await page.mouse.move(stone.cx - 2 * stone.r - 40, stone.cy);
+    await expect
+      .poll(async () => Math.abs((await tilt()).y), { timeout: 10_000 })
+      .toBeLessThan(0.05);
+    expect(Math.abs((await tilt()).breath)).toBeLessThan(0.002);
+  });
+
   test('K-HERO-10, K-VAR-2 (sahne): duraklatma idle drift’i durdurur, kaydırma scrub’ı sürer; yeniden yüklemede sıfırlanır', async ({
     page,
   }) => {

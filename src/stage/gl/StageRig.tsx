@@ -192,6 +192,10 @@ const SMOOTH_IDLE_RETURN = 0.25;
 /** Son girdiden sonra idle drift süresi: ince işaretçi 20 s, kaba 8 s (§4.6.4) */
 const IDLE_FINE_MS = 20_000;
 const IDLE_COARSE_MS = 8_000;
+/** Yakınlık eğimi (§5.9.6): işaretçi Taş merkezine 1.5·r içindeyken en çok 6°; kesik Taş "nefes alır" (cut −0.04) */
+const TILT_MAX_DEG = 6;
+const TILT_REACH = 1.5;
+const CUT_BREATH = -0.04;
 
 /** Kare başına okunan damped kopya (store.rendered; debug paneli okur) ve zaman tabanlı ek durum */
 type Rendered = Record<DampKey, number> & { __damp?: Record<string, number> };
@@ -201,8 +205,11 @@ const extra: {
   idleAngle: number;
   pAz: number;
   pEl: number;
+  tiltX: number;
+  tiltY: number;
+  breath: number;
   __damp?: Record<string, number>;
-} = { idleS: 0, idleAngle: 0, pAz: 0, pEl: 0 };
+} = { idleS: 0, idleAngle: 0, pAz: 0, pEl: 0, tiltX: 0, tiltY: 0, breath: 0 };
 const rectA: AnchorRect = { cx: 0, cy: 0, D: 0 };
 const rectB: AnchorRect = { cx: 0, cy: 0, D: 0 };
 
@@ -357,6 +364,40 @@ function siteFrame(
   const W = state.size.width;
   const H = state.size.height;
 
+  // Yakınlık eğimi (§5.9.6): ince işaretçi + tier.pointer + tam hareket; duraklatma durdurmaz (kullanıcı güdümlü).
+  // nx, ny = clamp((p − c) / (1.5·r), −1, 1), ny ekranda aşağı +; tiltY = 6°·nx, tiltX = 6°·ny
+  const p = live.pointer;
+  const reach = TILT_REACH * (D / 2);
+  const near =
+    c.fine &&
+    spec.pointer &&
+    p.active &&
+    visible &&
+    document.documentElement.dataset.motion !== 'reduce' &&
+    Math.hypot(p.px - cx, p.py - cy) <= reach;
+  const nx = near ? Math.max(-1, Math.min(1, (p.px - cx) / reach)) : 0;
+  const ny = near ? Math.max(-1, Math.min(1, (p.py - cy) / reach)) : 0;
+  moving =
+    easing.damp(extra, 'tiltY', TILT_MAX_DEG * nx, SMOOTH_POINTER, dt, Infinity, undefined, 0.01) ||
+    moving;
+  moving =
+    easing.damp(extra, 'tiltX', TILT_MAX_DEG * ny, SMOOTH_POINTER, dt, Infinity, undefined, 0.01) ||
+    moving;
+  moving =
+    easing.damp(
+      extra,
+      'breath',
+      near && rendered.cut < 1 ? CUT_BREATH : 0,
+      SMOOTH_POINTER,
+      dt,
+      Infinity,
+      undefined,
+      1e-4,
+    ) || moving;
+  live.tilt.x = extra.tiltX;
+  live.tilt.y = extra.tiltY;
+  live.tilt.breath = extra.breath;
+
   // Kamera (§5.7.1–§5.7.2)
   const camera = state.camera;
   const az = rendered.camAz * DEG;
@@ -373,14 +414,15 @@ function siteFrame(
   }
   camera.updateMatrixWorld();
 
-  // Kompozisyon (§5.9.6): rotY = scroll + event + idle (+ wobble/eğim M7'de)
+  // Kompozisyon (§5.9.6): rotY = scroll + event + idle + tiltY, rotX = rotX + tiltX, cut = cut + cutBreath
+  // (dokunmatik sallanma M7'de)
   scaleGroup.visible = visible;
   scaleGroup.scale.setScalar(
     visible ? stoneScale(D, rendered.camR, rendered.camFov, c.R0, H) : 1e-6,
   );
   stone.rotation.set(
-    rendered.rotX * DEG,
-    (rendered.rotYScroll + rendered.rotYEvent + extra.idleAngle) * DEG,
+    (rendered.rotX + extra.tiltX) * DEG,
+    (rendered.rotYScroll + rendered.rotYEvent + extra.idleAngle + extra.tiltY) * DEG,
     0,
     'XYZ',
   );
@@ -392,7 +434,7 @@ function siteFrame(
     u,
     rendered.lightAz + extra.pAz + t.sweepAz,
     rendered.lightEl + extra.pEl + t.sweepEl,
-    rendered.cut,
+    rendered.cut + extra.breath,
     c.shape,
   );
 

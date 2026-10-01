@@ -45,6 +45,7 @@ import {
   type TrackPhase,
   type TrackProp,
   type TrackVariant,
+  journeyTurnOf,
 } from './tracks';
 
 /* ───────────── düzenek ───────────── */
@@ -732,6 +733,24 @@ describe('§5.9.3 #5 hız: varsayılan içerikte work/journey BODY dönüşü �
     for (const s of speeds) expect(s).toBeLessThanOrEqual(33.4);
   });
 
+  it('küçük E (M4 notu, SPEC-SAPMA §4.12.2): journey dönüşü BODY’ye ölçeklenir, hız ≤ 33.4°/100 svh; contact +20° sürer', () => {
+    for (const variant of ['desktop', 'mobile'] as const) {
+      for (let E = 1; E <= 6; E++) {
+        const b = build({ variant, N: 4, P: 4, E });
+        const r = phaseOf(b.fx.layout, 'journey', 'body');
+        const svh = (r.y1 - r.y0) / b.fx.px(1);
+        const start = trackState(b, r.y0).rotYScroll;
+        const end = trackState(b, r.y1).rotYScroll;
+        expect(end - start, `${variant} E=${E}`).toBeCloseTo(Math.min(60, (33.4 * svh) / 100), 6);
+        if (svh > 0)
+          expect(((end - start) / svh) * 100, `${variant} E=${E}`).toBeLessThanOrEqual(33.4 + 1e-9);
+        const c = phaseOf(b.fx.layout, 'contact', 'in');
+        expect(trackState(b, c.y0).rotYScroll, `${variant} E=${E} süreklilik`).toBeCloseTo(end, 6);
+        expect(trackState(b, c.y0 + 0.5 * (c.y1 - c.y0)).rotYScroll).toBeCloseTo(end + 20, 6);
+      }
+    }
+  });
+
   it('K-AREAS-5: s 250–300, 315–350, 365–400, 415–450 dwell’lerinde rotY sabit', () => {
     const b = build({ variant: 'desktop', N: 4, P: 4, E: 6 });
     for (const [s0, s1] of [
@@ -967,9 +986,14 @@ describe('yardımcılar (§5.9.3–§5.9.4, §5.9.10)', () => {
       areasMode: 'list',
       lastPsi: 45,
       W0: 225,
+      journeyTurn: journeyTurnOf(fx.layout),
     });
     const pinned = buildFixture({ variant: 'mobile', N: 4, P: 4, E: 6, areas: [2] });
-    expect(stageCtx(pinned.data, pinned.layout)).toEqual(base); // W₀ = wrapNear(−135, −225)
+    // W₀ = wrapNear(−135, −225); journey dönüşü ölçülen BODY'ye göre
+    expect(stageCtx(pinned.data, pinned.layout)).toEqual({
+      ...base,
+      journeyTurn: journeyTurnOf(pinned.layout),
+    });
     const noArea = buildFixture({ variant: 'mobile-list', N: 4, P: 4, E: 6, areas: [null] });
     expect(stageCtx(noArea.data, noArea.layout).W0).toBe(45);
   });

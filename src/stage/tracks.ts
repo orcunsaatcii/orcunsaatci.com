@@ -4,7 +4,7 @@
 import { INTENSITY, type Intensity } from '@/experience/profile';
 import { psiDeg, wrapNear } from '@/lib/section-geometry';
 import { measureAnchors, type AnchorId, type MeasuredAnchor } from './anchors';
-import { contentCtx, type Keyframe, type StageContentCtx } from './keyframes';
+import { contentCtx, type Keyframe, type StageContentCtx, JOURNEY_TURN_DEG } from './keyframes';
 import type { ChapterId, PresetName, StageData, StageTarget } from './store';
 
 export type { ChapterId } from './store';
@@ -130,6 +130,20 @@ export interface TrackVariant {
 
 /** Masaüstü areas adımı (svh); mobil pin 40 (§4.8.8) */
 export const AREAS_STEP = { desktop: 50, mobile: 40 } as const;
+/** Dwell'de kaydırma kaynaklı dönüş tavanı (§4.12.2 #5) */
+export const DWELL_MAX_DEG_PER_100SVH = 33.4;
+
+/**
+ * Journey BODY dönüşü (§4.12.1 satır 14): en çok 60°. Kısa BODY'de (küçük E; masaüstü BODY = 35E − 30 svh) dönüş, hız
+ * ≤ 33.4°/100 svh (§4.12.2 #5) kalacak biçimde BODY uzunluğuna ölçeklenir; contact IN aynı yerden +20° sürer.
+ * SPEC-SAPMA §4.12.2 (M6): M4 notundaki karar; varsayılan içerikte (E = 6, 180 svh) değer aynen 60°'dir.
+ */
+export function journeyTurnOf(layout: Layout): number {
+  const jb = layout.phases.find((p) => p.chapter === 'journey' && p.phase === 'body');
+  if (!jb) return JOURNEY_TURN_DEG;
+  const svh = (100 * (jb.y1 - jb.y0)) / layout.vh;
+  return Math.min(JOURNEY_TURN_DEG, (DWELL_MAX_DEG_PER_100SVH * svh) / 100);
+}
 /** Yatay telefon: mobil ve innerHeight < 500 (§5.9.4) */
 const LANDSCAPE_MAX_VH = 500;
 /** Kısa masaüstü görüntü alanı: innerHeight < 760 (§4.9.4 [SABİT]) */
@@ -151,10 +165,11 @@ export function variantOf(layout: Layout): TrackVariant {
  * lastPsi 45, W₀ bu açıya göre sarılır. Dilim açıları (ψ) N'den gelir; N ≥ 7'de sectors 0'dır.
  */
 export function stageCtx(data: StageData, layout: Layout | null): StageContentCtx {
-  const base = contentCtx(
+  const ctx = contentCtx(
     data.sectors,
     data.projects.map((p) => p.area),
   );
+  const base = layout ? { ...ctx, journeyTurn: journeyTurnOf(layout) } : ctx;
   if (base.areasMode === 'list' || !layout || layout.areas) return base;
   const first = base.projectAreas[0] ?? null;
   const lastPsi = 45;
@@ -343,8 +358,9 @@ export function buildTracks(
   );
   for (let i = 0; i < N; i++)
     out.push(...rows('journey', 'in', [[fill(i), 0, 0.5, pattern[i] ?? 0.12, 0]]));
-  // journey · BODY
-  out.push(...rows('journey', 'body', [['rotYScroll', 0, 1, W0 + 50, W0 + 110, 'linear']]));
+  // journey · BODY (dönüş BODY uzunluğuna ölçeklenir: küçük E)
+  const jEnd = W0 + 50 + ctx.journeyTurn;
+  out.push(...rows('journey', 'body', [['rotYScroll', 0, 1, W0 + 50, jEnd, 'linear']]));
 
   // contact · IN
   out.push(
@@ -353,7 +369,7 @@ export function buildTracks(
       ['camR', 0, 0.5, 5.8, 4.9],
       ['camEl', 0, 0.5, 72, 22],
       ['camFov', 0, 0.5, 26, 30],
-      ['rotYScroll', 0, 0.5, W0 + 110, W0 + 130],
+      ['rotYScroll', 0, 0.5, jEnd, jEnd + 20],
       ['bandVisible', 0, 0.4, 1, 0],
       ['ghost', 0, 0.5, 0.06, 0],
       ['rotX', 0.5, 1, 0, 68],

@@ -2948,6 +2948,7 @@ Uygulamanın test etmesi **ZORUNLU** olan kurallar (testler §4.18 K-CHOREO):
 11. **Scroll'a bağlı DOM.** Yalnızca §4.3'teki beyaz liste kaydırmaya bağlanır.
 
 - Not (M4, 2026-09-30, `tracks.test.ts`): Masaüstü journey BODY uzunluğu `35E − 30` svh'dir (kuyruk ≥ 30 svh). E = 1'de 5 svh, E = 2'de 40 svh kalır; `rotYScroll`'un +60°'si bu durumda ≤ 33.4°/100 svh (#5) ve 90°/100 svh (#6) sınırlarını aşar. Değişmezler varsayılan içerikle (E = 6) sınanır; küçük E için dönüşün BODY uzunluğuna ölçeklenmesi (ya da en az BODY uzunluğu) M6 koreografi ayarında karara bağlanır.
+- SPEC-SAPMA: §4.12.1 satır 14, §4.12.2 #5 (M6, 2026-10-01) — Karar: journey BODY dönüşü BODY uzunluğuna ölçeklenir: `Δ = min(60°, 33.4°·BODY/100 svh)` (`tracks.journeyTurnOf`, `StageContentCtx.journeyTurn`). Contact IN aynı açıdan +20° sürer; K5 `rotY = W₀ + 70 + Δ` (varsayılan içerikte W₀ + 130). "En az BODY uzunluğu" seçeneği küçük E'de (sahibin içeriği) 100+ svh boş kaydırma alanı bırakacağı için seçilmedi. Posterler varsayılan içerikle (Δ = 60°) üretilir; küçük E'de `#iletisim` derin bağlantısındaki 600 ms'lik crossfade'de poster ile canlı Taş arasında dönüş farkı görülebilir.
 
 #### 4.12.3 Senkron istisnaları (bildirilmiş)
 
