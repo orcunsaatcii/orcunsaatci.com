@@ -2417,14 +2417,15 @@ test.describe('V-48 flow anchor senkronu (Lenis, masaüstü)', { tag: ['@desktop
     // İşaretçi pencere içinde (tekerlek olayı sayfaya, dolayısıyla Lenis'e ulaşsın) ama Taş'tan uzakta (eğim yok)
     await page.mouse.move(24, 450);
     await jumpTo(page, start);
-    // Damped karışım hedefe otursun (SwiftShader'ın düşük kare hızında ~2.5 s) ve döngü boşa düşsün
+    // Damped karışım hedefe otursun ve döngü boşa düşsün. Damping adımı kare başına 1/30 s'ye kırpılır: yerel SwiftShader'da
+    // ≈ 2.5 s, CI'da (≈ 2 fps) ≈ 20 s
     await page.waitForFunction(
       () => {
         const st = (window as unknown as StageWindow).__stage;
         return Math.abs(st.rendered.anchorMix! - st.target.anchorMix!) < 1e-4;
       },
       null,
-      { timeout: 15_000 },
+      { timeout: 60_000 },
     );
     // En kötü durum: döngü boştayken (400 ms kare yok) kaydırma başlar; ilk karede rig henüz uyanmamış olabilir
     await page.evaluate(async () => {

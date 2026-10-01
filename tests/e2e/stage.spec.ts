@@ -427,6 +427,7 @@ test.describe('§5.12 kalıcı sahne (masaüstü, ?tier=high)', { tag: ['@deskto
   test('§5.9.6 yakınlık eğimi: işaretçi Taş merkezine 1.5·r içindeyken ≤ 6°, kesik Taşta nefes; dışarıda 0', async ({
     page,
   }) => {
+    test.setTimeout(120_000); // CI yazılım render'ında boot + damping dönüşü (≈ 15 s)
     await page.goto(HIGH);
     await waitForStagePhase(page, ['ready']);
     // about BODY: Taş kesik (cut < 1)
@@ -445,10 +446,11 @@ test.describe('§5.12 kalıcı sahne (masaüstü, ?tier=high)', { tag: ['@deskto
     expect(t.x).toBeGreaterThan(1);
     expect(t.x).toBeLessThanOrEqual(6);
     expect(t.breath).toBeLessThan(0);
-    // 1.5·r dışında sıfıra döner
+    // 1.5·r dışında sıfıra döner. Damping adımı kare başına 1/30 s'ye kırpılır: CI'da (SwiftShader ≈ 2 fps) 10 s gerçek
+    // zaman ≈ 0.7 s sönüm eder, dönüş ≈ 15 s sürer
     await page.mouse.move(stone.cx - 2 * stone.r - 40, stone.cy);
     await expect
-      .poll(async () => Math.abs((await tilt()).y), { timeout: 10_000 })
+      .poll(async () => Math.abs((await tilt()).y), { timeout: 40_000 })
       .toBeLessThan(0.05);
     expect(Math.abs((await tilt()).breath)).toBeLessThan(0.002);
   });
