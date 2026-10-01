@@ -2289,7 +2289,7 @@ Sunucuda render edilir ve ilk boyamada görünürdür. DOM sırası görsel sır
 |---|---|---|---|
 | Bölüm | `<section id="giris" data-chapter="hero">` (EN `id="intro"`) | — | `min-height: 100svh`; pinsiz |
 | Eyebrow | `<p class="type-eyebrow">` (Martian Mono) | `{jobTitle} · {city}` (§7.9.2): `jobTitle` TR "Bilgisayar Mühendisi ve Mobil Uygulama Geliştiricisi", EN "Computer Engineer and Mobile App Developer"; şehir `{{ŞEHİR}}` | k1–6 |
-| H1 | `<h1>` | **Orçun Saatçi**. EN sayfada ad `<span lang="tr">` içindedir (§3.8). | ≥ 64rem: **tek satır**, `white-space: nowrap`, `font-size: min(var(--text-display), calc((100vw - 2 * var(--spacing-margin)) / 7.3))`, Mona Sans `wdth` 125, `wght` 760, `ss01`. < 64rem: iki satır ("Orçun" / "Saatçi"), `--text-display` (360 px'te 76.8 px). **Asla animasyon, maske, opaklık ya da clip yok.** LCP öğesidir (D-34). |
+| H1 | `<h1>` | **Orçun Saatçi**. EN sayfada ad `<span lang="tr">` içindedir (§3.8). | ≥ 64rem: **tek satır**, `white-space: nowrap`, `font-size: min(var(--text-display), calc((100vw - 2 * var(--spacing-margin)) / 7.95))` (içerik aktarımında 7.3'ten; aşağıdaki SPEC-SAPMA), Mona Sans `wdth` 125, `wght` 760, `ss01`. < 64rem: iki satır ("Orçun" / "SAATCİ"), `--text-display` (360 px'te 76.8 px). **Asla animasyon, maske, opaklık ya da clip yok.** LCP öğesidir (D-34). |
 | Konumlandırma | `<p class="type-lead">` | `{{KONUMLANDIRMA_CÜMLESİ}}` (≤ 18 kelime) | k1–6 |
 | CTA 1 (birincil, vurgu dolgulu **[SABİT]**) | `<a class="btn btn-primary">` | "Projeleri incele →" → `/projeler` / "Explore projects →" → `/en/projects` | Manyetik (§4.14 #5). **D-41 notu:** final.md `#projeler` diyordu; D-41'e göre bölüm CTA'ları gerçek URL kullanır. |
 | CTA 2 (ikincil, çerçeveli) | `<a class="btn btn-secondary">` | "İletişime geç" → `/iletisim` / "Get in touch" → `/en/contact` | Manyetik. Hero'da manyetik olan yalnızca bu iki öğedir. |
@@ -6458,7 +6458,9 @@ Kurallar:
 | `type-meta` | mono xs · 1.45 · 0.04em · tabular · `ink-subtle` | Tarih, altyazı, sayaç |
 | `type-email` | 4xl · 1.1 · −0.02em · 620 · 100% → 118% · `overflow-wrap: anywhere` | İletişim bölümündeki büyük e-posta |
 
-**Hero adı, ≥ 64rem (tek satır):** `font-size: min(var(--text-display), calc((100vw - 2 * var(--spacing-margin)) / 7.3))` (final.md §4.1).
+**Hero adı, ≥ 64rem (tek satır):** `font-size: min(var(--text-display), calc((100vw - 2 * var(--spacing-margin)) / 7.95))` (final.md §4.1'de 7.3).
+
+- SPEC-SAPMA: §4.6.3, §6.2.4 (içerik aktarımı, 2026-10-02) — bölen adın em genişliğine bağlıdır. 7.3, "Orçun Saatçi" (6.69 em) için içerik genişliğinin %92'siydi. Sahibin görünen adı "Orçun SAATCİ" 7.30 em olduğundan 7.3 hiç pay bırakmıyordu; CI Linux'ta 1440 px'te H1 taştı. 7.95 aynı %92 doluluğu verir. Ad değişirse bölen yeniden ölçülür (`h1.type-display` klonu, 100 px, `width: max-content`).
 - **Ölçüm (HarfBuzz):** "Orçun Saatçi", 125%/760 ve −0.035em tracking ile 6.695em genişliğindedir. 7.3 böleni ≈ %9 pay (kaydırma çubuğu dahil) bırakır.
 - **1440 px:** 179.7 px → 1203 px.
 - **1920 px:** 192 px (üst sınır) → 1285 px; 1312 px'lik iç genişliğe sığar.
@@ -7692,7 +7694,7 @@ Dosyanın bölümleri:
   font-feature-settings: "ss01", "ss03";
   @media (width >= 64rem) {
     white-space: nowrap;
-    font-size: min(var(--text-display), calc((100vw - 2 * var(--spacing-margin)) / 7.3));
+    font-size: min(var(--text-display), calc((100vw - 2 * var(--spacing-margin)) / 7.95));
   }
 }
 @utility type-h1 {

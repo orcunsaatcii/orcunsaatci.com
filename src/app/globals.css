@@ -187,8 +187,9 @@
   --rise-card: 24px;
   --lift-hover: 2px;
   --reveal-line-from: 130%;
-  /* ≥ 64rem tek satırlık hero adı (§4.6.3); type-display ve hero çapası (K-HERO-6) paylaşır */
-  --text-display-fit: min(var(--text-display), calc((100vw - 2 * var(--spacing-margin)) / 7.3));
+  /* ≥ 64rem tek satırlık hero adı (§4.6.3); type-display ve hero çapası (K-HERO-6) paylaşır. Bölen = adın em genişliği /
+     doluluk: "Orçun SAATCİ" 7.30 em → 7.95 ile içerik genişliğinin %92'si (SPEC-SAPMA §4.6.3: eski ad 6.69 em / 7.3) */
+  --text-display-fit: min(var(--text-display), calc((100vw - 2 * var(--spacing-margin)) / 7.95));
 
   --z-stage: 0;
   --z-content: 10;
