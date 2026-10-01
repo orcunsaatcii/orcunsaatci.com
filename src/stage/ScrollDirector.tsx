@@ -223,6 +223,7 @@ export function ScrollDirector({ children }: { children: ReactNode }) {
           if (a.slot === 0) anchorIdx.set(a.id, i);
         });
         live.anchors = layout.anchors;
+        live.layout = layout;
         cctx = stageCtx(data, layout);
         base = def.base ? keyframes(cctx)[def.base] : null; // refresh'te bir kez (§5.13.5)
         groups = resolveTracks(
@@ -263,6 +264,7 @@ export function ScrollDirector({ children }: { children: ReactNode }) {
       ctx.revert();
       gsap.killTweensOf(stageTarget);
       stageTarget.opacityCut = 1;
+      live.layout = null;
       directorApi.areasStepY = () => Number.NaN;
       directorApi.chapterY = () => Number.NaN;
       directorApi.chapterIndexAt = () => -1;
