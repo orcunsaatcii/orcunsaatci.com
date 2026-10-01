@@ -2966,28 +2966,30 @@ final.md'de bulunmayan ve uygulanabilirlik için eklenen değerler aşağıdadı
 
 | # | Yer | Değer |
 |---|---|---|
-| 1 | §4.5.4 #11 | Hero ikincil metin CSS solması: 500 ms `--ease-out`. |
-| 2 | §4.5.5 | Mobil header gizleme eşiği: ≥ 8 px ve `scrollY` > header yüksekliği. |
-| 3 | §4.5.5 | Sayfa içi atlama süresi 0.9 s (komşu atlamalar dahil). Areas atlama bağlantısı her zaman kesme kuralını kullanır. |
-| 4 | §4.6.3 | "Projeleri incele →" birincil (vurgu dolgulu), "İletişime geç" ikincil (çerçeveli). |
-| 5 | §4.8.8 | Mobil areas metin alanı 58 svh'ye sığmazsa liste modu. |
-| 6 | §4.8.8 | Liste modunda sahne areas IN p 0.2–0.5'te söner; masaüstünde work IN p 0.2–0.5'te, mobilde journey IN p 0.3–0.6'da geri gelir. |
-| 7 | §4.9.3 | `innerHeight < 760`: altyazı görüntüleyicinin 8 px altında. |
-| 8 | §4.9.4 | `innerHeight < 760`: `tone` work IN p 0–0.5'te 1 → 0, journey IN p 0–0.5'te 0 → 1. |
-| 9 | §4.9.4 | Silme çakışması: süren silme sona atlar, yenisi başlar. |
-| 10 | §4.10.7 | Mobil journey bandı: `--scene-opacity` IN p 0.3–0.6'da 0 → 1; bant çıkarken kaydırmayla 0'a iner (§5.9.4), bant çıktığında 0'dır (en geç 300 ms) ve loop `never`. |
-| 11 | §4.10.9 | testimonials: taş journey-core'un son dikdörtgeninde; opaklık 1 → 0.4 (testimonials IN), 0.4 → 1 (contact IN p 0–0.5). |
-| 12 | §4.13.2 | D2'de filtre yoksa `rotY` = ψ₀. Filtre değişiminde dönüş + dolgu 400 ms `power3.inOut`. `/calisma-alanlari` hover dolgusu 240 ms / 400 ms. |
-| 13 | §4.13.4 | Tipsiz (geri/ileri) DOM geçişi: yalnız opaklık, 150 / 210 ms, kayma yok. |
-| 14 | §4.13.5 | Mobil derin sayfalar: 30 svh bant; `folio`'da bant yalnız "Sonraki proje" bloğunda. |
-| 15 | §4.14 #10 | Derin sayfalarda Halka yalnız ilerleme gösterir, bölüm çentiği yoktur. |
-| 16 | §4.16.3 | D1 / D2 / D3 poster karşılıkları: `SpecimenGlyph` / `DialFigure` / `RingsFigure`. |
-| 17 | §4.16.4 | "Hareketi azalt" anahtarı canlı geçer (≤ 1 s) ve görünen bölüm korunur. |
-| 18 | §4.17.4 | `intensity` çarpanları ve easing'leri. |
+| 1 | §4.5.4 #11 | Hero ikincil metin CSS solması: 500 ms `--ease-out`. M6'da onaylandı (2026-10-01). |
+| 2 | §4.5.5 | Mobil header gizleme eşiği: ≥ 8 px ve `scrollY` > header yüksekliği. M6'da onaylandı (2026-10-01). |
+| 3 | §4.5.5 | Sayfa içi atlama süresi 0.9 s (komşu atlamalar dahil). Areas atlama bağlantısı her zaman kesme kuralını kullanır. M6'da onaylandı (2026-10-01). |
+| 4 | §4.6.3 | "Projeleri incele →" birincil (vurgu dolgulu), "İletişime geç" ikincil (çerçeveli). M6'da onaylandı (2026-10-01). |
+| 5 | §4.8.8 | Mobil areas metin alanı 58 svh'ye sığmazsa liste modu. M6'da onaylandı (2026-10-01). |
+| 6 | §4.8.8 | Liste modunda sahne areas IN p 0.2–0.5'te söner; masaüstünde work IN p 0.2–0.5'te, mobilde journey IN p 0.3–0.6'da geri gelir. M6'da onaylandı (2026-10-01). |
+| 7 | §4.9.3 | `innerHeight < 760`: altyazı görüntüleyicinin 8 px altında. M6'da onaylandı (2026-10-01). |
+| 8 | §4.9.4 | `innerHeight < 760`: `tone` work IN p 0–0.5'te 1 → 0, journey IN p 0–0.5'te 0 → 1. M6'da onaylandı (2026-10-01). |
+| 9 | §4.9.4 | Silme çakışması: süren silme sona atlar, yenisi başlar. M6'da onaylandı (2026-10-01). |
+| 10 | §4.10.7 | Mobil journey bandı: `--scene-opacity` IN p 0.3–0.6'da 0 → 1; bant çıkarken kaydırmayla 0'a iner (§5.9.4), bant çıktığında 0'dır (en geç 300 ms) ve loop `never`. M6'da onaylandı (2026-10-01). |
+| 11 | §4.10.9 | testimonials: taş journey-core'un son dikdörtgeninde; opaklık 1 → 0.4 (testimonials IN), 0.4 → 1 (contact IN p 0–0.5). M6'da onaylandı (2026-10-01). |
+| 12 | §4.13.2 | D2'de filtre yoksa `rotY` = ψ₀. Filtre değişiminde dönüş + dolgu 400 ms `power3.inOut`. `/calisma-alanlari` hover dolgusu 240 ms / 400 ms. M6'da onaylandı (2026-10-01). |
+| 13 | §4.13.4 | Tipsiz (geri/ileri) DOM geçişi: yalnız opaklık, 150 / 210 ms, kayma yok. M6'da onaylandı (2026-10-01). |
+| 14 | §4.13.5 | Mobil derin sayfalar: 30 svh bant; `folio`'da bant yalnız "Sonraki proje" bloğunda. M6'da onaylandı (2026-10-01). |
+| 15 | §4.14 #10 | Derin sayfalarda Halka yalnız ilerleme gösterir, bölüm çentiği yoktur. M6'da onaylandı (2026-10-01). |
+| 16 | §4.16.3 | D1 / D2 / D3 poster karşılıkları: `SpecimenGlyph` / `DialFigure` / `RingsFigure`. M6'da onaylandı (2026-10-01). |
+| 17 | §4.16.4 | "Hareketi azalt" anahtarı canlı geçer (≤ 1 s) ve görünen bölüm korunur. M6'da onaylandı (2026-10-01). |
+| 18 | §4.17.4 | `intensity` çarpanları ve easing'leri. M6'da onaylandı (2026-10-01). |
 | 19 | §4.17.2 `engineer` | Taş: akik yumrusu (jeot). `shape` [2.2, 2.3], `radii` (1, 0.8, 1), `disp` 0.045, `surface` `geode`, `cap.pattern` `geode`. M1'de onaylandı (2026-09-30, [#5](https://github.com/orcunsaatcii/orcunsaatci.com/issues/5#issuecomment-5907686488)). |
 | 20 | §5.4.3 `geode` | Kabuk: `CRUST_BUMP` 0.028, çukur tonu 0.70–1.06, lekelenme ±%12, demir tonu çarpanı (1.07, 1.0, 0.88). Akik: bant tonu `mix(capBase, mix(capBase, ringLine, 0.45), 0.15–0.70)`, laminalar %6, süt beyazı bant `t > 0.74` (%50), druzy ölçeği 34, kabuk şeridi `RIND_WIDTH` 0.035, cilalı parlama 0.10, kalsedon parıltısı %8, yıl çizgisi kontrastı ×0.5. M1'de onaylandı (2026-09-30, [#5](https://github.com/orcunsaatcii/orcunsaatci.com/issues/5#issuecomment-5907686488)). |
 | 21 | §6.3.6 | Taş tonları (`--scene-stone-base` / `--scene-stone-light`): açık `#2B2F3A` / `#7C8292`, koyu `#5A5E68` / `#B9BCC4`. M1'de onaylandı (2026-09-30, [#5](https://github.com/orcunsaatcii/orcunsaatci.com/issues/5#issuecomment-5907686488)). |
 | 22 | §5.4.1 not 3, §5.16 | Aktif bant vurgusu `mix(col, uAccent, 0.18)` + 1.5 px kenar; açık yay tarama aralığı 0.035; poster çerçevesi `POSTER_STONE_FRAC` 0.8 (R0 = `footprintRadius`, §5.7.5). M1'de onaylandı (2026-09-30, [#5](https://github.com/orcunsaatcii/orcunsaatci.com/issues/5#issuecomment-5907686488)). |
+
+- M6 onayı (2026-10-01, [PR #12](https://github.com/orcunsaatcii/orcunsaatci.com/pull/12#issuecomment-5933166740)): sahip satır 1–18'i belgedeki değerlerle aynen onayladı (12–16 M7'de uygulanır). M6 tasarım kararları da onaylandı: hero'da duraklatma ve yerel saat metin bölgesinde (SPEC-SAPMA §4.6.2, §4.6.3), küçük E'de journey dönüşünün BODY'ye ölçeklenmesi (SPEC-SAPMA §4.12.1 satır 14), mobil bant geçişlerinde el değiştirme (SPEC-SAPMA §4.15.3, §5.8.3), work makale metninin `top 85%`'te açılması (SPEC-SAPMA §4.9.4). Hero çıkışında Taşın tablo gereği (K1a karışımı 0.45) ilk ~35 svh'de "Saatçi"nin arkasından aşağı süzülmesi kabul edildi; "önce yukarı kalkar" varyantı M8 görsel QA'sında denenir.
 
 ### 4.13 Derin sayfalar ve route geçiş koreografisi
 
