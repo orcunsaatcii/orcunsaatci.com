@@ -5,6 +5,7 @@
 // Masaüstü §4.5.2'dir: about 140, areas 120 + 50N (pin), work 30 + 70P + 20, journey 40 + 35E + 30, contact 100.
 // Kapı dışı bölümler (mobil, liste, yatay telefon) doğal yüksekliktedir; GEO'daki değerler makul varsayımlardır.
 // tracks.test.ts, aynı geometriyle kurulan DOM'da measureLayout'un bu Layout'u ürettiğini doğrular.
+import { vi } from 'vitest';
 import type { StageData } from './store';
 import { AREAS_STEP, type ChapterId, type Layout, type PhaseRange } from './tracks';
 
@@ -148,4 +149,56 @@ export function buildFixture(spec: FixtureSpec): Fixture {
       entries: Array.from({ length: E }, (_, k) => ({ band: [10 - k, 11 - k] as const })),
     },
   };
+}
+
+/** Fixture geometrisiyle jsdom DOM'u kurar; ölçüm yalnız bunları okur (getBoundingClientRect, offsetHeight, …). */
+export function mountFixture(
+  fx: Fixture,
+  o: { sticky?: boolean; n?: number | null; scrollY?: number } = {},
+) {
+  const scrollY = o.scrollY ?? 0;
+  const last = fx.sections[fx.sections.length - 1];
+  vi.spyOn(window, 'innerHeight', 'get').mockReturnValue(fx.layout.vh);
+  vi.spyOn(window, 'scrollY', 'get').mockReturnValue(scrollY);
+  vi.spyOn(document.documentElement, 'scrollHeight', 'get').mockReturnValue(
+    fx.px((last?.top ?? 0) + (last?.h ?? 0)),
+  );
+  vi.stubGlobal('matchMedia', (q: string) => ({ matches: !fx.layout.mobile, media: q }));
+  const place = <E extends HTMLElement>(el: E, s: number): E => {
+    el.getBoundingClientRect = () => ({ top: fx.px(s) - scrollY }) as DOMRect;
+    return el;
+  };
+  const root = document.createElement('div');
+  root.dataset.stageScope = '';
+  for (const { id, top, h } of fx.sections) {
+    const sec = place(document.createElement('section'), top);
+    sec.dataset.chapter = id;
+    Object.defineProperty(sec, 'offsetHeight', { configurable: true, value: fx.px(h) });
+    if (id === 'areas') {
+      const n = o.n === undefined ? (fx.layout.areas?.N ?? 4) : o.n;
+      if (n !== null) sec.dataset.areasN = String(n);
+      const stage = document.createElement('div');
+      stage.dataset.areasStage = '';
+      if (o.sticky ?? fx.pinned) stage.style.position = 'sticky';
+      sec.append(stage);
+    }
+    if (id === 'work')
+      for (const s of fx.items.work) {
+        const a = place(document.createElement('article'), s);
+        a.dataset.workArticle = '';
+        sec.append(a);
+      }
+    if (id === 'journey') {
+      const ol = document.createElement('ol');
+      for (const s of fx.items.journey) {
+        const li = place(document.createElement('li'), s);
+        li.dataset.journeyEntry = '';
+        ol.append(li);
+      }
+      sec.append(ol);
+    }
+    root.append(sec);
+  }
+  document.body.replaceChildren(root);
+  return root;
 }

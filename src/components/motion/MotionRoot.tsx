@@ -19,6 +19,7 @@ let runtime: MotionRuntime | null = null;
 let loading: Promise<MotionRuntime> | null = null;
 const listeners = new Set<() => void>();
 const waiters: Array<(rt: MotionRuntime) => void> = [];
+const importHooks = new Set<() => void>();
 
 /** import('@/lib/gsap') (tekil). Yalnız MotionRoot çağırır: load sonrası ve data-motion="full" iken. */
 export function loadMotion(): Promise<MotionRuntime> {
@@ -33,8 +34,24 @@ export function loadMotion(): Promise<MotionRuntime> {
     loading.catch(() => {
       loading = null; // ağ hatası: bir sonraki tercih değişiminde yeniden denenebilir
     });
+    importHooks.forEach((cb) => cb());
   }
   return loading;
+}
+
+/**
+ * Runtime import'u başlarken (başlamışsa hemen) çağrılır: runtime'la aynı pencerede istenecek chunk'lar içindir
+ * (ScrollDirector gövdesi, PB-2). Temizlik fonksiyonu döner.
+ */
+export function onMotionImport(cb: () => void): () => void {
+  if (loading) {
+    cb();
+    return () => {};
+  }
+  importHooks.add(cb);
+  return () => {
+    importHooks.delete(cb);
+  };
 }
 
 /** Yüklemeyi TETİKLEMEZ; runtime hazır olunca çözülür (StageRoot, M5). */
@@ -101,7 +118,10 @@ export function armReveals(root: HTMLElement, rt: MotionRuntime): () => void {
       }
       ScrollTrigger.create({
         trigger: art ?? el,
-        start: art ? 'top 80%' : 'top 88%', // work makaleleri: top 80% (§4.9.4)
+        // work makaleleri top 85%: aktivasyondan (top 55%) 30 svh önce. Başlık satırları (700 ms + kademe) okuma hızında
+        // (10 svh/s) ≈ 8 svh sürer; K-WORK-3'ün "≥ 20 svh önce tam açık" koşulu top 80%'de (25 svh) sağlanamıyordu.
+        // SPEC-SAPMA §4.9.4, §4.12.1 (M6).
+        start: art ? 'top 85%' : 'top 88%',
         once: true,
         onEnter: () => reveal(el, rt, false),
       });
@@ -197,8 +217,17 @@ function armSafety(root: HTMLElement, rt: MotionRuntime): () => void {
     window.clearTimeout(debounce);
     debounce = window.setTimeout(sweep, 150);
   };
+  // Lenis'in yumuşak kaydırması sürerken tarama ertelenir: yavaş karede Chrome Lenis kareleri arasında scrollend
+  // verir ve gecikmeli açılan bloklar (contact, §4.12.3) erken açılıyordu. Lenis durunca (lenis-scrolling kalkar) tarar.
+  let settle = 0;
+  const sweepWhenSettled = () => {
+    window.clearTimeout(settle);
+    if (document.documentElement.classList.contains('lenis-scrolling'))
+      settle = window.setTimeout(sweepWhenSettled, 150);
+    else sweep();
+  };
   const endEvent = 'onscrollend' in window ? 'scrollend' : 'scroll';
-  const onEnd = endEvent === 'scrollend' ? sweep : onScroll;
+  const onEnd = endEvent === 'scrollend' ? sweepWhenSettled : onScroll;
   window.addEventListener(endEvent, onEnd, { passive: true });
 
   const onFocus = (e: FocusEvent) => {
@@ -224,6 +253,7 @@ function armSafety(root: HTMLElement, rt: MotionRuntime): () => void {
   return () => {
     window.clearTimeout(t3);
     window.clearTimeout(debounce);
+    window.clearTimeout(settle);
     window.removeEventListener(endEvent, onEnd);
     document.removeEventListener('focusin', onFocus, true);
     window.removeEventListener('hashchange', revealToHash);

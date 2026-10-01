@@ -2,11 +2,11 @@
 // referans konumları, K-CHOREO-1…3, K-GEN-3 ve measureLayout (jsdom). Layout'lar DOM'suz kurulur (layout.fixture.ts).
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { Intensity } from '@/experience/profile';
 import { psiDeg } from '@/lib/section-geometry';
 import type { AnchorId } from './anchors';
-import { computeIndices, createEventTargets, eventOwned, resolveEvents } from './events';
+import { computeIndices, createEventTargets, eventOwned, resolveEvents } from './event-targets';
 import {
   KEYFRAME_LABEL,
   contentCtx,
@@ -17,6 +17,7 @@ import {
 } from './keyframes';
 import {
   buildFixture,
+  mountFixture,
   type Fixture,
   type FixtureSpec,
   type FixtureVariant,
@@ -306,6 +307,7 @@ const KF_FIELDS: ReadonlyArray<readonly [NumericKey, keyof StageTarget]> = [
 /** Varyantın opaklık track'leri anahtar konumunda (§5.9.4 varyantlar); null = geçiş ortası, karşılaştırılmaz. */
 function expectedOpacity(v: TrackVariant, key: KeyframeKey): number | null {
   if (v.layout === 'landscape') return key === 'hero' ? 1 : key === 'about-lift' ? null : 0;
+  if (v.layout === 'mobile' && key === 'about-lift') return null; // el değiştirmenin belirme ortası (p 0.26–0.42)
   if (key === 'areas-plan') return v.areasList ? 0 : 1;
   if (key === 'work-specimen') return v.layout === 'mobile' ? 0 : 1;
   return 1;
@@ -331,8 +333,9 @@ function keyframeViolations(b: Built): string[] {
     const op = expectedOpacity(b.v, key);
     if (op !== null) exp.set('opacityTrack', op);
     if (k.anchor === 'blend') {
-      // K1a: hero-rest → about-cut, karışım 0.45 (§5.8.4)
-      exp.set('anchorMix', 0.45);
+      // K1a: hero-rest → about-cut, karışım 0.45 (§5.8.4). Mobil ve yatayda el değiştirme (SPEC-SAPMA §4.15.3):
+      // mobilde çapa p 0.25'te değişti (1), yatayda p 0.50'de değişecek (0)
+      exp.set('anchorMix', b.v.layout === 'desktop' ? 0.45 : b.v.layout === 'mobile' ? 1 : 0);
       exp.set('anchorFrom', anchorIndex('hero-rest'));
       exp.set('anchorTo', anchorIndex('about-cut'));
     } else {
@@ -598,14 +601,55 @@ describe('§5.9.4 varyantlar: opaklık ve ton track’leri', () => {
     expect(trackState(b, body.y0 + 0.36 * layout.vh).opacityTrack).toBeCloseTo(0, 9);
     expect(val(b, 'opacityTrack', 'testimonials', 'in', 0.5)).toBe(0); // mobilde testimonials track'i yok
     expect([0.3, 0.6].map((p) => val(b, 'opacityTrack', 'contact', 'in', p))).toEqual([0, 1]);
-    expect(opacityTracks(b)).toEqual(['work·in', 'journey·in', 'journey·body', 'contact·in']);
+    expect(opacityTracks(b)).toEqual([
+      'about·in',
+      'about·in',
+      'areas·in',
+      'areas·in',
+      'work·in',
+      'journey·in',
+      'journey·body',
+      'contact·in',
+    ]);
+  });
+
+  it('mobile el değiştirme (§4.15.1, SPEC-SAPMA §4.15.3): bant söner, görünmezken çapa değişir, yeni bantta belirir', () => {
+    const b = build({ variant: 'mobile', N: 4, P: 4, E: 6 });
+    const op = (c: ChapterId, p: number) => val(b, 'opacityTrack', c, 'in', p);
+    /** etkin çapa: (A→B, 1) ≡ (B→C, 0) (§5.9.3 #2) */
+    const anchorAt = (c: ChapterId, p: number) => {
+      const st = trackState(b, yAt(b.fx.layout, c, 'in', p));
+      return st.anchorMix < 0.5 ? st.anchorFrom : st.anchorTo;
+    };
+    // hero → about: söner p 0.10–0.25, çapa p 0.25–0.26'da değişir, belirir p 0.26–0.42
+    expect([0.1, 0.25, 0.26, 0.42].map((p) => op('about', p))).toEqual([1, 0, 0, 1]);
+    expect([0.24, 0.27].map((p) => anchorAt('about', p))).toEqual([
+      anchorIndex('hero-rest'),
+      anchorIndex('about-cut'),
+    ]);
+    // about → kadran bandı: söner p 0–0.15, değişir 0.15–0.16, belirir 0.45–0.60
+    expect([0, 0.15, 0.45, 0.6].map((p) => op('areas', p))).toEqual([1, 0, 0, 1]);
+    expect([0.14, 0.17].map((p) => anchorAt('areas', p))).toEqual([
+      anchorIndex('about-cut'),
+      anchorIndex('areas-dial'),
+    ]);
+    // journey → contact: çapa değişimi opaklık 0'ken (p < 0.3) biter
+    expect(anchorAt('contact', 0.3)).toBe(anchorIndex('contact-ring'));
+    expect(op('contact', 0.3)).toBe(0);
   });
 
   it('mobile-list: areas IN p 0.2–0.5 1 → 0; work IN opaklık track’i yok (zaten 0)', () => {
     const b = build({ variant: 'mobile-list', N: 4, P: 4, E: 6 });
     expect([0.2, 0.5].map((p) => val(b, 'opacityTrack', 'areas', 'in', p))).toEqual([1, 0]);
     expect(val(b, 'opacityTrack', 'work', 'in', 0.5)).toBe(0);
-    expect(opacityTracks(b)).toEqual(['areas·in', 'journey·in', 'journey·body', 'contact·in']);
+    expect(opacityTracks(b)).toEqual([
+      'about·in',
+      'about·in',
+      'areas·in',
+      'journey·in',
+      'journey·body',
+      'contact·in',
+    ]);
     expect(b.ctx).toMatchObject({ areasMode: 'list', lastPsi: 45, N: 4, W0: 45 });
   });
 
@@ -810,54 +854,7 @@ describe('K-GEN-3: tracks.ts, stageTarget alanları dışında yazmaz', () => {
 /* ───────────── measureLayout (jsdom) ───────────── */
 
 describe('measureLayout (jsdom): fazlar, "top 55%" çizgileri, areas pini (§5.9.3)', () => {
-  /** Fixture geometrisiyle DOM kurar; ölçüm yalnız bunları okur (getBoundingClientRect, offsetHeight, …). */
-  function mount(fx: Fixture, o: { sticky?: boolean; n?: number | null; scrollY?: number } = {}) {
-    const scrollY = o.scrollY ?? 0;
-    const last = fx.sections[fx.sections.length - 1];
-    vi.spyOn(window, 'innerHeight', 'get').mockReturnValue(fx.layout.vh);
-    vi.spyOn(window, 'scrollY', 'get').mockReturnValue(scrollY);
-    vi.spyOn(document.documentElement, 'scrollHeight', 'get').mockReturnValue(
-      fx.px((last?.top ?? 0) + (last?.h ?? 0)),
-    );
-    vi.stubGlobal('matchMedia', (q: string) => ({ matches: !fx.layout.mobile, media: q }));
-    const place = <E extends HTMLElement>(el: E, s: number): E => {
-      el.getBoundingClientRect = () => ({ top: fx.px(s) - scrollY }) as DOMRect;
-      return el;
-    };
-    const root = document.createElement('div');
-    root.dataset.stageScope = '';
-    for (const { id, top, h } of fx.sections) {
-      const sec = place(document.createElement('section'), top);
-      sec.dataset.chapter = id;
-      Object.defineProperty(sec, 'offsetHeight', { configurable: true, value: fx.px(h) });
-      if (id === 'areas') {
-        const n = o.n === undefined ? (fx.layout.areas?.N ?? 4) : o.n;
-        if (n !== null) sec.dataset.areasN = String(n);
-        const stage = document.createElement('div');
-        stage.dataset.areasStage = '';
-        if (o.sticky ?? fx.pinned) stage.style.position = 'sticky';
-        sec.append(stage);
-      }
-      if (id === 'work')
-        for (const s of fx.items.work) {
-          const a = place(document.createElement('article'), s);
-          a.dataset.workArticle = '';
-          sec.append(a);
-        }
-      if (id === 'journey') {
-        const ol = document.createElement('ol');
-        for (const s of fx.items.journey) {
-          const li = place(document.createElement('li'), s);
-          li.dataset.journeyEntry = '';
-          ol.append(li);
-        }
-        sec.append(ol);
-      }
-      root.append(sec);
-    }
-    document.body.replaceChildren(root);
-    return root;
-  }
+  const mount = mountFixture;
 
   it.each<[string, FixtureSpec]>([
     ['masaüstü pin (S = 50)', { variant: 'desktop', N: 4, P: 4, E: 6 }],

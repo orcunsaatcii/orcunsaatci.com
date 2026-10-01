@@ -7,9 +7,8 @@
 import { useEffect, useSyncExternalStore, type ReactNode } from 'react';
 import { scrollToY } from '@/components/motion/LenisProvider';
 import { useMotionPref } from '@/components/motion/MotionRoot';
-import { areasIndexAt, onStageEvent } from '@/stage/events';
+import { AREAS_STEP, areasIndexAt, onStageEvent } from '@/stage/events';
 import { directorApi } from '@/stage/store';
-import { AREAS_STEP } from '@/stage/tracks';
 
 /* ───────────── pin durumu (modül deposu) ───────────── */
 
@@ -44,14 +43,18 @@ export function areasStepY(k: number): number {
 }
 const STEP_SCROLL_S = 0.8;
 let lockUntil = 0;
+let lockSeq = 0;
 function goToStep(k: number, o: { lock?: boolean } = {}) {
   const y = areasStepY(k);
   if (!Number.isFinite(y)) return;
+  const seq = ++lockSeq;
   if (o.lock) lockUntil = performance.now() + 1500;
   scrollToY(y, {
     duration: STEP_SCROLL_S,
     onComplete: () => {
-      lockUntil = 0;
+      // yalnız son adım kaydırması kilidi açar: kesilen önceki kaydırmanın geç bitişi (scrollend / üst sınır) yeni
+      // odağın kilidini açıp adımı geri almasın (§10.3.3 örtülmeme)
+      if (seq === lockSeq) lockUntil = 0;
     },
   });
 }

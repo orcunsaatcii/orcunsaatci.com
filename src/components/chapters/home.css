@@ -572,22 +572,25 @@
 }
 
 /* Duraklatma düğmesi: 64rem altında sahne bandıyla aynı grid alanında, sağ altta (satır yüksekliğini sahne
-   belirler: CLS yok) */
+   belirler: CLS yok). 12 px aşağıda: Taş'ın ekran dairesi (D = 0.86·bant) metnin satır kutusuna değmesin
+   (§4.12.2 #7, K-CHOREO-6) */
 [data-chapter='hero'] > .hero-pause {
   grid-row: 1;
   grid-column: 1 / -1;
   align-self: end;
   justify-self: end;
+  margin-bottom: -0.75rem;
   z-index: 1;
 }
 @media (min-width: 64rem) {
-  /* Masaüstünde CTA satırının sağında (§4.6.2 tel çerçeve): çapa büyük harf çizgisine uzandığından 1. satırın sağ
-     altı Taş'ın üstüne düşerdi. Satırı CTA'lar (48 px) belirler; 44 px düğme CLS yapmaz. İpucu satırı 12 kolon
-     kapladığından otomatik yerleşim düğmenin varlığından etkilenmez. */
+  /* Masaüstünde CTA satırında, metin bölgesinin (k1–7) sağında: Taş hero'dan about'a geçerken (s 0–60) k8–12
+     sütununda iner; o sütundaki metin taşın arkasında kalırdı (§4.15.2 ızgara, §4.12.2 #7, K-CHOREO-6). Satırı
+     CTA'lar (48 px) belirler; 44 px düğme CLS yapmaz. CTA kutusu k1–8'i kaplar: düğme üstte (z-index 1). */
   [data-chapter='hero'] > .hero-pause {
     grid-row: 4;
-    grid-column: 9 / 13;
+    grid-column: 1 / 8;
     align-self: center;
+    margin-bottom: 0;
   }
 }
 @media (max-width: 63.99rem) and (max-height: 499.98px) {

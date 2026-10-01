@@ -2,7 +2,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getSite, getStageData } from '@/lib/content';
-import { LabStage } from '@/stage/StageRoot';
+import { LabStage } from '@/stage/LabStage';
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
 
