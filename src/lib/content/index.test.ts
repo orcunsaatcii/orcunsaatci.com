@@ -33,6 +33,7 @@ import {
   pageLocales,
   projectYears,
   t,
+  termLang,
   tList,
 } from './index';
 
@@ -71,6 +72,14 @@ describe('t / tList (§7.4.4 kural 1)', () => {
       fallback: false,
     });
     expect(tList(undefined, 'tr')).toEqual({ items: [], lang: 'tr', fallback: false });
+  });
+
+  it('termLang: TR ve EN aynıysa TR sayfada terim İngilizcedir (§3.8)', () => {
+    const title = { tr: 'Mobile Developer | Flutter', en: 'Mobile Developer | Flutter' };
+    expect(termLang(title, 'tr')).toBe('en');
+    expect(termLang(title, 'en')).toBeUndefined();
+    expect(termLang({ tr: 'Mobil Geliştirici', en: 'Mobile Developer' }, 'tr')).toBeUndefined();
+    expect(termLang({ tr: 'Mobil Geliştirici' }, 'tr')).toBeUndefined();
   });
 });
 

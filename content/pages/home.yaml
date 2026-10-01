@@ -1,14 +1,15 @@
 # yaml-language-server: $schema=../../.schemas/home.json
 # Ana sayfa bölüm metinleri (§4.6–§4.11). Başlık ve eyebrow varsayılanları persona etiketlerinden gelir (§4.17).
+# Kaynak: içerik anketi (kimlik), 2026-09-29. journey.intro anket dışı: boş bırakıldı (isteğe bağlı).
 about:
-  lede: { tr: "{{HAKKIMDA_LEDE}}", en: "{{ABOUT_LEDE}}" }
+  lede: { tr: "Mühendislik disiplini ve ürün odaklı yaklaşımı birleştirerek fikirleri nitelikli mobil uygulamalara dönüştürüyorum.", en: "I combine engineering discipline with a product-focused approach to turn ideas into well-crafted mobile applications." }
   paragraphs:
-    - { tr: "{{BİYOGRAFİ_PARAGRAF_1}}", en: "{{BIO_PARAGRAPH_1}}" }
-    - { tr: "{{BİYOGRAFİ_PARAGRAF_2}}", en: "{{BIO_PARAGRAPH_2}}" }
-  now: { tr: "{{ŞU_AN}}", en: "{{NOW}}" }
+    - { tr: "Bilgisayar mühendisiyim; Flutter ile mobil uygulamalar geliştiriyorum. Mimari tasarımdan App Store ve Google Play yayın süreçlerine kadar ürün geliştirmenin her aşamasında çalışıyorum. Beni yönlendiren, karmaşık ihtiyaçlara sade çözümler üretmek ve insanların rahatlıkla kullanabildiği uygulamalar geliştirmek. Teknik kararlarımda kullanıcı deneyimini, performansı ve sürdürülebilirliği birlikte değerlendiriyorum.", en: "I’m a computer engineer developing mobile applications with Flutter. My work spans the full product lifecycle, from architecture to App Store and Google Play releases. I’m driven by turning complex requirements into simple solutions and building apps people find intuitive. User experience, performance, and maintainability guide my technical decisions." }
+    - { tr: "Flutter’da ölçeklenebilir mimariler kuruyor, Riverpod ve Bloc ile uygulama durumunu yönetiyorum. REST ve SOAP servis entegrasyonlarıyla uygulamaların veri akışını yapılandırıyorum. Temiz kod, otomatik teslim süreçleri ve tutarlı arayüzler çalışma yaklaşımımın temelini oluşturuyor. Kod incelemeleri ve mentörlük aracılığıyla ekip içinde bilgi paylaşımına ve ortak geliştirme standartlarına katkı sağlıyorum.", en: "I build scalable Flutter architectures using Riverpod and Bloc for state management and integrate REST and SOAP services to manage application data flows. Clean code, automated delivery, and consistent interfaces shape my approach. Through code reviews and mentoring, I contribute to shared engineering standards and help teams exchange knowledge." }
+  now: { tr: "Bilsoft Yazılım’da Flutter Developer", en: "Flutter Developer at Bilsoft Yazılım" }
 areas:
-  statement: { tr: "{{ALANLAR_CÜMLESİ}}", en: "{{AREAS_STATEMENT}}" }
+  statement: { tr: "Mobil geliştirme, yazılım mimarisi ve uygulama yayın süreçlerinde çalışıyorum.", en: "I work across mobile development, software architecture, and app releases." }
 work:
-  intro: { tr: "{{PROJELER_CÜMLESİ}}", en: "{{WORK_INTRO}}" }
-journey:
-  intro: { tr: "{{YOLCULUK_CÜMLESİ}}", en: "{{JOURNEY_INTRO}}" }
+  intro: { tr: "Teknik yaklaşımımı ve geliştirme sürecindeki katkılarımı yansıtan seçili projeler.", en: "Selected projects showcasing my engineering approach and development contributions." }
+contact:
+  lead: { tr: "Yeni projeler ve iş birliği fırsatları üzerine konuşalım.", en: "Let’s talk about new projects and opportunities to collaborate." }

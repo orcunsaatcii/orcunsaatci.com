@@ -8,7 +8,7 @@ import { LocalTime } from '@/components/ui/LocalTime';
 import { Txt } from '@/components/ui/Txt';
 import { chapterAnchors, localeMeta, type Locale } from '@/i18n/config';
 import { getDictionary } from '@/i18n/get-dictionary';
-import { getHome, getPerson, t } from '@/lib/content';
+import { getHome, getPerson, t, termLang } from '@/lib/content';
 import { pageLink } from '@/lib/seo/metadata';
 import { StageAnchor } from '@/stage/ScenePoster';
 import { Magnetic } from '@/components/motion/Magnetic';
@@ -19,6 +19,7 @@ export function Hero({ locale }: { locale: Locale }) {
   const home = getHome();
   const city = t(person.location.city, locale);
   const jobTitle = t(person.jobTitle, locale);
+  const titleLang = termLang(person.jobTitle, locale);
   const eyebrow = home.hero.eyebrow ? t(home.hero.eyebrow, locale) : null;
   const cut = person.name.lastIndexOf(' ');
   const [first, last] =
@@ -41,7 +42,8 @@ export function Hero({ locale }: { locale: Locale }) {
           <Txt v={eyebrow} />
         ) : (
           <>
-            <Txt v={jobTitle} /> · <Txt v={city} />
+            {titleLang ? <span lang={titleLang}>{jobTitle.text}</span> : <Txt v={jobTitle} />} ·{' '}
+            <Txt v={city} />
           </>
         )}
       </p>

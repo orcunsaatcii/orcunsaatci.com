@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../.schemas/area.json
+# Kaynak: içerik anketi (alanlar), 2026-09-29.
+order: 4
+title: { tr: "Yayın ve Sürüm Yönetimi", en: "App Release Management" }
+summary: { tr: "Mobil uygulamaların App Store ve Google Play yayınlarını yönetiyor, CI/CD süreçleriyle sürüm hazırlığını destekliyorum.", en: "I manage mobile app releases on the App Store and Google Play and support release preparation through CI/CD workflows." }
+description: { tr: "Mobil uygulamaların geliştirme ortamından mağaza yayınına uzanan hazırlık ve sürüm yönetimi süreçlerinde çalışıyorum. App Store ve Google Play için yayın hazırlıklarını yürütüyor, uygulama güncellemelerinin mağazalara aktarılmasını yönetiyorum. Sürüm bilgilerinin ve yayın paketlerinin tutarlı biçimde hazırlanmasına dikkat ediyorum. CI/CD süreçleriyle tekrarlanan derleme ve teslim adımlarının otomasyonuna katkı sağlıyorum. Yayın yönetimini geliştirme çalışmalarından ayrı düşünmeden, yeni özelliklerin ve düzeltmelerin planlanan sürüme dahil edilmesini takip ediyorum. Süreç boyunca teknik hazırlıklarla mağaza gereksinimlerini birlikte değerlendiriyorum.", en: "I work across release preparation and version management, taking mobile applications from development to app store distribution. I prepare releases for the App Store and Google Play and manage the submission of application updates. I pay attention to consistent version information and release packages, while contributing to the automation of recurring build and delivery steps through CI/CD. I coordinate release preparation with development work, tracking planned features and fixes alongside technical readiness and store requirements." }
+tags:
+  - { tr: "App Store", en: "App Store" }
+  - { tr: "Google Play", en: "Google Play" }
+  - { tr: "CI/CD", en: "CI/CD" }
+  - { tr: "Sürüm yönetimi", en: "Version Management" }
+  - { tr: "Yayın otomasyonu", en: "Release Automation" }
+capabilities:
+  - { tr: "App Store ve Google Play yayın hazırlıklarını yürütüyorum.", en: "I prepare applications for App Store and Google Play releases." }
+  - { tr: "Uygulama güncellemelerinin mağaza gönderimlerini yönetiyorum.", en: "I manage store submissions for application updates." }
+  - { tr: "Sürüm bilgilerini ve yayın paketlerini düzenliyorum.", en: "I organize version information and release packages." }
+  - { tr: "CI/CD ile derleme ve teslim adımlarının otomasyonuna katkı sağlıyorum.", en: "I contribute to build and delivery automation through CI/CD." }
+skills: [magaza-yayini]

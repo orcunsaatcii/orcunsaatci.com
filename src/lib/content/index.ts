@@ -80,6 +80,14 @@ export function t(v: { tr: string; en?: string } | undefined, locale: Locale): L
   return { text: v.tr, lang: 'tr', fallback: false };
 }
 
+/**
+ * Çevrilmemiş terim (ör. unvan "Mobile Developer | Flutter"): TR ve EN metni aynıysa metin İngilizcedir. TR sayfada
+ * `lang="en"` döner; büyük harf dönüşümü "MOBİLE" üretmez (§3.8). Yalnız unvan gibi terimlerde kullanılır.
+ */
+export function termLang(v: { tr: string; en?: string }, locale: Locale): Locale | undefined {
+  return locale === 'tr' && v.en === v.tr ? 'en' : undefined;
+}
+
 export function tList(
   v: { tr: string[]; en?: string[] } | undefined,
   locale: Locale,

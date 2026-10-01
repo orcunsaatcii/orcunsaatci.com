@@ -1,13 +1,23 @@
 # yaml-language-server: $schema=../../.schemas/certifications.json
+# BTK Akademi (Git ve GitHub) ve Erasmus+ sertifikaları tarih bekliyor: tarih gelince eklenir.
 items:
-  - id: sertifika-1
-    name: { tr: "{{SERTİFİKA_1}}", en: "{{CERTIFICATE_1}}" }
-    issuer: "{{SERTİFİKA_1_VEREN}}"
-    date: "2024-05" # {{SERTİFİKA_1_TARİH}}
-    url: "https://example.com/{{SERTİFİKA_1_DOĞRULAMA}}"
-  - id: sertifika-2
-    name: { tr: "{{SERTİFİKA_2}}", en: "{{CERTIFICATE_2}}" }
-    issuer: "{{SERTİFİKA_2_VEREN}}"
-    date: "2021-10" # {{SERTİFİKA_2_TARİH}}
-    expires: "2024-10"
-    visibility: web-only # tohum: PDF'te ve JSON Resume'da yok
+  - id: flutter-dart-complete-guide
+    name: { tr: "Flutter & Dart - The Complete Guide [2024 Edition]", en: "Flutter & Dart - The Complete Guide [2024 Edition]" }
+    issuer: "Udemy"
+    date: "2024-04"
+    url: "https://ude.my/UC-8bc87335-1958-4ed7-b844-8c3542bc1eb1"
+  - id: advanced-flutter
+    name: { tr: "Advanced Flutter: Build Enterprise-Ready Apps.", en: "Advanced Flutter: Build Enterprise-Ready Apps." }
+    issuer: "Udemy"
+    date: "2025-07"
+    url: "https://ude.my/UC-aeaa56ec-ce7a-4b3b-8753-6cc4625c5e0b"
+  - id: go-complete-guide
+    name: { tr: "Go - The Complete Guide", en: "Go - The Complete Guide" }
+    issuer: "Udemy"
+    date: "2025-02"
+    url: "https://ude.my/UC-71574163-fdf4-4ffc-be81-c9dfa7adbcb4"
+  - id: python-100-gun
+    name: { tr: "Python 2024 : 100 Günlük Programlama Sertifikası", en: "Python 2024 : 100 Günlük Programlama Sertifikası" }
+    issuer: "Udemy"
+    date: "2024-01"
+    url: "https://ude.my/UC-0b16cb6c-e9cd-43dd-ab86-aacd193a3b06"

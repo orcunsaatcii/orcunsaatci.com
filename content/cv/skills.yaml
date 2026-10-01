@@ -1,50 +1,24 @@
 # yaml-language-server: $schema=../../.schemas/skills.json
 items:
-  - id: yetkinlik-1
-    name: { tr: "{{YETKİNLİK_1}}", en: "{{SKILL_1}}" }
+  - id: mobil-uygulama-gelistirme
+    name: { tr: "Mobil uygulama geliştirme", en: "Mobile App Development" }
     category: core
-    level: expert
-    years: 8
-    areas: [alan-1]
-    featured: true
-  - id: yetkinlik-2
-    name: { tr: "{{YETKİNLİK_2}}", en: "{{SKILL_2}}" }
-    category: core
-    level: advanced
-    years: 6
-    areas: [alan-1]
-    featured: true
-  - id: yetkinlik-3
-    name: { tr: "{{YETKİNLİK_3}}", en: "{{SKILL_3}}" }
-    category: tool
-    level: expert
-    years: 7
-    areas: [alan-2]
-  - id: yetkinlik-4
-    name: { tr: "{{YETKİNLİK_4}}", en: "{{SKILL_4}}" }
-    category: tool
-    level: advanced
-    years: 4
-    areas: [alan-2]
-  - id: yetkinlik-5
-    name: { tr: "{{YETKİNLİK_5}}", en: "{{SKILL_5}}" }
-    category: method
-    level: advanced
-    years: 5
-    areas: [alan-3]
-  - id: yetkinlik-6
-    name: { tr: "{{YETKİNLİK_6}}", en: "{{SKILL_6}}" }
+    areas: [mobil-uygulama]
+  - id: magaza-yayini
+    name: { tr: "Mağaza yayını ve sürüm yönetimi", en: "App store publishing and releases" }
     category: domain
-    level: intermediate
-    years: 3
-    areas: [alan-3]
-  - id: yetkinlik-7
-    name: { tr: "{{YETKİNLİK_7}}", en: "{{SKILL_7}}" }
-    category: soft
-    areas: [alan-4]
-  - id: yetkinlik-8
-    name: { tr: "{{YETKİNLİK_8}}", en: "{{SKILL_8}}" }
+    areas: [yayin-yonetimi]
+  - id: api-entegrasyonu
+    name: { tr: "API entegrasyonu", en: "API integration" }
+    category: core
+    areas: [api-entegrasyonu]
+  - id: git
+    name: { tr: "Git", en: "Git" }
     category: tool
-    level: familiar
-    years: 2
-    areas: [alan-4]
+  - id: push-bildirimleri
+    name: { tr: "Push bildirimleri (APNs, FCM, HMS)", en: "Push notifications (APNs, FCM, HMS)" }
+    category: domain
+  - id: kod-incelemesi-mentorluk
+    name: { tr: "Kod incelemesi ve mentorluk", en: "Code review and mentoring" }
+    category: soft
+    areas: [yazilim-mimarisi]

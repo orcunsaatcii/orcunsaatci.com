@@ -48,7 +48,7 @@ const PAGES = [
   '/hakkimda',
   '/cv',
   '/projeler',
-  '/projeler/ornek-proje-1',
+  '/projeler/bilsoft-on-muhasebe-e-fatura',
   '/iletisim',
   '/en',
 ] as const;

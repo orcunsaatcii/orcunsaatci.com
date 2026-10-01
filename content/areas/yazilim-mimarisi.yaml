@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../.schemas/area.json
+# Kaynak: içerik anketi (alanlar), 2026-09-29.
+order: 2
+title: { tr: "Yazılım Mimarisi", en: "Software Architecture" }
+summary: { tr: "MVVM ve Clean Architecture ile uygulama katmanlarını tasarlıyor, Riverpod ve Bloc ile durum yönetimini yapılandırıyorum.", en: "I design application layers with MVVM and Clean Architecture and structure state management using Riverpod and Bloc." }
+description: { tr: "Mobil uygulamaların kod yapısını, projenin kapsamına ve geliştirme ihtiyaçlarına göre tasarlıyorum. MVVM ve Clean Architecture yaklaşımlarıyla arayüz, iş mantığı ve veri erişimi sorumluluklarını ayırıyorum. Riverpod ve Bloc kullanarak uygulama durumunu ve ekranlar arasındaki veri ilişkilerini yönetiyorum. Clean Code prensipleri doğrultusunda isimlendirme, bileşen sınırları ve kod organizasyonunda tutarlılık oluşturuyorum. Kod incelemeleri ve teknik bilgi paylaşımıyla ekip içindeki ortak standartlara katkı sağlıyorum. Mimari tercihlerimde anlaşılabilirliği, değişikliklerin etkisini ve yeni özelliklerin mevcut yapıya nasıl ekleneceğini değerlendiriyorum.", en: "I design mobile application structures around project scope and development needs. With MVVM and Clean Architecture, I separate presentation, business logic, and data access responsibilities. I use Riverpod and Bloc to manage application state and data relationships across screens. Clean Code principles guide naming, component boundaries, and code organization. Through code reviews and technical knowledge sharing, I contribute to team standards. My architectural decisions consider clarity, the impact of changes, and how new features will fit into the existing structure." }
+tags:
+  - { tr: "Clean Architecture", en: "Clean Architecture" }
+  - { tr: "MVVM", en: "MVVM" }
+  - { tr: "Riverpod", en: "Riverpod" }
+  - { tr: "Bloc", en: "Bloc" }
+  - { tr: "Clean Code", en: "Clean Code" }
+capabilities:
+  - { tr: "Uygulamanın katmanlarını ve sorumluluk sınırlarını tasarlıyorum.", en: "I design application layers and responsibility boundaries." }
+  - { tr: "Riverpod ve Bloc ile durum yönetimini kuruyorum.", en: "I implement state management with Riverpod and Bloc." }
+  - { tr: "Kod yapısını Clean Code prensipleriyle düzenliyorum.", en: "I organize code according to Clean Code principles." }
+  - { tr: "Kod incelemeleri ve mentörlükle ekip standartlarına katkı sağlıyorum.", en: "I contribute to team standards through code reviews and mentoring." }
+skills: [kod-incelemesi-mentorluk]

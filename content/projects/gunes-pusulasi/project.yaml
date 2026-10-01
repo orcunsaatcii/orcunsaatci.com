@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../../.schemas/project.json
+# Kaynak: içerik anketi (projeler), 2026-09-29. Görsel alt metinleri taslaktır (sahip onayı bekler).
+title: { tr: "Güneş Pusulası: AR Güneş Yolu", en: "Sun Compass: AR Sun Tracker" }
+summary: { tr: "Kamerayı gökyüzüne doğrulttuğunuzda, güneşin gerçek zamanlı hareket yolunu görüntü üzerine çizen 2D AR uygulaması.", en: "A 2D AR app that overlays the sun’s real-time trajectory onto the camera view when pointed at the sky." }
+start: "2026-09"
+role: { tr: "Mobil Geliştirici", en: "Mobile Developer" }
+kind: personal
+status: ongoing
+areas: [mobil-uygulama, yayin-yonetimi]
+featured: true
+order: 2
+cover:
+  src: /media/projects/gunes-pusulasi/cover.jpg
+  alt: { tr: "Güneş Pusulası, üç telefonda: kamera görüntüsü üzerinde güneşin günlük yolu", en: "Sun Compass on three phones: the sun’s daily path drawn over the camera view" }
+mobileCover:
+  src: /media/projects/gunes-pusulasi/mobile-cover.jpg
+  alt: { tr: "Gökyüzüne tutulan kamerada güneşin yolu; azimut, yükseklik ve gün doğumu-batımı saatleri", en: "Camera pointed at the sky showing the sun’s path, azimuth, altitude and sunrise and sunset times" }
+preview:
+  src: /media/projects/gunes-pusulasi/preview.jpg
+  alt: { tr: "Kamera görüntüsünde güneş ve üzerinden geçen sarı güneş yolu çizgisi", en: "The sun in the camera view with the yellow sun-path line passing through it" }
+gallery:
+  - { src: /media/projects/gunes-pusulasi/gallery-01.jpg, alt: { tr: "Kamera görüntüsü üzerinde güneşin yolu; gün doğumu, öğle ve gün batımı saatleri", en: "The sun’s path over the camera view, with sunrise, noon and sunset times" } }
+  - { src: /media/projects/gunes-pusulasi/gallery-02.jpg, alt: { tr: "Yaz ve kış güneş yolları kamera görüntüsünde yan yana", en: "Summer and winter sun paths side by side over the camera view" } }
+  - { src: /media/projects/gunes-pusulasi/gallery-03.jpg, alt: { tr: "Gün doğumundan batımına güneşin yolu; saatler, açılar ve gün uzunluğu", en: "The sun’s path from sunrise to sunset with times, angles and daylight hours" } }
+  - { src: /media/projects/gunes-pusulasi/gallery-04.jpg, alt: { tr: "21 Haziran 2027 için güneşin yolu: seçilen günde güneşin konumu", en: "The sun’s path on June 21, 2027: where the sun will be on a chosen day" } }
+  - { src: /media/projects/gunes-pusulasi/gallery-05.jpg, alt: { tr: "Ayarlar ekranı: dil, birim sistemi, hareketi azaltma ve gizlilik seçenekleri", en: "Settings screen: language, unit system, reduce motion and privacy options" } }
+publishedAt: "2026-10"
