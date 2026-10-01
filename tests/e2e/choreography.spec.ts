@@ -1,5 +1,6 @@
 // tests/e2e/choreography.spec.ts — ana sayfa koreografisi (M6; §4.12, §13.3.4, §13.3.5): K-CHOREO-4/5/6/7, I2, I3,
-// K-GEN-2/9, K-ABOUT-1/3, K-AREAS-3/4/5/6, K-WORK-1/2/3, K-JOURNEY-2/3, K-CONTACT-3/5. Mutlu yol /?debug&tier=high.
+// K-GEN-2/9, K-ABOUT-1/3, K-AREAS-3/4/5/6, K-WORK-1/2/3, K-JOURNEY-2/3/7, K-CONTACT-3/5, §5.19, V-48. Canlı sahne
+// (Taş dairesi, kesme, piksel, V-48) /?debug&tier=high (mobil medium); yalnız stageTarget / DOM okuyanlar tier=static.
 // Beklenen kaydırma konumları DOM'dan ölçülen düzenden hesaplanır (§13.3.4): §4.12.1'in s değerleri 1170 svh'lik referans
 // düzendir; her satır (bölüm, faz, yerel p) olarak eşlenir ve y = faz.y0 + p·(faz.y1 − faz.y0) olur (§5.9.3).
 // Sahne değerleri stageTarget'tan okunur (yönetmenin kaydırma güncellemesinden hemen sonra deterministiktir). Ekran dairesi
@@ -17,6 +18,12 @@ test.describe.configure({ timeout: 180_000 }); // §13.3.4: yavaş dosya, test b
 
 const HOME = '/?debug&tier=high';
 const HOME_MOBILE = '/?debug&tier=medium'; // mobil mutlu yol (§13.3.3)
+/**
+ * Yalnız stageTarget, DOM olayları ve reveal'ları okuyan testler: director kademeden bağımsızdır, canvas gerekmez.
+ * SPEC-SAPMA §13.3.4 (M6): WebGL'siz koşarlar; CI'da SwiftShader ≈ 2 fps her kaydırma adımını ≈ 0.5 s'ye çıkarıyor,
+ * tween / reveal zamanlamalarını kare aralığının altında ölçülemez kılıyor ve dosyayı iş süresine sığdırmıyordu.
+ */
+const HOME_TARGET = '/?debug&tier=static';
 
 const FILLS = ['fill0', 'fill1', 'fill2', 'fill3', 'fill4', 'fill5'] as const;
 const CAMERA = ['camR', 'camAz', 'camEl', 'camFov'] as const;
@@ -129,7 +136,8 @@ async function openHome(page: Page, url = HOME): Promise<void> {
   await ready(page);
 }
 async function ready(page: Page): Promise<void> {
-  await waitForStagePhase(page, ['ready'], 30_000);
+  const staticTier = new URL(page.url()).searchParams.get('tier') === 'static';
+  await waitForStagePhase(page, [staticTier ? 'fallback' : 'ready'], 30_000);
   await page.waitForFunction(() => document.documentElement.classList.contains('motion-ready'));
   await page.evaluate(() =>
     document.querySelector<HTMLElement>('[data-stage-debug]')?.style.setProperty('display', 'none'),
@@ -1032,7 +1040,8 @@ function arrival(rec: SceneRec[], t0: number) {
 
 /**
  * Sönme / geri gelme süreleri. Kare hızından bağımsız ölçüt yazımlardan okunur ('op' kayıtları): t0'dan sonra opaklığın
- * > 0.01 YAZILDIĞI son an (sönme) ve varıştan / oturmadan sonra < 0.99 yazıldığı son an (geri gelme). Ham süreler (eşiğin
+ * > 0.01 YAZILDIĞI son an (sönme) ve varıştan sonra çizilen ilk rig karesinden / oturmadan sonra < 0.99 yazıldığı son
+ * an (geri gelme). Ham süreler (eşiğin
  * ilk geçildiği kare) ayrıca raporlanır. Eski kare: geri gelme sırasında (son sıfırdan sonra) sahne en az yarı görünürken
  * rig'in son karesi hedeften belirgin farklı (> 5° ya da > 0.05) — morf zinciri ya da kesmeden önceki durum görünüyor.
  */
@@ -1043,7 +1052,14 @@ function cutTiming(rec: SceneRec[], t0: number, from: 'arrive' | 'zero') {
   const lastAbove = writes.filter((r) => r.op > 0.01 && (!zeroAt || r.t < zeroAt.t)).at(-1);
   const { finalY, arrive } = arrival(rec, t0);
   const lastZero = after.filter((r) => r.op <= 0.01).at(-1);
-  const ref = from === 'arrive' ? (arrive ?? lastZero?.t) : lastZero?.t;
+  // §5.9.7 (M6): belirme rig oturtulmuş kareyi çizdikten sonra başlar; varıştan sonraki ilk rig karesinden ölçülür
+  // (60 fps'te ≈ 16 ms; CI SwiftShader'da ≈ 500 ms)
+  const atArrive = arrive === undefined ? undefined : after.find((r) => r.t >= arrive);
+  const drawn =
+    atArrive === undefined
+      ? undefined
+      : after.find((r) => r.kind === 'raf' && r.t >= atArrive.t && r.frames > atArrive.frames)?.t;
+  const ref = from === 'arrive' ? (drawn ?? arrive ?? lastZero?.t) : lastZero?.t;
   const back = ref === undefined ? undefined : after.find((r) => r.t >= ref && r.op >= 0.99);
   const lastBelow =
     ref === undefined || !back
@@ -1102,7 +1118,7 @@ test.describe(
     test('K-GEN-2 bölüm yükseklikleri ve toplam kaydırma (yönetmen fazlarıyla)', async ({
       page,
     }, info) => {
-      await openHome(page);
+      await openHome(page, HOME_TARGET);
       const m = await measure(page);
       await crossCheckLayout(page, m, info);
       const h = Object.fromEntries(m.chapters.map((c) => [c.id, svh(m, c.height)]));
@@ -1146,7 +1162,7 @@ test.describe(
     test('K-CHOREO-7 §4.12.1 her satırın sonunda stageTarget anahtar değerlerinin ± %2’si içinde', async ({
       page,
     }, info) => {
-      await openHome(page);
+      await openHome(page, HOME_TARGET);
       const m = await measure(page);
       const c = ctxOf(m, await stageData(page));
       note(info, 'bağlam', { N: c.N, W0: c.W0, lastPsi: c.lastPsi, L: c.L });
@@ -1177,7 +1193,7 @@ test.describe(
     test('K-CONTACT-3 sayfa sonunda sahne K5’te: rotX 68 ± 1°, arcGlow 1, ışık 70/14, cut −0.05, rim 0.35', async ({
       page,
     }) => {
-      await openHome(page);
+      await openHome(page, HOME_TARGET);
       const m = await measure(page);
       await stepTo(page, m.maxScroll, 0.9);
       const v = (await readTarget(page)).values;
@@ -1208,7 +1224,7 @@ test.describe(
       test(`K-CHOREO-4 ${group.join(' / ')}: bölüm başına 3 konum; açılar ± 0.5°, skalerler ± 0.01`, async ({
         page,
       }, info) => {
-        await openHome(page);
+        await openHome(page, HOME_TARGET);
         const m = await measure(page);
         const diffs: string[] = [];
         for (const id of group) {
@@ -1306,7 +1322,7 @@ test.describe(
 
 test.describe('I2 reveal zamanlaması (§13.3.5)', { tag: ['@desktop-chromium'] }, () => {
   test('I2 reveals complete before 75% (readingScroll, 10 svh/s)', async ({ page }, info) => {
-    await openHome(page);
+    await openHome(page, HOME_TARGET);
     const m = await measure(page);
     await installRevealProbe(page, 'scroll');
     await readingScroll(page, 0, Math.ceil(svh(m, m.maxScroll)));
@@ -1316,7 +1332,7 @@ test.describe('I2 reveal zamanlaması (§13.3.5)', { tag: ['@desktop-chromium'] 
   // readingScroll her adımda anında window.scrollTo yapar; Chrome her birinde scrollend yayar ve §5.14.6 süpürmesi
   // görünüme giren öğeyi anında açar. Gerçek tetikleyicileri (top 88% / top 75%) tekerlek + Lenis sınar.
   test('I2 reveals complete before 75% (tekerlek + Lenis, 10 svh/s)', async ({ page }, info) => {
-    await openHome(page);
+    await openHome(page, HOME_TARGET);
     const m = await measure(page);
     await page.mouse.move(720, 450);
     await installRevealProbe(page, 'interval');
@@ -1329,7 +1345,7 @@ test.describe('I3 dwell sabitliği (§13.3.5, K-AREAS-5)', { tag: ['@desktop-chr
   test('I3 dwell stillness: areas dwell’lerinde rotY sabit; work / journey dwell’lerinde rotYScroll ≤ 33.4°/100 svh, kamera sabit', async ({
     page,
   }, info) => {
-    await openHome(page);
+    await openHome(page, HOME_TARGET);
     await page.mouse.move(-1, -1); // işaretçi pencere dışında
     const m = await measure(page);
     const c = ctxOf(m, await stageData(page));
@@ -1623,7 +1639,7 @@ test.describe('about ve areas (K-ABOUT-1, K-AREAS-3/4/6)', { tag: ['@desktop-chr
   test('K-ABOUT-1 s 30 / 65 / 100 / 140: kesit çizgisi scaleX = cutProgress (± 0.02); s 100 cut 0.35; s 140 cut 0, ringContrast 1', async ({
     page,
   }) => {
-    await openHome(page);
+    await openHome(page, HOME_TARGET);
     const m = await measure(page);
     const pts: [string, number][] = [
       ['s 30', yAt(m, 'about', 'in', 0.3)],
@@ -1658,7 +1674,7 @@ test.describe('about ve areas (K-ABOUT-1, K-AREAS-3/4/6)', { tag: ['@desktop-chr
   test('K-AREAS-3 açıklama değişimleri sA(k) + 0.15·S’de (± 2 svh), sayaç ve aria-current aynı anda; K-AREAS-4 iki açıklama aynı anda görünmez', async ({
     page,
   }, info) => {
-    await openHome(page);
+    await openHome(page, HOME_TARGET);
     const m = await measure(page);
     const c = ctxOf(m, await stageData(page));
     expect(m.areas, 'areas pin etkin').not.toBeNull();
@@ -1752,7 +1768,7 @@ test.describe('about ve areas (K-ABOUT-1, K-AREAS-3/4/6)', { tag: ['@desktop-chr
     page,
   }, info) => {
     await page.addInitScript(recordScene);
-    await openHome(page);
+    await openHome(page, HOME_TARGET);
     const m = await measure(page);
     const c = ctxOf(m, await stageData(page));
     expect(m.areas, 'areas pin etkin').not.toBeNull();
@@ -1814,7 +1830,7 @@ test.describe('work (K-WORK-1/2/3)', { tag: ['@desktop-chromium'] }, () => {
   test('K-WORK-2 aktivasyonlar T_work − 25 + 70k svh’de (± 2); K-WORK-1 BODY’de silme dışında tam bir figür açık', async ({
     page,
   }, info) => {
-    await openHome(page);
+    await openHome(page, HOME_TARGET);
     const m = await measure(page);
     const d = await stageData(page);
     const T = m.chapters.find((x) => x.id === 'work')!.top;
@@ -1885,7 +1901,7 @@ test.describe('work (K-WORK-1/2/3)', { tag: ['@desktop-chromium'] }, () => {
     page,
     context,
   }, info) => {
-    await openHome(page);
+    await openHome(page, HOME_TARGET);
     const m = await measure(page);
     const d = await stageData(page);
     // bağlantılar: "Projeyi incele →" proje sayfasına; mağaza bağlantıları projenin links listesiyle aynı; video yok
@@ -2008,7 +2024,7 @@ test.describe(
     test('K-JOURNEY-2 aktivasyonlar T_journey − 15 + 35k svh’de (± 2), bant tween’i 500 ms, tek vurgulu yıl; K-JOURNEY-3 bant içe, arcGlow 0.2', async ({
       page,
     }, info) => {
-      await openHome(page);
+      await openHome(page, HOME_TARGET);
       const m = await measure(page);
       const d = await stageData(page);
       const T = m.chapters.find((x) => x.id === 'journey')!.top;
@@ -2174,7 +2190,7 @@ test.describe(
             }
           ).__contact(),
         );
-      await openHome(page);
+      await openHome(page, HOME_TARGET);
       const m = await measure(page);
       const cin = phaseOf(m, 'contact', 'in');
       const want = {

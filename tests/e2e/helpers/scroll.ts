@@ -9,7 +9,7 @@ export async function scrollToSvh(page: Page, s: number): Promise<void> {
   await settle(page);
 }
 
-/** Waits until scrollY (and the debug stage values, if present) stop changing for quietMs. */
+/** Waits until scrollY (and the debug stage values, if present) stop changing for quietMs and at least 3 frames. */
 export async function settle(page: Page, quietMs = 300): Promise<void> {
   await page.waitForFunction(
     (quiet) =>
@@ -23,13 +23,17 @@ export async function settle(page: Page, quietMs = 300): Promise<void> {
         };
         let last = read();
         let since = performance.now();
+        // unchanged frames: at a slow frame rate (CI SwiftShader ≈ 2 fps) a running tween can stay still between two
+        // frames for longer than quietMs, so at least 3 unchanged frames are also required
+        let still = 0;
         const tick = () => {
           const now = read();
           if (now !== last) {
             last = now;
             since = performance.now();
-          }
-          if (performance.now() - since >= quiet) resolve(true);
+            still = 0;
+          } else still++;
+          if (performance.now() - since >= quiet && still >= 3) resolve(true);
           else requestAnimationFrame(tick);
         };
         requestAnimationFrame(tick);
