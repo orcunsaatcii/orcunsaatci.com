@@ -1,6 +1,9 @@
 // src/experience/profile.ts — three-free; stage/, views/ ve figures/ buradan okur (§4.17.3).
 // Değerlerin sahibi §4.17.2 (persona tablosu) ve §4.17.4 (yoğunluk, [SABİT]) tablolarıdır.
 import type { PaletteName } from '../design/tokens';
+import type { Intensity } from './intensity';
+
+export { INTENSITY, type Intensity, type IntensityParams } from './intensity';
 
 export type { PaletteName };
 export type Persona = 'neutral' | 'engineer' | 'designer' | 'architect' | 'researcher' | 'manager';
@@ -9,7 +12,6 @@ export type Surface = 'graphite' | 'anodized' | 'agate' | 'travertine' | 'ice' |
 export type CapPattern = 'rings' | 'contours' | 'agate' | 'poche' | 'growth' | 'geode';
 export type RingsSource = 'years' | 'publications' | 'teamSize';
 export type TypePreset = 'hassas' | 'editoryal';
-export type Intensity = 'calm' | 'standard' | 'expressive';
 type L = { tr: string; en: string };
 
 export interface ExperienceProfile {
@@ -33,16 +35,6 @@ export interface ExperienceProfile {
     contactLead: L; // contact lead (yer tutucu; içerik sahibi değiştirebilir, §7.9)
   };
   work: { viewer: boolean; specimen: boolean }; // viewer=false → work her boyutta akış düzeni; specimen=false → work'te tone 0
-}
-
-export interface IntensityParams {
-  idleDegPerSec: number; // 1 | 2 | 3
-  pointerAzDeg: number; // 15 | 25 | 30
-  pointerElDeg: number; // 7 | 12 | 15
-  ghostAlphaMax: number; // 0.06 | 0.10 | 0.10
-  sweepFromAzDeg: number; // -96 | -120 | -140 (bitiş her zaman -60)
-  waveWidthPx: number; // 1.5 | 2 | 2.5
-  areasTurnEase: 'sine.inOut' | 'smoothstep' | 'power3.inOut';
 }
 
 /** Tüm persona'larda ortak değerler (§4.17.2) */
@@ -214,37 +206,6 @@ export const PROFILES: Readonly<Record<Persona, ExperienceProfile>> = {
       },
     },
     work: WORK,
-  },
-};
-
-/** §4.17.4 [SABİT]; `standard` final.md değerlerinin aynısıdır. */
-export const INTENSITY: Readonly<Record<Intensity, IntensityParams>> = {
-  calm: {
-    idleDegPerSec: 1,
-    pointerAzDeg: 15,
-    pointerElDeg: 7,
-    ghostAlphaMax: 0.06,
-    sweepFromAzDeg: -96,
-    waveWidthPx: 1.5,
-    areasTurnEase: 'sine.inOut',
-  },
-  standard: {
-    idleDegPerSec: 2,
-    pointerAzDeg: 25,
-    pointerElDeg: 12,
-    ghostAlphaMax: 0.1,
-    sweepFromAzDeg: -120,
-    waveWidthPx: 2,
-    areasTurnEase: 'smoothstep',
-  },
-  expressive: {
-    idleDegPerSec: 3,
-    pointerAzDeg: 30,
-    pointerElDeg: 15,
-    ghostAlphaMax: 0.1,
-    sweepFromAzDeg: -140,
-    waveWidthPx: 2.5,
-    areasTurnEase: 'power3.inOut',
   },
 };
 

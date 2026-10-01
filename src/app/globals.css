@@ -612,6 +612,8 @@
       .arc-overlay,
       [data-stage-anchor="work-specimen"] .anchor-figure,
       [data-stage-anchor="journey-core"] .anchor-figure,
+      [data-stage-anchor="page-folio"] .anchor-figure,
+      [data-stage-anchor="cv-core"] .anchor-figure,
       [data-areas-pinned] [data-stage-anchor="areas-dial"] .anchor-figure
     ) {
     opacity: 0;
@@ -622,16 +624,103 @@
   body:has([data-chapter="hero"]) [data-site-footer="full"] { display: none; }
 }
 
-/* ── 8. Route geçişi sabitleri (D-32; sayfa içeriği animasyonları §5.15) ──── */
-::view-transition-group(scene),
-::view-transition-new(scene),
-::view-transition-group(site-header),
-::view-transition-old(site-header),
+/* ── 8. Route geçişleri (D-32, §5.15.1; süreler final.md §6.3) ─────────────── */
+::view-transition { pointer-events: none; } /* geçiş sırasında tıklamalar sayfaya geçer */
+::view-transition-old(.page-out) { animation: 150ms var(--ease-in) both vt-fade-out; }
+::view-transition-new(.page-in) {
+  animation: 210ms var(--ease-out) 150ms both vt-fade-in, 210ms var(--ease-out) 150ms both vt-rise;
+}
+/* tipsiz geri/ileri: yalnız opaklık, kayma yok (§4.13.4 [SABİT] #13) */
+::view-transition-old(.page-fade-out) { animation: 150ms var(--ease-in) both vt-fade-out; }
+::view-transition-new(.page-fade-in) { animation: 210ms var(--ease-out) 150ms both vt-fade-in; }
+@keyframes vt-fade-out { to { opacity: 0; } }
+@keyframes vt-fade-in { from { opacity: 0; } }
+@keyframes vt-rise { from { translate: 0 16px; } }
+::view-transition-group(.morph) { animation-duration: 400ms; animation-timing-function: var(--ease-in-out); }
+
+/* header sabit çapa; canlı canvas görünmeye devam eder (eski anlık görüntü gizli, §5.12.5) */
+::view-transition-group(site-header) { animation: none; z-index: 100; }
+::view-transition-old(site-header) { display: none; }
 ::view-transition-new(site-header) { animation: none; }
+::view-transition-group(scene),
+::view-transition-new(scene) { animation: none; }
 ::view-transition-old(scene) { display: none; }
+
 :root[data-motion="reduce"]::view-transition-group(*),
 :root[data-motion="reduce"]::view-transition-old(*),
-:root[data-motion="reduce"]::view-transition-new(*) { animation-duration: 0s !important; }
+:root[data-motion="reduce"]::view-transition-new(*) {
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion="full"])::view-transition-group(*),
+  :root:not([data-motion="full"])::view-transition-old(*),
+  :root:not([data-motion="full"])::view-transition-new(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}
+
+/* Yüzen proje önizlemesi (§4.14.5): 4:3, clamp(240px, 22vw, 360px), köşe 6 px; görseller arası 160 ms çapraz solma */
+.floating-preview {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: var(--z-content);
+  width: clamp(240px, 22vw, 360px);
+  aspect-ratio: 4 / 3;
+  border-radius: 6px;
+  overflow: hidden;
+  pointer-events: none;
+  visibility: hidden;
+}
+.floating-preview[data-open] { visibility: visible; }
+.floating-preview img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 160ms var(--ease-out);
+}
+.floating-preview img[data-on] { opacity: 1; }
+:root[data-motion='reduce'] .floating-preview img { transition: none; }
+
+/* Etkin nav noktası (§4.14 #11): 5 px vurgu noktası etkin öğenin altına kayar (400 ms --ease-tick) */
+.nav-dot {
+  position: relative;
+}
+.nav-dot::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 4px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  translate: var(--dot-x, 0) 0;
+  opacity: var(--dot-on, 0);
+  transition:
+    translate 400ms var(--ease-tick),
+    opacity 160ms var(--ease-out);
+  pointer-events: none;
+}
+:root[data-motion='reduce'] .nav-dot::after { transition: none; }
+
+/* NavCutLine (§5.15.2): header'ın alt kenarında 1 px vurgu çizgisi; animasyon WAAPI ile */
+.nav-cut-line {
+  position: absolute;
+  inset-inline: 0;
+  bottom: -1px;
+  height: 1px;
+  background: var(--color-accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  opacity: 0;
+  pointer-events: none;
+}
 
 /* ── 9. Baskı (CV'ye özgü kurallar §7.6) ─────────────────────────────────── */
 @media print {

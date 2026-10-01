@@ -24,6 +24,7 @@ import {
   tList,
 } from '@/lib/content';
 import { pageLink } from '@/lib/seo/metadata';
+import { previewAttrs } from '@/stage/preview-attrs';
 import { StageAnchor } from '@/stage/ScenePoster';
 import { JourneyActive } from './JourneyActive';
 
@@ -70,6 +71,7 @@ export function Journey({ locale }: { locale: Locale }) {
                 <TimelineEntry
                   key={e.id}
                   entryIndex={i}
+                  preview={previewAttrs({ band: stage.entries[i]?.band })}
                   reveal
                   locale={locale}
                   start={e.period.start}
@@ -162,7 +164,12 @@ export function Journey({ locale }: { locale: Locale }) {
               data-reveal="block"
             >
               <CvDownload locale={locale} />
-              <Link href={cv.href} hrefLang={cv.hrefLang} className="link-inline type-ui">
+              <Link
+                transitionTypes={['nav-forward']}
+                href={cv.href}
+                hrefLang={cv.hrefLang}
+                className="link-inline type-ui"
+              >
                 {dict.home.fullCv}
                 {cv.fallback ? dict.lang.trSuffix : null}
                 <span aria-hidden="true"> →</span>

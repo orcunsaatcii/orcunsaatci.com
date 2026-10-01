@@ -1,5 +1,7 @@
 // src/components/layout/PageHeader.tsx — derin sayfa baş bloğu: breadcrumb, H1, giriş (okuma modu, §4.13).
-// Sağ sütunda isteğe bağlı page-folio çapası (D4 about-page K1, D5 contact-page K5 posteri; §4.16.3). Server.
+// İsteğe bağlı page-folio çapası (§4.13.2): masaüstünde sağ sütunda (k8–12, dar: k10–12), < 64rem'de başlık bloğunun
+// altında 30 svh tam genişlik bant (§4.13.5). Poster karşılığı: D4 K1, D5 K5 posteri ya da D2 DialFigure (§4.16.3).
+// Server.
 import type { ReactNode } from 'react';
 import type { Locale, PageRef } from '@/i18n/config';
 import { StageAnchor } from '@/stage/ScenePoster';
@@ -14,7 +16,14 @@ interface PageHeaderProps {
   crumbTitle?: string;
   titleLang?: string;
   lede?: ReactNode;
-  folio?: { preset: keyof typeof PAGE_FOLIO_SIZE; poster?: 'k1' | 'k5' };
+  folio?: {
+    preset: keyof typeof PAGE_FOLIO_SIZE;
+    poster?: 'k1' | 'k5';
+    /** k10–12 (/projeler, alan sayfası); yoksa k8–12 */
+    narrow?: boolean;
+    /** SVG poster karşılığı (.anchor-figure; canlı Taş hazır olunca söner) */
+    figure?: ReactNode;
+  };
   children?: ReactNode;
 }
 
@@ -43,8 +52,13 @@ export function PageHeader({
           id="page-folio"
           poster={folio.poster}
           size={PAGE_FOLIO_SIZE[folio.preset]}
-          className="col-span-4 aspect-square max-lg:hidden lg:col-span-5 lg:col-start-8"
-        />
+          className={[
+            'col-span-4 h-[30svh] md:col-span-8 lg:aspect-square lg:h-auto',
+            folio.narrow ? 'lg:col-span-3 lg:col-start-10' : 'lg:col-span-5 lg:col-start-8',
+          ].join(' ')}
+        >
+          {folio.figure}
+        </StageAnchor>
       ) : null}
     </header>
   );

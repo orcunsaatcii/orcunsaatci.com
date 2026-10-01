@@ -3,7 +3,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import type { MotionRuntime } from '@/lib/gsap';
-import { NO_BAND, psiDeg } from '@/lib/section-geometry';
+import { NO_BAND, psiDeg, wrap180 } from '@/lib/section-geometry';
 import {
   applyEvents,
   computeIndices,
@@ -224,7 +224,7 @@ describe('resolveEvents (§5.9.5 hedef çözümleyici)', () => {
     expect(run(IX({ fillWindow: true, work: 1 }), six.data, c6).fills).toEqual(Array(6).fill(0.12));
   });
 
-  it('liste modu (sectors 0): rotYEvent 0, dolgular 0; derin preset’ler varsayılan hedefi alır (M7)', () => {
+  it('liste modu (sectors 0): rotYEvent 0, dolgular 0', () => {
     const list = buildFixture({ variant: 'desktop', N: 7, P: 3, E: 2 });
     const c = stageCtx(list.data, list.layout);
     expect(run(IX({ work: 1, fillWindow: true }), list.data, c)).toMatchObject({
@@ -234,9 +234,29 @@ describe('resolveEvents (§5.9.5 hedef çözümleyici)', () => {
       bandStart: 1,
       bandEnd: 3,
     });
-    expect(run(IX({ work: 1, journey: 0, fillWindow: true }), fx.data, ctx, 'folio')).toEqual(
-      createEventTargets(),
+  });
+
+  it('derin preset’ler (§5.9.10): folio etkin proje (slot 1 sonraki), plan-small filtre, cv-core girdi bandı', () => {
+    const [p0, p1] = fx.data.projects;
+    const n = ctx.N;
+    const f0 = run(IX(), fx.data, ctx, 'folio');
+    expect(f0).toMatchObject({ rotYEvent: 0, fillsActive: true, bandStart: p0!.band![0] });
+    expect(f0.fills[p0!.area!]).toBe(0.6);
+    const f1 = run(IX({ slot: 1 }), fx.data, ctx, 'folio');
+    expect(f1.bandStart).toBe(p1!.band![0]);
+    expect(f1.rotYEvent).toBeCloseTo(wrap180(psiDeg(p1!.area!, n) - psiDeg(p0!.area!, n)));
+    const plan = run(IX({ filter: 2 }), fx.data, ctx, 'plan-small');
+    expect(plan.fills.slice(0, n)).toEqual(
+      Array.from({ length: n }, (_, i) => (i === 2 ? 1 : 0.15)),
     );
+    expect(plan.rotYEvent).toBeCloseTo(wrap180(psiDeg(2, n) - (ctx.psi[0] ?? 45)));
+    expect(run(IX(), fx.data, ctx, 'plan-small')).toMatchObject({
+      rotYEvent: 0,
+      fillsActive: true,
+    });
+    const cv = run(IX({ cv: 0 }), fx.data, ctx, 'cv-core');
+    expect([cv.bandStart, cv.bandEnd]).toEqual(fx.data.entries[0]!.band);
+    expect(run(IX(), fx.data, ctx, 'about-page')).toEqual(createEventTargets());
   });
 
   it('çıktı nesnesi yeniden kullanılır; önceki çağrının durumu sızmaz', () => {
@@ -482,7 +502,7 @@ describe('applyEvents (sahte gsap runtime; §5.9.5)', () => {
   });
 
   it('home dışı preset: areas/work/journey olayı yok; cv:active yalnız indeks değişince', () => {
-    const t = resolveEvents('cv-core', IX({ cv: 0 }), fx.data, ctx, createEventTargets());
+    const t = resolveEvents('cv-core', IX(), fx.data, ctx, createEventTargets());
     applyEvents(rt, 'cv-core', t, IX(), null, { instant: false });
     expect(seen).toEqual([]);
     expect(stageTarget).toMatchObject({ bandStart: NO_BAND[0], bandEnd: NO_BAND[1], rotYEvent: 0 });

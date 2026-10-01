@@ -1,9 +1,12 @@
 'use client';
 // src/components/layout/NavLinks.tsx — header ve mobil menünün ortak bağlantı listesi (§3.9.1, D-41).
 // "Ana sayfada mı?" kararı matchRoute(usePathname()) ile verilir; SSR'da da doğru href üretir (§8.3 kural 6).
+// Etkin öğe (§4.14 #11): route sayfalarında aria-current="page"/"true"; ana sayfada scroll-spy (IntersectionObserver,
+// rootMargin '-45% 0px -50% 0px') görünümdeki bölümün bağlantısına aria-current="true" yazar (canlı bölge yok). dot
+// iken listenin altında 5 px vurgu noktası etkin öğeye translateX ile kayar (400 ms --ease-tick; globals.css).
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   chapterAnchors,
   headerItems,
@@ -39,6 +42,8 @@ interface NavLinksProps {
   className?: string;
   linkClassName?: string;
   onNavigate?: () => void;
+  /** header: etkin öğenin altında kayan vurgu noktası */
+  dot?: boolean;
 }
 
 export function NavLinks({
@@ -48,15 +53,49 @@ export function NavLinks({
   className,
   linkClassName,
   onNavigate,
+  dot,
 }: NavLinksProps) {
   const pathname = usePathname();
   const enSet = useMemo(() => new Set(enPaths), [enPaths]);
   const match = matchRoute(pathname);
   const isHome = match?.ref.key === 'home';
   const chain = match ? trail(match.ref).map((r) => r.key) : [];
+  const [spy, setSpy] = useState<string | null>(null);
+  const list = useRef<HTMLUListElement>(null);
+
+  // Ana sayfa scroll-spy: görünüm ortasındaki bölüm
+  useEffect(() => {
+    if (!isHome) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const en of entries)
+          if (en.isIntersecting) setSpy((en.target as HTMLElement).dataset.chapter ?? null);
+      },
+      { rootMargin: '-45% 0px -50% 0px' },
+    );
+    document.querySelectorAll('#main [data-chapter]').forEach((el) => io.observe(el));
+    return () => {
+      io.disconnect();
+      setSpy(null);
+    };
+  }, [isHome]);
+
+  // Vurgu noktası etkin öğenin ortasına kayar
+  useEffect(() => {
+    const ul = list.current;
+    if (!dot || !ul) return;
+    const place = () => {
+      const a = ul.querySelector<HTMLElement>('[aria-current]');
+      ul.style.setProperty('--dot-on', a ? '1' : '0');
+      if (a) ul.style.setProperty('--dot-x', `${a.offsetLeft + a.offsetWidth / 2 - 2.5}px`);
+    };
+    place();
+    window.addEventListener('resize', place);
+    return () => window.removeEventListener('resize', place);
+  });
 
   return (
-    <ul className={className}>
+    <ul ref={list} className={[className, dot ? 'nav-dot' : null].filter(Boolean).join(' ')}>
       {headerItems.map(({ chapter, route }) => {
         const label = labels[LABEL_OF[chapter]];
         const emphasis = chapter === 'contact' ? 'font-strong' : undefined;
@@ -66,6 +105,7 @@ export function NavLinks({
             <li key={chapter}>
               <a
                 href={`#${chapterAnchors[chapter][locale]}`}
+                aria-current={spy === chapter ? 'true' : undefined}
                 className={[linkClassName, emphasis].filter(Boolean).join(' ')}
                 onClick={onNavigate}
               >

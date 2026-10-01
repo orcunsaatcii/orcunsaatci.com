@@ -17,8 +17,10 @@ import {
 import { emit, notifyStageUpdate, type CutReason, type StageEvent } from './events';
 import { keyframes, type Keyframe } from './keyframes';
 import { presetDef } from './presets';
+import { anchorScreen } from './anchor-screen';
 import {
   ANCHOR_MISSING,
+  ANCHOR_VIRTUAL,
   currentSceneOpacity,
   directorApi,
   live,
@@ -99,6 +101,12 @@ export function runDirector(
       cutProgress: 0,
     };
     const owned = (p: TrackProp, y: number) => layout !== null && eventOwned(layout, p, y);
+    /** okuma modu hedefi (§4.13.1): −1 = henüz uygulanmadı */
+    let readingTo = -1;
+    /** folio "Sonraki proje" çapasının indeksi (page-folio slot 1); yoksa −1 */
+    let slot1 = -1;
+    /** route glide'ı (§5.15.3): sanal çapadan (eski sayfanın son karesi) yeni çapaya 700 ms */
+    let glide: { mix: number } | null = null;
     // anchor id → ölçülmüş listedeki indeks (slot 0); eksik → ANCHOR_MISSING (refresh'te kurulur)
     let anchorIdx = new Map<AnchorId, number>();
     const anchorIndex = (id: AnchorId) => anchorIdx.get(id) ?? ANCHOR_MISSING;
@@ -130,12 +138,40 @@ export function runDirector(
       live.inHero = preset === 'home' && y < layout.heroExit;
       const next = computeIndices(layout, y, bufs[flip]);
       flip ^= 1;
+      next.filter = live.planFilter ?? -1;
       applyBase(stageTarget, base, anchorIndex, next.fillWindow); // §5.9.3 adım 1
       evaluateTracks(groups, y, stageTarget, anchorIndex, owned);
+      // folio "Sonraki proje" (§5.9.10): blok etkinken çapa slot 1'dir; değişim opaklık 0 iken olur (okuma modu)
+      if (next.slot === 1 && slot1 >= 0) {
+        stageTarget.anchorFrom = slot1;
+        stageTarget.anchorTo = slot1;
+        stageTarget.anchorMix = 0;
+      }
+      if (glide) {
+        stageTarget.anchorFrom = ANCHOR_VIRTUAL;
+        stageTarget.anchorMix = glide.mix;
+      }
       applyEvents(rt, preset, resolveEvents(preset, next, data, cctx, targets), next, prevIx, {
         instant,
       });
       prevIx = next;
+      // Okuma modu (§4.13.1): slot 0 bloğu ya da etkin "Sonraki proje" görünürken 1, değilse 300 ms'de 0
+      const reading = y < (layout.reading ?? Number.POSITIVE_INFINITY) || next.slot === 1 ? 1 : 0;
+      if (reading !== readingTo) {
+        readingTo = reading;
+        gsap.killTweensOf(stageTarget, 'opacityReading');
+        if (instant) stageTarget.opacityReading = reading;
+        else
+          gsap.to(stageTarget, {
+            opacityReading: reading,
+            duration: 0.3,
+            ease: 'power2.out',
+            onUpdate: () => {
+              writeCssVars();
+              stageStore.getState().invalidate();
+            },
+          });
+      }
       cutEvent.cutProgress = Math.min(1, Math.max(0, (1.1 - stageTarget.cut) / 1.1)); // track değeri (§5.9.5)
       emit(cutEvent);
       writeCssVars();
@@ -187,6 +223,7 @@ export function runDirector(
       // anlık sönme + aynı güncellemede oturma + geri gelme (instant-scroll, route, restore girişi). Döngü açılır:
       // oturtulmuş kare görünmezken çizilsin (önceki sayfanın 'never'i belirmeyi zaman aşımına bırakıyordu)
       cutting = true;
+      stopGlide();
       stageStore.getState().setLoop('demand');
       emit({ type: 'cut', stage: 'start', reason });
       gsap.killTweensOf(stageTarget, 'opacityCut');
@@ -246,6 +283,7 @@ export function runDirector(
       });
       live.anchors = layout.anchors;
       live.layout = layout;
+      slot1 = layout.anchors.findIndex((a) => a.id === 'page-folio' && a.slot === 1);
       cctx = stageCtx(data, layout);
       base = def.base ? keyframes(cctx)[def.base] : null; // refresh'te bir kez (§5.13.5)
       groups = resolveTracks(
@@ -254,9 +292,47 @@ export function runDirector(
       );
       publish(layout);
       const pending = nav.consume(); // 'push' | 'restore' | null (§5.15.3)
-      if (pending) runCut(pending === 'restore' ? 'restore' : 'route');
+      if (pending === 'push' && canGlide()) startGlide();
+      else if (pending) runCut(pending === 'restore' ? 'restore' : 'route');
       update(window.scrollY, { instant: true });
     };
+
+    /** §5.15.3: eski karede Taş görünürdü ve yeni hedef ilk görünümde görünür olacak (opaklık ve çapa ekranda) */
+    const canGlide = (): boolean => {
+      const s = nav.snapshot;
+      if (!layout || !base || !s.visible || s.opacity <= LOOP_EPS) return false;
+      const y = window.scrollY;
+      if (y >= (layout.reading ?? Number.POSITIVE_INFINITY)) return false;
+      const a = layout.anchors[anchorIndex(def.anchors[0] ?? 'page-folio')];
+      if (!a) return false;
+      const r = anchorScreen(a, y, 1);
+      return r.D > 0 && r.cy + r.D / 2 > 0 && r.cy - r.D / 2 < layout.vh;
+    };
+    const stopGlide = () => {
+      if (!glide) return;
+      gsap.killTweensOf(glide);
+      glide = null;
+    };
+    const startGlide = () => {
+      const s = nav.snapshot;
+      live.virtualAnchor.cx = s.cx;
+      live.virtualAnchor.cy = s.cy;
+      live.virtualAnchor.D = 2 * s.r;
+      stopGlide();
+      const g = { mix: 0 };
+      glide = g;
+      gsap.to(g, {
+        mix: 1,
+        duration: 0.7,
+        ease: 'power2.inOut',
+        onUpdate: () => update(window.scrollY),
+        onComplete: () => {
+          if (glide === g) glide = null;
+          update(window.scrollY);
+        },
+      });
+    };
+    directorApi.update = () => update(window.scrollY);
 
     ScrollTrigger.create({
       start: 0,
@@ -287,7 +363,9 @@ export function runDirector(
     ctx.revert();
     gsap.killTweensOf(stageTarget);
     stageTarget.opacityCut = 1;
+    stageTarget.opacityReading = 1;
     live.layout = null;
+    directorApi.update = () => {};
     directorApi.areasStepY = () => Number.NaN;
     directorApi.chapterY = () => Number.NaN;
     directorApi.chapterIndexAt = () => -1;

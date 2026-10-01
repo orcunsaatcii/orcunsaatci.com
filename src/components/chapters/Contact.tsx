@@ -89,7 +89,12 @@ export function Contact({ locale }: { locale: Locale }) {
           </div>
           {status ? <p className="type-ui text-ink-muted">{dict.availability[status]}</p> : null}
           <p>
-            <Link href={more.href} hrefLang={more.hrefLang} className="link-inline type-ui">
+            <Link
+              transitionTypes={['nav-forward']}
+              href={more.href}
+              hrefLang={more.hrefLang}
+              className="link-inline type-ui"
+            >
               {dict.home.allContact}
               {more.fallback ? dict.lang.trSuffix : null}
             </Link>

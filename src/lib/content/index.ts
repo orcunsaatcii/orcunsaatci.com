@@ -419,15 +419,14 @@ export function getStageData(
         entries: [],
         activeArea: slug ? areaIndex(slug) : null,
       };
-    case 'cv-core':
-      return {
-        ...base,
-        projects: [],
-        entries: [...cvExperience.items, ...cvEducation.items]
-          .filter((e) => isVisible(e.visibility, 'web'))
-          .sort(byPeriod)
-          .map(entryBand),
-      };
+    case 'cv-core': {
+      // /cv'deki [data-cv-entry] DOM sırası (bölüm sırası, §7.6.1): girdi aktivasyon çizgileri bu sırayla eşleşir
+      const entries: Array<{ band: readonly [number, number] | null }> = [];
+      for (const s of selectCv(cvSource(), locale, 'web'))
+        if (s.key === 'experience' || s.key === 'education')
+          entries.push(...s.entries.map(entryBand));
+      return { ...base, projects: [], entries };
+    }
     case 'about-page':
     case 'contact-page':
       return { ...base, projects: [], entries: [] };

@@ -223,6 +223,8 @@ export const live = {
   tilt: { x: 0, y: 0, breath: 0 },
   /** director'ün son refresh'te ölçtüğü düzen (fazlar, aktivasyon çizgileri); ?debug testleri okur (§13.3.4) */
   layout: null as Layout | null,
+  /** /projeler filtre çipi (alan indeksi; null = filtre yok); setPlanFilter yazar (§5.9.10) */
+  planFilter: null as number | null,
 };
 
 /** Anchor indeksi: −1 sanal (route glide anlık görüntüsü), −2 ölçülmemiş/eksik (§5.7.4) */
@@ -243,6 +245,8 @@ export interface DirectorApi {
   /** kesme kuralı (§5.9.7): sönmeyi başlatır; kaydırma bitince endCut oturtur ve geri getirir */
   startCut: (reason: 'far-jump' | 'restore' | 'route' | 'instant-scroll') => void;
   endCut: () => void;
+  /** event hedeflerini geçerli konumda yeniden değerlendirir (filtre çipi gibi kaydırma dışı durum değişince) */
+  update: () => void;
 }
 
 /** Aktif ScrollDirector'ün üzerine yazdığı yardımcılar; director yokken NaN / −1 / no-op. */
@@ -252,6 +256,7 @@ export const directorApi: DirectorApi = {
   chapterIndexAt: () => -1,
   startCut: () => {},
   endCut: () => {},
+  update: () => {},
 };
 
 export const nav = {

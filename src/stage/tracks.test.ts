@@ -22,7 +22,7 @@ import {
   type FixtureSpec,
   type FixtureVariant,
 } from './layout.fixture';
-import { PRESETS, presetDef } from './presets';
+import { presetDef } from './presets';
 import { stageTarget, type ChapterId, type PresetName, type StageTarget } from './store';
 import {
   AREAS_STEP,
@@ -893,18 +893,21 @@ describe('measureLayout (jsdom): fazlar, "top 55%" çizgileri, areas pini (§5.9
     });
   });
 
-  it('home dışı preset: faz, çizgi ve pin ölçülmez (derin preset’ler M7); about yoksa heroExit 0', () => {
+  it('derin preset: tek sentetik page fazı, çizgi ve pin yok; about yoksa heroExit 0', () => {
     const fx = buildFixture({ variant: 'mobile', N: 4, P: 4, E: 6 });
     const root = mount(fx);
     expect(measureLayout(root, 'folio')).toEqual({
       vh: fx.layout.vh,
       maxScroll: fx.layout.maxScroll,
       mobile: true,
-      phases: [],
+      phases: [{ chapter: 'page', phase: 'body', y0: 0, y1: 0, order: 0 }],
       anchors: [],
       activation: { work: [], journey: [], cv: [] },
       areas: null,
       heroExit: 0,
+      reading: Number.POSITIVE_INFINITY,
+      folioNext: null,
+      fillsByEvents: true,
     });
     root
       .querySelectorAll('[data-chapter="about"], [data-chapter="areas"]')
@@ -942,19 +945,29 @@ describe('yardımcılar (§5.9.3–§5.9.4, §5.9.10)', () => {
     expect(areasTurnEase()).toBe('smooth');
   });
 
-  it('buildTracks: yalnız home (derin preset’ler M7); dönüş easing’i yalnız areas rotYScroll dönüşlerinde', () => {
+  it('buildTracks: derin preset’lerde yalnız folio (+20°) ve cv-core (+60°) dönüşü; dönüş easing’i yalnız areas rotYScroll dönüşlerinde', () => {
     const fx = buildFixture({ variant: 'desktop', N: 4, P: 4, E: 6 });
     const ctx = stageCtx(fx.data, fx.layout);
     const v = variantOf(fx.layout);
-    for (const p of [
-      'folio',
-      'plan-small',
-      'cv-core',
-      'about-page',
-      'contact-page',
-      'none',
-    ] as PresetName[])
+    for (const p of ['plan-small', 'about-page', 'contact-page', 'none'] as PresetName[])
       expect(buildTracks(p, ctx, fx.layout, v)).toEqual([]);
+    const kf = keyframes(ctx);
+    for (const [p, turn] of [
+      ['folio', 20],
+      ['cv-core', 60],
+    ] as const)
+      expect(buildTracks(p, ctx, fx.layout, v)).toEqual([
+        {
+          prop: 'rotYScroll',
+          chapter: 'page',
+          phase: 'body',
+          start: 0,
+          end: 1,
+          from: kf[p].rotY,
+          to: kf[p].rotY + turn,
+          ease: 'linear',
+        },
+      ]);
     const tracks = buildTracks('home', ctx, fx.layout, v, 'power3InOut');
     expect(
       tracks
@@ -1087,7 +1100,7 @@ describe('yardımcılar (§5.9.3–§5.9.4, §5.9.10)', () => {
     });
   });
 
-  it('presetDef: home = K0 + 6 home anchor’ı + areas/work/journey; kayıtta olmayan preset none gibi (§5.9.10)', () => {
+  it('presetDef: home = K0 + 6 home anchor’ı + areas/work/journey; D1–D5 tabanları ve okuma modu (§5.9.10)', () => {
     expect(presetDef('home')).toEqual({
       base: 'hero',
       anchors: [
@@ -1099,15 +1112,14 @@ describe('yardımcılar (§5.9.3–§5.9.4, §5.9.10)', () => {
         'contact-ring',
       ],
       events: ['areas', 'work', 'journey'],
+      reading: false,
     });
-    expect(presetDef('none')).toEqual({ base: null, anchors: [], events: [] });
-    for (const p of [
-      'folio',
-      'plan-small',
-      'cv-core',
-      'about-page',
-      'contact-page',
-    ] as PresetName[])
-      expect(presetDef(p)).toBe(PRESETS.none);
+    expect(presetDef('none')).toEqual({ base: null, anchors: [], events: [], reading: false });
+    // D1–D5 (M7): taban = aynı adlı anahtar; okuma modu folio, plan-small ve about-page'de
+    for (const p of ['folio', 'plan-small', 'cv-core', 'about-page', 'contact-page'] as const) {
+      expect(presetDef(p).base).toBe(p);
+      expect(presetDef(p).reading).toBe(['folio', 'plan-small', 'about-page'].includes(p));
+    }
+    expect(presetDef('cv-core').anchors).toEqual(['cv-core']);
   });
 });

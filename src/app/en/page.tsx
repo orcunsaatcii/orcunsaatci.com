@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { pageLocales } from '@/lib/content';
 import { staticPageMetadata } from '@/lib/seo/metadata';
 import { HomeView } from '@/views/home/HomeView';
+import { PageTransition } from '@/components/motion/PageTransition';
 
 const ref = { key: 'home' } as const;
 
@@ -13,5 +14,9 @@ export function generateMetadata(): Metadata {
 
 export default function Page() {
   if (!pageLocales(ref).includes('en')) notFound();
-  return <HomeView locale="en" />;
+  return (
+    <PageTransition>
+      <HomeView locale="en" />
+    </PageTransition>
+  );
 }

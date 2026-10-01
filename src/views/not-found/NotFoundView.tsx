@@ -30,7 +30,11 @@ export function NotFoundView({ locale }: { locale: Locale }) {
         <ul className="mt-stack flex flex-wrap gap-x-6">
           {links.map((l) => (
             <li key={l.href}>
-              <Link href={l.href} className="inline-flex min-h-11 items-center link-inline type-ui">
+              <Link
+                transitionTypes={['nav-forward']}
+                href={l.href}
+                className="inline-flex min-h-11 items-center link-inline type-ui"
+              >
                 {l.label}
               </Link>
             </li>
@@ -48,6 +52,7 @@ export function NotFoundView({ locale }: { locale: Locale }) {
               {latest.map((p) => (
                 <li key={p.slug}>
                   <Link
+                    transitionTypes={['nav-forward']}
                     href={pathOf({ key: 'project', param: p.slug }, locale)}
                     className="link-inline type-ui"
                   >

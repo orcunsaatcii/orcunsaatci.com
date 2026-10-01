@@ -1,6 +1,7 @@
 // src/views/area/AreaView.tsx — tek alan sayfası (§7.8.5; features.areaPages + hasPage). Server.
 // Sıra: breadcrumb, <h1>, lede (frontmatter ya da summary), MDX gövdesi, yetkinlikler, ilgili beceriler,
 // bu alandaki projeler (kartlar), varsa ilgili referans, iletişim CTA'sı.
+import { DialFigure } from '@/components/figures/DialFigure';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { MdxBody } from '@/components/mdx/MdxBody';
 import { JsonLd } from '@/components/seo/JsonLd';
@@ -9,9 +10,18 @@ import { ProjectCard } from '@/components/ui/ProjectCard';
 import { Txt } from '@/components/ui/Txt';
 import type { Locale } from '@/i18n/config';
 import { getDictionary } from '@/i18n/get-dictionary';
-import { getAreaBody, getCv, getProjects, getTestimonials, t, type AreaDoc } from '@/lib/content';
+import {
+  getAreaBody,
+  getCv,
+  getProjects,
+  getStageData,
+  getTestimonials,
+  t,
+  type AreaDoc,
+} from '@/lib/content';
 import { jsonLdFor } from '@/lib/seo/jsonld';
 import { pageLink } from '@/lib/seo/metadata';
+import { StagePreset } from '@/stage/StagePreset';
 
 export function AreaView({ area, locale }: { area: AreaDoc; locale: Locale }) {
   const dict = getDictionary(locale);
@@ -29,10 +39,12 @@ export function AreaView({ area, locale }: { area: AreaDoc; locale: Locale }) {
   );
   const contact = pageLink({ key: 'contact' }, locale);
   const graph = jsonLdFor({ key: 'area', param: area.id }, locale);
+  const stage = getStageData('plan-small', area.id, locale); // D2, kadran ψ(alan)'a dönük (§4.13.2)
 
   return (
     <>
       {graph ? <JsonLd graph={graph} /> : null}
+      <StagePreset name="plan-small" data={stage} />
       <PageHeader
         pageRef={{ key: 'area', param: area.id }}
         locale={locale}
@@ -40,6 +52,19 @@ export function AreaView({ area, locale }: { area: AreaDoc; locale: Locale }) {
         titleLang={title.fallback ? title.lang : undefined}
         crumbTitle={title.text}
         lede={body.lede ?? <Txt v={t(area.summary, locale)} />}
+        folio={{
+          preset: 'plan-small',
+          narrow: true,
+          figure: (
+            <DialFigure
+              n={stage.sectors}
+              rings={stage.rings}
+              active={stage.activeArea ?? null}
+              ariaLabel=""
+              className="anchor-figure"
+            />
+          ),
+        }}
       />
       <div className="container-page flex flex-col gap-block pt-block pb-section">
         <MdxBody

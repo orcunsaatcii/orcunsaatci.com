@@ -176,22 +176,28 @@ export function scrollToChapter(target: HTMLElement, o: { forceCut?: boolean } =
 }
 
 let stopHashWatch: () => void = () => {};
+/** Hash'in düştüğü uzaklaşma: 2 svh (geri dönüş toleransı, K-CHOREO-5) */
+const HASH_LEAVE_VH = 0.02;
 
 /**
- * Atlama hedefe vardıktan sonra kullanıcı hedeften yarım ekrandan fazla uzaklaşırsa hash URL'den düşer
- * (`replaceState`, Next'in `history.state`'i korunur). Aksi hâlde başka sayfaya gidip geri gelince Next hash'e
- * kaydırıyor, kalınan yer kayboluyordu (K-CHOREO-5, V-52). Hedefte kalındıysa hash ve geri dönüş aynıdır.
+ * Atlama hedefe vardıktan sonra (çapa scroll-padding konumunda ya da sayfa sonunda) kullanıcı varış konumundan 2 svh'den
+ * fazla uzaklaşırsa hash URL'den düşer (`replaceState`, Next'in `history.state`'i korunur). Aksi hâlde başka sayfaya
+ * gidip geri gelince Next hash'e kaydırıyor, kalınan yer kayboluyordu (K-CHOREO-5, V-52). Hedefte kalındıysa hash ve
+ * geri dönüş aynıdır (± 2 svh).
  */
 function watchHashLeave(target: HTMLElement, id: string): void {
   stopHashWatch();
-  let arrived = false;
+  let base = Number.NaN; // varışta çapanın scroll-padding'e göre konumu
   let raf = 0;
   const check = () => {
     raf = 0;
     if (window.location.hash !== `#${id}`) return stop();
-    const top = Math.abs(target.getBoundingClientRect().top);
-    if (!arrived) arrived = top < 0.25 * window.innerHeight;
-    else if (top > 0.5 * window.innerHeight) {
+    const pad = Number.parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0;
+    const top = target.getBoundingClientRect().top - pad;
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    if (Number.isNaN(base)) {
+      if (Math.abs(top) <= 2 || window.scrollY >= max - 1) base = top;
+    } else if (Math.abs(top - base) > HASH_LEAVE_VH * window.innerHeight) {
       window.history.replaceState(
         window.history.state,
         '',

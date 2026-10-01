@@ -7,6 +7,7 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import type { Locale } from '@/i18n/config';
 import { fill, plural, type PluralForms } from '@/i18n/text';
+import { setPlanFilter } from '@/stage/fx';
 import { Tag } from './Tag';
 
 interface FilterArea {
@@ -14,6 +15,8 @@ interface FilterArea {
   title: string;
   lang?: string; // EN sayfada TR yedeği ise 'tr'
   count: number;
+  /** kadrandaki dilim indeksi (liste modunda null); filtre taşı o dilime döndürür (§5.9.10) */
+  sector: number | null;
 }
 
 interface ProjectFilterProps {
@@ -45,7 +48,9 @@ export function ProjectFilter({ locale, areas, total, labels }: ProjectFilterPro
     if (active) url.searchParams.set('alan', active);
     else url.searchParams.delete('alan');
     if (url.href !== window.location.href) window.history.replaceState(null, '', url);
-  }, [active]);
+    setPlanFilter(active ? (areas.find((a) => a.id === active)?.sector ?? null) : null);
+  }, [active, areas]);
+  useEffect(() => () => setPlanFilter(null), []);
 
   const count = active ? (areas.find((a) => a.id === active)?.count ?? total) : total;
   return (

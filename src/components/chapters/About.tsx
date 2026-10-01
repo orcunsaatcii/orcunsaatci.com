@@ -127,7 +127,12 @@ export function About({ locale }: { locale: Locale }) {
           </figure>
         ) : null}
         <p className="mt-stack" data-reveal="block">
-          <Link href={more.href} hrefLang={more.hrefLang} className="link-inline type-ui">
+          <Link
+            transitionTypes={['nav-forward']}
+            href={more.href}
+            hrefLang={more.hrefLang}
+            className="link-inline type-ui"
+          >
             {dict.home.aboutMore}
             {more.fallback ? dict.lang.trSuffix : null}
             <span aria-hidden="true"> →</span>

@@ -1,5 +1,6 @@
 // src/components/ui/Button.tsx — primary / secondary / text / icon (§6.6.3). Server uyumlu.
-// href varsa <Link> (iç) ya da <a> (dış / indirme), yoksa <button type="button">. Durumlar §6.6.1.
+// href varsa <Link> (iç; nav-forward geçiş türü, §5.15.1) ya da <a> (dış / indirme), yoksa <button type="button">.
+// Durumlar §6.6.1.
 import type { Route } from 'next';
 import Link from 'next/link';
 import type { ComponentPropsWithoutRef, ReactNode } from 'react';
@@ -117,7 +118,7 @@ export function Button(props: ButtonProps) {
       );
     }
     return (
-      <Link href={props.href} className={cls} hrefLang={hrefLang}>
+      <Link transitionTypes={['nav-forward']} href={props.href} className={cls} hrefLang={hrefLang}>
         {children}
       </Link>
     );

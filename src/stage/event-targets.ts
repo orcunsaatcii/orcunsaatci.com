@@ -16,8 +16,12 @@ export interface EventIndices {
   work: number;
   journey: number;
   cv: number;
-  /** y, dolguların work event penceresinde mi (§5.9.5 sahiplik tablosu) */
+  /** y, dolguların work event penceresinde mi (§5.9.5 sahiplik tablosu); folio ve plan-small'da daima */
   fillWindow: boolean;
+  /** folio: "Sonraki proje" bloğu etkin (1) ya da değil (0) (§5.9.10) */
+  slot?: number;
+  /** plan-small: filtre çipinin alanı; −1 = filtre yok (director live.planFilter'dan yazar) */
+  filter?: number;
 }
 
 const countBelow = (lines: readonly number[], y: number): number => {
@@ -46,12 +50,18 @@ export function computeIndices(layout: Layout, y: number, out?: EventIndices): E
   o.journey = countBelow(layout.activation.journey, y);
   o.cv = countBelow(layout.activation.cv, y);
   o.fillWindow = eventOwned(layout, 'fill0', y);
+  const f = layout.folioNext;
+  if (f !== undefined) o.slot = f && y >= f.on && y < f.off ? 1 : 0;
   return o;
 }
 
-/** Saf: prop o konumda event'lerin mi? Ana sayfada yalnız dolgular (work penceresi) track'ten alınır. */
+/**
+ * Saf: prop o konumda event'lerin mi? Ana sayfada yalnız dolgular (work penceresi) track'ten alınır; folio ve
+ * plan-small'da dolgular daima event'lerindir (proje alanı, filtre).
+ */
 export function eventOwned(layout: Layout, prop: TrackProp, y: number): boolean {
   if (!prop.startsWith('fill')) return false;
+  if (layout.fillsByEvents) return true;
   const w = fillWindowOf(layout);
   return w !== null && y >= w[0] && y <= w[1];
 }
@@ -91,7 +101,7 @@ export function resolveEvents(
   out.fillsActive = false;
   out.bandStart = NO_BAND[0];
   out.bandEnd = NO_BAND[1];
-  if (preset !== 'home') return out;
+  if (preset !== 'home') return resolveDeep(preset, ix, d, ctx, out);
   const project = ix.work >= 0 ? d.projects[ix.work] : undefined;
   const band =
     ix.journey >= 0
@@ -106,6 +116,46 @@ export function resolveEvents(
   if (ix.fillWindow) {
     out.fillsActive = true;
     for (let i = 0; i < 6; i++) out.fills[i] = i >= ctx.N ? 0 : i === area ? 0.6 : 0.12;
+  }
+  return out;
+}
+
+/**
+ * Derin preset'ler (§4.13.2, §5.9.10). folio: bant, dilim ve dolgular etkin projenin (slot 0 mevcut, slot 1 sonraki);
+ * rotYEvent = ψ(sonraki) − ψ(mevcut). plan-small: filtre (yoksa alan sayfasının alanı) dilimi 1.0, diğerleri 0.15,
+ * rotYEvent = ψ(alan) − ψ₀. cv-core: bant = görünümdeki girdi (journey gibi).
+ */
+function resolveDeep(
+  preset: PresetName,
+  ix: EventIndices,
+  d: StageData,
+  ctx: StageContentCtx,
+  out: EventTargets,
+): EventTargets {
+  const setBand = (b: readonly [number, number] | null | undefined) => {
+    if (!b) return;
+    out.bandStart = b[0];
+    out.bandEnd = b[1];
+  };
+  const fillAll = (k: number, on: number, off: number) => {
+    out.fillsActive = true;
+    for (let i = 0; i < 6; i++) out.fills[i] = i >= ctx.N ? 0 : i === k ? on : off;
+  };
+  if (preset === 'folio') {
+    const self = d.projects[0];
+    const p = (ix.slot === 1 ? d.projects[1] : undefined) ?? self;
+    setBand(p?.band);
+    const area = p?.area ?? null;
+    const base = self?.area ?? null;
+    if (area !== null && base !== null && ctx.N > 0)
+      out.rotYEvent = wrap180(psiDeg(area, ctx.N) - psiDeg(base, ctx.N));
+    fillAll(area ?? -1, 0.6, 0.12);
+  } else if (preset === 'plan-small') {
+    const k = (ix.filter ?? -1) >= 0 ? (ix.filter as number) : (d.activeArea ?? -1);
+    if (k >= 0 && ctx.N > 0) out.rotYEvent = wrap180(psiDeg(k, ctx.N) - (ctx.psi[0] ?? 45));
+    fillAll(k, 1, 0.15);
+  } else if (preset === 'cv-core') {
+    setBand(ix.cv >= 0 ? d.entries[ix.cv]?.band : null);
   }
   return out;
 }
@@ -157,20 +207,23 @@ export function applyEvents(
       emit({ type: 'journey:active', index: ix.journey, prev: prev?.journey ?? -1, instant });
   }
   if (prev && prev.cv !== ix.cv) emit({ type: 'cv:active', index: ix.cv, prev: prev.cv, instant });
+  if (preset === 'folio' && (prev?.slot ?? 0) !== (ix.slot ?? 0))
+    emit({ type: 'folio:next', active: ix.slot === 1 });
 
-  // 2) sahne hedefleri
+  // 2) sahne hedefleri: journey ve CV bandı 500 ms power2.out; filtre 400 ms; diğerleri 600 ms (§5.9.5, §5.9.10)
   const force = !appliedValid || (instant && !lastInstant);
   lastInstant = instant;
-  const journeyBand = ix.journey >= 0;
+  const journeyBand = ix.journey >= 0 || preset === 'cv-core';
   const bandDur = journeyBand ? 0.5 : 0.6;
   const bandEase = journeyBand ? 'power2.out' : 'power3.inOut';
+  const turnDur = preset === 'plan-small' ? 0.4 : 0.6;
   if (force || applied.bandStart !== t.bandStart || applied.bandEnd !== t.bandEnd) {
     tweenOrSet(gsap, instant, { bandStart: t.bandStart, bandEnd: t.bandEnd }, bandDur, bandEase);
     applied.bandStart = t.bandStart;
     applied.bandEnd = t.bandEnd;
   }
   if (force || applied.rotYEvent !== t.rotYEvent) {
-    tweenOrSet(gsap, instant, { rotYEvent: t.rotYEvent }, 0.6, 'power3.inOut');
+    tweenOrSet(gsap, instant, { rotYEvent: t.rotYEvent }, turnDur, 'power3.inOut');
     applied.rotYEvent = t.rotYEvent;
   }
   if (t.fillsActive) {
@@ -182,7 +235,7 @@ export function applyEvents(
         gsap,
         instant || !applied.fillsActive,
         { fill0, fill1, fill2, fill3, fill4, fill5 },
-        0.6,
+        turnDur,
         'power3.inOut',
       );
       for (let i = 0; i < 6; i++) applied.fills[i] = t.fills[i] ?? 0;

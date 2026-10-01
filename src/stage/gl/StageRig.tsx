@@ -196,6 +196,10 @@ const IDLE_COARSE_MS = 8_000;
 const TILT_MAX_DEG = 6;
 const TILT_REACH = 1.5;
 const CUT_BREATH = -0.04;
+/** Kaydırma sallanması (§4.14 #1, dokunmatik): derece / (px/s), tavan ±4°, yay sönümü */
+const WOBBLE_GAIN = 0.02;
+const WOBBLE_MAX_DEG = 4;
+const SMOOTH_WOBBLE = 0.3;
 
 /** Kare başına okunan damped kopya (store.rendered; debug paneli okur) ve zaman tabanlı ek durum */
 type Rendered = Record<DampKey, number> & { __damp?: Record<string, number> };
@@ -208,8 +212,9 @@ const extra: {
   tiltX: number;
   tiltY: number;
   breath: number;
+  wobble: number;
   __damp?: Record<string, number>;
-} = { idleS: 0, idleAngle: 0, pAz: 0, pEl: 0, tiltX: 0, tiltY: 0, breath: 0 };
+} = { idleS: 0, idleAngle: 0, pAz: 0, pEl: 0, tiltX: 0, tiltY: 0, breath: 0, wobble: 0 };
 const rectA: AnchorRect = { cx: 0, cy: 0, D: 0 };
 const rectB: AnchorRect = { cx: 0, cy: 0, D: 0 };
 
@@ -398,6 +403,18 @@ function siteFrame(
   live.tilt.y = extra.tiltY;
   live.tilt.breath = extra.breath;
 
+  // Kaydırma sallanması (§4.14 #1, dokunmatik): rotY += clamp(hız·0.02, ±4°); hız eskiyince sönümlü yayla 0'a döner.
+  // Kapı: kaba işaretçi + tier.pointer (≠ low) + tam hareket; hız ScrollTrigger.getVelocity()'den (px/s)
+  const wob =
+    c.coarse &&
+    spec.pointer &&
+    document.documentElement.dataset.motion !== 'reduce' &&
+    performance.now() - live.velocityAt < 120
+      ? Math.max(-WOBBLE_MAX_DEG, Math.min(WOBBLE_MAX_DEG, live.velocity * WOBBLE_GAIN))
+      : 0;
+  moving =
+    easing.damp(extra, 'wobble', wob, SMOOTH_WOBBLE, dt, Infinity, undefined, 0.01) || moving;
+
   // Kamera (§5.7.1–§5.7.2)
   const camera = state.camera;
   const az = rendered.camAz * DEG;
@@ -422,7 +439,7 @@ function siteFrame(
   );
   stone.rotation.set(
     (rendered.rotX + extra.tiltX) * DEG,
-    (rendered.rotYScroll + rendered.rotYEvent + extra.idleAngle + extra.tiltY) * DEG,
+    (rendered.rotYScroll + rendered.rotYEvent + extra.idleAngle + extra.tiltY + extra.wobble) * DEG,
     0,
     'XYZ',
   );

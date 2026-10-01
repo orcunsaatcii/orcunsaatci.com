@@ -34,7 +34,11 @@ function Links({ locale, email }: { locale: Locale; email?: string }) {
     <ul className="mt-4 flex flex-wrap gap-x-6">
       {links.map((l) => (
         <li key={l.href}>
-          <Link href={l.href} className="inline-flex min-h-11 items-center link-inline type-ui">
+          <Link
+            transitionTypes={['nav-forward']}
+            href={l.href}
+            className="inline-flex min-h-11 items-center link-inline type-ui"
+          >
             {l.label}
           </Link>
         </li>

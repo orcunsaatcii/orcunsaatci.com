@@ -2,9 +2,14 @@
 import type { Metadata } from 'next';
 import { staticPageMetadata } from '@/lib/seo/metadata';
 import { ContactView } from '@/views/contact/ContactView';
+import { PageTransition } from '@/components/motion/PageTransition';
 
 export const metadata: Metadata = staticPageMetadata({ key: 'contact' }, 'tr');
 
 export default function Page() {
-  return <ContactView locale="tr" />;
+  return (
+    <PageTransition>
+      <ContactView locale="tr" />
+    </PageTransition>
+  );
 }

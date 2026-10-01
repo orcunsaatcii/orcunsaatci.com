@@ -59,6 +59,11 @@ export function whenMotion(): Promise<MotionRuntime> {
   return runtime ? Promise.resolve(runtime) : new Promise((resolve) => waiters.push(resolve));
 }
 
+/** Yüklüyse ve hareket 'full' ise runtime, değilse null (olay işleyicilerinden; yüklemeyi tetiklemez). */
+export function currentMotion(): MotionRuntime | null {
+  return readMotionPref() === 'full' ? runtime : null;
+}
+
 const subscribeRuntime = (cb: () => void) => {
   listeners.add(cb);
   const off = subscribeMotionPref(cb);

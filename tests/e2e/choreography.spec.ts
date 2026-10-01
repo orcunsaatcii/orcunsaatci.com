@@ -2487,7 +2487,7 @@ test.describe('V-48 flow anchor senkronu (Lenis, masaüstü)', { tag: ['@desktop
       v.stop = true;
       return v.out;
     });
-    expect(s.length, 'örnek sayısı').toBeGreaterThan(10);
+    expect(s.length, 'örnek sayısı (CI ≈ 2 fps: 9–16)').toBeGreaterThanOrEqual(6);
     const c0 = s[0]!.stone - s[0]!.dom; // durgun hâlde Taş merkezi − çapa merkezi (0 beklenir)
     // Rig'in kullandığı kaydırma: y_rig = y − (stone − dom − c0); k = kaç kare geriden geldiği
     const hist = { k0: 0, k1: 0, k2: 0, unmatched: 0 };
