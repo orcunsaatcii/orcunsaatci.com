@@ -7,9 +7,8 @@
 import { useEffect, useSyncExternalStore, type ReactNode } from 'react';
 import { scrollToY } from '@/components/motion/LenisProvider';
 import { useMotionPref } from '@/components/motion/MotionRoot';
-import { areasIndexAt, onStageEvent } from '@/stage/events';
+import { AREAS_STEP, areasIndexAt, lastStageEvent, onStageEvent } from '@/stage/events';
 import { directorApi } from '@/stage/store';
-import { AREAS_STEP } from '@/stage/tracks';
 
 /* ───────────── pin durumu (modül deposu) ───────────── */
 
@@ -44,14 +43,18 @@ export function areasStepY(k: number): number {
 }
 const STEP_SCROLL_S = 0.8;
 let lockUntil = 0;
+let lockSeq = 0;
 function goToStep(k: number, o: { lock?: boolean } = {}) {
   const y = areasStepY(k);
   if (!Number.isFinite(y)) return;
+  const seq = ++lockSeq;
   if (o.lock) lockUntil = performance.now() + 1500;
   scrollToY(y, {
     duration: STEP_SCROLL_S,
     onComplete: () => {
-      lockUntil = 0;
+      // yalnız son adım kaydırması kilidi açar: kesilen önceki kaydırmanın geç bitişi (scrollend / üst sınır) yeni
+      // odağın kilidini açıp adımı geri almasın (§10.3.3 örtülmeme)
+      if (seq === lockSeq) lockUntil = 0;
     },
   });
 }
@@ -196,11 +199,17 @@ export function AreasPin({ sectionId, n }: { sectionId: string; n: number }) {
         });
     };
 
+    /** Odak bir açıklamanın içindeyse o adım kalır (§10.3.3 örtülmeme): adım kaydırması kesilse de odak gizlenmez */
+    const focusedStep = (): number => {
+      const d = (document.activeElement as Element | null)?.closest?.('[data-area-desc]');
+      return d && section.contains(d) ? Number(d.getAttribute('data-area-desc')) : -1;
+    };
+
     const compute = () => {
       raf = 0;
       if (!pinned || !geo) return;
       if (Number.isFinite(directorApi.areasStepY(0))) return; // director çalışıyor: areas:step olayları sahip
-      if (performance.now() < lockUntil) return;
+      if (performance.now() < lockUntil || focusedStep() >= 0) return;
       const y = window.scrollY;
       const instant = cur < 0 || Math.abs(y - lastY) > 1.5 * window.innerHeight;
       lastY = y;
@@ -256,8 +265,24 @@ export function AreasPin({ sectionId, n }: { sectionId: string; n: number }) {
       goToStep(k, { lock: true });
     };
 
+    /** Odak açıklamalardan çıkınca adım kaydırma konumuna döner (director'ün son olayı ya da ölçülen geometri) */
+    const onFocusOut = (e: FocusEvent) => {
+      if (!pinned || performance.now() < lockUntil) return;
+      const to = (e.relatedTarget as Element | null)?.closest?.('[data-area-desc]');
+      if (to && section.contains(to)) return; // açıklamadan açıklamaya: focusin üstlenir
+      const last = lastStageEvent('areas:step');
+      const k = Number.isFinite(directorApi.areasStepY(0))
+        ? (last?.index ?? cur)
+        : geo
+          ? areasIndexAt(geo, window.scrollY)
+          : cur;
+      if (k >= 0 && k !== cur) apply(k, false);
+    };
+
     const offStep = onStageEvent('areas:step', (e) => {
       if (!pinned || performance.now() < lockUntil) return;
+      const f = focusedStep();
+      if (f >= 0 && f !== e.index) return;
       apply(e.index, e.instant);
     });
     const offRefresh = onStageEvent('refresh', () => {
@@ -269,6 +294,7 @@ export function AreasPin({ sectionId, n }: { sectionId: string; n: number }) {
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onResize);
     section.addEventListener('focusin', onFocusIn);
+    section.addEventListener('focusout', onFocusOut);
     check();
     void document.fonts?.ready.then(check);
 
@@ -279,6 +305,7 @@ export function AreasPin({ sectionId, n }: { sectionId: string; n: number }) {
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onResize);
       section.removeEventListener('focusin', onFocusIn);
+      section.removeEventListener('focusout', onFocusOut);
       offStep();
       offRefresh();
       setPinned(false);

@@ -60,7 +60,7 @@ export function Hero({ locale }: { locale: Locale }) {
       <p className="hero-in col-span-4 type-lead [--i:1] md:col-span-6">
         <Txt v={t(person.headline, locale)} />
       </p>
-      <div className="hero-in col-span-4 flex flex-col gap-3 [--i:2] sm:flex-row md:col-span-8">
+      <div className="hero-in col-span-4 flex flex-col gap-3 [--i:2] sm:flex-row md:col-span-8 lg:col-start-1 lg:row-start-4">
         <Button href={projects.href} hrefLang={projects.hrefLang}>
           {dict.hero.ctaPrimary}
           {projects.fallback ? dict.lang.trSuffix : null}
@@ -71,7 +71,9 @@ export function Hero({ locale }: { locale: Locale }) {
           {contact.fallback ? dict.lang.trSuffix : null}
         </Button>
       </div>
-      <div className="col-span-4 flex items-center justify-between gap-4 md:col-span-8 lg:col-span-12">
+      {/* ≥ 64rem k1–7: Taş'ın about'a iniş yolu (k8–12) boş kalır (§4.12.2 #7). CTA'lar ve ipucu satırı açıkça
+          yerleşir: hidrasyonda gelen duraklatma düğmesi (4. satır, k1–7) otomatik yerleşimi itmesin (CLS) */}
+      <div className="col-span-4 flex items-center justify-between gap-4 md:col-span-8 lg:col-span-7 lg:col-start-1 lg:row-start-5">
         <p aria-hidden="true" className="inline-flex items-center gap-3 type-meta">
           {dict.hero.scrollCue}
           <span className="hero-cue-line [display:inline-block] h-px w-8 bg-ink-subtle" />
@@ -83,8 +85,8 @@ export function Hero({ locale }: { locale: Locale }) {
           frozenSuffix={dict.contact.localTimeSuffix}
         />
       </div>
-      {/* DOM'da sonda (§4.6.3 sırası); görsel olarak mobilde sahne bandının sağ altında, masaüstünde CTA satırının
-          sağında (home.css) */}
+      {/* DOM'da sonda (§4.6.3 sırası); görsel olarak mobilde sahne bandının sağ altında, masaüstünde CTA satırında
+          metin bölgesinin (k1–7) sağında (home.css) */}
       <PauseButton
         labels={{ pause: dict.motion.pause, play: dict.motion.play }}
         className="hero-pause"

@@ -82,7 +82,12 @@ export interface StageContentCtx {
   W0: number; // §5.8.1
   lastPsi: number; // dial: 45 − (N−1)Δ; liste: 45
   projectAreas: readonly (number | null)[]; // öne çıkan projelerin alan indeksleri (P = 3–5)
+  /** journey BODY dönüşü, derece (§4.12.1 satır 14; kısa BODY'de ölçeklenir, tracks.journeyTurnOf) */
+  journeyTurn: number;
 }
+
+/** Journey BODY dönüşünün tavanı (varsayılan içerik, E = 6) */
+export const JOURNEY_TURN_DEG = 60;
 
 /** Areas liste moduna geçiş eşiği (§5.10: N ≥ 7 → liste, uSectors 0) */
 export const LIST_MODE_MIN_AREAS = 7;
@@ -97,7 +102,15 @@ export function contentCtx(n: number, projectAreas: readonly (number | null)[]):
   const lastPsi = dial ? 45 - ((n - 1) * 360) / n : 45;
   const first = projectAreas[0] ?? null;
   const W0 = first === null ? lastPsi : wrapNear(psiDeg(first, n), lastPsi);
-  return { N: n, areasMode: dial ? 'dial' : 'list', psi, W0, lastPsi, projectAreas };
+  return {
+    N: n,
+    areasMode: dial ? 'dial' : 'list',
+    psi,
+    W0,
+    lastPsi,
+    projectAreas,
+    journeyTurn: JOURNEY_TURN_DEG,
+  };
 }
 
 const fills = (others: number, active?: number | null, activeValue = 0): Fills => {
@@ -186,7 +199,7 @@ export function keyframes(ctx: StageContentCtx): Record<KeyframeKey, Keyframe> {
     'contact-ring': {
       anchor: 'contact-ring',
       r: 4.9, az: 0, el: 22, fov: 30,
-      rotY: W0 + 130, rotX: 68, cut: -0.05,
+      rotY: W0 + 70 + ctx.journeyTurn, rotX: 68, cut: -0.05,
       ringContrast: 0.7, sectorMix: 0, ghost: 0, arcGlow: 1,
       lightAz: 70, lightEl: 14, rim: 0.35, tone: 1,
       bandVisible: 0, fills: none,

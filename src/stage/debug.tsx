@@ -193,6 +193,7 @@ export function mountDebug(persona: Persona = 'engineer'): void {
       q ? `dpr ${q.dpr} · ghost ${q.ghost} · oct ${q.octaves} · seg ${q.segments}` : 'quality —',
       `gpu ${s.signals?.gpu ? `${s.signals.gpu.type}/${s.signals.gpu.tier} ${s.signals.gpu.name ?? ''}` : '—'}${s.signals?.software ? ' · yazılım render' : ''}`,
       `stone ${fmt(live.stone.cx)},${fmt(live.stone.cy)} r ${fmt(live.stone.r)} ${live.stone.visible ? '' : '(gizli)'}`,
+      `tilt x ${fmt(live.tilt.x)} y ${fmt(live.tilt.y)} · nefes ${fmt(live.tilt.breath)}`,
       `anchors ${live.anchors.map((a) => a.id).join(' ')}`,
       ...keys.map(
         (k) => `${k.padEnd(10)} ${fmt(stageTarget[k]).padStart(8)} → ${fmt(rendered[k])}`,

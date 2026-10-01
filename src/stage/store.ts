@@ -9,6 +9,7 @@ import { NO_BAND } from '@/lib/section-geometry';
 import type { MeasuredAnchor } from './anchors';
 import type { ProbeSignals } from './capabilities';
 import type { QualityState, Tier } from './quality';
+import type { Layout } from './tracks';
 
 export type { ProbeSignals } from './capabilities';
 
@@ -218,6 +219,10 @@ export const live = {
   anchors: [] as readonly MeasuredAnchor[],
   frames: 0, // rig'in çizdiği kare sayısı (§5.19: opaklık < 0.01 ve gizli sekmede 2 s kare yok; ?debug testleri okur)
   idleAngle: 0, // idle drift açısı, derece (K-HERO-9 testleri okur)
+  /** yakınlık eğimi (§5.9.6): derece ve cut nefesi; rig yazar, ?debug okur */
+  tilt: { x: 0, y: 0, breath: 0 },
+  /** director'ün son refresh'te ölçtüğü düzen (fazlar, aktivasyon çizgileri); ?debug testleri okur (§13.3.4) */
+  layout: null as Layout | null,
 };
 
 /** Anchor indeksi: −1 sanal (route glide anlık görüntüsü), −2 ölçülmemiş/eksik (§5.7.4) */

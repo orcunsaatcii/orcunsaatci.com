@@ -2300,6 +2300,7 @@ Sunucuda render edilir ve ilk boyamada görünürdür. DOM sırası görsel sır
 | Posterler | Çapanın içinde iki `<img>` (açık/koyu) | `public/stage/k0-{light,dark}-{640,1080,1600}.{avif,webp}` | Kare, `alt=""`, `loading="lazy"`, `fetchpriority="low"`, açık `width`/`height` (CLS yok). Etkin olmayan tema `display: none` (⚠️ §5.16). Optimizer'dan geçmez (D-31). Boyut = canlı taşın `D`'si. |
 
 - SPEC-SAPMA: §4.6.2, §4.6.3 (M5, 2026-09-30) — K-HERO-6 için masaüstünde (≥ 64rem) sahne kutusu satır aralığı + H1 kutusunun üstünden büyük harf çizgisine uzaklık kadar aşağı uzanır: `margin-bottom: calc(-1 × (1.5rem + 0.111 × --text-display-fit))` (Mona Sans, `line-height` 0.92; 1024–1920 px'te Chromium, WebKit ve Firefox'ta ölçüldü). Çapanın alt kenarı büyük harf çizgisindedir (1440×900'de 537.98 / 538 px); M4 notundaki "H1'in üstüne kadar" ifadesinin yerini alır. H1 `position: relative` alır: DOM'da önce gelen sahne kutusundan sonra boyanır, Taş'ın gölgesi harflerin arkasında kalır. Duraklatma düğmesi masaüstünde CTA satırının sağındadır (tel çerçeve; 1. satırın sağ altı Taş'ın üstüne düşerdi); 64rem altında sahne bandının sağ altında kalır. Not: analitik alt hizalama (`cy = alt − 0.5·D·ry`, §5.7.5) yüzey kabartısını (`disp` 0.045) ve 12° kamera eğimini içermez; opak Taş tabanı büyük harf çizgisinin ≈ 7 px altına iner ve "tçi" harflerinin tepesine değer. Kontrast probu H1 kutusunu 2.5–2.96:1 ölçer (büyük metin eşiği 3.0; §5.18.2). İnce ayar M8 görsel QA'sındadır.
+- SPEC-SAPMA: §4.6.2, §4.6.3 (M6, 2026-10-01) — Masaüstünde duraklatma düğmesi CTA satırında ve yerel saat ipucu satırında **metin bölgesinin (k1–7) sağındadır**; k8–12 sütunu hero'nun altında boş kalır. Gerekçe K-CHOREO-6 (§4.12.2 #7): about IN'in anchor karışımı (s 0–30'da 0 → 0.45, §4.12.1 satır 2) Taşı s ≈ 17–35'te k8–12'de y ≈ 512–547'ye indirir; o sütundaki düğme ve saat metni Taşın arkasında kalıyordu. Tablo değerleri (K-CHOREO-7) korunur; §4.15.2'nin "metin k1–6/7, sahne k7/8–12" ızgarasıyla da uyumludur. Mobilde düğme bandın sağ altında kalır, 12 px aşağı iner (D = 0.86·bant dairesi metnin satır kutusuna 5.4 px değiyordu). Not: s 0–36'da Taş K1a karışımı yüzünden ekranda ≈ 130 px iner ve "Saatçi"nin arkasından geçer (§4.6.8 "sayfayla yukarı çıkar" ifadesiyle çelişir); H1 istisnadır, M8 görsel QA'sında sahibe gösterilir.
 
 #### 4.6.4 3D durumu: K0 `hero`
 
@@ -2948,6 +2949,7 @@ Uygulamanın test etmesi **ZORUNLU** olan kurallar (testler §4.18 K-CHOREO):
 11. **Scroll'a bağlı DOM.** Yalnızca §4.3'teki beyaz liste kaydırmaya bağlanır.
 
 - Not (M4, 2026-09-30, `tracks.test.ts`): Masaüstü journey BODY uzunluğu `35E − 30` svh'dir (kuyruk ≥ 30 svh). E = 1'de 5 svh, E = 2'de 40 svh kalır; `rotYScroll`'un +60°'si bu durumda ≤ 33.4°/100 svh (#5) ve 90°/100 svh (#6) sınırlarını aşar. Değişmezler varsayılan içerikle (E = 6) sınanır; küçük E için dönüşün BODY uzunluğuna ölçeklenmesi (ya da en az BODY uzunluğu) M6 koreografi ayarında karara bağlanır.
+- SPEC-SAPMA: §4.12.1 satır 14, §4.12.2 #5 (M6, 2026-10-01) — Karar: journey BODY dönüşü BODY uzunluğuna ölçeklenir: `Δ = min(60°, 33.4°·BODY/100 svh)` (`tracks.journeyTurnOf`, `StageContentCtx.journeyTurn`). Contact IN aynı açıdan +20° sürer; K5 `rotY = W₀ + 70 + Δ` (varsayılan içerikte W₀ + 130). "En az BODY uzunluğu" seçeneği küçük E'de (sahibin içeriği) 100+ svh boş kaydırma alanı bırakacağı için seçilmedi. Posterler varsayılan içerikle (Δ = 60°) üretilir; küçük E'de `#iletisim` derin bağlantısındaki 600 ms'lik crossfade'de poster ile canlı Taş arasında dönüş farkı görülebilir.
 
 #### 4.12.3 Senkron istisnaları (bildirilmiş)
 
@@ -2956,6 +2958,7 @@ Uygulamanın test etmesi **ZORUNLU** olan kurallar (testler §4.18 K-CHOREO):
 | about lede (§4.7.4) | Satır *k*, `cutProgress ≥ 0.05 + 0.60·k/max(1, L−1)` olunca açılır | Lede'nin üstü %75'i yaklaşık IN p 0.45'te geçer; son satır ise p ≈ 0.97'de açılır. Bu, imza anı #2'dir ("Kesim"). | Satırlar zaman tabanlıdır (700 ms) ve bir kez açılır. Atlama güvenliği (#5) ve 3 s güvenliği (#6) geçerlidir. Azaltılmış harekette ve JS'siz görünümde hepsi baştan görünürdür. |
 | contact (§4.11.4) | H2 IN p 0.55'te, metin p 0.70'te açılır | Metin, taş yüzünü sunmaya başladıktan sonra gelir. Bloklar o anda görüntü alanının yaklaşık %55–60'ındadır. | E-posta JS'siz asla gizli değildir. `#iletisim` ile gelişte anında açılır. Sayfa sonu (s 1170) tüm eşikleri geçer. |
 | work makaleleri (§4.9.4) | Reveal `top 80%`'de başlar | İstisna değildir; yalnızca başlangıç noktası farklıdır. %75 kuralı geçerlidir. | — |
+- SPEC-SAPMA: §4.9.4, §4.12.1, §4.12.3 (M6, 2026-10-01) — Work makale metninin reveal'ı `top 85%`'te başlar (aktivasyondan 30 svh önce; tablo satırlarında 510/580/650/720 yerine ≈ 505/575/645/715). Başlık satırları (700 ms + kademe) okuma hızında (10 svh/s) ≈ 8 svh sürer; `top 80%`'de (25 svh) K-WORK-3'ün "≥ 20 svh önce tamamen açık" koşulu sağlanamıyordu (ölçülen 16.8–17.4 svh).
 
 #### 4.12.4 Bu belgede sabitlenen değerler ([SABİT])
 
@@ -2963,28 +2966,30 @@ final.md'de bulunmayan ve uygulanabilirlik için eklenen değerler aşağıdadı
 
 | # | Yer | Değer |
 |---|---|---|
-| 1 | §4.5.4 #11 | Hero ikincil metin CSS solması: 500 ms `--ease-out`. |
-| 2 | §4.5.5 | Mobil header gizleme eşiği: ≥ 8 px ve `scrollY` > header yüksekliği. |
-| 3 | §4.5.5 | Sayfa içi atlama süresi 0.9 s (komşu atlamalar dahil). Areas atlama bağlantısı her zaman kesme kuralını kullanır. |
-| 4 | §4.6.3 | "Projeleri incele →" birincil (vurgu dolgulu), "İletişime geç" ikincil (çerçeveli). |
-| 5 | §4.8.8 | Mobil areas metin alanı 58 svh'ye sığmazsa liste modu. |
-| 6 | §4.8.8 | Liste modunda sahne areas IN p 0.2–0.5'te söner; masaüstünde work IN p 0.2–0.5'te, mobilde journey IN p 0.3–0.6'da geri gelir. |
-| 7 | §4.9.3 | `innerHeight < 760`: altyazı görüntüleyicinin 8 px altında. |
-| 8 | §4.9.4 | `innerHeight < 760`: `tone` work IN p 0–0.5'te 1 → 0, journey IN p 0–0.5'te 0 → 1. |
-| 9 | §4.9.4 | Silme çakışması: süren silme sona atlar, yenisi başlar. |
-| 10 | §4.10.7 | Mobil journey bandı: `--scene-opacity` IN p 0.3–0.6'da 0 → 1; bant çıkarken kaydırmayla 0'a iner (§5.9.4), bant çıktığında 0'dır (en geç 300 ms) ve loop `never`. |
-| 11 | §4.10.9 | testimonials: taş journey-core'un son dikdörtgeninde; opaklık 1 → 0.4 (testimonials IN), 0.4 → 1 (contact IN p 0–0.5). |
-| 12 | §4.13.2 | D2'de filtre yoksa `rotY` = ψ₀. Filtre değişiminde dönüş + dolgu 400 ms `power3.inOut`. `/calisma-alanlari` hover dolgusu 240 ms / 400 ms. |
-| 13 | §4.13.4 | Tipsiz (geri/ileri) DOM geçişi: yalnız opaklık, 150 / 210 ms, kayma yok. |
-| 14 | §4.13.5 | Mobil derin sayfalar: 30 svh bant; `folio`'da bant yalnız "Sonraki proje" bloğunda. |
-| 15 | §4.14 #10 | Derin sayfalarda Halka yalnız ilerleme gösterir, bölüm çentiği yoktur. |
-| 16 | §4.16.3 | D1 / D2 / D3 poster karşılıkları: `SpecimenGlyph` / `DialFigure` / `RingsFigure`. |
-| 17 | §4.16.4 | "Hareketi azalt" anahtarı canlı geçer (≤ 1 s) ve görünen bölüm korunur. |
-| 18 | §4.17.4 | `intensity` çarpanları ve easing'leri. |
+| 1 | §4.5.4 #11 | Hero ikincil metin CSS solması: 500 ms `--ease-out`. M6'da onaylandı (2026-10-01). |
+| 2 | §4.5.5 | Mobil header gizleme eşiği: ≥ 8 px ve `scrollY` > header yüksekliği. M6'da onaylandı (2026-10-01). |
+| 3 | §4.5.5 | Sayfa içi atlama süresi 0.9 s (komşu atlamalar dahil). Areas atlama bağlantısı her zaman kesme kuralını kullanır. M6'da onaylandı (2026-10-01). |
+| 4 | §4.6.3 | "Projeleri incele →" birincil (vurgu dolgulu), "İletişime geç" ikincil (çerçeveli). M6'da onaylandı (2026-10-01). |
+| 5 | §4.8.8 | Mobil areas metin alanı 58 svh'ye sığmazsa liste modu. M6'da onaylandı (2026-10-01). |
+| 6 | §4.8.8 | Liste modunda sahne areas IN p 0.2–0.5'te söner; masaüstünde work IN p 0.2–0.5'te, mobilde journey IN p 0.3–0.6'da geri gelir. M6'da onaylandı (2026-10-01). |
+| 7 | §4.9.3 | `innerHeight < 760`: altyazı görüntüleyicinin 8 px altında. M6'da onaylandı (2026-10-01). |
+| 8 | §4.9.4 | `innerHeight < 760`: `tone` work IN p 0–0.5'te 1 → 0, journey IN p 0–0.5'te 0 → 1. M6'da onaylandı (2026-10-01). |
+| 9 | §4.9.4 | Silme çakışması: süren silme sona atlar, yenisi başlar. M6'da onaylandı (2026-10-01). |
+| 10 | §4.10.7 | Mobil journey bandı: `--scene-opacity` IN p 0.3–0.6'da 0 → 1; bant çıkarken kaydırmayla 0'a iner (§5.9.4), bant çıktığında 0'dır (en geç 300 ms) ve loop `never`. M6'da onaylandı (2026-10-01). |
+| 11 | §4.10.9 | testimonials: taş journey-core'un son dikdörtgeninde; opaklık 1 → 0.4 (testimonials IN), 0.4 → 1 (contact IN p 0–0.5). M6'da onaylandı (2026-10-01). |
+| 12 | §4.13.2 | D2'de filtre yoksa `rotY` = ψ₀. Filtre değişiminde dönüş + dolgu 400 ms `power3.inOut`. `/calisma-alanlari` hover dolgusu 240 ms / 400 ms. M6'da onaylandı (2026-10-01). |
+| 13 | §4.13.4 | Tipsiz (geri/ileri) DOM geçişi: yalnız opaklık, 150 / 210 ms, kayma yok. M6'da onaylandı (2026-10-01). |
+| 14 | §4.13.5 | Mobil derin sayfalar: 30 svh bant; `folio`'da bant yalnız "Sonraki proje" bloğunda. M6'da onaylandı (2026-10-01). |
+| 15 | §4.14 #10 | Derin sayfalarda Halka yalnız ilerleme gösterir, bölüm çentiği yoktur. M6'da onaylandı (2026-10-01). |
+| 16 | §4.16.3 | D1 / D2 / D3 poster karşılıkları: `SpecimenGlyph` / `DialFigure` / `RingsFigure`. M6'da onaylandı (2026-10-01). |
+| 17 | §4.16.4 | "Hareketi azalt" anahtarı canlı geçer (≤ 1 s) ve görünen bölüm korunur. M6'da onaylandı (2026-10-01). |
+| 18 | §4.17.4 | `intensity` çarpanları ve easing'leri. M6'da onaylandı (2026-10-01). |
 | 19 | §4.17.2 `engineer` | Taş: akik yumrusu (jeot). `shape` [2.2, 2.3], `radii` (1, 0.8, 1), `disp` 0.045, `surface` `geode`, `cap.pattern` `geode`. M1'de onaylandı (2026-09-30, [#5](https://github.com/orcunsaatcii/orcunsaatci.com/issues/5#issuecomment-5907686488)). |
 | 20 | §5.4.3 `geode` | Kabuk: `CRUST_BUMP` 0.028, çukur tonu 0.70–1.06, lekelenme ±%12, demir tonu çarpanı (1.07, 1.0, 0.88). Akik: bant tonu `mix(capBase, mix(capBase, ringLine, 0.45), 0.15–0.70)`, laminalar %6, süt beyazı bant `t > 0.74` (%50), druzy ölçeği 34, kabuk şeridi `RIND_WIDTH` 0.035, cilalı parlama 0.10, kalsedon parıltısı %8, yıl çizgisi kontrastı ×0.5. M1'de onaylandı (2026-09-30, [#5](https://github.com/orcunsaatcii/orcunsaatci.com/issues/5#issuecomment-5907686488)). |
 | 21 | §6.3.6 | Taş tonları (`--scene-stone-base` / `--scene-stone-light`): açık `#2B2F3A` / `#7C8292`, koyu `#5A5E68` / `#B9BCC4`. M1'de onaylandı (2026-09-30, [#5](https://github.com/orcunsaatcii/orcunsaatci.com/issues/5#issuecomment-5907686488)). |
 | 22 | §5.4.1 not 3, §5.16 | Aktif bant vurgusu `mix(col, uAccent, 0.18)` + 1.5 px kenar; açık yay tarama aralığı 0.035; poster çerçevesi `POSTER_STONE_FRAC` 0.8 (R0 = `footprintRadius`, §5.7.5). M1'de onaylandı (2026-09-30, [#5](https://github.com/orcunsaatcii/orcunsaatci.com/issues/5#issuecomment-5907686488)). |
+
+- M6 onayı (2026-10-01, [PR #12](https://github.com/orcunsaatcii/orcunsaatci.com/pull/12#issuecomment-5933166740)): sahip satır 1–18'i belgedeki değerlerle aynen onayladı (12–16 M7'de uygulanır). M6 tasarım kararları da onaylandı: hero'da duraklatma ve yerel saat metin bölgesinde (SPEC-SAPMA §4.6.2, §4.6.3), küçük E'de journey dönüşünün BODY'ye ölçeklenmesi (SPEC-SAPMA §4.12.1 satır 14), mobil bant geçişlerinde el değiştirme (SPEC-SAPMA §4.15.3, §5.8.3), work makale metninin `top 85%`'te açılması (SPEC-SAPMA §4.9.4). Hero çıkışında Taşın tablo gereği (K1a karışımı 0.45) ilk ~35 svh'de "Saatçi"nin arkasından aşağı süzülmesi kabul edildi; "önce yukarı kalkar" varyantı M8 görsel QA'sında denenir.
 
 ### 4.13 Derin sayfalar ve route geçiş koreografisi
 
@@ -3201,6 +3206,8 @@ Bileşen envanteri ve durumları §6.6'dadır. Bu alt bölüm **davranışın** 
 | journey | IN p 0.3–0.6: 0 → 1 **[SABİT]**; bant çıkarken 1 → 0 (BODY `[0.20·vh/len, 0.36·vh/len]`, §5.9.4); bant çıktığında 0 | bant görünürken çalışır |
 | testimonials | 0 | `never` |
 | contact | IN p 0.3–0.6: 0 → 1 | çalışır |
+
+- SPEC-SAPMA: §4.15.3, §5.8.3 (M6, 2026-10-01) — Mobilde (ve yatay telefonda) bantlar arası geçiş konum karışımı değil, **el değiştirmedir**: Taş eski bantta söner, görünmezken çapa değişir, yeni bantta belirir (§4.15.1 "Taş ayrılmış bantlarda yaşar, asla metnin arkasında durmaz"; karışım Taşı aradaki metnin üstünden geçiriyordu, K-CHOREO-6). hero → about: söner about IN p 0.10–0.25, çapa p 0.25'te değişir, belirir p 0.26–0.42. about → kadran bandı (pin): söner areas IN p 0–0.15, değişir p 0.15, belirir p 0.45–0.60. journey → contact: çapa değişimi opaklık 0'ken (contact IN p 0–0.3) biter. Yatay telefon: çapa about IN p 0.5'te (opaklık 0) değişir. Masaüstü satırları ve açılar aynıdır.
 
 #### 4.15.4 Tier'ların ziyaretçiye görünen farkları
 
@@ -4932,6 +4939,8 @@ final.md G2: uzak sıçramalar ve geri/ileri geri yüklemeleri uzun morf zinciri
 
 Oturma adımları (sırayla): `emit({ type: 'cut', stage: 'start' })` → sönme → `measure` (gerekirse) → `evaluateTracks(y)` → `applyEvents(instant)` + DOM olayları `instant: true` → `live.snapNextFrame = true` → `invalidate()` → `emit(snap)` → geri gelme → `emit(end)`. Kesme sürerken `abs(Δy)` algılaması devre dışıdır.
 
+- SPEC-SAPMA: §5.9.7 (M6, 2026-10-01) — Kesmede belirme, rig oturtulmuş kareyi çizdikten sonra (`live.snapNextFrame` sıfırlanır) bir sonraki karede başlar (en geç 1500 ms); kesme sürerken `--scene-opacity` 0'a inse de döngü `never`'e geçmez, oturtulmuş kare görünmezken çizilir; kesme bitince döngü yeniden değerlendirilir. Aksi hâlde belirme ekranda kesme öncesi kareyle başlıyordu (yavaş karede 0.5 s'ye kadar, K-CHOREO-5, K-GEN-9). Yavaş cihazda belirme bir kare süresi kadar gecikir. Director sökülünce (preset değişimi) bekleyen belirme zinciri iptal edilir: geç başlayan belirme preset `none` sayfasında döngüyü `demand`'e alıyor, işaretçi görünmez kareler çizdiriyordu (§5.19).
+
 #### 5.9.8 Damping sabitleri
 
 maath `easing.damp(obj, key, target, smoothTime, dt, maxSpeed = Infinity, easing, eps)` kritik sönümlü bir yaydır ve **`smoothTime`** alır (`omega = 2/smoothTime`; maath 0.10.8 kaynağında doğrulandı). final.md'deki λ değerleri, %95 oturma süresi üstel λ ile eşit olacak şekilde `smoothTime = 1.27/λ` formülüyle çevrilmiştir.
@@ -5558,6 +5567,8 @@ export function scrollToChapter(target: HTMLElement): void
 - Native (Lenis'siz) `onComplete` için `scrollend` kullanılır; destek yoksa 150 ms debounce'lu `scroll` ve 1,200 ms üst sınır uygulanır. ⚠️ DOĞRULANMADI: Safari'de `scrollend` desteği; `'onscrollend' in window` ile özellik algılanır.
 - ⚠️ DOĞRULANMADI (final.md risk #16): Next `<Link href="/#iletisim">` ile sayfalar arası hash, geri/ileri geri yüklemesi ve Lenis etkileşimi. Her bölüm için Playwright geri/ileri testiyle doğrulanır (§13.3).
 
+- SPEC-SAPMA: §5.13.4 (M6, 2026-10-01) — Sayfa içi atlamanın `pushState('#id')`'i korunur; atlama hedefe vardıktan sonra kullanıcı hedeften yarım ekrandan fazla uzaklaşırsa hash `replaceState` ile (Next'in `history.state`'i korunarak) URL'den düşer. Aksi hâlde başka sayfaya gidip geri gelince Next hash'e kaydırıyor, kalınan yer kayboluyordu (V-52).
+
 #### 5.13.5 `src/stage/ScrollDirector.tsx` (iskelet)
 
 ```tsx
@@ -5784,6 +5795,8 @@ final.md §4.2, lede'in satır satır açılmasını ister; D-46 ise SplitText'i
 | `focusin` (document, capture) | Odak açılmamış bir `[data-armed]` öğenin içine düşerse o öğe anında açılır |
 | `hashchange` ve ilk yükte `location.hash` | Hedef öğe ile onun üstündeki bütün reveal'lar anında açılır |
 | Kesme (`cut` / `snap`) | Görünümdeki ve üstündeki reveal'lar anında açılır |
+
+- SPEC-SAPMA: §5.14.6 (M6, 2026-10-01) — `scrollend` taraması Lenis'in yumuşak kaydırması sürerken (`html.lenis-scrolling`) ertelenir ve Lenis durunca (150 ms aralıkla yoklanır) çalışır. Yavaş karede Chrome Lenis kareleri arasında `scrollend` veriyor, gecikmeli açılan bloklar (contact, §4.12.3) erken açılıyordu. Sayfada bul, klavye ve Home/End sıçramaları (native kaydırma) aynen taranır.
 
 #### 5.14.7 Oturum ortasında hareket değişimi
 
@@ -11582,6 +11595,8 @@ const measure = () => {
 
 - SPEC-SAPMA: §9.4.3 PB-6, PB-7 (M5, 2026-09-30) — "`os:stage-tier`'dan sonra başlayan betik yok" kuralı da route chunk'larını hariç tutar (PB-5 ile aynı gerekçe). V-44 PB-3'te ağ kaydıyla denetlenir: pencere dışında başlayan betiklerin hiçbiri `WebGLRenderer` içermez. Ölçüm (2026-09-30, yerel): ilk JS `/` 168.4 KB (`check-budgets`), stage grubu 251.6 KB, motion 50.9 KB; PB-1…PB-7 yeşil.
 
+- SPEC-SAPMA: §9.4.3 PB-1, PB-2; §5.13.5 (M6, 2026-10-01) — `ScrollDirector`'ün gövdesi (ölçüm, track'ler, keyframe'ler, event hedefleri, preset tablosu) ilk paketten çıkarılıp `src/stage/director.ts`'e taşındı; motion runtime import'uyla aynı anda istenir (`onMotionImport`) ve runtime gelince çalışır, sahne boot'u da onu bekler. İlk pakette yalnız `<div data-stage-scope>` sarmalayıcısı, olay yayıcı (`events.ts`) ve areas adım indeksi kalır; LabStage ayrı modüldedir (yalnız `/lab/stage`). Gerekçe: M6 eklemeleriyle `/` ilk JS'i PB-1'i aşıyordu (174 355 B > 174 080 B). Ölçüm (2026-10-01, yerel): `/` ilk JS 166 167 B (−8.2 KB; `npm run budgets` 169.0 → 161.6 KB); PB-2 penceresi 60 505 B ≤ 61 440 B (director chunk'ı 8.3 KB). M7'de director büyürse PB-2 payı (≈ 0.9 KB) yetmez; o zaman director'ün pencere dışında (runtime geldikten sonra) istenmesi ya da bütçe kararı gerekir.
+
 #### 9.4.4 Bütçe aşıldığında
 
 | Aşım | Önce bak | Sonra |
@@ -14430,6 +14445,7 @@ Kurallar:
 | `work-viewer.spec.ts` | `@desktop-chromium`, `@desktop-webkit`, `@desktop-firefox` (son ikisi yalnız `PW_CROSS=1`) | Work görüntüleyicisinin figür sütununun ekran görüntüsü ve tüm figürlerin kutu geometrisi. Tarayıcılar arası fark ≤ 2 px. | K-WORK-10, final.md §13 #8 |
 
 - SPEC-SAPMA: §13.3.4 (M5, 2026-09-30) — `perf-smoke.spec.ts` P8 etkileşimleri `/?tier=static`'te ölçer (SwiftShader'ın CPU'da çizdiği WebGL karesi GPU maliyetini temsil etmez; CI doğal yolu V-41'e bağlıdır). Yalnız `interactionId > 0` olan event girdileri sayılır; her etkileşim 5–6 kez ölçülür ve medyan bütçeyle karşılaştırılır. "4× CPU kısıtı" referans geliştirme makinesine (M-serisi Mac; kalibrasyon iş yükü medyanı 46 ms) göredir: kısıt her ölçüm grubundan önce aynı iş yüküyle yeniden kalibre edilir (`4 × 46 / ölçülen`, 1–4×). CI koşucusu 4× sabit kısıtta tema değişimini 128–256 ms ölçüyordu; etkin cihaz hızı böylece makineden ve paralel işçilerin yükünden bağımsız kalır. `stage.spec.ts` K-HERO-7'deki "hero'nun CLS katkısı 0" ölçümü sahne boot'undan (`os:stage-probe`) sonraki kaymaları kapsar; ilk boyamadaki font değişimi (CI'da soğuk önbellekte 0.0116) sayfanın tamamıyla P5'te ve LHCI'da ölçülür. `posters.spec.ts` Firefox'ta temayı `localStorage['os-theme']` ile verir: Playwright Firefox'ta `colorScheme` öykünmesi head betiğinin `matchMedia`'sına yansımıyor (ölçüldü).
+- SPEC-SAPMA: §13.3.4 (M6, 2026-10-01) — `choreography.spec.ts`'te yalnız `stageTarget`, DOM olayları ve reveal'ları okuyan testler (K-GEN-2, K-CHOREO-4/7, K-CONTACT-3/5, I2, I3, K-ABOUT-1, K-AREAS-3/4/6, K-WORK-1/2/3, K-JOURNEY-2/3) `/?debug&tier=static` ile koşar: director kademeden bağımsızdır, canvas gerekmez. Taş dairesi, kesme, piksel, V-48 ve K-JOURNEY-7 testleri canlı sahnede kalır (`tier=high`, mobil `medium`). Gerekçe: CI'da SwiftShader ≈ 2 fps; canlı sahnede her kaydırma adımı ≈ 0.5 s sürüyor, dosya `quality` işinin 40 dk'sına sığmıyor, 500 ms'lik tween ve reveal zamanlamaları kare aralığının altında ölçülemiyordu. Ayrıca `settle()` süreye ek olarak en az 3 değişimsiz kare bekler (yavaş karede süren tween iki kare arasında durgun görünüyordu) ve kesmede geri gelme süresi varıştan sonra çizilen ilk rig karesinden ölçülür (§5.9.7 M6 notu: belirme oturtulmuş kare çizildikten sonra başlar).
 
 #### 13.3.5 final.md §5 değişmezlerinin testleri
 
@@ -16511,7 +16527,7 @@ Belgedeki her `⚠️ DOĞRULANMADI` maddesi, araştırma notlarındaki UNVERIFI
 | V-45 | Lenis (`autoRaf`) açıkken programatik `window.scrollTo` Lenis durumuyla senkron kalır. | §13.3.2 | `scrollToSvh` sonrası `readStage().scrollY === window.scrollY` (±1 px) | `scrollToSvh` `page.mouse.wheel` adımlarına geçer. | M5 — ✅ DOĞRULANDI (2026-09-30, `stage.spec.ts`: K2–K4'e programatik kaydırmadan sonra director `scrollY` = `window.scrollY` ± 1 px) |
 | V-46 | `loading="lazy"` + `display: none` olan etkin olmayan tema posteri hiçbir motorda indirilmez. | §5.16.4, §9.3.2, final §13 #3 | `posters.spec.ts` (Chromium, WebKit; Firefox `PW_CROSS=1`) | Tek `<picture>` + `<source media="(prefers-color-scheme: dark)">`; sonuç sahibe raporlanır. | M5 — ✅ DOĞRULANDI (2026-09-30, `posters.spec.ts`: Chromium, WebKit ve Firefox `PW_CROSS=1`; yalnız etkin temanın posterleri istenir, tema değişiminde diğer temanın her dosyası en çok bir kez) |
 | V-47 | Kapak renginin her piksel için hesaplanmasının (`fwidth` kuralı) ek maliyeti kabul edilebilir. | §5.4.1 | `?debug` kare süresi; gerçek cihaz (§9.6) | Kapak yalnız `!gl_FrontFacing` dalında; kesit kenarı görsel QA. | M5 → M8 — M5'te ölçülmedi (SwiftShader kare süresi GPU maliyetini temsil etmez); gerçek cihaz matrisi M8 (§9.6) |
-| V-48 | Flow anchor'larda Taş, masaüstünde (Lenis) metinle ≤ 1 kare sapmayla hareket eder. | §5.19 | Ekran kaydı / `?debug` | "Tek saat" varyantı (`frameloop="never"` + `gsap.ticker`) değerlendirilir. | M6 |
+| V-48 | Flow anchor'larda Taş, masaüstünde (Lenis) metinle ≤ 1 kare sapmayla hareket eder. | §5.19 | Ekran kaydı / `?debug` | "Tek saat" varyantı (`frameloop="never"` + `gsap.ticker`) değerlendirilir. | M6 — ✅ DOĞRULANDI (2026-10-01, `choreography.spec.ts` V-48, `?debug`): Lenis tekerlek kaydırmasında (about-cut, flow) kare başına boyanan kaydırma, çapa merkezi ve rig'in Taş merkezi karşılaştırıldı; döngü boştan uyanırken yalnız hareketin ilk karesi 1 kare geride, sonraki ~22 karenin tamamı aynı karede (0 px). "Tek saat" varyantına gerek yok. |
 | V-49 | Safari'de canlı canvas `::view-transition-new(scene)` içinde güncellenir; tipsiz geçişte `scene` grubu metnin üstüne boyanmaz. | §4.13.3, §5.15.1, §9.5.5, final §13 #1 | WebKit Playwright (`transitions.spec.ts`) + gerçek iPhone ve masaüstü Safari kaydı (S4) | Süzülme `transition.finished`'ta başlar. | M7 |
 | V-50 | React `<ViewTransition>` olay prop'larıyla `transition.finished`'a erişilebilir. | §5.15.1 | Uygulamada deneme | 360 ms sabit gecikme. | M7 |
 | V-51 | Next'in popstate kaydırma geri yüklemesi director refresh'inden önce oturur. | §5.15.3 | `navigation.spec.ts` geri/ileri | `abs(Δy) > 1.5·vh` kuralı ikinci bir kesme yapar; sonuç doğrudur. | M7 |

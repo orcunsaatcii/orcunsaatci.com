@@ -175,6 +175,43 @@ export function scrollToChapter(target: HTMLElement, o: { forceCut?: boolean } =
   });
 }
 
+let stopHashWatch: () => void = () => {};
+
+/**
+ * Atlama hedefe vardıktan sonra kullanıcı hedeften yarım ekrandan fazla uzaklaşırsa hash URL'den düşer
+ * (`replaceState`, Next'in `history.state`'i korunur). Aksi hâlde başka sayfaya gidip geri gelince Next hash'e
+ * kaydırıyor, kalınan yer kayboluyordu (K-CHOREO-5, V-52). Hedefte kalındıysa hash ve geri dönüş aynıdır.
+ */
+function watchHashLeave(target: HTMLElement, id: string): void {
+  stopHashWatch();
+  let arrived = false;
+  let raf = 0;
+  const check = () => {
+    raf = 0;
+    if (window.location.hash !== `#${id}`) return stop();
+    const top = Math.abs(target.getBoundingClientRect().top);
+    if (!arrived) arrived = top < 0.25 * window.innerHeight;
+    else if (top > 0.5 * window.innerHeight) {
+      window.history.replaceState(
+        window.history.state,
+        '',
+        window.location.pathname + window.location.search,
+      );
+      stop();
+    }
+  };
+  const onScroll = () => {
+    if (!raf) raf = requestAnimationFrame(check);
+  };
+  const stop = () => {
+    window.removeEventListener('scroll', onScroll);
+    cancelAnimationFrame(raf);
+    stopHashWatch = () => {};
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  stopHashWatch = stop;
+}
+
 /** Capture aşamasında tek click dinleyicisi: #… ve aynı sayfaya işaret eden /#…, /en#… (runtime varken). */
 function useInPageNavigation(enabled: boolean) {
   useEffect(() => {
@@ -194,8 +231,12 @@ function useInPageNavigation(enabled: boolean) {
       e.preventDefault();
       scrollToChapter(target, { forceCut: a.hasAttribute('data-skip-section') });
       if (window.location.hash !== `#${id}`) window.history.pushState(null, '', `#${id}`);
+      watchHashLeave(target, id);
     };
     document.addEventListener('click', onClick, true);
-    return () => document.removeEventListener('click', onClick, true);
+    return () => {
+      document.removeEventListener('click', onClick, true);
+      stopHashWatch();
+    };
   }, [enabled]);
 }

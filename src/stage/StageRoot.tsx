@@ -1,17 +1,16 @@
 'use client';
-// src/stage/StageRoot.tsx — kalıcı sahne katmanı #scene-layer, lazy boot, kademe, hata sınırı (§5.12.1, §5.12.3) ve
-// LabStage (§5.16.2). İki kök layout'ta bir kez mount olur, client navigasyonunda unmount olmaz (D-18). /lab/ altında ve
-// preset 'none' iken boot etmez (K-DEEP-2); gizli sekmede bekler (§9.2.4 kural 5). Stage chunk (three + R3F) yalnız
-// yoklama tier ≠ static döndükten sonra istenir; motion runtime'ı da beklenir (sıra: motion → yoklama → stage).
+// src/stage/StageRoot.tsx — kalıcı sahne katmanı #scene-layer, lazy boot, kademe ve hata sınırı (§5.12.1, §5.12.3).
+// İki kök layout'ta bir kez mount olur, client navigasyonunda unmount olmaz (D-18). /lab/ altında ve preset 'none' iken
+// boot etmez (K-DEEP-2); gizli sekmede bekler (§9.2.4 kural 5). Stage chunk (three + R3F) yalnız yoklama tier ≠ static
+// döndükten sonra istenir; motion runtime'ı ve director gövdesi de beklenir (sıra: motion → yoklama → stage).
+// LabStage (§5.16.2) LabStage.tsx'tedir (yalnız lab sayfası; ilk pakete girmez).
 import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
-import { Component, useEffect, useMemo, useSyncExternalStore, type ReactNode } from 'react';
+import { Component, useEffect, type ReactNode } from 'react';
 import { useMotionPref, whenMotion } from '@/components/motion/MotionRoot';
-import type { ThemeName } from '@/design/tokens';
 import type { Persona } from '@/experience/profile';
 import { onIdle, STAGE_IDLE } from '@/lib/on-idle';
-import { KEYFRAME_KEYS, type KeyframeKey } from './keyframes';
-import { stageStore, useStage, type StageData } from './store';
+import { stageStore, useStage } from './store';
 
 // ssr:false yalnızca Client Component içinde geçerlidir; chunk ilk render'da istenir.
 const Scene = dynamic(() => import('./gl/Scene'), { ssr: false, loading: () => null });
@@ -87,7 +86,8 @@ export function StageRoot({ persona }: { persona: Persona }) {
         try {
           mark('os:stage-import');
           await Promise.race([
-            Promise.all([import('./gl/Scene'), whenMotion()]),
+            // director gövdesi runtime'la birlikte istendi; sahne ilk karesinde stageTarget'ı o yazmış olur
+            Promise.all([import('./gl/Scene'), whenMotion(), import('./director')]),
             new Promise((_, reject) => {
               timer = window.setTimeout(reject, BOOT_TIMEOUT_MS);
             }),
@@ -155,62 +155,4 @@ class StageErrorBoundary extends Component<{ children: ReactNode }, { failed: bo
   override render() {
     return this.state.failed ? null : this.props.children;
   }
-}
-
-/* ───────────── /lab/stage (§5.16.2) ───────────── */
-
-export const LAB_DEFAULT_SIZE = 1600;
-const LAB_MIN_SIZE = 64;
-const LAB_MAX_SIZE = 4096;
-
-export interface LabParams {
-  keyframe: KeyframeKey;
-  theme: ThemeName;
-  size: number;
-}
-
-/** ?key → KeyframeKey (varsayılan hero), ?theme → light | dark (varsayılan koyu, §6.3.5), ?size → px (varsayılan 1600) */
-export function parseLabParams(search: string): LabParams {
-  const q = new URLSearchParams(search);
-  const key = q.get('key');
-  const keyframe = KEYFRAME_KEYS.find((k) => k === key) ?? 'hero';
-  const theme: ThemeName = q.get('theme') === 'light' ? 'light' : 'dark';
-  const n = Number(q.get('size'));
-  const size = Number.isInteger(n) && n >= LAB_MIN_SIZE && n <= LAB_MAX_SIZE ? n : LAB_DEFAULT_SIZE;
-  return { keyframe, theme, size };
-}
-
-const subscribeNever = () => () => {};
-
-export function LabStage({ data, persona }: { data: StageData; persona: Persona }) {
-  // Sorgu YALNIZ client'ta okunur (D-06): SSR ve hidrasyon null görür, ardından gerçek değer gelir.
-  const search = useSyncExternalStore(
-    subscribeNever,
-    () => window.location.search,
-    () => null,
-  );
-  const params = useMemo(() => (search === null ? null : parseLabParams(search)), [search]);
-
-  useEffect(() => {
-    if (!params) return;
-    const root = document.documentElement;
-    root.dataset.theme = params.theme;
-    root.style.background = 'transparent';
-    document.body.style.background = 'transparent';
-    document.body.style.margin = '0';
-  }, [params]);
-
-  if (!params) return null;
-  return (
-    <div id="lab-canvas" style={{ width: params.size, height: params.size }}>
-      <Scene
-        mode="lab"
-        keyframe={params.keyframe}
-        theme={params.theme}
-        size={params.size}
-        data={data}
-        persona={persona}
-      />
-    </div>
-  );
 }

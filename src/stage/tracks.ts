@@ -4,7 +4,8 @@
 import { INTENSITY, type Intensity } from '@/experience/profile';
 import { psiDeg, wrapNear } from '@/lib/section-geometry';
 import { measureAnchors, type AnchorId, type MeasuredAnchor } from './anchors';
-import { contentCtx, type Keyframe, type StageContentCtx } from './keyframes';
+import { AREAS_STEP } from './events';
+import { contentCtx, type Keyframe, type StageContentCtx, JOURNEY_TURN_DEG } from './keyframes';
 import type { ChapterId, PresetName, StageData, StageTarget } from './store';
 
 export type { ChapterId } from './store';
@@ -128,8 +129,21 @@ export interface TrackVariant {
   shortViewport: boolean; // masaüstü, innerHeight < 760
 }
 
-/** Masaüstü areas adımı (svh); mobil pin 40 (§4.8.8) */
-export const AREAS_STEP = { desktop: 50, mobile: 40 } as const;
+export { AREAS_STEP }; // tanım events.ts'te (ilk paketteki AreasPin de okur)
+/** Dwell'de kaydırma kaynaklı dönüş tavanı (§4.12.2 #5) */
+export const DWELL_MAX_DEG_PER_100SVH = 33.4;
+
+/**
+ * Journey BODY dönüşü (§4.12.1 satır 14): en çok 60°. Kısa BODY'de (küçük E; masaüstü BODY = 35E − 30 svh) dönüş, hız
+ * ≤ 33.4°/100 svh (§4.12.2 #5) kalacak biçimde BODY uzunluğuna ölçeklenir; contact IN aynı yerden +20° sürer.
+ * SPEC-SAPMA §4.12.2 (M6): M4 notundaki karar; varsayılan içerikte (E = 6, 180 svh) değer aynen 60°'dir.
+ */
+export function journeyTurnOf(layout: Layout): number {
+  const jb = layout.phases.find((p) => p.chapter === 'journey' && p.phase === 'body');
+  if (!jb) return JOURNEY_TURN_DEG;
+  const svh = (100 * (jb.y1 - jb.y0)) / layout.vh;
+  return Math.min(JOURNEY_TURN_DEG, (DWELL_MAX_DEG_PER_100SVH * svh) / 100);
+}
 /** Yatay telefon: mobil ve innerHeight < 500 (§5.9.4) */
 const LANDSCAPE_MAX_VH = 500;
 /** Kısa masaüstü görüntü alanı: innerHeight < 760 (§4.9.4 [SABİT]) */
@@ -151,10 +165,11 @@ export function variantOf(layout: Layout): TrackVariant {
  * lastPsi 45, W₀ bu açıya göre sarılır. Dilim açıları (ψ) N'den gelir; N ≥ 7'de sectors 0'dır.
  */
 export function stageCtx(data: StageData, layout: Layout | null): StageContentCtx {
-  const base = contentCtx(
+  const ctx = contentCtx(
     data.sectors,
     data.projects.map((p) => p.area),
   );
+  const base = layout ? { ...ctx, journeyTurn: journeyTurnOf(layout) } : ctx;
   if (base.areasMode === 'list' || !layout || layout.areas) return base;
   const first = base.projectAreas[0] ?? null;
   const lastPsi = 45;
@@ -223,10 +238,34 @@ export function buildTracks(
   const N = ctx.areasMode === 'dial' ? ctx.N : Math.min(ctx.N, 6);
   const out: Track[] = [];
 
+  // Mobil ve yatay telefonda Taş ayrılmış bantlarda yaşar (§4.15.1): bantlar arasında konum karışımı Taşı aradaki
+  // metnin üstünden geçirirdi (K-CHOREO-6). Bunun yerine el değiştirme: eski bantta söner, görünmezken çapa değişir,
+  // yeni bantta belirir. SPEC-SAPMA §4.15.3, §5.8.3 (M6).
+  const handoff = (
+    chapter: ChapterId,
+    at: number,
+    anchors: readonly [AnchorId, AnchorId],
+    fade?: readonly [number, number, number, number],
+  ): Track[] => [
+    mix(chapter, 'in', at, at + 0.01, 0, 1, anchors),
+    ...(fade
+      ? rows(chapter, 'in', [
+          ['opacityTrack', fade[0], fade[1], 1, 0],
+          ['opacityTrack', fade[2], fade[3], 0, 1],
+        ])
+      : []),
+  ];
+
   // about · IN
   out.push(
-    mix('about', 'in', 0, 0.3, 0, 0.45, ['hero-rest', 'about-cut']),
-    mix('about', 'in', 0.3, 0.6, 0.45, 1, ['hero-rest', 'about-cut']),
+    ...(v.layout === 'desktop'
+      ? [
+          mix('about', 'in', 0, 0.3, 0, 0.45, ['hero-rest', 'about-cut']),
+          mix('about', 'in', 0.3, 0.6, 0.45, 1, ['hero-rest', 'about-cut']),
+        ]
+      : v.layout === 'mobile'
+        ? handoff('about', 0.25, ['hero-rest', 'about-cut'], [0.1, 0.25, 0.26, 0.42])
+        : handoff('about', 0.5, ['hero-rest', 'about-cut'])), // yatay: opaklık 0.2–0.5'te söner (varyant)
     ...rows('about', 'in', [
       ['rotYScroll', 0, 0.3, 0, 12],
       ['camR', 0.3, 1, 5.2, 4.8],
@@ -253,9 +292,13 @@ export function buildTracks(
       ['lightEl', 0, 1, 48, 55],
     ]),
   );
-  // areas · IN (dolly-zoom)
+  // areas · IN (dolly-zoom). Mobil pin: about bandı çıkarken söner, kadran bandı (sticky sahnenin üst 42 svh'si)
+  // görünür olunca (p ≥ 0.42) belirir.
+  const mobileDial = v.layout === 'mobile' && !v.areasList;
   out.push(
-    mix('areas', 'in', 0, 0.7, 0, 1, ['about-cut', 'areas-dial']),
+    ...(mobileDial
+      ? handoff('areas', 0.15, ['about-cut', 'areas-dial'], [0, 0.15, 0.45, 0.6])
+      : [mix('areas', 'in', 0, 0.7, 0, 1, ['about-cut', 'areas-dial'])]),
     ...rows('areas', 'in', [
       ['camR', 0, 1, 4.6, 7.2],
       ['camFov', 0, 1, 28, 18],
@@ -343,17 +386,21 @@ export function buildTracks(
   );
   for (let i = 0; i < N; i++)
     out.push(...rows('journey', 'in', [[fill(i), 0, 0.5, pattern[i] ?? 0.12, 0]]));
-  // journey · BODY
-  out.push(...rows('journey', 'body', [['rotYScroll', 0, 1, W0 + 50, W0 + 110, 'linear']]));
+  // journey · BODY (dönüş BODY uzunluğuna ölçeklenir: küçük E)
+  const jEnd = W0 + 50 + ctx.journeyTurn;
+  out.push(...rows('journey', 'body', [['rotYScroll', 0, 1, W0 + 50, jEnd, 'linear']]));
 
-  // contact · IN
+  // contact · IN. Mobil: çapa değişimi görünmez aralıkta (opaklık 0, p < 0.3) biter, bant belirmeden önce
   out.push(
-    mix('contact', 'in', 0, 0.5, 0, 1, ['journey-core', 'contact-ring']),
+    mix('contact', 'in', 0, v.layout === 'desktop' ? 0.5 : 0.3, 0, 1, [
+      'journey-core',
+      'contact-ring',
+    ]),
     ...rows('contact', 'in', [
       ['camR', 0, 0.5, 5.8, 4.9],
       ['camEl', 0, 0.5, 72, 22],
       ['camFov', 0, 0.5, 26, 30],
-      ['rotYScroll', 0, 0.5, W0 + 110, W0 + 130],
+      ['rotYScroll', 0, 0.5, jEnd, jEnd + 20],
       ['bandVisible', 0, 0.4, 1, 0],
       ['ghost', 0, 0.5, 0.06, 0],
       ['rotX', 0.5, 1, 0, 68],
@@ -506,7 +553,19 @@ export function applyBase(
 
 /* ───────────── ölçüm (yalnız okur; refresh'te) ───────────── */
 
-const docTop = (el: Element): number => el.getBoundingClientRect().top + window.scrollY;
+/**
+ * Belge y'si, öğenin kendi dikey kayması çıkarılarak (düzen konumu). Journey girdileri kendi `data-reveal` hedefleridir:
+ * açılmadan önceki 16 px kayma, açılmamışken yapılan bir refresh'te aktivasyon çizgilerini kaydırıyordu.
+ */
+const docTop = (el: Element): number => {
+  const cs = getComputedStyle(el);
+  let shift = 0;
+  if (cs.transform && cs.transform !== 'none' && typeof DOMMatrixReadOnly === 'function')
+    shift += new DOMMatrixReadOnly(cs.transform).m42;
+  if (cs.translate && cs.translate !== 'none')
+    shift += Number.parseFloat(cs.translate.split(/\s+/)[1] ?? '0') || 0;
+  return el.getBoundingClientRect().top + window.scrollY - shift;
+};
 
 /**
  * Fazlar, "top 55%" aktivasyon çizgileri, areas pin geometrisi ve heroExit (§5.9.3). Seçiciler daima kapsamlıdır

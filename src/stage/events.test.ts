@@ -6,19 +6,21 @@ import type { MotionRuntime } from '@/lib/gsap';
 import { NO_BAND, psiDeg } from '@/lib/section-geometry';
 import {
   applyEvents,
-  areasIndexAt,
-  areasStepAt,
   computeIndices,
   createEventTargets,
-  emit,
   eventOwned,
+  resetEventState,
+  resolveEvents,
+  type EventIndices,
+} from './event-targets';
+import {
+  areasIndexAt,
+  areasStepAt,
+  emit,
   lastStageEvent,
   notifyStageUpdate,
   onStageEvent,
   onStageUpdate,
-  resetEventState,
-  resolveEvents,
-  type EventIndices,
   type StageEvent,
 } from './events';
 import { contentCtx, keyframes } from './keyframes';
