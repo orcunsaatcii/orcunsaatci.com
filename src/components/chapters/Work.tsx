@@ -87,7 +87,7 @@ export function Work({ locale }: { locale: Locale }) {
                     </span>
                   </ViewTransition>
                 </RevealHeading>
-                <p className="mt-3 line-clamp-2 type-body" data-reveal="block">
+                <p className="mt-3 type-body" data-reveal="block">
                   <Txt v={t(p.summary, locale)} />
                 </p>
                 <dl className="mt-3 flex flex-wrap gap-x-3 type-meta" data-reveal="block">

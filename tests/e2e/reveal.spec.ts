@@ -13,7 +13,7 @@ const motionReady = (page: Page) =>
   );
 
 test.describe('§5.19 scroll ve reveal', { tag: ['@desktop-chromium'] }, () => {
-  test('K-GEN-2 bölüm yükseklikleri §4.5.2 formülleriyle (svh, ±1)', async ({ page }) => {
+  test('K-GEN-2 bölüm yükseklikleri §4.5.2 formülleriyle (svh, en az; ±1)', async ({ page }) => {
     await page.goto('/', { waitUntil: 'networkidle' });
     const r = await page.evaluate(() => {
       const vh = window.innerHeight;
@@ -32,9 +32,10 @@ test.describe('§5.19 scroll ve reveal', { tag: ['@desktop-chromium'] }, () => {
       };
     });
     expect(r.hero).toBeCloseTo(100, 0);
-    expect(r.about).toBeCloseTo(140, 0);
-    expect(Math.abs(r.areas - (120 + 50 * r.N))).toBeLessThanOrEqual(1);
-    expect(Math.abs(r.work - (50 + 70 * r.P))).toBeLessThanOrEqual(1);
+    // §4.5.2: formüller yalnız min-height'tır; gerçek içerik daha uzunsa bölüm uzar (sahibin about metni 140 svh'yi aşar)
+    expect(r.about).toBeGreaterThanOrEqual(140 - 1);
+    expect(r.areas).toBeGreaterThanOrEqual(120 + 50 * r.N - 1);
+    expect(r.work).toBeGreaterThanOrEqual(50 + 70 * r.P - 1);
     expect(r.journey).toBeGreaterThanOrEqual(70 + 35 * r.E - 1);
     expect(Math.abs(r.contact - 100)).toBeLessThanOrEqual(1);
   });

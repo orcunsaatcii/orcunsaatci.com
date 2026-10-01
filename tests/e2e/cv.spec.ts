@@ -31,11 +31,11 @@ test.describe('D-13 CV', { tag: ['@desktop-chromium', '@no-js'] }, () => {
       expect(json.status()).toBe(200);
       expect(json.headers()['x-robots-tag']).toContain('noindex');
       const resume = JSON.parse(await json.text()) as { basics: { name: string } };
-      expect(resume.basics.name).toBe('Orçun Saatçi');
+      expect(resume.basics.name).toBe('Orçun SAATCİ');
     }
   });
 
-  test('bölüm sırası ve çapalar §7.6.1; boş bölüm yok; pdf-only kayıt sayfada yok', async ({
+  test('bölüm sırası ve çapalar §7.6.1; boş bölüm yok; JSON Resume deneyim taşır', async ({
     page,
   }) => {
     await page.goto('/cv');

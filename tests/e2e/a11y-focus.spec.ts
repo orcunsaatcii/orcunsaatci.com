@@ -44,7 +44,8 @@ test.describe(
               const cs = getComputedStyle(box);
               const ring = cs.outlineStyle !== 'none' && Number.parseFloat(cs.outlineWidth) >= 2;
               box.scrollIntoView({ block: 'nearest' });
-              const r = box.getBoundingClientRect();
+              // iki satıra sarılan bağlantıda sınır kutusunun merkezi satır arası boşluğa düşer: ilk satır parçası
+              const r = box.getClientRects()[0] ?? box.getBoundingClientRect();
               const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
               const covered = hit && !box.contains(hit) ? `${hit.tagName}.${hit.className}` : null;
               const label = `${el.tagName} "${(el.textContent ?? '').trim().slice(0, 40)}" ${el.getAttribute('href') ?? ''}`;

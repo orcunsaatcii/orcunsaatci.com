@@ -168,7 +168,7 @@ test.describe('§3.10 dil ve route’lar', { tag: ['@desktop-chromium'] }, () =>
     }
   });
 
-  test('EN sayfalar: "Saatçi" ve TR sözlük metinleri yalnız [lang="tr"] içinde; iç bağlantılar 200', async ({
+  test('EN sayfalar: "SAATCİ" ve TR sözlük metinleri yalnız [lang="tr"] içinde; iç bağlantılar 200', async ({
     page,
     request,
   }) => {
@@ -189,7 +189,7 @@ test.describe('§3.10 dil ve route’lar', { tag: ['@desktop-chromium'] }, () =>
             const el = n.parentElement!;
             if (el.closest('script, style, [hidden], template')) continue;
             if (el.closest('[lang]')?.getAttribute('lang') === 'tr') continue;
-            if (text.includes('Saatçi') || set.has(text)) out.push(text.slice(0, 60));
+            if (text.includes('SAATCİ') || set.has(text)) out.push(text.slice(0, 60));
           }
           return out;
         }, trStrings);

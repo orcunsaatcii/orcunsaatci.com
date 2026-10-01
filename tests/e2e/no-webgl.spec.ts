@@ -40,7 +40,7 @@ test.describe('WebGL yok: static kademe', { tag: ['@no-webgl'] }, () => {
     });
   }
 
-  test('K-VAR-4 areas pini DialFigure ile döner (s 300 → 320); work silmeleri oynar', async ({
+  test('K-VAR-4 areas pini DialFigure ile döner (T + 60 → T + 80); work silmeleri oynar', async ({
     page,
   }) => {
     await page.goto('/');
@@ -49,11 +49,16 @@ test.describe('WebGL yok: static kademe', { tag: ['@no-webgl'] }, () => {
       page.evaluate(
         () => getComputedStyle(document.querySelector('.areas-dial [data-dial-rotor]')!).transform,
       );
-    await scrollToSvh(page, 300);
+    // adım k = 1'in dönüşü [T + 60, T + 75] svh (§4.5.2); T ölçülür: gerçek about metni 140 svh'yi aşabilir
+    const T = await page.evaluate(() => {
+      const el = document.querySelector<HTMLElement>('[data-chapter="areas"]')!;
+      return ((el.getBoundingClientRect().top + window.scrollY) / window.innerHeight) * 100;
+    });
+    await scrollToSvh(page, T + 60);
     await expect(page.locator('[data-areas-pinned]')).toHaveCount(1);
     await expect(page.locator('.areas-dial [data-dial-figure]')).toBeVisible();
     const before = await rotor();
-    await scrollToSvh(page, 320);
+    await scrollToSvh(page, T + 80);
     expect(await rotor(), 'kadran rotY track’iyle döner').not.toBe(before);
     // work: figür 2 makale 1'de kapalı, makale 2'de açık (SectionWipe clip-path'i)
     await scrollToArticle(page, 0);

@@ -60,7 +60,7 @@ export function ProjectRow({
               </ViewTransition>
             </Link>
           </h2>
-          <p className="mt-1 line-clamp-2 type-ui text-ink-muted">
+          <p className="mt-1 type-ui text-ink-muted">
             <Txt v={t(project.summary, locale)} />
           </p>
         </div>
