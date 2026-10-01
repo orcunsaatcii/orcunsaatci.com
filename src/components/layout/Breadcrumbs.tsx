@@ -45,7 +45,11 @@ export function Breadcrumbs({ pageRef, locale, title }: BreadcrumbsProps) {
                   {name(ref)}
                 </span>
               ) : (
-                <Link href={href} className={`${HIT_AREA_FLUSH} text-ink-muted hover:text-ink`}>
+                <Link
+                  transitionTypes={['nav-back']}
+                  href={href}
+                  className={`${HIT_AREA_FLUSH} text-ink-muted hover:text-ink`}
+                >
                   {name(ref)}
                 </Link>
               )}

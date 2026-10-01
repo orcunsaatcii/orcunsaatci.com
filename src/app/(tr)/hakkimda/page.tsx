@@ -2,9 +2,14 @@
 import type { Metadata } from 'next';
 import { staticPageMetadata } from '@/lib/seo/metadata';
 import { AboutView } from '@/views/about/AboutView';
+import { PageTransition } from '@/components/motion/PageTransition';
 
 export const metadata: Metadata = staticPageMetadata({ key: 'about' }, 'tr');
 
 export default function Page() {
-  return <AboutView locale="tr" />;
+  return (
+    <PageTransition>
+      <AboutView locale="tr" />
+    </PageTransition>
+  );
 }

@@ -1,10 +1,13 @@
 // src/views/project/ProjectView.tsx — yalın proje sayfası (§7.7.1, D-48). Server; veri yalnız project.yaml'dan.
 // Sıra: breadcrumb · hero (H1, özet, preload'lu kapak) · künye · mağaza · galeri · video bağlantısı · sonraki proje ·
 // benzer projeler · iletişim CTA'sı. Boş bölüm çizilmez; okuma süresi, metrik, ekip, müşteri, teknoloji listesi yok.
+// Sahne D1 folio (§4.13.2): page-folio slot 0 H1 bloğunun yanında (k10–12; < 64rem yok), slot 1 "Sonraki proje"
+// bloğunda (< 64rem 30 svh bant). Poster karşılığı SpecimenGlyph (§4.16.3).
 import type { Route } from 'next';
 import Image, { getImageProps } from 'next/image';
 import Link from 'next/link';
 import { preload } from 'react-dom';
+import { SpecimenGlyph } from '@/components/figures/SpecimenGlyph';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { Button } from '@/components/ui/Button';
@@ -21,13 +24,34 @@ import {
   getAreaPageIds,
   getAreas,
   getRelatedProjects,
+  getStageData,
   t,
   type ProjectDoc,
 } from '@/lib/content';
 import { jsonLdFor } from '@/lib/seo/jsonld';
 import { pageLink } from '@/lib/seo/metadata';
+import { PAGE_FOLIO_SIZE } from '@/stage/anchors';
+import { StageAnchor } from '@/stage/ScenePoster';
+import { StagePreset } from '@/stage/StagePreset';
+import type { StageData } from '@/stage/store';
+import { ViewTransition } from 'react';
 
-const COVER_SIZES = '(min-width: 64rem) 58vw, 100vw';
+const COVER_SIZES = '(min-width: 64rem) 70vw, 100vw';
+
+/** D1 poster karşılığı: projenin bandı ve alanı */
+function Glyph({ stage, k }: { stage: StageData; k: number }) {
+  const p = stage.projects[k];
+  return p ? (
+    <SpecimenGlyph
+      rings={stage.rings}
+      sectors={stage.sectors}
+      band={p.band}
+      area={p.area}
+      size={240}
+      className="anchor-figure"
+    />
+  ) : null;
+}
 
 /** ≥ 64rem 16:10 kapak; < 64rem mobileCover (4:5) varsa sanat yönetimli <picture> (§7.7.1, §9.3). */
 function Cover({ project, locale }: { project: ProjectDoc; locale: Locale }) {
@@ -107,12 +131,15 @@ export function ProjectView({ project, locale }: { project: ProjectDoc; locale: 
   const related = getRelatedProjects(project.slug, locale);
   const graph = jsonLdFor({ key: 'project', param: project.slug }, locale);
 
+  const stage = getStageData('folio', project.slug, locale);
+
   return (
     <article>
       {graph ? <JsonLd graph={graph} /> : null}
+      <StagePreset name="folio" data={stage} />
       {/* 1–2 · breadcrumb ve hero */}
       <header className="container-page grid-page gap-y-6 pt-block">
-        <div className="col-span-4 md:col-span-8 lg:col-span-5">
+        <div className="col-span-4 md:col-span-8 lg:col-span-9">
           <Breadcrumbs
             pageRef={{ key: 'project', param: project.slug }}
             locale={locale}
@@ -122,14 +149,27 @@ export function ProjectView({ project, locale }: { project: ProjectDoc; locale: 
             lang={title.fallback ? title.lang : undefined}
             className="mt-stack type-h1 [overflow-wrap:anywhere]"
           >
-            {title.text}
+            <ViewTransition name={`project-title-${project.slug}`} share="morph" default="none">
+              <span>{title.text}</span>
+            </ViewTransition>
           </h1>
           <p className="mt-stack type-lead">
             <Txt v={t(project.summary, locale)} />
           </p>
         </div>
-        <div className="col-span-4 md:col-span-8 lg:col-span-7">
-          <Cover project={project} locale={locale} />
+        <StageAnchor
+          id="page-folio"
+          size={PAGE_FOLIO_SIZE.folio}
+          className="aspect-square max-lg:hidden lg:col-span-3 lg:col-start-10"
+        >
+          <Glyph stage={stage} k={0} />
+        </StageAnchor>
+        <div className="col-span-4 md:col-span-8 lg:col-span-9">
+          <ViewTransition name={`project-cover-${project.slug}`} share="morph" default="none">
+            <div>
+              <Cover project={project} locale={locale} />
+            </div>
+          </ViewTransition>
         </div>
       </header>
 
@@ -161,7 +201,12 @@ export function ProjectView({ project, locale }: { project: ProjectDoc; locale: 
                   ? pathOf({ key: 'area', param: id }, locale)
                   : (`${projectsLink.href}?alan=${id}` as Route);
                 return (
-                  <Link key={id} href={href} className="inline-flex min-h-11 items-center">
+                  <Link
+                    transitionTypes={['nav-forward']}
+                    key={id}
+                    href={href}
+                    className="inline-flex min-h-11 items-center"
+                  >
                     <Tag>
                       <Txt v={t(area?.title, locale)} />
                     </Tag>
@@ -235,13 +280,17 @@ export function ProjectView({ project, locale }: { project: ProjectDoc; locale: 
 
         {/* 7 · sonraki proje (dairesel) */}
         {next ? (
-          <section aria-labelledby="next-title" className="border-t border-line pt-block">
-            <p id="next-title" className="type-eyebrow">
+          <section
+            aria-labelledby="next-title"
+            className="grid-page gap-y-4 border-t border-line pt-block"
+          >
+            <p id="next-title" className="col-span-full type-eyebrow">
               {dict.project.next}
             </p>
             <Link
+              transitionTypes={['nav-forward']}
               href={pathOf({ key: 'project', param: next.slug }, locale)}
-              className="group mt-4 grid grid-cols-1 gap-gutter md:grid-cols-2 md:items-center"
+              className="group col-span-4 grid grid-cols-1 gap-gutter md:col-span-8 md:grid-cols-2 md:items-center lg:col-span-9"
             >
               <span className="block aspect-card overflow-hidden rounded-md bg-raised">
                 <Image
@@ -261,6 +310,13 @@ export function ProjectView({ project, locale }: { project: ProjectDoc; locale: 
                 <span className="mt-2 block type-meta nums-tabular">{next.year}</span>
               </span>
             </Link>
+            <StageAnchor
+              id="page-folio"
+              size={PAGE_FOLIO_SIZE.folio}
+              className="col-span-4 h-[30svh] md:col-span-8 lg:col-span-3 lg:aspect-square lg:h-auto"
+            >
+              <Glyph stage={stage} k={1} />
+            </StageAnchor>
           </section>
         ) : null}
 

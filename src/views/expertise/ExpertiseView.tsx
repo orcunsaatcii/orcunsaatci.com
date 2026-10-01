@@ -3,6 +3,7 @@
 // Alan başına: indeks, <h2>, özet, açıklama, yetkinlikler, etiketler, ilgili beceriler ve bağlantı. Dilim glifi M4'te.
 import type { Route } from 'next';
 import Link from 'next/link';
+import { DialFigure } from '@/components/figures/DialFigure';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { Tag } from '@/components/ui/Tag';
@@ -11,9 +12,20 @@ import { getExperienceProfile } from '@/experience/profile';
 import { pathOf, type Locale } from '@/i18n/config';
 import { getDictionary } from '@/i18n/get-dictionary';
 import { fill } from '@/i18n/text';
-import { getAreaPageIds, getAreas, getCv, getHome, getProjects, getSite, t } from '@/lib/content';
+import {
+  getAreaPageIds,
+  getAreas,
+  getCv,
+  getHome,
+  getProjects,
+  getSite,
+  getStageData,
+  t,
+} from '@/lib/content';
 import { jsonLdFor } from '@/lib/seo/jsonld';
 import { pageLink } from '@/lib/seo/metadata';
+import { previewAttrs } from '@/stage/preview-attrs';
+import { StagePreset } from '@/stage/StagePreset';
 
 export function ExpertiseView({ locale }: { locale: Locale }) {
   const dict = getDictionary(locale);
@@ -25,22 +37,40 @@ export function ExpertiseView({ locale }: { locale: Locale }) {
     s.key === 'skills' ? s.entries.flatMap((g) => g.skills) : [],
   );
   const graph = jsonLdFor({ key: 'expertise' }, locale);
+  const stage = getStageData('plan-small', undefined, locale); // D2, k8–12 (§4.13.2)
 
   return (
     <>
       {graph ? <JsonLd graph={graph} /> : null}
+      <StagePreset name="plan-small" data={stage} />
       <PageHeader
         pageRef={{ key: 'expertise' }}
         locale={locale}
         title={labels.areas[locale]}
         lede={<Txt v={t(getHome().areas.statement, locale)} />}
+        folio={{
+          preset: 'plan-small',
+          figure: (
+            <DialFigure
+              n={stage.sectors}
+              rings={stage.rings}
+              active={null}
+              ariaLabel=""
+              className="anchor-figure"
+            />
+          ),
+        }}
       />
       <ol className="container-page flex flex-col gap-block pt-block pb-section">
         {getAreas().map((a, i) => {
           const count = projects.filter((p) => p.areas.includes(a.id)).length;
           const areaSkills = skills.filter((k) => a.skills.includes(k.id));
           return (
-            <li key={a.id} className="grid-page gap-y-4 border-t border-line pt-block">
+            <li
+              key={a.id}
+              className="grid-page gap-y-4 border-t border-line pt-block"
+              {...previewAttrs({ sector: stage.sectors > 0 ? i : null })}
+            >
               <p className="col-span-4 type-meta nums-tabular md:col-span-8 lg:col-span-2">
                 {String(i + 1).padStart(2, '0')}
               </p>
@@ -88,6 +118,7 @@ export function ExpertiseView({ locale }: { locale: Locale }) {
                 <p className="mt-4">
                   {areaPages.has(a.id) ? (
                     <Link
+                      transitionTypes={['nav-forward']}
                       href={pathOf({ key: 'area', param: a.id }, locale)}
                       className="link-inline type-ui"
                     >
@@ -96,6 +127,7 @@ export function ExpertiseView({ locale }: { locale: Locale }) {
                     </Link>
                   ) : (
                     <Link
+                      transitionTypes={['nav-forward']}
                       href={`${projectsLink.href}?alan=${a.id}` as Route}
                       hrefLang={projectsLink.hrefLang}
                       className="link-inline type-ui"

@@ -109,7 +109,12 @@ export function SiteFooter({ locale, enPaths, variant }: SiteFooterProps) {
                 const { href, hrefLang, fallback } = resolveLink({ key }, locale, enSet);
                 return (
                   <li key={key}>
-                    <Link href={href} hrefLang={hrefLang} className={linkClass}>
+                    <Link
+                      transitionTypes={['nav-forward']}
+                      href={href}
+                      hrefLang={hrefLang}
+                      className={linkClass}
+                    >
                       {label[key]}
                       {fallback ? dict.lang.trSuffix : null}
                     </Link>
@@ -125,7 +130,12 @@ export function SiteFooter({ locale, enPaths, variant }: SiteFooterProps) {
             full ? 'md:col-span-4 lg:col-span-6' : 'md:col-span-8 lg:col-span-12',
           ].join(' ')}
         >
-          <Link href={privacy.href} hrefLang={privacy.hrefLang} className={linkClass}>
+          <Link
+            transitionTypes={['nav-forward']}
+            href={privacy.href}
+            hrefLang={privacy.hrefLang}
+            className={linkClass}
+          >
             {dict.footer.privacy}
             {privacy.fallback ? dict.lang.trSuffix : null}
           </Link>

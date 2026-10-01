@@ -42,6 +42,7 @@ export function ProjectCard({
       </div>
       <Heading className="mt-4 type-title @[24rem]:type-h4">
         <Link
+          transitionTypes={['nav-forward']}
           href={pathOf({ key: 'project', param: project.slug }, locale)}
           className="after:absolute after:inset-0 focus-visible:outline-none"
         >

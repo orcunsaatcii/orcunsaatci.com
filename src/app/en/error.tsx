@@ -21,6 +21,7 @@ export default function ErrorBoundary({
       <div className="mt-stack flex flex-wrap items-center gap-x-6 gap-y-3">
         <Button onClick={() => retry()}>{t.retry}</Button>
         <Link
+          transitionTypes={['nav-forward']}
           href={staticRoutes.home.en}
           className="inline-flex min-h-11 items-center link-inline type-ui"
         >

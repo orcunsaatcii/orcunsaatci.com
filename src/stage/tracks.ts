@@ -1,11 +1,18 @@
 // src/stage/tracks.ts — track modeli, ana sayfa track tablosu ve değerlendirme (§5.9.3–§5.9.4). Three-free.
 // Sahne durumu (preset, scrollY, ölçülmüş layout, içerik)'in saf fonksiyonudur (§5.1.1). Bu modül stageTarget dışında
 // DOM'a YAZMAZ (K-GEN-3); measureLayout yalnız okur. Mobil anahtar geçersiz kılmaları (anchor bantları) M6'dadır.
-import { INTENSITY, type Intensity } from '@/experience/profile';
+import { INTENSITY, type Intensity } from '@/experience/intensity';
 import { psiDeg, wrapNear } from '@/lib/section-geometry';
 import { measureAnchors, type AnchorId, type MeasuredAnchor } from './anchors';
 import { AREAS_STEP } from './events';
-import { contentCtx, type Keyframe, type StageContentCtx, JOURNEY_TURN_DEG } from './keyframes';
+import {
+  contentCtx,
+  keyframes,
+  type Keyframe,
+  type StageContentCtx,
+  JOURNEY_TURN_DEG,
+} from './keyframes';
+import { presetDef } from './presets';
 import type { ChapterId, PresetName, StageData, StageTarget } from './store';
 
 export type { ChapterId } from './store';
@@ -96,6 +103,12 @@ export interface Layout {
   activation: { work: number[]; journey: number[]; cv: number[] }; // "top 55%" çizgileri: docTop − 0.55·vh
   areas: { bodyY0: number; bodyLen: number; S: number; N: number } | null; // null = pin yok (liste modu)
   heroExit: number;
+  /** okuma modu (§4.13.1): slot 0 bloğunun alt kenarının görünüm üstünden çıktığı y; yoksa Infinity (mod yok) */
+  reading?: number;
+  /** folio "Sonraki proje" bloğu ≥ %30 görünür aralığı [on, off) (§5.9.10); yoksa null */
+  folioNext?: { on: number; off: number } | null;
+  /** dolgular daima event'lerindir (folio: proje alanı, plan-small: filtre) */
+  fillsByEvents?: boolean;
 }
 
 export interface ResolvedTrack extends Track {
@@ -233,7 +246,24 @@ export function buildTracks(
   v: TrackVariant,
   turnEase: Ease = 'smooth',
 ): Track[] {
-  if (preset !== 'home') return [];
+  if (preset !== 'home') {
+    // Derin preset'ler (§5.9.10): tek sentetik 'page' fazı boyunca rotYScroll taban + turn
+    const def = presetDef(preset);
+    if (def.turn === undefined || !def.base) return [];
+    const from = keyframes(ctx)[def.base].rotY;
+    return [
+      {
+        prop: 'rotYScroll',
+        chapter: 'page',
+        phase: 'body',
+        start: 0,
+        end: 1,
+        from,
+        to: from + def.turn,
+        ease: 'linear',
+      },
+    ];
+  }
   const { W0, lastPsi } = ctx;
   const N = ctx.areasMode === 'dial' ? ctx.N : Math.min(ctx.N, 6);
   const out: Track[] = [];
@@ -618,6 +648,39 @@ export function measureLayout(root: HTMLElement, preset: PresetName): Layout {
       };
     }
   }
+  let reading = Number.POSITIVE_INFINITY;
+  let folioNext: Layout['folioNext'] = null;
+  if (preset !== 'home' && preset !== 'none') {
+    // Derin sayfa (§5.9.3, §5.9.10): tek sentetik 'page' fazı; folio'da slot 0 çapasının başlık bloğu görünürken,
+    // diğerlerinde sayfa boyunca. Okuma modu ve "Sonraki proje" aralığı da burada ölçülür (y'nin saf fonksiyonu).
+    const folios = root.querySelectorAll<HTMLElement>('[data-stage-anchor="page-folio"]');
+    const block = (el: Element | undefined) =>
+      el?.closest<HTMLElement>('header, section, [data-folio-block]');
+    const head = block(folios[0]);
+    const headEnd = head ? docTop(head) + head.offsetHeight : 0;
+    phases.push({
+      chapter: 'page',
+      phase: 'body',
+      y0: 0,
+      y1: clamp(preset === 'folio' ? headEnd : maxScroll),
+      order: 0,
+    });
+    if (presetDef(preset).reading && head) reading = headEnd;
+    const next = block(folios[1]);
+    if (preset === 'folio' && next) {
+      const top = docTop(next);
+      const h = next.offsetHeight;
+      folioNext = { on: top + 0.3 * Math.min(h, vh) - vh, off: top + 0.7 * h };
+    }
+    if (preset === 'cv-core')
+      activation.cv = [...root.querySelectorAll('[data-cv-entry]')].map(
+        (el) => docTop(el) - 0.55 * vh,
+      );
+  }
   const anchors = preset === 'none' ? [] : measureAnchors(root, mobile);
-  return { vh, maxScroll, mobile, phases, anchors, activation, areas, heroExit };
+  const deep =
+    preset === 'home' || preset === 'none'
+      ? {}
+      : { reading, folioNext, fillsByEvents: preset === 'folio' || preset === 'plan-small' };
+  return { vh, maxScroll, mobile, phases, anchors, activation, areas, heroExit, ...deep };
 }

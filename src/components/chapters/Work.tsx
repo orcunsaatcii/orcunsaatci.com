@@ -5,7 +5,7 @@
 // yanında/altında akıştadır (mobilde başlığın üstünde, bir kez klip reveal'ı). Kapaklar LCP değildir: lazy.
 import Image from 'next/image';
 import Link from 'next/link';
-import type { CSSProperties } from 'react';
+import { ViewTransition, type CSSProperties } from 'react';
 import { SpecimenGlyph } from '@/components/figures/SpecimenGlyph';
 import { RevealHeading } from '@/components/motion/RevealHeading';
 import { SectionWipe } from '@/components/motion/SectionWipe';
@@ -17,6 +17,7 @@ import { chapterAnchors, pathOf, type Locale } from '@/i18n/config';
 import { getDictionary } from '@/i18n/get-dictionary';
 import { fill } from '@/i18n/text';
 import { getAreas, getHome, getProjects, getSite, getStageData, t } from '@/lib/content';
+import { previewAttrs } from '@/stage/preview-attrs';
 import { pageLink } from '@/lib/seo/metadata';
 import { StageAnchor } from '@/stage/ScenePoster';
 
@@ -74,12 +75,17 @@ export function Work({ locale }: { locale: Locale }) {
                 aria-labelledby={titleId}
                 data-work-article=""
                 className="col-span-4 md:col-span-8 lg:col-span-5"
+                {...previewAttrs({ band: s?.band, sector: s?.area })}
               >
                 <p className="type-meta nums-tabular" data-reveal="block">
                   {pad(k + 1)} / {pad(P)}
                 </p>
                 <RevealHeading as="h3" id={titleId} className="mt-3 type-h3">
-                  <Txt v={t(p.title, locale)} />
+                  <ViewTransition name={`project-title-${p.slug}`} share="morph" default="none">
+                    <span>
+                      <Txt v={t(p.title, locale)} />
+                    </span>
+                  </ViewTransition>
                 </RevealHeading>
                 <p className="mt-3 line-clamp-2 type-body" data-reveal="block">
                   <Txt v={t(p.summary, locale)} />
@@ -103,6 +109,7 @@ export function Work({ locale }: { locale: Locale }) {
                 <div data-reveal="block">
                   <p className="mt-4">
                     <Link
+                      transitionTypes={['nav-forward']}
                       href={pathOf({ key: 'project', param: p.slug }, locale)}
                       className="link-inline type-ui"
                     >
@@ -140,15 +147,17 @@ export function Work({ locale }: { locale: Locale }) {
                   data-reveal-when="(max-width: 63.99rem)"
                   className="relative aspect-card overflow-hidden rounded-md bg-raised"
                 >
-                  <Image
-                    src={p.cover.src}
-                    alt={t(p.cover.alt, locale).text}
-                    width={p.cover.width}
-                    height={p.cover.height}
-                    sizes="(min-width: 64rem) 50vw, 100vw"
-                    className="size-full object-cover"
-                    style={{ backgroundColor: p.cover.dominant }}
-                  />
+                  <ViewTransition name={`project-cover-${p.slug}`} share="morph" default="none">
+                    <Image
+                      src={p.cover.src}
+                      alt={t(p.cover.alt, locale).text}
+                      width={p.cover.width}
+                      height={p.cover.height}
+                      sizes="(min-width: 64rem) 50vw, 100vw"
+                      className="size-full object-cover"
+                      style={{ backgroundColor: p.cover.dominant }}
+                    />
+                  </ViewTransition>
                   <span aria-hidden="true" className="work-wipe-line" />
                 </div>
               </figure>
@@ -187,7 +196,12 @@ export function Work({ locale }: { locale: Locale }) {
         </StageAnchor>
       </div>
       <p className="work-closing mt-block">
-        <Link href={all.href} hrefLang={all.hrefLang} className="link-inline type-ui">
+        <Link
+          transitionTypes={['nav-forward']}
+          href={all.href}
+          hrefLang={all.hrefLang}
+          className="link-inline type-ui"
+        >
           {fill(dict.home.allProjects, { count: total })}
           <span aria-hidden="true"> →</span>
         </Link>

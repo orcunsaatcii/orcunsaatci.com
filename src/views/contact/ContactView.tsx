@@ -9,8 +9,9 @@ import { SocialLinks } from '@/components/ui/SocialLinks';
 import { Txt } from '@/components/ui/Txt';
 import { localeMeta, type Locale } from '@/i18n/config';
 import { getDictionary } from '@/i18n/get-dictionary';
-import { getContact, getPerson, t } from '@/lib/content';
+import { getContact, getPerson, getStageData, t } from '@/lib/content';
 import { jsonLdFor } from '@/lib/seo/jsonld';
+import { StagePreset } from '@/stage/StagePreset';
 
 export function ContactView({ locale }: { locale: Locale }) {
   const dict = getDictionary(locale);
@@ -22,6 +23,7 @@ export function ContactView({ locale }: { locale: Locale }) {
   return (
     <>
       {graph ? <JsonLd graph={graph} /> : null}
+      <StagePreset name="contact-page" data={getStageData('contact-page', undefined, locale)} />
       <PageHeader
         pageRef={{ key: 'contact' }}
         locale={locale}

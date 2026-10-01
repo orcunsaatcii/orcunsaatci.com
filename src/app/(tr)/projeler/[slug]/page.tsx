@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { getProject, getProjects } from '@/lib/content';
 import { projectMetadata } from '@/lib/seo/metadata';
 import { ProjectView } from '@/views/project/ProjectView';
+import { PageTransition } from '@/components/motion/PageTransition';
 
 export const dynamicParams = false;
 
@@ -23,5 +24,9 @@ export default async function Page({ params }: PageProps<'/projeler/[slug]'>) {
   const { slug } = await params;
   const project = getProject(slug, 'tr');
   if (!project) notFound();
-  return <ProjectView project={project} locale="tr" />; // yalın proje sayfası, bölüm sırası §7.7.1 (D-48)
+  return (
+    <PageTransition>
+      <ProjectView project={project} locale="tr" />
+    </PageTransition>
+  ); // yalın proje sayfası, bölüm sırası §7.7.1 (D-48)
 }

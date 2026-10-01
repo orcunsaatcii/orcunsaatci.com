@@ -612,3 +612,22 @@
     animation: none;
   }
 }
+
+/* Work görüntüleyici hover'ı (§4.14 #7): makalenin proje bağlantısında (hover ya da klavye odağı) başlık 8 px sağa
+   kayar, görüntüleyici görseli 1.00 → 1.02 olur (600 ms --ease-out). Mağaza bağlantıları (dış) tetiklemez. */
+@media (hover: hover) and (pointer: fine) {
+  .work-pair > article h3,
+  .work-pair > figure img {
+    transition:
+      translate 600ms var(--ease-out),
+      scale 600ms var(--ease-out);
+  }
+  :root[data-motion='full'] .work-pair:has(> article a[href^='/']:is(:hover, :focus-visible)) {
+    & > article h3 {
+      translate: 8px 0;
+    }
+    & > figure img {
+      scale: 1.02;
+    }
+  }
+}

@@ -1,9 +1,11 @@
 // src/components/layout/SiteHeader.tsx — header (server) + istemci adaları (§3.9.1, §4.5.5, §6.6.2).
-// ≥ 64rem: marka + 5 bağlantı + dil; < 64rem: marka + "Menü" düğmesi. HalkaIndicator M7'de eklenir.
+// ≥ 64rem: marka + 5 bağlantı + dil; < 64rem: marka + "Menü" düğmesi. Altında NavCutLine (§5.15.2).
 import { MotionToggle } from '@/components/motion/MotionToggle';
+import { NavCutLine } from '@/components/motion/NavCutLine';
 import { getDictionary } from '@/i18n/get-dictionary';
 import type { Locale } from '@/i18n/config';
 import { getPerson, isLocaleEnabled } from '@/lib/content';
+import { HalkaIndicator } from './HalkaIndicator';
 import { HeaderFrame } from './HeaderFrame';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { MobileMenu } from './MobileMenu';
@@ -37,11 +39,13 @@ export function SiteHeader({ locale, enPaths }: { locale: Locale; enPaths: reado
             locale={locale}
             enPaths={enPaths}
             labels={navLabels}
+            dot
             className="flex items-center gap-6"
-            linkClassName="link-nav type-ui inline-flex min-h-11 min-w-11 items-center justify-center text-ink aria-[current]:[background-size:100%_1px] forced-colors:aria-[current]:underline"
+            linkClassName="link-nav type-ui inline-flex min-h-11 min-w-11 items-center justify-center text-ink forced-colors:aria-[current]:underline"
           />
         </nav>
         <div className="flex items-center gap-2">
+          <HalkaIndicator className="hidden lg:block" />
           {showLanguages && (
             <div className="hidden md:block">
               <LanguageSwitcher locale={locale} enPaths={enPaths} labels={langLabels} />
@@ -68,6 +72,7 @@ export function SiteHeader({ locale, enPaths }: { locale: Locale; enPaths: reado
           </div>
         </div>
       </div>
+      <NavCutLine />
     </HeaderFrame>
   );
 }

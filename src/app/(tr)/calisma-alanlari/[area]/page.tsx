@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { getAreaPage, getAreaPageIds } from '@/lib/content';
 import { areaMetadata } from '@/lib/seo/metadata';
 import { AreaView } from '@/views/area/AreaView';
+import { PageTransition } from '@/components/motion/PageTransition';
 
 export const dynamicParams = false;
 
@@ -23,5 +24,9 @@ export default async function Page({ params }: PageProps<'/calisma-alanlari/[are
   const { area: id } = await params;
   const area = getAreaPage(id, 'tr');
   if (!area) notFound();
-  return <AreaView area={area} locale="tr" />;
+  return (
+    <PageTransition>
+      <AreaView area={area} locale="tr" />
+    </PageTransition>
+  );
 }

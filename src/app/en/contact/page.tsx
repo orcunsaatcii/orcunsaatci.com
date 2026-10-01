@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { pageLocales } from '@/lib/content';
 import { staticPageMetadata } from '@/lib/seo/metadata';
 import { ContactView } from '@/views/contact/ContactView';
+import { PageTransition } from '@/components/motion/PageTransition';
 
 const ref = { key: 'contact' } as const;
 
@@ -13,5 +14,9 @@ export function generateMetadata(): Metadata {
 
 export default function Page() {
   if (!pageLocales(ref).includes('en')) notFound();
-  return <ContactView locale="en" />;
+  return (
+    <PageTransition>
+      <ContactView locale="en" />
+    </PageTransition>
+  );
 }

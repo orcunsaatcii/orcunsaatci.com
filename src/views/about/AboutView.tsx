@@ -4,8 +4,9 @@ import { MdxBody } from '@/components/mdx/MdxBody';
 import { JsonLd } from '@/components/seo/JsonLd';
 import type { Locale } from '@/i18n/config';
 import { getDictionary } from '@/i18n/get-dictionary';
-import { getPageBody, getTestimonials } from '@/lib/content';
+import { getPageBody, getStageData, getTestimonials } from '@/lib/content';
 import { jsonLdFor } from '@/lib/seo/jsonld';
+import { StagePreset } from '@/stage/StagePreset';
 
 export function AboutView({ locale }: { locale: Locale }) {
   const dict = getDictionary(locale);
@@ -15,6 +16,7 @@ export function AboutView({ locale }: { locale: Locale }) {
   return (
     <>
       {graph ? <JsonLd graph={graph} /> : null}
+      <StagePreset name="about-page" data={getStageData('about-page', undefined, locale)} />
       <PageHeader
         pageRef={{ key: 'about' }}
         locale={locale}

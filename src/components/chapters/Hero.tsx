@@ -1,6 +1,6 @@
 // src/components/chapters/Hero.tsx — giriş bölümü (§4.6, §6.6.7, §7.9.2). Server; ilk boyamada görünür.
 // H1 LCP öğesidir: asla animasyon, maske, opaklık ya da clip yok (D-34). CTA'lar gerçek URL (D-41).
-// Magnetic sarmalayıcı M7'de; hero-rest çapasında statik K0 posteri (D-45, §5.16.4). Duraklatma düğmesi sahne
+// İki CTA'nın etiketi Magnetic (§4.14.3); hero-rest çapasında statik K0 posteri (D-45, §5.16.4). Duraklatma düğmesi sahne
 // bölgesinin sağ altında ama aria-hidden çapanın DIŞINDA ve DOM'da sonda (odak sırası = görsel okuma sırası).
 import { PauseButton } from '@/components/motion/PauseButton';
 import { Button } from '@/components/ui/Button';
@@ -11,6 +11,7 @@ import { getDictionary } from '@/i18n/get-dictionary';
 import { getHome, getPerson, t } from '@/lib/content';
 import { pageLink } from '@/lib/seo/metadata';
 import { StageAnchor } from '@/stage/ScenePoster';
+import { Magnetic } from '@/components/motion/Magnetic';
 
 export function Hero({ locale }: { locale: Locale }) {
   const dict = getDictionary(locale);
@@ -62,13 +63,17 @@ export function Hero({ locale }: { locale: Locale }) {
       </p>
       <div className="hero-in col-span-4 flex flex-col gap-3 [--i:2] sm:flex-row md:col-span-8 lg:col-start-1 lg:row-start-4">
         <Button href={projects.href} hrefLang={projects.hrefLang}>
-          {dict.hero.ctaPrimary}
-          {projects.fallback ? dict.lang.trSuffix : null}
-          <span aria-hidden="true">→</span>
+          <Magnetic className="[display:inline-flex] items-center gap-2">
+            {dict.hero.ctaPrimary}
+            {projects.fallback ? dict.lang.trSuffix : null}
+            <span aria-hidden="true">→</span>
+          </Magnetic>
         </Button>
         <Button href={contact.href} hrefLang={contact.hrefLang} variant="secondary">
-          {dict.hero.ctaSecondary}
-          {contact.fallback ? dict.lang.trSuffix : null}
+          <Magnetic className="[display:inline-flex] items-center gap-2">
+            {dict.hero.ctaSecondary}
+            {contact.fallback ? dict.lang.trSuffix : null}
+          </Magnetic>
         </Button>
       </div>
       {/* ≥ 64rem k1–7: Taş'ın about'a iniş yolu (k8–12) boş kalır (§4.12.2 #7). CTA'lar ve ipucu satırı açıkça

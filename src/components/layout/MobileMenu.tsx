@@ -2,11 +2,14 @@
 // src/components/layout/MobileMenu.tsx — < 64rem tam ekran menü (§6.6.2, §10.3.4).
 // Açılınca odak ilk bağlantıya gider; Tab/Shift+Tab menüde döner; Esc ya da kapat düğmesi kapatır ve odak açma
 // düğmesine döner. Açıkken #main, header ve [data-site-footer] inert'tir; sayfa kaydırması kilitlidir.
-// Açılış animasyonu (§4.14 #17) M7'dedir. Menü portal ile <body>'ye render edilir (§6.4.6).
+// Açılış (§4.14 #17): menü düğmesinden daire clip-path (0 → %150, 500 ms --ease-in-out), bağlantılar 50 ms kademeli;
+// kapanış ≈ 330 ms (çıkış ≈ 0.66 × giriş). Azaltılmış harekette anında. Menü portal ile <body>'ye render edilir (§6.4.6).
 import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { getLenis } from '@/components/motion/LenisProvider';
+import { motion } from '@/design/tokens';
 import type { Locale } from '@/i18n/config';
+import { HalkaIndicator } from './HalkaIndicator';
 import { NavLinks, type NavLabels } from './NavLinks';
 
 interface MobileMenuProps {
@@ -19,6 +22,10 @@ interface MobileMenuProps {
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
 const INERT_TARGETS = ['#main', 'body > header', '[data-site-footer]'];
+const EASE_IN_OUT = `cubic-bezier(${motion.ease.inOut.join(', ')})`;
+const OPEN_MS = 500;
+const CLOSE_MS = 330;
+const reduced = () => document.documentElement.dataset.motion === 'reduce';
 
 function setBackgroundInert(on: boolean) {
   for (const sel of INERT_TARGETS) {
@@ -39,16 +46,47 @@ export function MobileMenu({ locale, enPaths, labels, children }: MobileMenuProp
   const openButton = useRef<HTMLButtonElement>(null);
   const panel = useRef<HTMLDivElement>(null);
 
+  /** clip-path dairesinin merkezi: menü düğmesi */
+  const circle = (r: string) => {
+    const b = openButton.current?.getBoundingClientRect();
+    const at = b ? `${b.left + b.width / 2}px ${b.top + b.height / 2}px` : '100% 0';
+    return `circle(${r} at ${at})`;
+  };
+
   const close = useCallback(() => {
-    setBackgroundInert(false);
-    setOpen(false);
-    openButton.current?.focus();
+    const done = () => {
+      setBackgroundInert(false);
+      setOpen(false);
+      openButton.current?.focus();
+    };
+    const el = panel.current;
+    if (!el || reduced()) return done();
+    el.animate([{ clipPath: circle('150%') }, { clipPath: circle('0px') }], {
+      duration: CLOSE_MS,
+      easing: EASE_IN_OUT,
+      fill: 'forwards',
+    }).finished.then(done, done);
   }, []);
 
   useEffect(() => {
     if (!open) return;
     setBackgroundInert(true);
     panel.current?.querySelector<HTMLElement>('nav a')?.focus();
+    if (panel.current && !reduced()) {
+      panel.current.animate([{ clipPath: circle('0px') }, { clipPath: circle('150%') }], {
+        duration: OPEN_MS,
+        easing: EASE_IN_OUT,
+      });
+      panel.current.querySelectorAll<HTMLElement>('nav a').forEach((a, i) =>
+        a.animate(
+          [
+            { opacity: 0, transform: 'translateY(8px)' },
+            { opacity: 1, transform: 'none' },
+          ],
+          { duration: 240, delay: 120 + 50 * i, easing: EASE_IN_OUT, fill: 'backwards' },
+        ),
+      );
+    }
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault();
@@ -87,8 +125,9 @@ export function MobileMenu({ locale, enPaths, labels, children }: MobileMenuProp
         aria-controls={menuId}
         aria-label={labels.menuOpen}
         onClick={() => setOpen(true)}
-        className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-pill px-4 type-ui text-ink"
+        className="inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-pill px-4 type-ui text-ink"
       >
+        <HalkaIndicator size={32} />
         {labels.menu}
       </button>
       {open &&
@@ -118,7 +157,7 @@ export function MobileMenu({ locale, enPaths, labels, children }: MobileMenuProp
                 labels={labels}
                 onNavigate={close}
                 className="flex flex-col gap-2"
-                linkClassName="type-h3 inline-flex min-h-11 min-w-11 items-center text-ink aria-[current]:underline aria-[current]:decoration-1 aria-[current]:underline-offset-[0.15em]"
+                linkClassName="type-h3 inline-flex min-h-11 min-w-11 items-center text-ink aria-[current]:after:ml-3 aria-[current]:after:size-[5px] aria-[current]:after:rounded-full aria-[current]:after:bg-accent aria-[current]:after:content-[''] forced-colors:aria-[current]:underline"
               />
             </nav>
             <div className="container-page mt-auto flex flex-col items-start gap-6 pt-block">

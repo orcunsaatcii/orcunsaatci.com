@@ -8,6 +8,7 @@ import { SiteHeader } from '@/components/layout/SiteHeader';
 import { SkipLink } from '@/components/layout/SkipLink';
 import { LenisProvider } from '@/components/motion/LenisProvider';
 import { MotionRoot } from '@/components/motion/MotionRoot';
+import { ScenePreviews } from '@/components/motion/ScenePreviews';
 import { themeColors } from '@/design/tokens';
 import { getExperienceProfile, resolveTypePreset } from '@/experience/profile';
 import { fontVariables } from '@/fonts';
@@ -60,6 +61,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         </main>
         <SiteFooter locale={LOCALE} enPaths={enPaths} variant="full" />
         <MotionRoot />
+        <ScenePreviews />
         <LenisProvider />
       </body>
     </html>

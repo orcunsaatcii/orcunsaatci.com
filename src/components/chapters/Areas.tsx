@@ -14,6 +14,7 @@ import { chapterAnchors, type Locale } from '@/i18n/config';
 import { getDictionary } from '@/i18n/get-dictionary';
 import { fill } from '@/i18n/text';
 import { getAreaMode, getAreas, getHome, getSite, getStageData, t } from '@/lib/content';
+import { previewAttrs } from '@/stage/preview-attrs';
 import { pageLink } from '@/lib/seo/metadata';
 import { StageAnchor } from '@/stage/ScenePoster';
 import { AreaStepButton, AreasPin, AreasProgress } from './AreasPin';
@@ -71,6 +72,7 @@ export function Areas({ locale }: { locale: Locale }) {
                 className="area-item"
                 data-area-index={k}
                 style={{ '--row': k + 1 } as CSSProperties}
+                {...(mode === 'dial' ? previewAttrs({ sector: k }) : {})}
               >
                 {mode === 'dial' ? (
                   <DialFigure
@@ -112,6 +114,7 @@ export function Areas({ locale }: { locale: Locale }) {
                   ) : null}
                   <p className="mt-4">
                     <Link
+                      transitionTypes={['nav-forward']}
                       href={`${projects.href}?alan=${a.id}` as Route}
                       hrefLang={projects.hrefLang}
                       className="link-inline type-ui"
@@ -134,7 +137,12 @@ export function Areas({ locale }: { locale: Locale }) {
             />
           ) : null}
           <p className="areas-all mt-block">
-            <Link href={all.href} hrefLang={all.hrefLang} className="link-inline type-ui">
+            <Link
+              transitionTypes={['nav-forward']}
+              href={all.href}
+              hrefLang={all.hrefLang}
+              className="link-inline type-ui"
+            >
               {dict.home.allAreas}
               {all.fallback ? dict.lang.trSuffix : null}
             </Link>

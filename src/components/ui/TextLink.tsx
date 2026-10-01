@@ -81,7 +81,13 @@ export function TextLink(props: TextLinkProps) {
     );
   }
   return (
-    <Link href={props.href} className={cls} hrefLang={hrefLang} lang={lang}>
+    <Link
+      transitionTypes={['nav-forward']}
+      href={props.href}
+      className={cls}
+      hrefLang={hrefLang}
+      lang={lang}
+    >
       {children}
     </Link>
   );

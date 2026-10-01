@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { pageLocales } from '@/lib/content';
 import { staticPageMetadata } from '@/lib/seo/metadata';
 import { PrivacyView } from '@/views/privacy/PrivacyView';
+import { PageTransition } from '@/components/motion/PageTransition';
 
 const ref = { key: 'privacy' } as const;
 
@@ -13,5 +14,9 @@ export function generateMetadata(): Metadata {
 
 export default function Page() {
   if (!pageLocales(ref).includes('en')) notFound();
-  return <PrivacyView locale="en" />;
+  return (
+    <PageTransition>
+      <PrivacyView locale="en" />
+    </PageTransition>
+  );
 }

@@ -2,9 +2,14 @@
 import type { Metadata } from 'next';
 import { staticPageMetadata } from '@/lib/seo/metadata';
 import { PrivacyView } from '@/views/privacy/PrivacyView';
+import { PageTransition } from '@/components/motion/PageTransition';
 
 export const metadata: Metadata = staticPageMetadata({ key: 'privacy' }, 'tr');
 
 export default function Page() {
-  return <PrivacyView locale="tr" />;
+  return (
+    <PageTransition>
+      <PrivacyView locale="tr" />
+    </PageTransition>
+  );
 }

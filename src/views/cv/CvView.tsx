@@ -30,6 +30,9 @@ import {
   type CvSection,
 } from '@/lib/content';
 import { jsonLdFor } from '@/lib/seo/jsonld';
+import { previewAttrs } from '@/stage/preview-attrs';
+import { StageAnchor } from '@/stage/ScenePoster';
+import { StagePreset } from '@/stage/StagePreset';
 import './print.css';
 
 const BUILD_MONTH = new Date().toISOString().slice(0, 7); // süren kaydın süresi için (build anı)
@@ -50,7 +53,11 @@ export function CvView({ locale }: { locale: Locale }) {
     const any = projectTitles.get(slug);
     if (own) {
       return (
-        <Link href={pathOf({ key: 'project', param: slug }, locale)} className="link-inline">
+        <Link
+          transitionTypes={['nav-forward']}
+          href={pathOf({ key: 'project', param: slug }, locale)}
+          className="link-inline"
+        >
           <Txt v={t(own.title, locale)} />
         </Link>
       );
@@ -58,6 +65,7 @@ export function CvView({ locale }: { locale: Locale }) {
     return any ? <Txt v={t(any.title, locale)} /> : slug; // taslak ya da bu dilde yok: düz metin (§7.3.5)
   };
 
+  let entryIdx = 0; // [data-cv-entry] DOM sırası = getStageData('cv-core').entries sırası (bant önizlemesi)
   const sectionBody = (s: CvSection): ReactNode => {
     switch (s.key) {
       case 'profile':
@@ -76,6 +84,8 @@ export function CvView({ locale }: { locale: Locale }) {
                   key={e.id}
                   as="li"
                   className="cv-entry"
+                  cvEntry
+                  preview={previewAttrs({ band: rings.entries[entryIdx++]?.band })}
                   locale={locale}
                   start={e.period.start}
                   end={e.period.end}
@@ -186,6 +196,8 @@ export function CvView({ locale }: { locale: Locale }) {
               <TimelineEntry
                 key={e.id}
                 className="cv-entry"
+                cvEntry
+                preview={previewAttrs({ band: rings.entries[entryIdx++]?.band })}
                 locale={locale}
                 start={e.period.start}
                 end={e.period.end}
@@ -331,8 +343,33 @@ export function CvView({ locale }: { locale: Locale }) {
   }
 
   return (
-    <div className="cv-main">
+    <div className="cv-main relative">
       {graph ? <JsonLd graph={graph} /> : null}
+      <StagePreset name="cv-core" data={rings} />
+      {/* D3 cv-core (§4.13.2): yalnız ≥ 80rem, k10–12; sayfa başından itibaren y 14–86 svh'de yapışır. Poster
+          karşılığı RingsFigure (§4.16.3). Katman bütün sayfayı kaplar: sticky kap başlık bloğuyla birlikte başlar. */}
+      <div
+        aria-hidden="true"
+        data-print="hide"
+        className="pointer-events-none absolute inset-0 hidden xl:block"
+      >
+        <div className="container-page grid-page h-full">
+          <div className="relative col-span-3 col-start-10 pt-[calc(14svh-var(--header-h))]">
+            <div className="sticky top-[14svh] h-[72svh]">
+              <StageAnchor id="cv-core" className="size-full">
+                <RingsFigure
+                  rings={rings.rings}
+                  startYear={getCareerStartYear()}
+                  currentYear={BUILD_YEAR}
+                  ariaLabel=""
+                  bands={rings.entries.map((e) => e.band)}
+                  className="anchor-figure"
+                />
+              </StageAnchor>
+            </div>
+          </div>
+        </div>
+      </div>
       <PageHeader pageRef={{ key: 'cv' }} locale={locale} title={dict.meta.cv}>
         <p className="mt-stack type-lead">
           {locale === 'en' ? <span lang="tr">{person.name}</span> : person.name} ·{' '}
@@ -379,7 +416,7 @@ export function CvView({ locale }: { locale: Locale }) {
             ))}
           </ul>
         </nav>
-        <div className="col-span-4 flex flex-col gap-block md:col-span-8 lg:col-span-9">
+        <div className="col-span-4 flex flex-col gap-block md:col-span-8 lg:col-span-9 xl:col-span-6">
           {cv.sections.map((s) => (
             <section
               key={s.key}
