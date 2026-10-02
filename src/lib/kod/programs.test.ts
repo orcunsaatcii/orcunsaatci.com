@@ -249,6 +249,22 @@ const textFrom = (s: Screen, x: number, y: number) =>
     .trimEnd();
 const buffers = (s: Screen) => [s.g, s.fr, s.fa, s.br, s.ba, s.fx];
 
+/** İki tamponun ilk farkı ("dizi[hücre] a ≠ b") ya da null; toEqual'dan çok hızlı (CI'da büyük döngüler) */
+function firstDiff(a: Screen, b: Screen): string | null {
+  const names = ['g', 'fr', 'fa', 'br', 'ba', 'fx'] as const;
+  const A = buffers(a),
+    B = buffers(b);
+  for (let k = 0; k < A.length; k++) {
+    const x = A[k]!,
+      y = B[k]!;
+    if (x.length !== y.length) return `${names[k]} boyu ${x.length} ≠ ${y.length}`;
+    for (let i = 0; i < x.length; i++)
+      if (x[i] !== y[i])
+        return `${names[k]}[${i}] (x ${i % 56}, y ${Math.floor(i / 56)}) ${x[i]} ≠ ${y[i]}`;
+  }
+  return null;
+}
+
 /* ───────── ızgara denetimi ───────── */
 
 /**
@@ -395,16 +411,20 @@ describe('son kare t’den bağımsızdır (§5.20.2, §4.1.5)', () => {
   it.each([
     ['tohum', D, LINKS],
     ['şema üst sınırları', LONG, LONG_LINKS],
-  ] as const)('%s: reduce karesi her yaşta finalScreen ile hücre hücre aynı', (_, d, extra) => {
-    const s = new Screen();
-    for (const p of programs(d)) {
-      const want = buffers(finalScreen(d, p, extra));
-      for (const age of [0, 0.3, 1.06, 2.4, 3.45, 99, 1000, 123456.7]) {
-        renderProgram(s, d, p, age, true, extra);
-        expect(buffers(s), `${programKey(p)} @${age}`).toEqual(want);
+  ] as const)(
+    '%s: reduce karesi her yaşta finalScreen ile hücre hücre aynı',
+    (_, d, extra) => {
+      const s = new Screen();
+      for (const p of programs(d)) {
+        const want = finalScreen(d, p, extra);
+        for (const age of [0, 0.3, 1.06, 2.4, 3.45, 99, 1000, 123456.7]) {
+          renderProgram(s, d, p, age, true, extra);
+          expect(firstDiff(s, want), `${programKey(p)} @${age}`).toBeNull();
+        }
       }
-    }
-  });
+    },
+    30_000,
+  );
 
   it('zamanlı yazma ve hat animasyonu biter: canlı kare (imleç açık evrede) son kareyle aynı', () => {
     // telefon satırları, akan log ve (HEAD) nabzı süresizdir; onları donma (reduce) durdurur (§4.8.5, §4.10.3)
@@ -517,7 +537,7 @@ describe('main.dart (§4.6.4)', () => {
     const end = 5 + [...nameLine].length;
     for (let x = 4; x <= KOD_COLS - 2; x++) {
       expect(s.br[at(s, x, 13)]).toBe(ROLE.accent);
-      expect(bgAlpha(s, x, 13)).toBeCloseTo(x === end ? 0.9 : 0.07, 6);
+      expect(bgAlpha(s, x, 13)).toBeCloseTo(x === end ? 0.9 : 0.04, 6);
     }
     expect(alpha(s, 3, 13)).toBeCloseTo(0.9, 6);
     expect(alpha(s, 3, 12)).toBeCloseTo(0.45, 6);

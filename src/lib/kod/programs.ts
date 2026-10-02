@@ -112,7 +112,7 @@ function rHero(c: Ctx): void {
     lineNo(s, k + 1, k + 1, k === at ? 0.9 : 0.45);
     writeTokens(s, 5, k + 1, tokenize(l));
   });
-  s.bg(4, at + 1, s.cols - 2, at + 1, ROLE.accent, 0.07);
+  s.bg(4, at + 1, s.cols - 2, at + 1, ROLE.accent, 0.04); // vurgulu satırda pirinç ≥ 4.5:1 (açık tema)
   cursor(c, 5 + textLen(src[at] ?? ''), at + 1);
 }
 

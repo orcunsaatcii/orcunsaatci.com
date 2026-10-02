@@ -6,7 +6,7 @@ import { themeColors, toCss } from '@/design/tokens';
 import { getExperienceProfile } from '@/experience/profile';
 import { getSite } from '@/lib/content';
 import { finalScreen, programKey, type NotFoundLinks } from '@/lib/kod/programs';
-import { screenRuns } from '@/lib/kod/screen';
+import { screenRuns, type Run } from '@/lib/kod/screen';
 import type { KodData, KodProgram } from '@/lib/kod/types';
 import './kod-panel.css';
 
@@ -39,6 +39,33 @@ function nightVars(): CSSProperties {
   } as CSSProperties;
 }
 
+const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const num = (x: number) => String(Math.round(x * 1000) / 1000);
+
+function runHtml(r: Run): string {
+  const style: string[] = [];
+  if (r.alpha > 0 && r.alpha < 1) style.push(`--a:${num(r.alpha)}`);
+  if (r.bgAlpha > 0) style.push(`--ba:${num(r.bgAlpha)}`);
+  if (r.drawn) style.push(`--n:${[...r.text].length}`);
+  const cls = [
+    `k${r.role}`,
+    r.bgAlpha > 0 ? `kb${r.bgRole}` : '',
+    r.drawn ? 'kd' : '',
+    r.symbol ? 'ks' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+  return `<span class="${cls}"${style.length ? ` style="${style.join(';')}"` : ''}>${esc(r.text)}</span>`;
+}
+
+/**
+ * Izgara HTML'i tek dize olarak verilir: panel başına yüzlerce span React ağacına girmez (hidrasyon ve RSC yükü,
+ * LHCI TBT). İçerik yalnız programların yazdığı metindir ve kaçışlanır.
+ */
+export function panelHtml(rows: ReadonlyArray<readonly Run[]>): string {
+  return rows.map((row) => `<span class="kod-row">${row.map(runHtml).join('')}</span>`).join('');
+}
+
 export function KodPanel({ data, program, extra, className, step, active }: KodPanelProps) {
   const rows = screenRuns(finalScreen(data, program, extra));
   const night = program.kind === 'journey';
@@ -53,31 +80,11 @@ export function KodPanel({ data, program, extra, className, step, active }: KodP
       aria-hidden="true"
       style={night ? nightVars() : undefined}
     >
-      <pre className="kod-pre" translate="no">
-        {rows.map((row, y) => (
-          <span key={y} className="kod-row">
-            {row.map((r, k) => {
-              const style: Record<string, string | number> = {};
-              if (r.alpha > 0 && r.alpha < 1) style['--a'] = r.alpha;
-              if (r.bgAlpha > 0) style['--ba'] = r.bgAlpha;
-              if (r.drawn) style['--n'] = [...r.text].length;
-              const cls = [
-                `k${r.role}`,
-                r.bgAlpha > 0 ? `kb${r.bgRole}` : '',
-                r.drawn ? 'kd' : '',
-                r.symbol ? 'ks' : '',
-              ]
-                .filter(Boolean)
-                .join(' ');
-              return (
-                <span key={k} className={cls} style={style as CSSProperties}>
-                  {r.text}
-                </span>
-              );
-            })}
-          </span>
-        ))}
-      </pre>
+      <pre
+        className="kod-pre"
+        translate="no"
+        dangerouslySetInnerHTML={{ __html: panelHtml(rows) }}
+      />
     </div>
   );
 }

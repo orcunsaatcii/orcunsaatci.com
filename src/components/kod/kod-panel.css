@@ -23,6 +23,8 @@
   overflow: hidden;
   pointer-events: none;
   user-select: none;
+  /* ekran dışındaki panellerin stil/düzen/boyaması atlanır (LHCI TBT); boyut width + aspect-ratio'dan bilinir */
+  content-visibility: auto;
 }
 /* Gece paneli (journey, §5.20.6): her temada koyu rol renkleri (satır içi --k0…--k7, KodPanel) */
 .kod-panel[data-night] {
