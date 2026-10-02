@@ -5,6 +5,7 @@ import 'lenis/dist/lenis.css'; // yalnız CSS; JS statik import edilmez (D-33)
 import type Lenis from 'lenis';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef } from 'react';
+import { PREF_EVENTS } from '@/lib/head-script';
 import { directorApi, nav } from '@/stage/store';
 import { revealUpTo, useMotionPref, useMotionRuntime } from './MotionRoot';
 
@@ -29,6 +30,22 @@ export function LenisProvider() {
     let cancelled = false;
     let off: (() => void) | undefined;
     const tick = (time: number) => lenis?.raf(time * 1000); // gsap süresi saniye
+    const teardown = () => {
+      cancelled = true;
+      off?.();
+      off = undefined;
+      rt.gsap.ticker.remove(tick);
+      rt.gsap.ticker.lagSmoothing(500, 33); // GSAP varsayılanı
+      lenis?.destroy();
+      lenis = null;
+    };
+    // K-VAR-5: azaltılmış harekete geçişte Lenis tercih olayıyla AYNI görevde sökülür. React'in effect temizliği yavaş
+    // makinede MotionToggle'ın konum düzeltme kaydırmasından (2 kare sonra) sonra kalabiliyordu; kaydırmayı gören Lenis'in
+    // bekleyen isScrolling zamanlayıcısı destroy()'dan sonra html'e `lenis` sınıfını geri yazıyordu (PR #15 CI).
+    const onPref = () => {
+      if (document.documentElement.dataset.motion === 'reduce') teardown();
+    };
+    window.addEventListener(PREF_EVENTS.motion, onPref);
     performance.mark('os:lenis-import');
     void import('lenis').then(({ default: LenisCtor }) => {
       if (cancelled) return;
@@ -47,12 +64,8 @@ export function LenisProvider() {
       rt.gsap.ticker.lagSmoothing(0);
     });
     return () => {
-      cancelled = true;
-      off?.();
-      rt.gsap.ticker.remove(tick);
-      rt.gsap.ticker.lagSmoothing(500, 33); // GSAP varsayılanı
-      lenis?.destroy();
-      lenis = null;
+      window.removeEventListener(PREF_EVENTS.motion, onPref);
+      teardown();
     };
   }, [rt, pref]);
   useInPageNavigation(rt !== null);

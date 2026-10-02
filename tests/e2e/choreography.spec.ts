@@ -1671,12 +1671,15 @@ test.describe('K-GEN-9 / K-CHOREO-5 kesme kuralı (§5.9.7)', { tag: ['@desktop-
         .toBeLessThanOrEqual(100);
     } else note(info, 'K-CHOREO-5', 'proje sayfasında sahne zaten gizli (opaklık 0): sönme anlık');
     expect(back.reachedZero, 'geri: kesme (opacityCut 0 → 1)').toBe(true);
+    // Görünür hedefte belirme ≤ 200 ms'dir (§5.9.7). work'te sahne sönüktür (--scene-opacity 0, K-WORK-6): belirme
+    // görünmez ve ana sayfanın yeniden kurulduğu yerel düzen/boyama işine denk gelebilir (PR #15 CI); orada yalnız
+    // kesmenin takılmadan bittiği denetlenir (snapNextFrame tüketilmezse 1.5 s'lik SNAP_WAIT beklenirdi).
     expect
       .soft(
         back.backFrameFree ?? Number.NaN,
         `geri: oturmadan ${fmt(back.backFrameFree ?? undefined)} ms sonra hâlâ < 1 (ham ${fmt(back.backRaw ?? undefined)} ms)`,
       )
-      .toBeLessThanOrEqual(200);
+      .toBeLessThanOrEqual(dark ? 1000 : 200);
     const morph = rec.filter(
       (r) => r.t >= pop && r.kind.startsWith('vt ') && /project-cover/.test(r.kind),
     );
