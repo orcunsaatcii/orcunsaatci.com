@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../../.schemas/project.json
+# Kaynak: içerik anketi (projeler), 2026-09-29. Görsel alt metinleri taslaktır (sahip onayı bekler).
+title: { tr: "Bilsoft Ön Muhasebe v4", en: "Bilsoft Pre-Accounting v4" }
+summary: { tr: "Cari ve stok yönetimi, kasa-banka ve çek-senet işlemleri ile e-Fatura, e-Arşiv ve e-İrsaliye entegrasyonlarını bir araya getiren mobil ön muhasebe uygulaması.", en: "Mobile accounting app integrating current account, inventory, cash-bank, checks and promissory notes, e-Invoice, e-Archive and e-Dispatch Note." }
+start: "2026-01"
+role: { tr: "Mobil Geliştirici", en: "Mobile Developer" }
+kind: product
+status: live
+areas: [mobil-uygulama, api-entegrasyonu, yayin-yonetimi]
+featured: true
+order: 3
+facts:
+  - { label: { tr: "Platform", en: "Platform" }, value: { tr: "iOS · Android", en: "iOS · Android" } }
+  - { label: { tr: "Minimum sürüm", en: "Minimum version" }, value: { tr: "iOS 15 · Android 10", en: "iOS 15 · Android 10" } }
+  - { label: { tr: "Mağazalar", en: "Stores" }, value: { tr: "App Store · Google Play", en: "App Store · Google Play" } }
+  - { label: { tr: "Dil", en: "Languages" }, value: { tr: "Türkçe · İngilizce · Almanca · Azerice", en: "Turkish · English · German · Azerbaijani" } }
+links:
+  - { kind: live, label: { tr: "App Store", en: "App Store" }, url: "https://apps.apple.com/tr/app/bilsoft-%C3%B6n-muhasebe-v4/id6755963767?l=tr" }
+  - { kind: live, label: { tr: "Google Play", en: "Google Play" }, url: "https://play.google.com/store/apps/details?id=com.bilsoft.muhasebemobilv4&hl=tr" }
+cover:
+  src: /media/projects/bilsoft-on-muhasebe-v4/cover.jpg
+  alt: { tr: "Bilsoft Ön Muhasebe v4, üç telefonda: stok kartları, finansal özet ve faturalar ekranları", en: "Bilsoft Pre-Accounting v4 on three phones: stock cards, financial summary and invoices screens" }
+mobileCover:
+  src: /media/projects/bilsoft-on-muhasebe-v4/mobile-cover.jpg
+  alt: { tr: "Bilsoft Ön Muhasebe v4 ana ekranı: finansal özet ve toplam kasa bilgileri grafiği", en: "Bilsoft Pre-Accounting v4 home screen: financial summary and total cash chart" }
+preview:
+  src: /media/projects/bilsoft-on-muhasebe-v4/preview.jpg
+  alt: { tr: "Finansal özet kartlarının yakın planı: toplam satış, alış, kâr ve KDV", en: "Close-up of the financial summary cards: total sales, purchases, profit and VAT" }
+publishedAt: "2026-10"

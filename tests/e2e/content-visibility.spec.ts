@@ -5,6 +5,14 @@ import { expect, test } from './fixtures';
 import { waitForAnimations } from './helpers/axe';
 import { pagePaths } from './helpers/urls';
 
+/** React'in sunucu çıktısındaki metin kaçışı: "Ön Muhasebe & e-Fatura" ham HTML'de "&amp;" taşır */
+const escapeHtml = (s: string) =>
+  s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
 test.describe('K-GEN-5 içerik görünürlüğü', { tag: ['@no-js', '@reduced-motion'] }, () => {
   test('(a) main’deki metin ve görseller görünür; (c) bölümlerde sticky yok', async ({
     page,
@@ -51,19 +59,19 @@ test.describe('K-GEN-5 içerik görünürlüğü', { tag: ['@no-js', '@reduced-m
       ['/en', '/en/expertise'],
     ] as const) {
       const html = await (await request.get(home)).text();
-      expect(html).toMatch(/<h1[^>]*>[\s\S]*Orçun[\s\S]*Saatçi[\s\S]*<\/h1>/);
+      expect(html).toMatch(/<h1[^>]*>[\s\S]*Orçun[\s\S]*SAATCİ[\s\S]*<\/h1>/);
       expect(html.match(/data-chapter="/g)?.length ?? 0).toBeGreaterThanOrEqual(6);
       expect(html).toContain('href="mailto:');
       await page.goto(expertise);
       const areas = await page.locator('main h2').allTextContents();
       expect(areas.length).toBeGreaterThan(0);
       for (const title of areas)
-        expect.soft(html, `${home}: alan ${title}`).toContain(title.trim());
+        expect.soft(html, `${home}: alan ${title}`).toContain(escapeHtml(title.trim()));
       await page.goto(home);
       const featured = await page.locator('[data-chapter="work"] article h3').allTextContents();
       expect(featured.length).toBeGreaterThanOrEqual(1);
       for (const title of featured)
-        expect.soft(html, `${home}: proje ${title}`).toContain(title.trim());
+        expect.soft(html, `${home}: proje ${title}`).toContain(escapeHtml(title.trim()));
     }
     for (const path of await pagePaths(request)) {
       const html = await (await request.get(path)).text();

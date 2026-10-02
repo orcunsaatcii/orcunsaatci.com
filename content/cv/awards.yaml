@@ -1,13 +1,2 @@
 # yaml-language-server: $schema=../../.schemas/awards.json
-items:
-  - id: odul-1
-    title: { tr: "{{ÖDÜL_1}}", en: "{{AWARD_1}}" }
-    awarder: "{{ÖDÜL_1_VEREN}}"
-    date: "2025-11" # {{ÖDÜL_1_TARİH}}
-    summary: { tr: "{{ÖDÜL_1_ÖZET}}", en: "{{AWARD_1_SUMMARY}}" }
-    project: ornek-proje-1
-    featured: true
-  - id: odul-2
-    title: { tr: "{{ÖDÜL_2}}", en: "{{AWARD_2}}" }
-    awarder: "{{ÖDÜL_2_VEREN}}"
-    date: "2019" # {{ÖDÜL_2_TARİH}}
+items: []

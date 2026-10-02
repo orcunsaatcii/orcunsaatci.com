@@ -359,6 +359,14 @@ function phaseOf(m: Measured, chapter: string, phase: PhaseKind): PhaseRange {
   if (!r) throw new Error(`faz yok: ${chapter} · ${phase}`);
   return r;
 }
+/**
+ * Journey BODY dönüşü (§4.12.1 satır 14; `journeyTurnOf`, SPEC-SAPMA §4.12.2 M6): en çok 60°; kısa BODY'de (küçük E)
+ * hız ≤ 33.4°/100 svh kalacak biçimde ölçeklenir. Varsayılan içerikte (E = 6) 60°'dir.
+ */
+function journeyTurn(m: Measured): number {
+  const r = phaseOf(m, 'journey', 'body');
+  return Math.min(60, (33.4 * ((100 * (r.y1 - r.y0)) / m.vh)) / 100);
+}
 const yAt = (m: Measured, chapter: string, phase: PhaseKind, p: number) => {
   const r = phaseOf(m, chapter, phase);
   return r.y0 + p * (r.y1 - r.y0);
@@ -508,6 +516,7 @@ interface Row {
 /** §4.12.1 satırları, satır aralığının SONUNDA (bölüm, faz, p); areas adımları N'den üretilir (varsayılan N = 4: 7–9) */
 function choreoRows(c: Ctx): Row[] {
   const { m, N, S, W0 } = c;
+  const J = W0 + 50 + journeyTurn(m); // journey BODY sonu (varsayılan içerikte W0 + 110)
   const rows: Row[] = [];
   const none = [0, 0, 0, 0, 0, 0];
   const dial = (k: number) => FILLS.map((_, i) => (i >= N ? 0 : i === k ? 1 : 0.15));
@@ -604,7 +613,7 @@ function choreoRows(c: Ctx): Row[] {
     '14',
     'journey BODY sonu (s 890–1070)',
     yAt(m, 'journey', 'body', 1),
-    K4(W0 + 110),
+    K4(J),
     none,
     'journey-core',
   );
@@ -613,7 +622,7 @@ function choreoRows(c: Ctx): Row[] {
     'contact IN p 0.5 (s 1070–1120 sonu)',
     yAt(m, 'contact', 'in', 0.5),
     {
-      ...K5(W0 + 130),
+      ...K5(J + 20),
       rotX: 0,
       cut: 0,
       ringContrast: 1,
@@ -629,7 +638,7 @@ function choreoRows(c: Ctx): Row[] {
     '16',
     'contact IN sonu (s 1120–1170)',
     yAt(m, 'contact', 'in', 1),
-    K5(W0 + 130),
+    K5(J + 20),
     none,
     'contact-ring',
   );
@@ -1125,13 +1134,14 @@ test.describe(
       const { N, P, E } = m.counts;
       note(info, 'bölüm yükseklikleri (svh)', { ...h, N, P, E });
       expect.soft(Math.abs((h.hero ?? 0) - 100), `hero ${fmt(h.hero)}`).toBeLessThanOrEqual(1);
-      expect.soft(Math.abs((h.about ?? 0) - 140), `about ${fmt(h.about)}`).toBeLessThanOrEqual(1);
+      // §4.5.2: formüller min-height'tır; gerçek içerik uzunsa bölüm uzar (sahibin about metni 140 svh'yi aşar)
+      expect.soft(h.about ?? 0, `about ${fmt(h.about)} ≥ 140`).toBeGreaterThanOrEqual(140 - 1);
       expect
-        .soft(Math.abs((h.areas ?? 0) - (120 + 50 * N)), `areas ${fmt(h.areas)} (120 + 50N)`)
-        .toBeLessThanOrEqual(1);
+        .soft(h.areas ?? 0, `areas ${fmt(h.areas)} ≥ 120 + 50N`)
+        .toBeGreaterThanOrEqual(120 + 50 * N - 1);
       expect
-        .soft(Math.abs((h.work ?? 0) - (50 + 70 * P)), `work ${fmt(h.work)} (50 + 70P)`)
-        .toBeLessThanOrEqual(1);
+        .soft(h.work ?? 0, `work ${fmt(h.work)} ≥ 50 + 70P`)
+        .toBeGreaterThanOrEqual(50 + 70 * P - 1);
       expect
         .soft(h.journey ?? 0, `journey ${fmt(h.journey)} ≥ 70 + 35E`)
         .toBeGreaterThanOrEqual(70 + 35 * E - 1);

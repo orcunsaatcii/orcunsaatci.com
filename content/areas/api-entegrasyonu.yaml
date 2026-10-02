@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../.schemas/area.json
+# Kaynak: içerik anketi (alanlar), 2026-09-29.
+order: 3
+title: { tr: "API ve Servis Entegrasyonu", en: "API & Service Integration" }
+summary: { tr: "REST ve SOAP servislerini mobil uygulamalara entegre ediyor, servis yanıtlarını uygulamanın veri ve iş akışlarına bağlıyorum.", en: "I integrate REST and SOAP services into mobile apps, connecting service responses to application data and workflows." }
+description: { tr: "Mobil uygulamaların dış sistemlerle iletişimini REST ve SOAP servis entegrasyonları üzerinden geliştiriyorum. Servislerden gelen verileri uygulamanın kullandığı modellere dönüştürüyor, istek ve yanıt akışlarını veri katmanında düzenliyorum. Ekranların ihtiyaç duyduğu bilgilerin doğru biçimde işlenmesine ve iş mantığıyla uyumlu kullanılmasına odaklanıyorum. Yükleme, hata ve boş veri durumlarını entegrasyonun bir parçası olarak ele alıyorum. Servis iletişimini arayüz kodundan ayırarak değişikliklerin daha kontrollü yönetilebildiği bir yapı kuruyorum. Farklı servis yapılarının aynı uygulama içinde tutarlı biçimde kullanılmasını sağlıyorum.", en: "I connect mobile applications to external systems through REST and SOAP integrations. I map service responses to application models and organize request and response flows within the data layer. My focus is on processing information correctly and making it available to application workflows and screens. I handle loading, error, and empty-data states as part of the integration. By separating service communication from interface code, I create clear boundaries that help manage changes and accommodate different service structures consistently." }
+tags:
+  - { tr: "REST", en: "REST" }
+  - { tr: "SOAP", en: "SOAP" }
+  - { tr: "API entegrasyonu", en: "API Integration" }
+  - { tr: "Veri modelleme", en: "Data Modeling" }
+  - { tr: "Hata yönetimi", en: "Error Handling" }
+capabilities:
+  - { tr: "REST ve SOAP servislerini mobil uygulamalara bağlıyorum.", en: "I integrate REST and SOAP services into mobile applications." }
+  - { tr: "Servis yanıtlarını uygulama modellerine dönüştürüyorum.", en: "I map service responses to application models." }
+  - { tr: "İstek, yanıt ve hata akışlarını düzenliyorum.", en: "I structure request, response, and error handling." }
+  - { tr: "Servis verilerini uygulamanın durum yönetimiyle ilişkilendiriyorum.", en: "I connect service data to application state management." }
+skills: [api-entegrasyonu]

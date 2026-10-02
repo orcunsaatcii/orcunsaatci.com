@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=../../../.schemas/project.json
+# Kaynak: içerik anketi (projeler), 2026-09-29. Görsel alt metinleri taslaktır (sahip onayı bekler).
+title: { tr: "Bilsoft Ön Muhasebe & e-Fatura", en: "Bilsoft Pre-Accounting & e-Invoice" }
+summary: { tr: "KOBİ’lerin cari, stok, fatura, kasa-banka ve çek-senet işlemlerini GİB entegrasyonlu e-Fatura, e-Arşiv ve e-İrsaliye ile yönettiği mobil ön muhasebe uygulaması.", en: "Mobile pre-accounting app for SMEs to manage accounts, inventory, invoices, cash, bank and checks, with GİB-integrated e-Invoice, e-Archive and e-Waybill." }
+start: "2026-09"
+role: { tr: "Mobil Geliştirici", en: "Mobile Developer" }
+kind: product
+status: live
+areas: [mobil-uygulama, yayin-yonetimi, api-entegrasyonu]
+featured: true
+order: 1
+facts:
+  - { label: { tr: "Platform", en: "Platform" }, value: { tr: "iOS · Android", en: "iOS · Android" } }
+  - { label: { tr: "Minimum sürüm", en: "Minimum version" }, value: { tr: "iOS 15 · Android 10", en: "iOS 15 · Android 10" } }
+  - { label: { tr: "Mağazalar", en: "Stores" }, value: { tr: "App Store · Google Play · AppGallery", en: "App Store · Google Play · AppGallery" } }
+  - { label: { tr: "Dil", en: "Languages" }, value: { tr: "Türkçe · İngilizce · Almanca · Azerice", en: "Turkish · English · German · Azerbaijani" } }
+links:
+  - { kind: live, label: { tr: "App Store", en: "App Store" }, url: "https://apps.apple.com/tr/app/bilsoft-%C3%B6n-muhasebe-e-fatura/id6777948713?l=tr" }
+  - { kind: live, label: { tr: "Google Play", en: "Google Play" }, url: "https://play.google.com/store/apps/details?id=com.bilsoft.onMuhasebe&hl=tr" }
+cover:
+  src: /media/projects/bilsoft-on-muhasebe-e-fatura/cover.jpg
+  alt: { tr: "Bilsoft Ön Muhasebe & e-Fatura, üç telefonda: cari hesaplar, genel bakış ve faturalar ekranları", en: "Bilsoft Pre-Accounting & e-Invoice on three phones: accounts, overview and invoices screens" }
+mobileCover:
+  src: /media/projects/bilsoft-on-muhasebe-e-fatura/mobile-cover.jpg
+  alt: { tr: "Bilsoft Ön Muhasebe & e-Fatura genel bakış ekranı: net cari bakiye, geciken tahsilat ve kritik stok", en: "Bilsoft Pre-Accounting & e-Invoice overview screen: net balance, overdue collections and low stock" }
+preview:
+  src: /media/projects/bilsoft-on-muhasebe-e-fatura/preview.jpg
+  alt: { tr: "Genel bakış ekranının yakın planı: net cari bakiye, bugünkü satış ve tahsilat kartları", en: "Close-up of the overview screen: net balance with today’s sales and collections cards" }
+gallery:
+  - { src: /media/projects/bilsoft-on-muhasebe-e-fatura/gallery-01.jpg, alt: { tr: "Genel bakış ekranı: nakit, tahsilat ve stok durumu tek ekranda", en: "Overview screen: cash, collections and stock status on one screen" } }
+  - { src: /media/projects/bilsoft-on-muhasebe-e-fatura/gallery-02.jpg, alt: { tr: "Cari hesaplar listesi: borçlu ve alacaklı cariler bakiyeleriyle", en: "Accounts list: debtor and creditor accounts with their balances" } }
+  - { src: /media/projects/bilsoft-on-muhasebe-e-fatura/gallery-03.jpg, alt: { tr: "Stoklar ekranı: barkodla arama, ürün bakiyeleri ve alış-satış bilgileri", en: "Inventory screen: barcode search, stock balances and purchase and sale details" } }
+  - { src: /media/projects/bilsoft-on-muhasebe-e-fatura/gallery-04.jpg, alt: { tr: "Faturalar ekranı: satış faturaları ve tutarları; e-Fatura, e-Arşiv ve e-İrsaliye desteği", en: "Invoices screen: sales invoices and totals, with e-Invoice, e-Archive and e-Waybill support" } }
+  - { src: /media/projects/bilsoft-on-muhasebe-e-fatura/gallery-05.jpg, alt: { tr: "Tüm modüller menüsü: cariler, stoklar, faturalar, e-Belge, kasalar, banka hesapları ve daha fazlası", en: "All modules menu: accounts, inventory, invoices, e-Documents, cash, bank accounts and more" } }
+  - { src: /media/projects/bilsoft-on-muhasebe-e-fatura/gallery-06.jpg, alt: { tr: "Fatura görüntüleme ekranı: e-Fatura belgesinin önizlemesi, indirme ve paylaşma", en: "Invoice viewer: e-Invoice document preview with download and share" } }
+  - { src: /media/projects/bilsoft-on-muhasebe-e-fatura/gallery-07.jpg, alt: { tr: "e-Fatura ekranı: taslak, giden ve gelen faturalar sekmeleri", en: "e-Invoice screen with draft, outgoing and incoming invoice tabs" } }
+  - { src: /media/projects/bilsoft-on-muhasebe-e-fatura/gallery-08.jpg, alt: { tr: "Ayarlar ekranı: varsayılan para birimi, ödeme türü, ülke ve depo seçenekleri", en: "Settings screen: default currency, payment type, country and warehouse options" } }
+publishedAt: "2026-10"

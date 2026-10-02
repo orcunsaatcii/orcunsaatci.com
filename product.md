@@ -2289,7 +2289,7 @@ Sunucuda render edilir ve ilk boyamada görünürdür. DOM sırası görsel sır
 |---|---|---|---|
 | Bölüm | `<section id="giris" data-chapter="hero">` (EN `id="intro"`) | — | `min-height: 100svh`; pinsiz |
 | Eyebrow | `<p class="type-eyebrow">` (Martian Mono) | `{jobTitle} · {city}` (§7.9.2): `jobTitle` TR "Bilgisayar Mühendisi ve Mobil Uygulama Geliştiricisi", EN "Computer Engineer and Mobile App Developer"; şehir `{{ŞEHİR}}` | k1–6 |
-| H1 | `<h1>` | **Orçun Saatçi**. EN sayfada ad `<span lang="tr">` içindedir (§3.8). | ≥ 64rem: **tek satır**, `white-space: nowrap`, `font-size: min(var(--text-display), calc((100vw - 2 * var(--spacing-margin)) / 7.3))`, Mona Sans `wdth` 125, `wght` 760, `ss01`. < 64rem: iki satır ("Orçun" / "Saatçi"), `--text-display` (360 px'te 76.8 px). **Asla animasyon, maske, opaklık ya da clip yok.** LCP öğesidir (D-34). |
+| H1 | `<h1>` | **Orçun Saatçi**. EN sayfada ad `<span lang="tr">` içindedir (§3.8). | ≥ 64rem: **tek satır**, `white-space: nowrap`, `font-size: min(var(--text-display), calc((100vw - 2 * var(--spacing-margin)) / 7.95))` (içerik aktarımında 7.3'ten; aşağıdaki SPEC-SAPMA), Mona Sans `wdth` 125, `wght` 760, `ss01`. < 64rem: iki satır ("Orçun" / "SAATCİ"), `--text-display` (360 px'te 76.8 px). **Asla animasyon, maske, opaklık ya da clip yok.** LCP öğesidir (D-34). |
 | Konumlandırma | `<p class="type-lead">` | `{{KONUMLANDIRMA_CÜMLESİ}}` (≤ 18 kelime) | k1–6 |
 | CTA 1 (birincil, vurgu dolgulu **[SABİT]**) | `<a class="btn btn-primary">` | "Projeleri incele →" → `/projeler` / "Explore projects →" → `/en/projects` | Manyetik (§4.14 #5). **D-41 notu:** final.md `#projeler` diyordu; D-41'e göre bölüm CTA'ları gerçek URL kullanır. |
 | CTA 2 (ikincil, çerçeveli) | `<a class="btn btn-secondary">` | "İletişime geç" → `/iletisim` / "Get in touch" → `/en/contact` | Manyetik. Hero'da manyetik olan yalnızca bu iki öğedir. |
@@ -3426,7 +3426,7 @@ Her kimlik (ör. **K-HERO-3**) ilgili alt bölümden referanslanır. Testler aks
 
 **Genel (K-GEN)**
 - [ ] **K-GEN-1** Ana sayfadaki 6 bölümün (bayrakla 7) `data-chapter` değerleri ve TR/EN `id`'leri §4.5.1 ile birebir aynıdır.
-- [ ] **K-GEN-2** Bölüm yükseklikleri: hero 100, about 140, areas 320, work 330, journey ≥ 280, contact 100 svh (±1). Toplam kaydırma 1170 svh (±2).
+- [ ] **K-GEN-2** Bölüm yükseklikleri: hero 100, about 140, areas 320, work 330, journey ≥ 280, contact 100 svh (±1). Toplam kaydırma 1170 svh (±2). Değerler varsayılan içerik içindir; §4.5.2 gereği formüller `min-height`'tır, gerçek içerik uzunsa hero ve contact dışındaki bölümler en az bu değerlerdedir (içerik aktarımı, 2026-10-02: sahibin about metni ≈ 194 svh).
 - [ ] **K-GEN-3** `tracks.ts`, `stageTarget` alanları dışında yalnızca §4.3 beyaz listesindeki DOM özelliklerine yazar (birim testi).
 - [ ] **K-GEN-4** Hiçbir reveal animasyonu 700 ms'yi aşmaz. Sona kaydırıp başa dönünce tüm metin ve görsellerin `opacity` değeri 1'dir (yeniden gizlenme yok).
 - [ ] **K-GEN-5** `no-js` projesinde tüm route'larda `opacity < 1` ya da `visibility: hidden` olan metin/görsel yoktur.
@@ -6458,7 +6458,9 @@ Kurallar:
 | `type-meta` | mono xs · 1.45 · 0.04em · tabular · `ink-subtle` | Tarih, altyazı, sayaç |
 | `type-email` | 4xl · 1.1 · −0.02em · 620 · 100% → 118% · `overflow-wrap: anywhere` | İletişim bölümündeki büyük e-posta |
 
-**Hero adı, ≥ 64rem (tek satır):** `font-size: min(var(--text-display), calc((100vw - 2 * var(--spacing-margin)) / 7.3))` (final.md §4.1).
+**Hero adı, ≥ 64rem (tek satır):** `font-size: min(var(--text-display), calc((100vw - 2 * var(--spacing-margin)) / 7.95))` (final.md §4.1'de 7.3).
+
+- SPEC-SAPMA: §4.6.3, §6.2.4 (içerik aktarımı, 2026-10-02) — bölen adın em genişliğine bağlıdır. 7.3, "Orçun Saatçi" (6.69 em) için içerik genişliğinin %92'siydi. Sahibin görünen adı "Orçun SAATCİ" 7.30 em olduğundan 7.3 hiç pay bırakmıyordu; CI Linux'ta 1440 px'te H1 taştı. 7.95 aynı %92 doluluğu verir. Ad değişirse bölen yeniden ölçülür (`h1.type-display` klonu, 100 px, `width: max-content`).
 - **Ölçüm (HarfBuzz):** "Orçun Saatçi", 125%/760 ve −0.035em tracking ile 6.695em genişliğindedir. 7.3 böleni ≈ %9 pay (kaydırma çubuğu dahil) bırakır.
 - **1440 px:** 179.7 px → 1203 px.
 - **1920 px:** 192 px (üst sınır) → 1285 px; 1312 px'lik iç genişliğe sığar.
@@ -7692,7 +7694,7 @@ Dosyanın bölümleri:
   font-feature-settings: "ss01", "ss03";
   @media (width >= 64rem) {
     white-space: nowrap;
-    font-size: min(var(--text-display), calc((100vw - 2 * var(--spacing-margin)) / 7.3));
+    font-size: min(var(--text-display), calc((100vw - 2 * var(--spacing-margin)) / 7.95));
   }
 }
 @utility type-h1 {
@@ -9837,7 +9839,7 @@ publishedAt: "2025-07" # {{PROJE_1_YAYIN_TARİHİ}}
 |---|---|
 | Görsel | Listede `cover` (16:10). Hover önizlemesi `preview ?? cover` (4:3 kırpım, `alt=""`, §6.7). |
 | Başlık | `title` (`/projeler`'de `<h2>`, diğer listelerde bağlama göre) |
-| Özet | `summary` (≤ 160 karakter, 2 satır) |
+| Özet | `summary` (≤ 160 karakter). Kırpılmaz: `line-clamp` yok (SPEC-SAPMA: 160 karakterlik gerçek özet 320 px'te ve metin aralığı geçersiz kılındığında 2 satırı aşıyor; WCAG 1.4.12 içerik kaybını yasaklar) |
 | Meta | "{year} · {role}" (`year` türetilir, §7.3.3) |
 | Tür | `kind` sözlük etiketiyle (`project.kinds.*`, §7.9.6); `ProjectRow` sütunu (§6.6) |
 | Alanlar | Alan başlıkları düz metin olarak. Kart tek bir bağlantıdır, içinde iç içe bağlantı **YASAK**. |
@@ -13720,7 +13722,7 @@ Bu tablo `/gizlilik` metninin kaynağıdır. **ZORUNLU:** Yeni bir işleyen, alt
 | 1 | Barındırma ve CDN | IP adresi, kullanıcı ajanı, istenen URL, zaman damgası (geçici) | Siteyi sunmak ve güvenliğini sağlamak | (f) meşru menfaat | Vercel Inc. (ABD; İstanbul CDN noktası) | Vercel'in politikası. Hobby runtime günlükleri 1 saat. ⚠️ **DOĞRULANMADI:** CDN/istek günlüklerinin saklama süresi; Vercel gizlilik politikasından okunur. | v1 |
 | 2 | Web Analytics | İstekten türetilen karma kimlik (çerez yok; oturum 24 saat sonra atılır), sorgusuz URL, yönlendiren, ülke/şehir, işletim sistemi, tarayıcı, cihaz tipi | Toplu ziyaret istatistiği | (f) meşru menfaat | Vercel Inc. (ABD) | Toplu; Hobby raporlama penceresi 1 ay | v1 |
 | 3 | Speed Insights | Performans ölçümleri, URL, cihaz bilgisi | Site performansını izlemek | (f) meşru menfaat | Vercel Inc. (ABD) | Toplu | v1 |
-| 4 | E-posta ile iletişim | Ziyaretçinin yazdığı ad, e-posta adresi, mesaj içeriği | Mesaja yanıt vermek | (f) meşru menfaat. Mesaj bir iş ya da sözleşme görüşmesine ilişkinse (c) sözleşmenin kurulmasıyla doğrudan ilgili olma. Açık rıza **değildir**. Avukat teyidi gerekir. | Cloudflare, Inc. (Email Routing, ABD) → sahibin posta kutusu sağlayıcısı `{{E_POSTA_SAĞLAYICISI}}` (`{{SAĞLAYICI_ÜLKESİ}}`) | Son yazışmadan itibaren 2 yıl, sonra silinir | v1 |
+| 4 | E-posta ile iletişim | Ziyaretçinin yazdığı ad, e-posta adresi, mesaj içeriği | Mesaja yanıt vermek | (f) meşru menfaat. Mesaj bir iş ya da sözleşme görüşmesine ilişkinse (c) sözleşmenin kurulmasıyla doğrudan ilgili olma. Açık rıza **değildir**. Avukat teyidi gerekir. | Google LLC (Gmail, ABD). Alan adı e-postası ve yönlendirme yoktur (§14.3): Cloudflare Email Routing kullanılmaz. | Son yazışmadan itibaren 2 yıl, sonra silinir | v1 |
 | 5 | İletişim formu | Ad, e-posta, konu, mesaj, dil. Hız sınırı için IP adresi geçici olarak işlenir. | Mesajı iletmek ve kötüye kullanımı önlemek | #4 ile aynı; hız sınırı için (f) | Vercel Inc. (fonksiyon `fra1`, Frankfurt; şirket ABD), Resend (gönderim bölgesi `eu-west-1` İrlanda; hesap verileri ABD), sahibin posta kutusu sağlayıcısı | Posta kutusunda 2 yıl; Resend kayıtları 30 gün | **v1.1** |
 | 6 | Tarayıcı depolaması | `localStorage`: `os-motion`, `os-theme`; `sessionStorage`: `os-sweep` (D-38) | Ziyaretçinin seçtiği hareket ve tema tercihini hatırlamak | Sunucuya gönderilmez. Kullanıcının istediği bir işlev için kesinlikle gereklidir (§12.4.3). | Yok (cihazda kalır) | Kullanıcı silene kadar; `os-sweep` sekme kapanınca silinir | v1 |
 | 7 | Dış bağlantılar | Tıklanana kadar veri gönderilmez | — | — | Tıklanan platform (LinkedIn vb.) kendi politikasına tabidir | — | v1 |
@@ -14422,7 +14424,7 @@ Kurallar:
 |---|---|---|---|
 | `content-visibility.spec.ts` | `@no-js`, `@reduced-motion` | Sitemap'teki her URL ve `NOINDEX_PATHS` için:<br>(a) `main` içindeki metin taşıyan her öğede ve her `img`'de computed `opacity` = 1, `visibility` = `visible`, `clip-path` = `none`.<br>(b) Ham HTML (`request.get`) şunları içerir: H1 "Orçun Saatçi"; ana sayfada 6 `data-chapter`; her alan başlığı; her öne çıkan proje başlığı; `mailto:`.<br>(c) `[data-chapter]` içinde `position: sticky` öğe yoktur.<br>(d) Tüm alan açıklamaları görünürdür (liste modu).<br>(e) Hero, about ve contact posterleri ya da SVG figürleri görünürdür. | K-GEN-5, K-VAR-1, K-VAR-3, K-AREAS-1, K-WORK-5 |
 | `stage.spec.ts` | `@desktop-chromium`, `@pixel-7`, `@iphone-15` | - Yükleme sırası ve chunk boyutları `perf-budgets.spec.ts`'tedir (PB-2, PB-3); burada tekrarlanmaz.<br>- `/?tier=high` (masaüstü): 20 s içinde faz `ready` olur (PB-3 ile aynı süre); tam olarak bir `canvas` vardır; `#scene-layer` `aria-hidden="true"` ve `pointer-events: none` taşır; crossfade sonrası hero posterinin opaklığı 0'dır.<br>- Sayfa sona kadar kaydırılıp başa dönülür: faz `ready` kalır ve `canvas` aynı DOM öğesidir (tek context).<br>- Doğal `/`: faz `ready` ya da `fallback`.<br>- Mobil projeler `?tier=medium` ile 30 s içinde `ready` ya da `fallback`'e ulaşır; tier `high` değildir.<br>- `/gizlilik`'e doğrudan gelişte 5 s sonra `canvas` sayısı 0'dır. | K-HERO-7, K-DEEP-2 |
-| `no-webgl.spec.ts` | `@no-webgl` | `/` ve `/?tier=high`: faz `fallback`, tier `static`, `canvas` yok. Posterler görünür. Areas pin'i `DialFigure` ile çalışır: s = 300 ile s = 320 arasında SVG `transform`'u değişir. Work silmeleri oynar (`clip-path` değişir). | K-VAR-4, K-VAR-7 |
+| `no-webgl.spec.ts` | `@no-webgl` | `/` ve `/?tier=high`: faz `fallback`, tier `static`, `canvas` yok. Posterler görünür. Areas pin'i `DialFigure` ile çalışır: areas üstü `T` ölçülür, s = T + 60 ile s = T + 80 arasında SVG `transform`'u değişir (varsayılan içerikte 300 → 320). Work silmeleri oynar (`clip-path` değişir). | K-VAR-4, K-VAR-7 |
 | `motion-preferences.spec.ts` | `@reduced-motion`, `@desktop-chromium` | - §10.2.4'teki testlerin tamamı (canvas yok, Lenis sınıfı yok, `.motion-ready` yok, `[data-reveal]` opak; MotionToggle; PauseButton; oturum ortasında OS tercihi değişimi). Ağ tarafı PB-5'tedir (§9.4.3).<br>- `reduced-motion`: `html[data-motion="reduce"]`; `DialFigure` `role="img"` taşır ve `aria-label` tüm alan başlıklarını içerir; gezinmede `document.getAnimations()` içinde süresi > 0 olan view-transition animasyonu yoktur.<br>- MotionToggle sonrası `scrollY` en çok ±2 px değişir; görüntü alanının üstündeki bölüm değişmez (K-VAR-5). | K-VAR-1, K-VAR-2, K-VAR-5, K-DEEP-8, D-32 |
 | `choreography.spec.ts` | `@desktop-chromium` (yavaş; test başına 180 s) | `/?debug&tier=high`. Beklenen s değerleri DOM sayımlarından hesaplanır.<br>- §13.3.5'teki üç değişmez (I1–I3).<br>- K-GEN-2, K-ABOUT-1, K-AREAS-3/4/5/6, K-WORK-1/2/3, K-JOURNEY-2/3, K-CONTACT-3/5, K-CHOREO-4/6/7. | final.md §5, §4.12 |
 | `navigation.spec.ts` | `@desktop-chromium`, `@iphone-15` | - Odak davranışı (atlama bağlantısı, route sonrası `h1`, çapa sonrası `h2`) `a11y-keyboard.spec.ts`'tedir; burada tekrarlanmaz.<br>- Ana sayfa header çapası (ör. `#yolculuk`) bölümü görüntü alanına getirir; derin sayfalarda header bağlantıları gerçek URL'lere gider (D-41).<br>- Uzak atlamada kesme kuralı uygulanır (K-GEN-9, yalnız masaüstü, `?debug&tier=high`).<br>- **Geri/ileri:** ana sayfa `work` bölümündeki 2. makaleye kaydırılır → proje sayfası → `goBack()`. Sonuç: `scrollY` ±2 svh içinde geri gelir; `--scene-opacity` ≤ 100 ms'de 0'a iner ve 200 ms içinde döner; `project-cover-*` morph'u yeniden oynamaz. `goForward()` proje sayfasını en üstte açar.<br>- Aynı geri dönüş her bölüm çapası (`/#ben` … `/#iletisim`) için tekrarlanır. Dönüşte aynı `data-chapter` görüntü alanı merkezindedir. | K-CHOREO-5, D-41, final.md §13 #7 |

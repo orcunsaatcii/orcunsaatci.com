@@ -13,7 +13,7 @@ const WIDTHS = [
   { width: 768, height: 1024 },
   { width: 1440, height: 900 },
 ] as const;
-const DEEP = ['/hakkimda', '/projeler/ornek-proje-1', '/iletisim'] as const;
+const DEEP = ['/hakkimda', '/projeler/bilsoft-on-muhasebe-e-fatura', '/iletisim'] as const;
 
 type Report = {
   checked: number;

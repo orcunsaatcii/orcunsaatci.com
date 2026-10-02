@@ -1,18 +1,3 @@
 # yaml-language-server: $schema=../.schemas/testimonials.json
-# Tohum (§7.2.5): yazılı izinli iki kayıt; features.testimonials: false olduğu için ana sayfada görünmez.
-items:
-  - id: referans-1
-    quote: { tr: "{{REFERANS_1_ALINTI}}", en: "{{TESTIMONIAL_1_QUOTE}}" }
-    author: "{{REFERANS_1_AD}}"
-    role: { tr: "{{REFERANS_1_ROL}}", en: "{{TESTIMONIAL_1_ROLE}}" }
-    organization: "{{REFERANS_1_KURUM}}"
-    project: ornek-proje-1
-    consent: true
-    consentDate: "2026-09" # {{REFERANS_1_İZİN_TARİHİ}}
-    featured: true
-  - id: referans-2
-    quote: { tr: "{{REFERANS_2_ALINTI}}" }
-    author: "{{REFERANS_2_AD}}"
-    role: { tr: "{{REFERANS_2_ROL}}" }
-    consent: true
-    consentDate: "2026-09" # {{REFERANS_2_İZİN_TARİHİ}}
+# Ankette referans yok; features.testimonials: false.
+items: []

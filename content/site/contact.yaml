@@ -1,17 +1,11 @@
 # yaml-language-server: $schema=../../.schemas/contact.json
-# Tek iletişim kaynağı (§12.1.1). Tohum (§7.2.5).
-email: "iletisim@orcunsaatci.com" # {{E_POSTA}}
-responseTime: { tr: "{{YANIT_SÜRESİ}}", en: "{{RESPONSE_TIME}}" }
-availability:
-  status: open
+# Tek iletişim kaynağı (§12.1.1). Kaynak: içerik anketi (kararlar, iletişim), 2026-09-29.
+email: "orcunsaatci.business@gmail.com"
 social:
   - network: linkedin
-    url: "https://www.linkedin.com/in/{{LINKEDIN_KULLANICI_ADI}}"
+    url: "https://www.linkedin.com/in/or%C3%A7un-saatci-034086219/"
     primary: true
   - network: github
-    url: "https://github.com/{{GITHUB_KULLANICI_ADI}}"
-    handle: "{{GITHUB_KULLANICI_ADI}}"
-    primary: true
-  - network: website
-    url: "https://example.com/{{WEB_SİTESİ}}"
+    url: "https://github.com/orcunsaatcii"
+    handle: "orcunsaatcii"
     primary: true

@@ -1,26 +1,34 @@
 # yaml-language-server: $schema=../../.schemas/person.json
-# Tohum (§7.2.5): unvan sahibin cevabıdır (Q-01); diğer metinler yer tutucu.
-name: Orçun Saatçi
+# Kaynak: içerik anketi (kimlik), 2026-09-29. Görünen ad ve unvan sahibin anket cevabıdır.
+name: Orçun SAATCİ
 givenName: Orçun
-familyName: Saatçi
+familyName: SAATCİ
 asciiName: Orcun Saatci
-jobTitle:
-  tr: "Bilgisayar Mühendisi ve Mobil Uygulama Geliştiricisi"
-  en: "Computer Engineer and Mobile App Developer"
-headline: { tr: "{{KONUMLANDIRMA_CÜMLESİ}}", en: "{{POSITIONING_STATEMENT}}" }
-shortBio: { tr: "{{KISA_BİYOGRAFİ}}", en: "{{SHORT_BIO}}" }
+jobTitle: { tr: "Mobile Developer | Flutter", en: "Mobile Developer | Flutter" }
+headline: { tr: "Girişimler ve işletmeler için Flutter ile kullanıcı odaklı, yüksek performanslı mobil uygulamalar geliştiriyorum.", en: "I build user-focused, high-performance mobile apps for startups and businesses with Flutter." }
+shortBio: { tr: "Flutter ile mobil uygulama geliştirmede uzmanlaşmış bir bilgisayar mühendisi ve yazılım geliştiriciyim. Mimari tasarımdan mağaza yayınına kadar uçtan uca çalışıyor, backend deneyimimle ölçeklenebilir ve kullanıcı odaklı ürünler geliştiriyorum.", en: "I’m a computer engineer and software developer specializing in mobile app development with Flutter. I work across the full lifecycle, from architecture to app store release, drawing on my backend expertise to build scalable, user-focused products." }
 location:
-  city: { tr: "{{ŞEHİR}}", en: "{{ŞEHİR_EN}}" }
-  country: { tr: "{{ÜLKE}}", en: "{{ÜLKE_EN}}" }
-  fromPhrase: { tr: "{{ŞEHİR_İFADESİ}}", en: "{{CITY_PHRASE}}" }
+  city: { tr: "İstanbul", en: "Istanbul" }
+  country: { tr: "Türkiye", en: "Türkiye" }
+  fromPhrase: { tr: "İstanbul’dan", en: "Based in Istanbul" }
   countryCode: TR
   timezone: Europe/Istanbul
-  remote: false
-careerStartYear: 2014 # {{KARİYER_BAŞLANGIÇ_YILI}}
-portrait:
-  src: /media/placeholder/portrait-4x5.jpg
-  alt: { tr: "{{PORTRE_ALT}}", en: "{{PORTRAIT_ALT}}" }
+  remote: true
+careerStartYear: 2023
+portrait: # 871×1089: sahip daha büyük bir portreyi lansmandan önce verecek (C05 uyarısı bilinçli)
+  src: /media/person/portre.jpg
+  alt: { tr: "Orçun SAATCİ, siyah gömlekle, turuncu ve mavi ışıklı bir arka planın önünde", en: "Orçun SAATCİ in a black shirt in front of an orange and blue lit background" }
 headshot:
-  src: /media/placeholder/headshot-1x1.jpg
-  alt: { tr: "{{VESİKALIK_ALT}}", en: "{{HEADSHOT_ALT}}" }
-knowsAbout: []
+  src: /media/person/vesikalik.jpg
+  alt: { tr: "Orçun SAATCİ’nin vesikalık portresi", en: "Headshot of Orçun SAATCİ" }
+knowsAbout:
+  - { tr: "Flutter", en: "Flutter" }
+  - { tr: "Dart", en: "Dart" }
+  - { tr: "Mobil uygulama geliştirme", en: "Mobile app development" }
+  - { tr: "Clean Architecture", en: "Clean Architecture" }
+  - { tr: "MVVM", en: "MVVM" }
+  - { tr: "Riverpod ve Bloc", en: "Riverpod and Bloc" }
+  - { tr: "REST ve SOAP entegrasyonları", en: "REST and SOAP integrations" }
+  - { tr: "Material 3", en: "Material 3" }
+  - { tr: "CI/CD", en: "CI/CD" }
+  - { tr: "App Store ve Google Play yayın yönetimi", en: "App Store and Google Play release management" }

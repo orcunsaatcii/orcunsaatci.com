@@ -55,7 +55,7 @@ export function ProjectCard({
           </span>
         </Link>
       </Heading>
-      <p className="mt-2 line-clamp-2 type-body text-ink-muted">
+      <p className="mt-2 type-body text-ink-muted">
         <Txt v={t(project.summary, locale)} />
       </p>
       <p className="mt-2 type-meta">

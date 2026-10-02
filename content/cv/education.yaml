@@ -1,17 +1,8 @@
 # yaml-language-server: $schema=../../.schemas/education.json
 items:
-  - id: egitim-1
-    institution: "{{ÜNİVERSİTE}}"
-    degree: { tr: "Lisans", en: "BSc" }
-    field: { tr: "{{BÖLÜM}}", en: "{{FIELD}}" }
-    period: { start: "2010", end: "2014" } # {{EĞİTİM_1_TARİHLER}}
-    grade: "{{NOT}}"
-    courses:
-      - { tr: "{{DERS_1}}", en: "{{COURSE_1}}" }
-      - { tr: "{{DERS_2}}", en: "{{COURSE_2}}" }
-  - id: egitim-2
-    institution: "{{LİSE}}"
-    degree: { tr: "Lise", en: "High school" }
-    field: { tr: "{{LİSE_ALANI}}", en: "{{HIGH_SCHOOL_FIELD}}" }
-    period: { start: "2006", end: "2010" } # {{EĞİTİM_2_TARİHLER}}
-    showOnHome: false
+  - id: baibu-bilgisayar-muhendisligi
+    institution: "Bolu Abant İzzet Baysal Üniversitesi"
+    degree: { tr: "Lisans", en: "Bachelor’s Degree" }
+    field: { tr: "Bilgisayar Mühendisliği", en: "Computer Engineering" }
+    period: { start: "2021-10", end: "2025-06" }
+    grade: "3.56" # sayfada "Not: …" etiketiyle çizilir

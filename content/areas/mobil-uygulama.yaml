@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../.schemas/area.json
+# Kaynak: içerik anketi (alanlar), 2026-09-29.
+order: 1
+title: { tr: "Mobil Uygulama Geliştirme", en: "Mobile App Development" }
+summary: { tr: "Flutter ile iOS ve Android için mobil uygulamalar geliştiriyor, ürün gereksinimlerini çalışan ekranlara ve özelliklere dönüştürüyorum.", en: "I develop mobile apps for iOS and Android with Flutter, turning product requirements into functional screens and features." }
+description: { tr: "Flutter ve Dart ile iOS ve Android uygulamaları geliştiriyorum. Ürün gereksinimlerini ekran akışlarına dönüştürüyor, arayüz bileşenlerini ve uygulama içi etkileşimleri oluşturuyorum. Material 3 yaklaşımından yararlanarak ekranlar arasında görsel ve işlevsel tutarlılık sağlıyorum. Farklı ekran boyutlarını, içerik durumlarını ve platform davranışlarını geliştirme sürecinde birlikte ele alıyorum. Yeni uygulamaların geliştirilmesinin yanı sıra mevcut ürünlere özellik ekleme ve arayüz iyileştirme çalışmalarında da yer alıyorum. Tasarım kararlarının çalışan ürüne doğru aktarılmasına ve uygulamanın akıcı çalışmasına odaklanıyorum.", en: "I develop iOS and Android applications with Flutter and Dart. I translate product requirements into screen flows, interface components, and in-app interactions. Using Material 3, I establish visual and functional consistency across screens while considering different screen sizes, content states, and platform behaviors. My work includes building new applications, adding features to existing products, and refining interfaces. I focus on translating design decisions accurately into the working product and delivering smooth app behavior." }
+tags:
+  - { tr: "Flutter", en: "Flutter" }
+  - { tr: "Dart", en: "Dart" }
+  - { tr: "iOS", en: "iOS" }
+  - { tr: "Android", en: "Android" }
+  - { tr: "Material 3", en: "Material 3" }
+capabilities:
+  - { tr: "Flutter ile iOS ve Android uygulamaları geliştiriyorum.", en: "I develop iOS and Android applications with Flutter." }
+  - { tr: "Ekran akışlarını ve arayüz bileşenlerini oluşturuyorum.", en: "I build screen flows and interface components." }
+  - { tr: "Mevcut uygulamalara yeni özellikler ekliyorum.", en: "I add new features to existing applications." }
+  - { tr: "Farklı ekran boyutlarına uygun arayüzler geliştiriyorum.", en: "I adapt interfaces to different screen sizes." }
+skills: [mobil-uygulama-gelistirme]
