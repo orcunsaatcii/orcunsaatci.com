@@ -60,6 +60,8 @@ test.describe('K-GEN-10 görsel regresyon', { tag: ['@reduced-motion', '@pixel-7
   for (const path of PAGES) {
     for (const theme of THEMES) {
       test(`${path} ${theme}`, async ({ page }) => {
+        // tam pakette görsel iyileştirici (24 galeri görseli, soğuk önbellek) CI'da 60 s'yi aşabiliyor (PR #15)
+        test.setTimeout(120_000);
         await page.clock.install({ time: new Date('2026-01-01T09:00:00+03:00') });
         await page.emulateMedia({ colorScheme: theme });
         await page.goto(path);
