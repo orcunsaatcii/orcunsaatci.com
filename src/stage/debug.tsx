@@ -160,6 +160,14 @@ export function mountDebug(persona: Persona = 'engineer'): void {
       .querySelector<HTMLCanvasElement>('#scene-layer canvas')
       ?.getContext('webgl2')
       ?.getExtension('WEBGL_lose_context');
+  /**
+   * Kare süresi (§9.1 P17, §9.6 cihaz turu): rig'in art arda iki karede çizdiği rAF aralıkları (son 600). Kaydırma
+   * sırasında p95 okunur; "kare sıfırla" ölçümü baştan başlatır.
+   */
+  const deltas: number[] = [];
+  button('kare sıfırla', () => {
+    deltas.length = 0;
+  });
   button('duraklat', () => stageStore.getState().setPaused(!stageStore.getState().paused));
   button('bağlamı kaybet', () => lose()?.loseContext());
   button('geri yükle', () => lose()?.restoreContext());
@@ -178,14 +186,35 @@ export function mountDebug(persona: Persona = 'engineer'): void {
   document.body.append(panel);
 
   const keys = ['anchorFrom', 'anchorTo', 'anchorMix', 'opacityTrack', 'opacityCut'] as const;
-  const tick = () => {
+  let lastT = 0;
+  let lastFrames = live.frames;
+  let rendering = false;
+  const tick = (t: number) => {
+    const drew = live.frames !== lastFrames;
+    if (drew && rendering && lastT > 0) {
+      deltas.push(t - lastT);
+      if (deltas.length > 600) deltas.shift();
+    }
+    rendering = drew;
+    lastFrames = live.frames;
+    lastT = t;
+    const sorted = [...deltas].sort((a, b) => a - b);
+    const p95 = sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * 0.95))];
+    const mean = sorted.reduce((n, d) => n + d, 0) / (sorted.length || 1);
+    const nav = performance.getEntriesByType('navigation')[0] as
+      PerformanceNavigationTiming | undefined;
+    const ready = performance.getEntriesByName('os:stage-ready', 'mark')[0]?.startTime;
     const s = stageStore.getState();
     const q = s.quality;
+    const sig = s.signals;
     const lines = [
       `phase ${s.phase} · tier ${s.tier} (${s.tierReason ?? '—'}) · preset ${s.preset}`,
       `paused ${s.paused} · loop ${s.loop} · losses ${s.contextLosses}`,
       q ? `dpr ${q.dpr} · süzülme/paralaks ${q.motion}` : 'quality —',
-      `gpu ${s.signals?.gpu ? `${s.signals.gpu.type}/${s.signals.gpu.tier} ${s.signals.gpu.name ?? ''}` : '—'}${s.signals?.software ? ' · yazılım render' : ''}`,
+      `gpu ${sig?.gpu ? `${sig.gpu.type}/${sig.gpu.tier} ${sig.gpu.name ?? ''}` : '—'}${sig?.software ? ' · yazılım render' : ''}`,
+      `yoklama cores ${sig?.cores ?? '—'} · mem ${sig?.deviceMemory ?? '—'} · ${sig?.coarse ? 'kaba' : 'ince'} işaretçi · cihaz dpr ${window.devicePixelRatio}`,
+      `kare p95 ${p95 === undefined ? '—' : `${p95.toFixed(1)} ms`} · ort ${sorted.length ? `${mean.toFixed(1)} ms` : '—'} · n ${sorted.length}`,
+      `stage-ready − load ${ready !== undefined && nav ? `${Math.round(ready - nav.loadEventStart)} ms` : '—'}`,
       `program ${live.kod.key || '—'} · köprü ${fmt(live.kod.mix)} · donuk ${live.kod.frozen} · hot ${live.kod.hot}`,
       `panel ${fmt(live.panel.x)},${fmt(live.panel.y)} ${fmt(live.panel.w)}×${fmt(live.panel.h)} ${live.panel.visible ? '' : '(gizli)'}`,
       `anchors ${live.anchors.map((a) => a.id).join(' ')}`,
