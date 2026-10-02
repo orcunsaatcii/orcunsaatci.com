@@ -1,9 +1,7 @@
 // src/views/cv/CvView.tsx — /cv (§7.6.1–§7.6.3). Server; okumak içindir, scroll-jacking yok.
-// Bölüm sırası ve çapalar cv.ts selectCv(…, 'web'); boş bölüm çizilmez. cv-figure: RingsFigure yalnız baskıda
-// (§7.6.2, K-VAR-6); statik kademede ≥ 80rem sticky sütun (cv-core, D3) M7'de.
+// Bölüm sırası ve çapalar cv.ts selectCv(…, 'web'); boş bölüm çizilmez. KOD ile sahnesiz belge sayfası (§4 KOD).
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { RingsFigure } from '@/components/figures/RingsFigure';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { CvDownload } from '@/components/ui/CvDownload';
@@ -18,25 +16,20 @@ import { formatPartialDate } from '@/i18n/format';
 import { getDictionary } from '@/i18n/get-dictionary';
 import { duration, fill, plural } from '@/i18n/text';
 import {
-  getCareerStartYear,
   getContact,
   getCv,
   getPerson,
   getProject,
   getProjects,
-  getStageData,
   t,
   tList,
   type CvSection,
 } from '@/lib/content';
 import { jsonLdFor } from '@/lib/seo/jsonld';
-import { previewAttrs } from '@/stage/preview-attrs';
-import { StageAnchor } from '@/stage/ScenePoster';
 import { StagePreset } from '@/stage/StagePreset';
 import './print.css';
 
 const BUILD_MONTH = new Date().toISOString().slice(0, 7); // süren kaydın süresi için (build anı)
-const BUILD_YEAR = new Date().getFullYear(); // halka geometrisi build yılıyla (§5.10)
 
 export function CvView({ locale }: { locale: Locale }) {
   const dict = getDictionary(locale);
@@ -44,7 +37,6 @@ export function CvView({ locale }: { locale: Locale }) {
   const contact = getContact();
   const cv = getCv(locale);
   const graph = jsonLdFor({ key: 'cv' }, locale);
-  const rings = getStageData('cv-core', undefined, locale);
   const skillName = new Map<string, ReactNode>();
   const projectTitles = new Map(getProjects('tr').map((p) => [p.slug, p]));
 
@@ -65,7 +57,6 @@ export function CvView({ locale }: { locale: Locale }) {
     return any ? <Txt v={t(any.title, locale)} /> : slug; // taslak ya da bu dilde yok: düz metin (§7.3.5)
   };
 
-  let entryIdx = 0; // [data-cv-entry] DOM sırası = getStageData('cv-core').entries sırası (bant önizlemesi)
   const sectionBody = (s: CvSection): ReactNode => {
     switch (s.key) {
       case 'profile':
@@ -85,7 +76,6 @@ export function CvView({ locale }: { locale: Locale }) {
                   as="li"
                   className="cv-entry"
                   cvEntry
-                  preview={previewAttrs({ band: rings.entries[entryIdx++]?.band })}
                   locale={locale}
                   start={e.period.start}
                   end={e.period.end}
@@ -197,7 +187,6 @@ export function CvView({ locale }: { locale: Locale }) {
                 key={e.id}
                 className="cv-entry"
                 cvEntry
-                preview={previewAttrs({ band: rings.entries[entryIdx++]?.band })}
                 locale={locale}
                 start={e.period.start}
                 end={e.period.end}
@@ -345,31 +334,8 @@ export function CvView({ locale }: { locale: Locale }) {
   return (
     <div className="cv-main relative">
       {graph ? <JsonLd graph={graph} /> : null}
-      <StagePreset name="cv-core" data={rings} />
-      {/* D3 cv-core (§4.13.2): yalnız ≥ 80rem, k10–12; sayfa başından itibaren y 14–86 svh'de yapışır. Poster
-          karşılığı RingsFigure (§4.16.3). Katman bütün sayfayı kaplar: sticky kap başlık bloğuyla birlikte başlar. */}
-      <div
-        aria-hidden="true"
-        data-print="hide"
-        className="pointer-events-none absolute inset-0 hidden xl:block"
-      >
-        <div className="container-page grid-page h-full">
-          <div className="relative col-span-3 col-start-10 pt-[calc(14svh-var(--header-h))]">
-            <div className="sticky top-[14svh] h-[72svh]">
-              <StageAnchor id="cv-core" className="size-full">
-                <RingsFigure
-                  rings={rings.rings}
-                  startYear={getCareerStartYear()}
-                  currentYear={BUILD_YEAR}
-                  ariaLabel=""
-                  bands={rings.entries.map((e) => e.band)}
-                  className="anchor-figure"
-                />
-              </StageAnchor>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* KOD (§4 KOD): CV belge sayfasıdır; dar sağ sütunda 56 sütunluk panel okunamayacağı için sahne yok */}
+      <StagePreset name="none" data={null} />
       <PageHeader pageRef={{ key: 'cv' }} locale={locale} title={dict.meta.cv}>
         <p className="mt-stack type-lead">
           {locale === 'en' ? <span lang="tr">{person.name}</span> : person.name} ·{' '}
@@ -430,15 +396,6 @@ export function CvView({ locale }: { locale: Locale }) {
               <div className="mt-stack">{sectionBody(s)}</div>
             </section>
           ))}
-          <figure className="cv-figure hidden w-48 print:block">
-            <RingsFigure
-              rings={rings.rings}
-              startYear={getCareerStartYear()}
-              currentYear={BUILD_YEAR}
-              ariaLabel={fill(dict.figures.rings, { start: getCareerStartYear(), end: BUILD_YEAR })}
-              bands={rings.entries.map((e) => e.band)}
-            />
-          </figure>
         </div>
       </div>
     </div>

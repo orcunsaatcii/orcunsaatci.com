@@ -41,7 +41,6 @@ export const staticRouteKeys = [
   'expertise',
   'contact',
   'privacy',
-  'lab',
 ] as const;
 export const dynamicRouteKeys = ['project', 'area'] as const;
 export type StaticRouteKey = (typeof staticRouteKeys)[number];
@@ -76,7 +75,6 @@ export const staticRoutes = {
   expertise: { tr: '/calisma-alanlari' as Route, en: '/en/expertise' as Route, indexable: true,  parent: 'home' },
   contact:   { tr: '/iletisim' as Route,         en: '/en/contact' as Route,   indexable: true,  parent: 'home' },
   privacy:   { tr: '/gizlilik' as Route,         en: '/en/privacy' as Route,   indexable: false, parent: 'home' },
-  lab:       { tr: '/lab/stage' as Route,        en: null,                     indexable: false, parent: null },
 } as const satisfies Record<StaticRouteKey, StaticRouteDef>;
 
 const SLUG = '([a-z0-9]+(?:-[a-z0-9]+)*)';

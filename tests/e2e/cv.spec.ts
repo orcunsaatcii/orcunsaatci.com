@@ -74,9 +74,10 @@ test.describe('D-13 CV', { tag: ['@desktop-chromium', '@no-js'] }, () => {
     if ((await layer.count()) > 0) await expect(layer).toBeHidden(); // StageRoot M5'te gelir
     const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
     expect(bg).toMatch(/rgb\(255, 255, 255\)|rgba\(0, 0, 0, 0\)/);
-    // K-VAR-6: figürler basılır; ekranda cv-figure gizlidir
-    await expect(page.locator('.cv-figure svg[role="img"]')).toBeVisible();
-    await page.emulateMedia({ media: 'screen' });
-    await expect(page.locator('.cv-figure')).toBeHidden();
+    // K-VAR-6: /cv sahnesizdir (KOD paneli yok); diğer sayfalarda statik paneller basılmaz
+    await expect(page.locator('.kod-panel')).toHaveCount(0);
+    await page.goto('/');
+    await expect(page.locator('.kod-panel').first()).toBeAttached();
+    for (const el of await page.locator('.kod-panel').all()) await expect.soft(el).toBeHidden();
   });
 });

@@ -1,72 +1,48 @@
-// tests/e2e/choreography.spec.ts — ana sayfa koreografisi (M6; §4.12, §13.3.4, §13.3.5): K-CHOREO-4/5/6/7, I2, I3,
-// K-GEN-2/9, K-ABOUT-1/3, K-AREAS-3/4/5/6, K-WORK-1/2/3, K-JOURNEY-2/3/7, K-CONTACT-3/5, §5.19, V-48. Canlı sahne
-// (Taş dairesi, kesme, piksel, V-48) /?debug&tier=high (mobil medium); yalnız stageTarget / DOM okuyanlar tier=static.
-// Beklenen kaydırma konumları DOM'dan ölçülen düzenden hesaplanır (§13.3.4): §4.12.1'in s değerleri 1170 svh'lik referans
-// düzendir; her satır (bölüm, faz, yerel p) olarak eşlenir ve y = faz.y0 + p·(faz.y1 − faz.y0) olur (§5.9.3).
-// Sahne değerleri stageTarget'tan okunur (yönetmenin kaydırma güncellemesinden hemen sonra deterministiktir). Ekran dairesi
-// için bir kare rendered = target yapılır (live.snapNextFrame): yazılım render'ında damping'i beklemek çok yavaştır.
+// tests/e2e/choreography.spec.ts — ana sayfa koreografisi, KOD (§4.12, §13.3.4, §13.3.5): K-CHOREO-3/4/5/6/7, I2, I3,
+// K-GEN-2/9, K-ABOUT-1/2/3, K-AREAS-3/4/5/6, K-WORK-1/2/3, K-JOURNEY-2/3/7, K-CONTACT-3/5, V-48. KESİT'in taş değerleri
+// (kamera, cut, rotY, bant, ışık, taş dairesi) ve piksel karşılaştırmaları KOD ile kalktı (§15.8a): panel ?debug
+// çıktısından okunur — program anahtarı ve köprü ilerlemesi (live.kod), panelin eğimsiz ekran dikdörtgeni (live.panel),
+// çapa çifti ve opaklık çarpanları (stageTarget.anchorFrom/To/Mix, opacityTrack/Cut). Canlı paneli okuyan testler
+// /?debug&tier=high (mobil medium) ile koşar; her okumadan önce rig o kaydırmada bir kare çizer. Sahne sönükken (döngü
+// never: work, mobil bantlar arası) kare yoktur, panel "yok" sayılır. Yalnız DOM olaylarını ve reveal'ları okuyanlar
+// tier=static. Beklenen kaydırma konumları DOM'dan ölçülen düzenden hesaplanır (§13.3.4): §4.12.1'in s değerleri 1170
+// svh'lik referans düzendir; her satır (bölüm, faz, yerel p) olarak eşlenir, y = faz.y0 + p·(faz.y1 − faz.y0) (§5.9.3).
 // Zaman ölçümleri kare hızından bağımsız okunur: "X ms'den sonra eşiğin öbür yanında YAZIM yok" (--scene-opacity stil
 // yazımları ve kare örnekleri kaydedilir; CI'da SwiftShader ≈ 2 fps). Ham süreler ayrıca ek açıklamalara yazılır.
 // Bekleme sayfa içindedir (waitForTimeout YASAK). Uyumsuzluklar expect.soft ile toplanır: tek koşu bütün sapmaları listeler.
 import type { Page, TestInfo } from '@playwright/test';
-import sharp from 'sharp';
 import { expect, test } from './fixtures';
 import { readingScroll, settle } from './helpers/scroll';
-import { pageDelay, readStage, waitForStagePhase } from './helpers/stage';
+import { pageDelay, waitForStagePhase } from './helpers/stage';
 
 test.describe.configure({ timeout: 180_000 }); // §13.3.4: yavaş dosya, test başına 180 s
 
 const HOME = '/?debug&tier=high';
 const HOME_MOBILE = '/?debug&tier=medium'; // mobil mutlu yol (§13.3.3)
 /**
- * Yalnız stageTarget, DOM olayları ve reveal'ları okuyan testler: director kademeden bağımsızdır, canvas gerekmez.
+ * Yalnız DOM olaylarını ve reveal'ları okuyan testler: director kademeden bağımsızdır, canvas gerekmez.
  * SPEC-SAPMA §13.3.4 (M6): WebGL'siz koşarlar; CI'da SwiftShader ≈ 2 fps her kaydırma adımını ≈ 0.5 s'ye çıkarıyor,
- * tween / reveal zamanlamalarını kare aralığının altında ölçülemez kılıyor ve dosyayı iş süresine sığdırmıyordu.
+ * reveal zamanlamalarını kare aralığının altında ölçülemez kılıyor ve dosyayı iş süresine sığdırmıyordu.
  */
 const HOME_TARGET = '/?debug&tier=static';
 
-const FILLS = ['fill0', 'fill1', 'fill2', 'fill3', 'fill4', 'fill5'] as const;
-const CAMERA = ['camR', 'camAz', 'camEl', 'camFov'] as const;
-/** Derece cinsinden alanlar (K-CHOREO-7 tabanı 0.2°, K-CHOREO-4 ±0.5°) */
-const ANGLES = new Set<string>([
-  'camAz',
-  'camEl',
-  'camFov',
-  'rotYScroll',
-  'rotYEvent',
-  'rotX',
-  'lightAz',
-  'lightEl',
-]);
-/** Dinlenmiş sahne durumu f(route, scrollY): track ve event alanları; zaman tabanlı süsler ve opacityCut hariç (§4.12.2 #3) */
-const STATE = [
-  ...CAMERA,
-  'rotYScroll',
-  'rotYEvent',
-  'rotX',
-  'cut',
-  'ringContrast',
-  'sectorMix',
-  ...FILLS,
-  'bandStart',
-  'bandEnd',
-  'bandVisible',
-  'ghost',
-  'arcGlow',
-  'rim',
-  'tone',
-  'lightAz',
-  'lightEl',
-  'anchorMix',
-  'opacityTrack',
+/**
+ * Köprüler (§4.12.1, §4.12.4 #24): IN fazlarındaki anchorMix track'leri (masaüstü); end köprünün bittiği yerel p. vis
+ * sahnenin göründüğü kısımdır: masaüstünde sahne work IN p 0.2–0.5'te söner, journey IN p 0.3–0.6'da belirir (K-WORK-6).
+ */
+const BRIDGES = [
+  { chapter: 'about', from: 'hero-rest', to: 'about-cut', end: 0.6, vis: [0, 0.6] },
+  { chapter: 'areas', from: 'about-cut', to: 'areas-dial', end: 0.7, vis: [0, 0.7] },
+  { chapter: 'work', from: 'areas-dial', to: 'work-specimen', end: 0.8, vis: [0, 0.45] },
+  { chapter: 'journey', from: 'work-specimen', to: 'journey-core', end: 0.7, vis: [0.35, 0.7] },
+  { chapter: 'contact', from: 'journey-core', to: 'contact-ring', end: 0.5, vis: [0, 0.5] },
 ] as const;
-/** Work / journey BODY dwell'lerinde rotYScroll dışında sabit kalan 3D alanlar (§5.9.3 değişmez 5) */
-const STILL = STATE.filter((p) => !(CAMERA as readonly string[]).includes(p) && p !== 'rotYScroll');
-const NO_BAND: readonly [number, number] = [-10, -10];
+type Bridge = (typeof BRIDGES)[number];
+/** about.dart'ın anahtarı açılan blok oranını taşır (about:0.25 … about:1) */
+const ABOUT_KEY = 'about:[\\d.]+';
 
 /* ───────────── türler ───────────── */
 
-type Values = Record<string, number>;
 type PhaseKind = 'in' | 'body';
 interface PhaseRange {
   chapter: string;
@@ -86,33 +62,44 @@ interface Measured {
   heroExit: number;
   counts: { N: number; P: number; E: number };
 }
-type Band = readonly [number, number] | null;
+interface PanelRect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  visible: boolean;
+}
 interface StageData {
-  sectors: number;
-  projects: { slug: string; area: number | null; band: Band }[];
-  entries: { band: Band }[];
+  projects: { slug: string }[];
+  kod?: { email: string };
 }
 /** window.__stage (§5.18.1, yalnız ?debug) */
 interface DebugStage {
-  store: { getState(): { invalidate(): void; data: unknown } };
-  target: Values;
-  rendered: Values;
+  store: { getState(): { invalidate(): void; loop: string; data: unknown } };
+  target: Record<string, number>;
   live: {
-    stone: { cx: number; cy: number; r: number; visible: boolean };
+    panel: PanelRect;
+    kod: { key: string; mix: number };
     frames: number;
-    snapNextFrame: boolean;
     anchors: readonly { id: string }[];
     layout?: {
       phases: PhaseRange[];
       activation: { work: number[]; journey: number[] };
-      areas: Measured['areas'];
     } | null;
   };
 }
 type StageWindow = Window & { __stage: DebugStage };
-interface Reading {
+/** Bir kaydırma konumunda rig'in son karesi (§5.20.4) ve yönetmenin çapa çifti */
+interface KodState {
   y: number;
-  values: Values;
+  /** --scene-opacity (hesaplanmış) */
+  opacity: number;
+  /** panel ekranda: sahne opaklığı > 0.01 ve plaka görünür */
+  shown: boolean;
+  /** görünen program ("A>B" köprüde) ve köprü ilerlemesi */
+  key: string;
+  mix: number;
+  panel: PanelRect;
   anchor: { from: string; to: string; mix: number; at: string };
 }
 
@@ -122,8 +109,14 @@ const fmt = (v: number | undefined) =>
   v === undefined ? '—' : String(Math.round(v * 1000) / 1000);
 const svh = (m: Measured, y: number) => (y / m.vh) * 100;
 const pad = (x: number) => String(x).padStart(2, '0');
+const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const rectStr = (r: PanelRect) =>
+  `${Math.round(r.x)},${Math.round(r.y)} ${Math.round(r.w)}×${Math.round(r.h)}`;
+/** İki panel dikdörtgeninin en büyük kenar farkı (px) */
+const rectDiff = (a: PanelRect, b: PanelRect) =>
+  Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y), Math.abs(a.w - b.w), Math.abs(a.h - b.h));
 
-/** Raporlama: ölçülen sayılar test ek açıklamasına ve stdout'a yazılır (PR / M6 ayar notları için) */
+/** Raporlama: ölçülen sayılar test ek açıklamasına ve stdout'a yazılır (PR / KOD ayar notları için) */
 function note(info: TestInfo, type: string, data: unknown): void {
   const description = typeof data === 'string' ? data : JSON.stringify(data);
   info.annotations.push({ type, description });
@@ -143,6 +136,7 @@ async function ready(page: Page): Promise<void> {
     document.querySelector<HTMLElement>('[data-stage-debug]')?.style.setProperty('display', 'none'),
   );
   await settle(page);
+  await cutDone(page);
 }
 
 /**
@@ -241,36 +235,73 @@ async function stageData(page: Page): Promise<StageData> {
   );
 }
 
-/** stageTarget (readStage, §13.3.2) + çapa indekslerinin kimlikleri (live.anchors) */
-async function readTarget(page: Page): Promise<Reading> {
-  const r = await readStage(page);
-  const ids = await page.evaluate(() =>
-    (window as unknown as StageWindow).__stage.live.anchors.map((a) => a.id),
-  );
-  const values = Object.fromEntries(
-    Object.entries(r.values).filter((e): e is [string, number] => typeof e[1] === 'number'),
-  );
-  const id = (i: number | undefined) =>
-    i === undefined ? '?' : (ids[i] ?? (i === -1 ? 'sanal' : `#${i}`));
-  const from = id(values.anchorFrom);
-  const to = id(values.anchorTo);
-  const mix = values.anchorMix ?? 0;
-  return {
-    y: r.scrollY,
-    values,
-    anchor: { from, to, mix, at: mix >= 0.999 ? to : mix <= 0.001 ? from : `${from}→${to}` },
-  };
+/**
+ * Rig'in geçerli kaydırmada en az bir kare çizmesini bekler: live.panel ve live.kod o karenin çıktısıdır (kare başına
+ * yazılır). Döngü 'never' (sahne sönük) ya da canlı sahne yoksa kare çizilmez, beklenmez.
+ */
+async function freshFrame(page: Page): Promise<boolean> {
+  return page.evaluate(async () => {
+    const st = (window as unknown as StageWindow).__stage;
+    const phase = document.getElementById('scene-layer')?.dataset.phase;
+    if (phase !== 'ready' || st.store.getState().loop === 'never') return false;
+    const f0 = st.live.frames;
+    st.store.getState().invalidate();
+    const t0 = performance.now();
+    while (st.live.frames === f0) {
+      if (performance.now() - t0 > 15_000) throw new Error('kare: 15 s içinde çizilmedi');
+      await new Promise<void>((r) => requestAnimationFrame(() => r()));
+    }
+    return true;
+  });
 }
 
-/** Anında y'ye kaydırır ve sahne değerleri durulana kadar bekler (scrollToSvh'nin px karşılığı) */
+/** Rig'in bu kaydırmada çizdiği kare (program, köprü, panel dikdörtgeni) ve yönetmenin çapa çifti (live.anchors kimlikleri) */
+async function kodAt(page: Page): Promise<KodState> {
+  await freshFrame(page);
+  return page.evaluate(() => {
+    const st = (window as unknown as StageWindow).__stage;
+    const layer = document.getElementById('scene-layer');
+    const opacity = layer ? Number.parseFloat(getComputedStyle(layer).opacity) : 0;
+    const ids = st.live.anchors.map((a) => a.id);
+    // −1 sanal (route glide), −2 ölçülmemiş / eksik çapa (§5.7.4)
+    const id = (i: number | undefined) =>
+      i === undefined ? '?' : i === -1 ? 'sanal' : i < 0 ? 'yok' : (ids[i] ?? `#${i}`);
+    const t = st.target;
+    const from = id(t.anchorFrom);
+    const to = id(t.anchorTo);
+    const mix = t.anchorMix ?? 0;
+    const panel = { ...st.live.panel };
+    return {
+      y: window.scrollY,
+      opacity,
+      shown: opacity > 0.01 && panel.visible,
+      key: st.live.kod.key,
+      mix: st.live.kod.mix,
+      panel,
+      anchor: { from, to, mix, at: mix >= 0.999 ? to : mix <= 0.001 ? from : `${from}→${to}` },
+    };
+  });
+}
+
+/** Süren kesme (sönme, oturma, belirme) bitene kadar bekler: opacityCut 1 (§5.9.7) */
+async function cutDone(page: Page): Promise<void> {
+  await page.waitForFunction(
+    () => ((window as unknown as Partial<StageWindow>).__stage?.target.opacityCut ?? 1) >= 0.999,
+    null,
+    { timeout: 15_000 },
+  );
+}
+
+/** Anında y'ye kaydırır (1.5·vh'den uzunsa kesme, §5.9.7) ve sahne durulana kadar bekler */
 async function jumpTo(page: Page, y: number): Promise<void> {
   await page.evaluate((top) => window.scrollTo({ top, behavior: 'instant' }), Math.round(y));
   await settle(page);
+  await cutDone(page);
 }
 
 /**
  * "Kaydırarak gelir": kesme eşiğinin (tek güncellemede 1.5·vh, §5.9.7) altında adımlarla ilerler, her adımdan sonra iki
- * kare bekler (yönetmen güncellemesi, event tween'leri); sonda durulur.
+ * kare bekler (yönetmen güncellemesi, olaylar); sonda durulur.
  */
 async function stepTo(page: Page, y: number, stepVh = 0.5, quiet = true): Promise<void> {
   await page.evaluate(
@@ -289,7 +320,7 @@ async function stepTo(page: Page, y: number, stepVh = 0.5, quiet = true): Promis
     },
     { target: Math.round(y), frac: stepVh },
   );
-  // quiet = false: event tween'leri beklenmez (taş dairesi yalnız track değerlerine — çapa karışımı — bağlıdır)
+  // quiet = false: olay tween'leri beklenmez (panel dikdörtgeni yalnız çapa çiftine ve kaydırmaya bağlıdır)
   if (quiet) await settle(page);
 }
 
@@ -322,376 +353,265 @@ async function wheelTo(page: Page, y: number, svhPerS = 10): Promise<void> {
   await settle(page);
 }
 
-/* ───────────── beklenen değerler (§5.8.1, §5.9.4, §5.9.5) ───────────── */
-
-const psi = (k: number, n: number) => 45 - (k * 360) / n;
-const wrapNear = (a: number, ref: number) => a + 360 * Math.round((ref - a) / 360);
-const wrap180 = (a: number) => a - 360 * Math.round(a / 360);
-
-interface Ctx {
-  m: Measured;
-  d: StageData;
-  N: number;
-  S: number;
-  /** areas BODY soyut uzunluğu L = 20 + S·N svh (§5.9.4) */
-  L: number;
-  lastPsi: number;
-  W0: number;
-}
-function ctxOf(m: Measured, d: StageData): Ctx {
-  const N = d.sectors;
-  const lastPsi = m.areas ? psi(N - 1, N) : 45;
-  const a0 = d.projects[0]?.area ?? null;
-  const S = m.areas?.S ?? (m.mobile ? 40 : 50);
-  return {
-    m,
-    d,
-    N,
-    S,
-    L: 20 + S * N,
-    lastPsi,
-    W0: a0 === null ? lastPsi : wrapNear(psi(a0, N), lastPsi),
-  };
-}
+/* ───────────── beklenen konumlar ve programlar (§4.12.1, §5.9.3–§5.9.5) ───────────── */
 
 function phaseOf(m: Measured, chapter: string, phase: PhaseKind): PhaseRange {
   const r = m.phases.find((p) => p.chapter === chapter && p.phase === phase);
   if (!r) throw new Error(`faz yok: ${chapter} · ${phase}`);
   return r;
 }
-/**
- * Journey BODY dönüşü (§4.12.1 satır 14; `journeyTurnOf`, SPEC-SAPMA §4.12.2 M6): en çok 60°; kısa BODY'de (küçük E)
- * hız ≤ 33.4°/100 svh kalacak biçimde ölçeklenir. Varsayılan içerikte (E = 6) 60°'dir.
- */
-function journeyTurn(m: Measured): number {
-  const r = phaseOf(m, 'journey', 'body');
-  return Math.min(60, (33.4 * ((100 * (r.y1 - r.y0)) / m.vh)) / 100);
-}
+/** Fazın yerel ilerlemesi p (fazın dışında < 0 ya da > 1) */
+const pOf = (r: PhaseRange, y: number) => (y - r.y0) / Math.max(1, r.y1 - r.y0);
 const yAt = (m: Measured, chapter: string, phase: PhaseKind, p: number) => {
   const r = phaseOf(m, chapter, phase);
   return r.y0 + p * (r.y1 - r.y0);
 };
-/** areas BODY'nin soyut ekseninde ofs svh → belge y (§5.9.4: p = ofs / L) */
-function areasY(c: Ctx, ofs: number): number {
-  const a = c.m.areas;
-  if (!a) throw new Error('areas pin yok (liste modu)');
-  return a.bodyY0 + (ofs / c.L) * a.bodyLen;
-}
 /** Bölümün kaydırma aralığı: IN başı → BODY sonu (hero: 0 → heroExit) */
 function chapterRange(m: Measured, id: string): [number, number] {
   if (id === 'hero') return [0, m.heroExit];
   return [phaseOf(m, id, 'in').y0, phaseOf(m, id, 'body').y1];
 }
-
+/** Çizgisini geçtiği son girdinin indeksi; hiçbiri değilse −1 (§5.9.5) */
 const indexAt = (lines: readonly number[], y: number) => lines.filter((l) => l <= y).length - 1;
-/** §5.9.5 hedef çözümleyici: work / journey indeksleri → rotYEvent, bant, (pencere içinde) dolgular */
-function eventsAt(c: Ctx, y: number) {
-  const w = indexAt(c.m.activation.work, y);
-  const j = indexAt(c.m.activation.journey, y);
-  const area = w >= 0 ? (c.d.projects[w]?.area ?? null) : null;
-  const band =
-    (j >= 0 ? c.d.entries[j]?.band : w >= 0 ? c.d.projects[w]?.band : c.d.projects[0]?.band) ??
-    NO_BAND;
-  return {
-    w,
-    j,
-    rotYEvent: area === null ? 0 : wrap180(psi(area, c.N) - c.W0),
-    band,
-    fills: FILLS.map((_, i) => (i >= c.N ? 0 : i === area ? 0.6 : 0.12)),
-  };
+/** areas BODY'nin soyut ekseninde ofs svh → belge y (§5.9.4: L = 20 + S·N, p = ofs / L) */
+function areasY(m: Measured, ofs: number): number {
+  const a = m.areas;
+  if (!a) throw new Error('areas pin yok (liste modu)');
+  return a.bodyY0 + (ofs / (20 + a.S * a.N)) * a.bodyLen;
+}
+/** Belge y → areas adımı: ofs ≥ 10 + S·k + 0.15·S olan en büyük k ≥ 1, yoksa 0 (events.ts areasIndexAt tanımı) */
+function areasStepAt(m: Measured, y: number): number {
+  const a = m.areas;
+  if (!a || y < a.bodyY0) return 0;
+  const L = 20 + a.S * a.N;
+  const ofs = a.bodyLen > 0 ? ((y - a.bodyY0) / a.bodyLen) * L : L;
+  let k = 0;
+  for (let i = 1; i < a.N; i++) if (ofs >= 10 + a.S * i + 0.15 * a.S) k = i;
+  return k;
+}
+const smooth = (t: number) => {
+  const c = Math.min(1, Math.max(0, t));
+  return c * c * (3 - 2 * c);
+};
+/**
+ * Masaüstü --scene-opacity beklentisi (opacityTrack; kesme ve okuma çarpanları 1): work IN p 0.2–0.5'te 1 → 0, journey
+ * IN p 0.3–0.6'da 0 → 1 (§4.12.4 #6, K-WORK-6: work'te panel yok)
+ */
+function sceneOpacityAt(m: Measured, y: number): number {
+  const j = phaseOf(m, 'journey', 'in');
+  if (y >= j.y0) return smooth((pOf(j, y) - 0.3) / 0.3);
+  return 1 - smooth((pOf(phaseOf(m, 'work', 'in'), y) - 0.2) / 0.3);
 }
 
-const fillsOf = (f: readonly number[]): Values =>
-  Object.fromEntries(FILLS.map((k, i) => [k, f[i] ?? 0]));
-// §5.8.1 K0–K5; tabloda olmayan alanlar §5.8.1 notundan (rim, bandVisible) ve track tablosundan (§5.9.4) taşınır
-const K0: Values = {
-  camR: 5.2,
-  camAz: -25,
-  camEl: 12,
-  camFov: 30,
-  rotYScroll: 0,
-  rotX: 0,
-  cut: 1.1,
-  ringContrast: 0,
-  sectorMix: 0,
-  ghost: 0,
-  arcGlow: 0,
-  lightAz: -60,
-  lightEl: 38,
-  rim: 0.25,
-  tone: 1,
-  bandVisible: 0,
-};
-const K1B: Values = {
-  ...K0,
-  camR: 4.8,
-  camAz: -14,
-  camEl: 40,
-  camFov: 28,
-  rotYScroll: 30,
-  cut: 0.35,
-  ringContrast: 0.6,
-  ghost: 0.1,
-  lightAz: -40,
-  lightEl: 48,
-};
-const K1: Values = {
-  ...K1B,
-  camR: 4.6,
-  camEl: 55,
-  rotYScroll: 35,
-  cut: 0,
-  ringContrast: 1,
-  lightAz: -30,
-  lightEl: 55,
-};
-const K2 = (rotY: number): Values => ({
-  ...K1,
-  camR: 7.2,
-  camAz: 0,
-  camEl: 88,
-  camFov: 18,
-  rotYScroll: rotY,
-  ringContrast: 0.4,
-  sectorMix: 1,
-  lightAz: 0,
-  lightEl: 80,
-});
-const K3 = (rotY: number): Values => ({
-  camR: 5.6,
-  camAz: 0,
-  camEl: 20,
-  camFov: 26,
-  rotYScroll: rotY,
-  rotX: 62,
-  cut: -0.02,
-  ringContrast: 0.9,
-  sectorMix: 0.5,
-  ghost: 0,
-  arcGlow: 0.35,
-  lightAz: 25,
-  lightEl: 22,
-  rim: 0.25,
-  tone: 1,
-  bandVisible: 1,
-});
-const K4 = (rotY: number): Values => ({
-  ...K3(rotY),
-  camR: 5.8,
-  camEl: 72,
-  rotX: 0,
-  cut: 0,
-  ringContrast: 1,
-  sectorMix: 0,
-  ghost: 0.06,
-  arcGlow: 0.2,
-  lightAz: -20,
-  lightEl: 60,
-});
-const K5 = (rotY: number): Values => ({
-  ...K4(rotY),
-  camR: 4.9,
-  camEl: 22,
-  camFov: 30,
-  rotX: 68,
-  cut: -0.05,
-  ringContrast: 0.7,
-  ghost: 0,
-  arcGlow: 1,
-  lightAz: 70,
-  lightEl: 14,
-  rim: 0.35,
-  bandVisible: 0,
-});
-
+interface Want {
+  /** etkin çapa deseni (RegExp kaynağı); köprüde "A→B" */
+  anchor: string;
+  /** program anahtarı deseni (RegExp kaynağı); null = panel yok (sahne sönük) */
+  key: string | null;
+  /** beklenen --scene-opacity */
+  opacity: number;
+}
 interface Row {
   id: string;
   label: string;
-  y: number;
-  want: Values;
-  anchor: string;
-  mix?: number;
+  y0: number;
+  y1: number;
+  want: (y: number) => Want;
 }
 
-/** §4.12.1 satırları, satır aralığının SONUNDA (bölüm, faz, p); areas adımları N'den üretilir (varsayılan N = 4: 7–9) */
-function choreoRows(c: Ctx): Row[] {
-  const { m, N, S, W0 } = c;
-  const J = W0 + 50 + journeyTurn(m); // journey BODY sonu (varsayılan içerikte W0 + 110)
-  const rows: Row[] = [];
-  const none = [0, 0, 0, 0, 0, 0];
-  const dial = (k: number) => FILLS.map((_, i) => (i >= N ? 0 : i === k ? 1 : 0.15));
-  const add = (
-    id: string,
-    label: string,
-    y: number,
-    want: Values,
-    fills: readonly number[] | 'event',
-    anchor: string,
-    mix?: number,
-  ) => {
-    const e = eventsAt(c, y);
-    rows.push({
-      id,
-      label,
-      y,
-      anchor,
-      mix,
-      want: {
-        ...want,
-        ...fillsOf(fills === 'event' ? e.fills : fills),
-        rotYEvent: e.rotYEvent,
-        bandStart: e.band[0],
-        bandEnd: e.band[1],
-      },
-    });
+/**
+ * §4.12.1 satırları (masaüstü) ölçülen düzende: hero-rest / main.dart → about-cut / about.dart → areas-dial / alan k →
+ * work: panel yok → journey-core / git log → contact-ring / zsh. Köprüde (IN p < end) çapa "A→B", anahtar "A>B".
+ */
+function choreoRows(m: Measured): Row[] {
+  const a = m.areas;
+  if (!a) throw new Error('areas pin yok (liste modu)');
+  const { S, N } = a;
+  const jk = (y: number) => `journey:${indexAt(m.activation.journey, y)}`;
+  const area = (y: number) => `area:${areasStepAt(m, y)}`;
+  const bridge = Object.fromEntries(BRIDGES.map((b) => [b.chapter, b])) as Record<string, Bridge>;
+  // work'ün ucu programsızdır: DOM'da boş work-specimen çapası ya da hiç çapa yok (K-WORK-6); ikisinde de panel yoktur
+  const anchorRe = (id: string) => (id === 'work-specimen' ? '(work-specimen|yok)' : esc(id));
+  const fixed =
+    (anchor: string, key: ((y: number) => string) | null) =>
+    (y: number): Want => {
+      const opacity = sceneOpacityAt(m, y);
+      return { anchor: anchorRe(anchor), key: key && opacity >= 0.005 ? key(y) : null, opacity };
+    };
+  const across =
+    (b: Bridge | undefined, keyA: (y: number) => string, keyB: (y: number) => string) =>
+    (y: number): Want => {
+      if (!b) throw new Error('köprü tanımı yok');
+      const on = pOf(phaseOf(m, b.chapter, 'in'), y) < b.end;
+      const opacity = sceneOpacityAt(m, y);
+      return {
+        anchor: on ? `${anchorRe(b.from)}→${anchorRe(b.to)}` : anchorRe(b.to),
+        key: opacity < 0.005 ? null : on ? `${keyA(y)}>${keyB(y)}` : keyB(y),
+        opacity,
+      };
+    };
+  const span = (chapter: string, phase: PhaseKind) => {
+    const r = phaseOf(m, chapter, phase);
+    return { y0: r.y0, y1: r.y1 };
   };
-  add('0–1', 'yükleme · hero boşta (s 0)', 0, K0, none, 'hero-rest');
-  add(
-    '2',
-    'about IN p 0.30 (s 0–30 sonu)',
-    yAt(m, 'about', 'in', 0.3),
-    { ...K0, rotYScroll: 12 },
-    none,
-    'hero-rest→about-cut',
-    0.45,
-  );
-  add('3', 'about IN sonu (s 30–100)', yAt(m, 'about', 'in', 1), K1B, none, 'about-cut');
-  add('4', 'about BODY sonu (s 100–140)', yAt(m, 'about', 'body', 1), K1, none, 'about-cut');
-  add(
-    '5',
-    'areas IN sonu (s 140–240)',
-    yAt(m, 'areas', 'in', 1),
-    K2(psi(0, N)),
-    dial(0),
-    'areas-dial',
-  );
-  if (m.areas) {
-    add(
-      '6',
-      'areas oturma + adım 0 sonu (s 240–300)',
-      areasY(c, 10 + S),
-      K2(psi(0, N)),
-      dial(0),
-      'areas-dial',
-    );
-    for (let k = 1; k < N; k++)
-      add(
-        String(6 + k),
-        `areas adım ${k} (dönüş + dwell) sonu`,
-        areasY(c, 10 + S * (k + 1)),
-        K2(psi(k, N)),
-        dial(k),
-        'areas-dial',
-      );
-    add(
-      String(6 + N),
-      'areas bırakma sonu (s 450–460)',
-      yAt(m, 'areas', 'body', 1),
-      { ...K2(psi(N - 1, N)), sectorMix: 0.5 },
-      FILLS.map((_, i) => (i < N ? 0.15 : 0)),
-      'areas-dial',
-    );
-  }
-  add('11', 'work IN sonu (s 460–560)', yAt(m, 'work', 'in', 1), K3(W0), 'event', 'work-specimen');
-  add(
-    '12',
-    'work BODY sonu (s 560–790)',
-    yAt(m, 'work', 'body', 1),
-    K3(W0 + 30),
-    'event',
-    'work-specimen',
-  );
-  add(
-    '13',
-    'journey IN sonu (s 790–890)',
-    yAt(m, 'journey', 'in', 1),
-    K4(W0 + 50),
-    none,
-    'journey-core',
-  );
-  add(
-    '14',
-    'journey BODY sonu (s 890–1070)',
-    yAt(m, 'journey', 'body', 1),
-    K4(J),
-    none,
-    'journey-core',
-  );
-  add(
-    '15',
-    'contact IN p 0.5 (s 1070–1120 sonu)',
-    yAt(m, 'contact', 'in', 0.5),
+  const rows: Row[] = [
+    { id: '0–1', label: 'hero boşta', y0: 0, y1: 0, want: fixed('hero-rest', () => 'hero') },
     {
-      ...K5(J + 20),
-      rotX: 0,
-      cut: 0,
-      ringContrast: 1,
-      arcGlow: 0.2,
-      lightAz: -20,
-      lightEl: 60,
-      rim: 0.25,
+      id: '2',
+      label: 'about IN',
+      ...span('about', 'in'),
+      want: across(
+        bridge.about,
+        () => 'hero',
+        () => ABOUT_KEY,
+      ),
     },
-    none,
-    'contact-ring',
-  );
-  add(
-    '16',
-    'contact IN sonu (s 1120–1170)',
-    yAt(m, 'contact', 'in', 1),
-    K5(J + 20),
-    none,
-    'contact-ring',
+    {
+      id: '3',
+      label: 'about BODY',
+      ...span('about', 'body'),
+      want: fixed('about-cut', () => ABOUT_KEY),
+    },
+    {
+      id: '4',
+      label: 'areas IN',
+      ...span('areas', 'in'),
+      want: across(
+        bridge.areas,
+        () => ABOUT_KEY,
+        () => 'area:0',
+      ),
+    },
+    {
+      id: '5',
+      label: 'areas oturma + adım 0',
+      y0: a.bodyY0,
+      y1: areasY(m, 10 + S),
+      want: fixed('areas-dial', area),
+    },
+  ];
+  for (let k = 1; k < N; k++)
+    rows.push({
+      id: String(5 + k),
+      label: `areas adım ${k}`,
+      y0: areasY(m, 10 + S * k),
+      y1: areasY(m, 10 + S * (k + 1)),
+      want: fixed('areas-dial', area),
+    });
+  rows.push(
+    {
+      id: String(5 + N),
+      label: 'areas bırakma',
+      y0: areasY(m, 10 + S * N),
+      y1: phaseOf(m, 'areas', 'body').y1,
+      want: fixed('areas-dial', area),
+    },
+    {
+      id: '10',
+      label: 'work IN',
+      ...span('work', 'in'),
+      want: across(
+        bridge.work,
+        () => esc(`area:${N - 1}`),
+        () => '-',
+      ),
+    },
+    { id: '11', label: 'work BODY', ...span('work', 'body'), want: fixed('work-specimen', null) },
+    {
+      id: '12',
+      label: 'journey IN',
+      ...span('journey', 'in'),
+      want: across(bridge.journey, () => '-', jk),
+    },
+    {
+      id: '13',
+      label: 'journey BODY',
+      ...span('journey', 'body'),
+      want: fixed('journey-core', jk),
+    },
+    {
+      id: '14',
+      label: 'contact IN',
+      ...span('contact', 'in'),
+      want: across(bridge.contact, jk, () => 'contact'),
+    },
   );
   return rows;
 }
 
-/* ───────────── taş ↔ metin (K-CHOREO-6) ───────────── */
+/** Köprülerin ölçülen düzendeki aralıkları: [y0, y1] bildirilen köprü (IN p 0 → end), [v0, v1] sahnenin göründüğü kısım */
+function bridgeSpans(m: Measured) {
+  return BRIDGES.map((b) => {
+    const r = phaseOf(m, b.chapter, 'in');
+    const at = (p: number) => r.y0 + p * (r.y1 - r.y0);
+    return { ...b, y0: r.y0, y1: at(b.end), v0: at(b.vis[0]), v1: at(b.vis[1]) };
+  });
+}
+/** Yönetmen iki çapa arasında köprüde mi (rig'in köprü koşulu: from ≠ to, 0.001 < anchorMix < 0.999) */
+const bridging = (s: KodState) =>
+  s.anchor.from !== s.anchor.to && s.anchor.mix > 0.001 && s.anchor.mix < 0.999;
+
+/** Olay çizgisine (±1 svh), köprü ucuna ya da opaklık eşiğine çok yakın konum: tablo değeri iki yana da düşebilir */
+function nearEdge(m: Measured, y: number): boolean {
+  const lines = [...m.activation.journey];
+  const a = m.areas;
+  if (a) for (let k = 1; k < a.N; k++) lines.push(areasY(m, 10 + a.S * k + 0.15 * a.S));
+  if (lines.some((l) => Math.abs(l - y) < 0.01 * m.vh)) return true;
+  for (const b of BRIDGES) {
+    const p = pOf(phaseOf(m, b.chapter, 'in'), y);
+    if ((p > 0 && p < 0.02) || Math.abs(p - b.end) < 0.04) return true;
+  }
+  const op = sceneOpacityAt(m, y);
+  return op > 0.005 && op < 0.05;
+}
+
+/* ───────────── panel ↔ metin (K-CHOREO-6, K-ABOUT-3) ───────────── */
 
 interface Offender {
   sel: string;
   chapter: string;
   text: string;
-  /** metin satır kutularına giriş derinliği (px): yarıçap − merkezden kutuya uzaklık */
+  /** metin satır kutularına giriş derinliği (px): iki eksendeki örtüşmenin küçüğü */
   textOverlap: number;
   /** öğe dikdörtgenine giriş derinliği (px) */
   boxOverlap: number;
 }
-interface StoneCheck {
+interface PanelCheck {
   y: number;
   opacity: number;
-  stone: { cx: number; cy: number; r: number; visible: boolean } | null;
+  shown: boolean;
+  key: string;
+  panel: PanelRect;
   offenders: Offender[];
 }
 
 /**
- * Bir kare rendered = target yapılır (live.snapNextFrame) ve o karenin ekran dairesi (live.stone: çapa merkezi, D/2)
- * kapsamdaki metin öğeleriyle karşılaştırılır: kendi boş olmayan metin düğümü olan, checkVisibility (opaklık ve
- * görünürlük) ile görünen öğeler; aria-hidden alt ağaçları, .sr-only ve hero H1 (#hero-title, §4.12.2 #7) hariç.
- * Sahne opaklığı ≤ 0.01 ise (döngü never) taş yoktur.
+ * Rig'e o kaydırmada bir kare çizdirilir ve o karenin panel dikdörtgeni (live.panel: eğimsiz, plaka dahil) kapsamdaki
+ * metin öğeleriyle karşılaştırılır: kendi boş olmayan metin düğümü olan, checkVisibility (opaklık ve görünürlük) ile
+ * görünen öğeler; aria-hidden alt ağaçları (statik panel kopyaları dahil), .sr-only ve hero H1 (#hero-title, §4.12.2 #7)
+ * hariç. Sahne opaklığı ≤ 0.01 ise (döngü never) panel yoktur.
  */
-async function stoneVsText(page: Page, scope = '#main'): Promise<StoneCheck> {
-  return page.evaluate(async (sel) => {
+async function panelVsText(page: Page, scope = '#main'): Promise<PanelCheck> {
+  await freshFrame(page);
+  return page.evaluate((sel) => {
     const st = (window as unknown as StageWindow).__stage;
     const layer = document.getElementById('scene-layer');
     const opacity = layer ? Number.parseFloat(getComputedStyle(layer).opacity) : 0;
-    const out: StoneCheck = { y: window.scrollY, opacity, stone: null, offenders: [] };
-    if (!(opacity > 0.01)) return out;
-    const f0 = st.live.frames;
-    st.live.snapNextFrame = true;
-    st.store.getState().invalidate();
-    const t0 = performance.now();
-    while (st.live.frames === f0) {
-      if (performance.now() - t0 > 15_000) throw new Error('snap: 15 s içinde kare çizilmedi');
-      await new Promise<void>((r) => requestAnimationFrame(() => r()));
-    }
-    const s = { ...st.live.stone };
-    out.stone = s;
-    if (!s.visible || s.r <= 0) return out;
+    const p = { ...st.live.panel };
+    const out: PanelCheck = {
+      y: window.scrollY,
+      opacity,
+      shown: false,
+      key: st.live.kod.key,
+      panel: p,
+      offenders: [],
+    };
+    if (!(opacity > 0.01) || !p.visible || p.w <= 0 || p.h <= 0) return out;
+    out.shown = true;
     const depth = (r: DOMRect) =>
-      s.r -
-      Math.hypot(
-        Math.max(r.left - s.cx, 0, s.cx - r.right),
-        Math.max(r.top - s.cy, 0, s.cy - r.bottom),
+      Math.min(
+        Math.min(r.right, p.x + p.w) - Math.max(r.left, p.x),
+        Math.min(r.bottom, p.y + p.h) - Math.max(r.top, p.y),
       );
     for (const el of document.querySelector(sel)?.querySelectorAll<HTMLElement>('*') ?? []) {
       const own = [...el.childNodes].filter(
@@ -700,7 +620,7 @@ async function stoneVsText(page: Page, scope = '#main'): Promise<StoneCheck> {
       if (!own.length) continue;
       if (el.closest('[aria-hidden="true"], .sr-only, #hero-title')) continue;
       if (!el.checkVisibility({ opacityProperty: true, visibilityProperty: true })) continue;
-      let text = 0;
+      let text = Number.NEGATIVE_INFINITY;
       for (const n of own) {
         const range = document.createRange();
         range.selectNodeContents(n);
@@ -726,7 +646,7 @@ async function stoneVsText(page: Page, scope = '#main'): Promise<StoneCheck> {
 }
 
 /** Bölüm başına 10 konum (aralığın iç noktaları); metin satırına giren her öğe ihlaldir, yalnız kutusu girenler not edilir */
-async function stoneNotBehindText(
+async function panelNotOverText(
   page: Page,
   info: TestInfo,
   label: string,
@@ -741,9 +661,9 @@ async function stoneNotBehindText(
     for (let i = 0; i < 10; i++) {
       const y = y0 + ((i + 0.5) / 10) * (y1 - y0);
       await stepTo(page, y, 0.5, false);
-      const r = await stoneVsText(page);
-      const where = `${label} ${id} #${i + 1} s ${fmt(svh(m, r.y))} (taş ${r.stone ? `${fmt(r.stone.cx)},${fmt(r.stone.cy)} r ${fmt(r.stone.r)}` : 'yok'}, opaklık ${fmt(r.opacity)})`;
-      if (r.stone?.visible) checked++;
+      const r = await panelVsText(page);
+      const where = `${label} ${id} #${i + 1} s ${fmt(svh(m, r.y))} (panel ${r.shown ? `${rectStr(r.panel)} "${r.key}"` : 'yok'}, opaklık ${fmt(r.opacity)})`;
+      if (r.shown) checked++;
       for (const o of r.offenders) {
         if (o.textOverlap > 0.5)
           expect
@@ -756,7 +676,7 @@ async function stoneNotBehindText(
       }
     }
   }
-  note(info, `${label} denetlenen konum`, `${checked} konumda taş görünür`);
+  note(info, `${label} denetlenen konum`, `${checked} konumda panel görünür`);
   if (boxOnly.length) note(info, `${label} yalnız öğe kutusu (metin değil)`, boxOnly);
 }
 
@@ -785,9 +705,10 @@ interface RevealHit {
 }
 
 /**
- * I2 sondası: hedefler §5.14 reveal seçicisidir ([data-reveal]); §4.12.3 istisnaları (about lede, contact) ve bu kırılımda
- * reveal almayan öğeler (data-reveal-when) hariçtir. mode 'scroll': her kaydırma olayından 90 ms sonra (readingScroll'un
- * bir sonraki adımından hemen önce) örnekler; 'interval': 40 ms'de bir (Lenis sürekli kaydırır).
+ * I2 sondası: hedefler §5.14 reveal seçicisidir ([data-reveal]); §4.12.3 istisnası (contact) ve bu kırılımda reveal
+ * almayan öğeler (data-reveal-when) hariçtir. KOD'da about lede'si istisna değildir (blok reveal'ı, K-ABOUT-2). mode
+ * 'scroll': her kaydırma olayından 90 ms sonra (readingScroll'un bir sonraki adımından hemen önce) örnekler; 'interval':
+ * 40 ms'de bir (Lenis sürekli kaydırır).
  */
 async function installRevealProbe(page: Page, mode: 'scroll' | 'interval'): Promise<void> {
   await page.evaluate((how) => {
@@ -795,7 +716,6 @@ async function installRevealProbe(page: Page, mode: 'scroll' | 'interval'): Prom
     const flat = (t: string) => t === 'none' || new DOMMatrixReadOnly(t).isIdentity;
     const targets = [...document.querySelectorAll<HTMLElement>('#main [data-reveal]')].filter(
       (el) =>
-        el.dataset.reveal !== 'lede' &&
         !el.closest('[data-chapter="contact"]') &&
         !(el.dataset.revealWhen && !window.matchMedia(el.dataset.revealWhen).matches),
     );
@@ -948,34 +868,39 @@ function assertRevealHits(
   );
 }
 
-/* ───────────── kesme kaydı (K-GEN-9, K-CHOREO-5) ───────────── */
+/* ───────────── kesme kaydı (K-GEN-9, K-CHOREO-5, K-AREAS-6, K-JOURNEY-7) ───────────── */
 
 interface SceneRec {
   t: number;
   /** op: --scene-opacity yazımı; raf: kare örneği (bir şey değiştiyse); click / popstate; vt …: görünüm geçişi */
   kind: string;
+  /** --scene-opacity (hesaplanmış) */
   op: number;
+  /** kesme çarpanı stageTarget.opacityCut (§5.9.7) */
+  cut: number;
   y: number;
-  /** rendered ↔ target farkı: açılar (°) ve skalerler; morf zinciri oynuyorsa ya da rig eski kareyi gösteriyorsa büyür */
-  ang: number;
-  scl: number;
+  /** rig'in son karesi: program anahtarı, panel dikdörtgeni [x, y, w, h], plaka görünür mü */
+  key: string;
+  rect: number[];
+  vis: boolean;
   frames: number;
   path: string;
 }
 
 /**
- * Init betiği: --scene-opacity yazımları (stil özniteliği), her karede kaydırma / opaklık / rig karesi (değiştiyse),
- * tıklama, popstate ve görünüm geçişi animasyonları zaman damgasıyla. Kaydırma konumu kare örneklerinden okunur:
- * 'scroll' olayı yazımdan bir kare sonra gelir.
+ * Init betiği: --scene-opacity yazımları (stil özniteliği), her karede kaydırma / opaklık / kesme çarpanı / rig karesi
+ * (değiştiyse), tıklama, popstate ve görünüm geçişi animasyonları zaman damgasıyla. Kaydırma konumu kare örneklerinden
+ * okunur: 'scroll' olayı yazımdan bir kare sonra gelir.
  */
 function recordScene(): void {
+  type Live = {
+    frames: number;
+    kod: { key: string };
+    panel: { x: number; y: number; w: number; h: number; visible: boolean };
+  };
   const w = window as unknown as {
     __rec: SceneRec[];
-    __stage?: {
-      target: Record<string, number>;
-      rendered: Record<string, number>;
-      live: { frames: number };
-    };
+    __stage?: { target: Record<string, number>; live: Live };
   };
   w.__rec = [];
   const seen = new WeakSet<Animation>();
@@ -985,21 +910,22 @@ function recordScene(): void {
       requestAnimationFrame(start);
       return;
     }
-    const gap = (keys: string[]) => {
+    const read = (kind: string): SceneRec => {
       const st = w.__stage;
-      if (!st) return 0;
-      return Math.max(...keys.map((k) => Math.abs((st.rendered[k] ?? 0) - (st.target[k] ?? 0))));
+      const p = st?.live.panel;
+      return {
+        t: performance.now(),
+        kind,
+        op: Number.parseFloat(getComputedStyle(layer).opacity),
+        cut: st?.target.opacityCut ?? 1,
+        y: window.scrollY,
+        key: st?.live.kod.key ?? '',
+        rect: p ? [p.x, p.y, p.w, p.h] : [0, 0, 0, 0],
+        vis: p?.visible ?? false,
+        frames: st?.live.frames ?? -1,
+        path: location.pathname + location.hash,
+      };
     };
-    const read = (kind: string): SceneRec => ({
-      t: performance.now(),
-      kind,
-      op: Number.parseFloat(getComputedStyle(layer).opacity),
-      y: window.scrollY,
-      ang: gap(['camAz', 'camEl', 'camFov', 'rotYScroll', 'rotYEvent', 'rotX']),
-      scl: gap(['camR', 'cut', 'anchorMix']),
-      frames: w.__stage?.live.frames ?? -1,
-      path: location.pathname + location.hash,
-    });
     const push = (kind: string) => w.__rec.push(read(kind));
     new MutationObserver(() => push('op')).observe(layer, {
       attributes: true,
@@ -1010,7 +936,7 @@ function recordScene(): void {
     let last = '';
     const frame = () => {
       const r = read('raf');
-      const key = [r.y, r.op, r.frames, r.path].join();
+      const key = [r.y, r.op, r.cut, r.frames, r.path].join();
       if (key !== last) {
         last = key;
         w.__rec.push(r);
@@ -1048,19 +974,26 @@ function arrival(rec: SceneRec[], t0: number) {
 }
 
 /**
- * Sönme / geri gelme süreleri. Kare hızından bağımsız ölçüt yazımlardan okunur ('op' kayıtları): t0'dan sonra opaklığın
- * > 0.01 YAZILDIĞI son an (sönme) ve varıştan sonra çizilen ilk rig karesinden / oturmadan sonra < 0.99 yazıldığı son
- * an (geri gelme). Ham süreler (eşiğin
- * ilk geçildiği kare) ayrıca raporlanır. Eski kare: geri gelme sırasında (son sıfırdan sonra) sahne en az yarı görünürken
- * rig'in son karesi hedeften belirgin farklı (> 5° ya da > 0.05) — morf zinciri ya da kesmeden önceki durum görünüyor.
+ * Sönme / geri gelme süreleri, series çarpanı üzerinde: 'op' --scene-opacity (kare hızından bağımsız ölçüt stil
+ * yazımlarından: t0'dan sonra > 0.01 YAZILDIĞI son an ve varıştan sonra çizilen ilk rig karesinden / son sıfırdan sonra
+ * < 0.99 yazıldığı son an); 'cut' kesme çarpanı opacityCut (DOM yazımı yoktur: kare örnekleri). Ham süreler (eşiğin ilk
+ * geçildiği kare) ayrıca döner. Eski kare (KOD): son sıfırdan sonra sahne en az yarı görünürken rig'in son karesi
+ * oturmuş durumdan (final: program ve panel dikdörtgeni ± 2 px) farklı — kesmeden önceki kare görünüyor.
  */
-function cutTiming(rec: SceneRec[], t0: number, from: 'arrive' | 'zero') {
+function cutTiming(
+  rec: SceneRec[],
+  t0: number,
+  from: 'arrive' | 'zero',
+  series: 'op' | 'cut' = 'op',
+  final?: { key: string; panel: PanelRect; shown: boolean },
+) {
+  const val = (r: SceneRec) => (series === 'op' ? r.op : r.cut);
   const after = rec.filter((r) => r.t >= t0);
-  const writes = after.filter((r) => r.kind === 'op');
-  const zeroAt = after.find((r) => r.op <= 0.01);
-  const lastAbove = writes.filter((r) => r.op > 0.01 && (!zeroAt || r.t < zeroAt.t)).at(-1);
+  const writes = after.filter((r) => r.kind === (series === 'op' ? 'op' : 'raf'));
+  const zeroAt = after.find((r) => val(r) <= 0.01);
+  const lastAbove = writes.filter((r) => val(r) > 0.01 && (!zeroAt || r.t < zeroAt.t)).at(-1);
   const { finalY, arrive } = arrival(rec, t0);
-  const lastZero = after.filter((r) => r.op <= 0.01).at(-1);
+  const lastZero = after.filter((r) => val(r) <= 0.01).at(-1);
   // §5.9.7 (M6): belirme rig oturtulmuş kareyi çizdikten sonra başlar; varıştan sonraki ilk rig karesinden ölçülür
   // (60 fps'te ≈ 16 ms; CI SwiftShader'da ≈ 500 ms)
   const atArrive = arrive === undefined ? undefined : after.find((r) => r.t >= arrive);
@@ -1069,18 +1002,30 @@ function cutTiming(rec: SceneRec[], t0: number, from: 'arrive' | 'zero') {
       ? undefined
       : after.find((r) => r.kind === 'raf' && r.t >= atArrive.t && r.frames > atArrive.frames)?.t;
   const ref = from === 'arrive' ? (drawn ?? arrive ?? lastZero?.t) : lastZero?.t;
-  const back = ref === undefined ? undefined : after.find((r) => r.t >= ref && r.op >= 0.99);
+  const back = ref === undefined ? undefined : after.find((r) => r.t >= ref && val(r) >= 0.99);
   const lastBelow =
     ref === undefined || !back
       ? undefined
-      : writes.filter((r) => r.t >= ref && r.t < back.t && r.op < 0.99).at(-1);
+      : writes.filter((r) => r.t >= ref && r.t < back.t && val(r) < 0.99).at(-1);
   const flash =
     zeroAt && arrive !== undefined
-      ? writes.filter((r) => r.t > zeroAt.t && r.t < arrive && r.op > 0.01)
+      ? writes.filter((r) => r.t > zeroAt.t && r.t < arrive && val(r) > 0.01)
       : [];
-  const stale = lastZero
-    ? after.filter((r) => r.t > lastZero.t && r.op >= 0.5 && (r.ang > 5 || r.scl > 0.05))
-    : [];
+  const fin = final?.shown ? final : null;
+  const off = (r: SceneRec) =>
+    fin
+      ? Math.max(
+          ...[fin.panel.x, fin.panel.y, fin.panel.w, fin.panel.h].map((v, i) =>
+            Math.abs((r.rect[i] ?? Number.NaN) - v),
+          ),
+        )
+      : 0;
+  const stale =
+    lastZero && fin
+      ? after.filter(
+          (r) => r.t > lastZero.t && r.op >= 0.5 && (r.key !== fin.key || !(off(r) <= 2)),
+        )
+      : [];
   return {
     reachedZero: !!zeroAt,
     dropRaw: zeroAt ? zeroAt.t - t0 : null,
@@ -1089,16 +1034,17 @@ function cutTiming(rec: SceneRec[], t0: number, from: 'arrive' | 'zero') {
     backRaw: back && ref !== undefined ? back.t - ref : null,
     backFrameFree: back && ref !== undefined ? (lastBelow?.t ?? ref) - ref : null,
     minOp: Math.min(...after.map((r) => r.op)),
+    minCut: Math.min(...after.map((r) => r.cut)),
     flash: flash.length,
     finalY: finalY ?? null,
     stale: stale.map(
       (r) =>
-        `t+${fmt(r.t - t0)} ms opaklık ${fmt(r.op)}: açı farkı ${fmt(r.ang)}°, skaler farkı ${fmt(r.scl)} (rig karesi ${r.frames})`,
+        `t+${fmt(r.t - t0)} ms opaklık ${fmt(r.op)}: rig karesi ${r.frames} "${r.key}" ${r.rect.map((v) => Math.round(v)).join(',')} ≠ oturmuş "${fin?.key}" ${fin ? rectStr(fin.panel) : ''}`,
     ),
   };
 }
 
-/** Rapor için kısa zaman çizelgesi: t0'dan sonra opaklık / rig karesi değişimleri (yalnız kaydırılan kareler atlanır) */
+/** Rapor için kısa zaman çizelgesi: t0'dan sonra opaklık / kesme / rig karesi değişimleri (yalnız kaydırılan kareler atlanır) */
 function timeline(rec: SceneRec[], t0: number, limit = 40): string[] {
   const list = rec.filter((r) => r.t >= t0);
   const out: string[] = [];
@@ -1108,11 +1054,12 @@ function timeline(rec: SceneRec[], t0: number, limit = 40): string[] {
       r.kind === 'raf' &&
       prev &&
       r.op === prev.op &&
+      r.cut === prev.cut &&
       r.frames === prev.frames &&
       i < list.length - 1;
     if (quiet || out.length >= limit) return;
     out.push(
-      `+${fmt(r.t - t0)} ${r.kind} op ${fmt(r.op)} y ${Math.round(r.y)} kare ${r.frames} Δaçı ${fmt(r.ang)}`,
+      `+${fmt(r.t - t0)} ${r.kind} op ${fmt(r.op)} kesme ${fmt(r.cut)} y ${Math.round(r.y)} kare ${r.frames} "${r.key}"`,
     );
   });
   return out;
@@ -1121,7 +1068,7 @@ function timeline(rec: SceneRec[], t0: number, limit = 40): string[] {
 /* ═════════════════════════════ testler ═════════════════════════════ */
 
 test.describe(
-  '§4.12 koreografi tablosu ve düzen (1440×900)',
+  '§4.12 program tablosu, köprüler ve düzen (1440×900)',
   { tag: ['@desktop-chromium'] },
   () => {
     test('K-GEN-2 bölüm yükseklikleri ve toplam kaydırma (yönetmen fazlarıyla)', async ({
@@ -1148,8 +1095,8 @@ test.describe(
       expect
         .soft(Math.abs((h.contact ?? 0) - 100), `contact ${fmt(h.contact)}`)
         .toBeLessThanOrEqual(1);
-      // Toplam = Σ yükseklik − 100 svh. 1170 svh referansı journey'nin en küçük yüksekliğiyle (70 + 35E = 280) geçerlidir;
-      // içerik journey'yi uzatırsa fark rapora yazılır (beklenen s değerleri zaten ölçülen düzenden gelir).
+      // Toplam = Σ yükseklik − 100 svh. 1170 svh referansı varsayılan içerik içindir; içerik farkı rapora yazılır
+      // (beklenen s değerleri zaten ölçülen düzenden gelir).
       const total = svh(m, m.maxScroll);
       const sum = Object.values(h).reduce((a, b) => a + b, 0) - 100;
       expect
@@ -1161,7 +1108,6 @@ test.describe(
         fark: fmt(total - 1170),
         journeyFazlasi: fmt((h.journey ?? 0) - (70 + 35 * E)),
       });
-      // fazlar §5.9.3: about IN 0–100, BODY 100–140 … (referans düzene göre konumlar rapora)
       note(
         info,
         'fazlar (svh)',
@@ -1169,56 +1115,211 @@ test.describe(
       );
     });
 
-    test('K-CHOREO-7 §4.12.1 her satırın sonunda stageTarget anahtar değerlerinin ± %2’si içinde', async ({
+    test('K-CHOREO-7 §4.12.1 her satırın s aralığında çapa ve program anahtarı tablodaki gibi (work’te panel yok)', async ({
       page,
     }, info) => {
-      await openHome(page, HOME_TARGET);
+      await openHome(page);
       const m = await measure(page);
-      const c = ctxOf(m, await stageData(page));
-      note(info, 'bağlam', { N: c.N, W0: c.W0, lastPsi: c.lastPsi, L: c.L });
+      expect(m.areas, 'areas pin etkin').not.toBeNull();
+      // satır 0 (yükleme): hero-rest, main.dart
+      const first = await kodAt(page);
+      expect.soft(first.key, 'satır 0 yükleme: program').toBe('hero');
+      expect.soft(first.anchor.at, 'satır 0 yükleme: çapa').toBe('hero-rest');
       const misses: string[] = [];
-      for (const r of choreoRows(c)) {
-        await test.step(`satır ${r.id}: ${r.label} → s ${fmt(svh(m, r.y))}`, async () => {
-          await stepTo(page, r.y);
-          const got = await readTarget(page);
-          for (const [prop, want] of Object.entries(r.want)) {
-            const have = got.values[prop];
-            const tol = Math.max(0.02 * Math.abs(want), ANGLES.has(prop) ? 0.2 : 0.01);
-            const msg = `satır ${r.id} (${r.label}, s ${fmt(svh(m, got.y))}) ${prop}: beklenen ${fmt(want)}, ölçülen ${fmt(have)}`;
-            if (have === undefined || Math.abs(have - want) > tol) misses.push(msg);
-            expect.soft(Math.abs((have ?? Number.NaN) - want), msg).toBeLessThanOrEqual(tol);
-          }
-          const a = got.anchor;
-          if (r.mix !== undefined) {
-            expect.soft(`${a.from}→${a.to}`, `satır ${r.id} çapa çifti`).toBe(r.anchor);
+      const skipped: string[] = [];
+      for (const r of choreoRows(m)) {
+        await test.step(`satır ${r.id}: ${r.label} (s ${fmt(svh(m, r.y0))}–${fmt(svh(m, r.y1))})`, async () => {
+          const ys =
+            r.y1 > r.y0
+              ? [0.1, 0.3, 0.5, 0.7, 0.9].map((f) => Math.round(r.y0 + f * (r.y1 - r.y0)))
+              : [Math.round(r.y0)];
+          for (const y of ys) {
+            if (nearEdge(m, y)) {
+              skipped.push(`satır ${r.id} s ${fmt(svh(m, y))}`);
+              continue;
+            }
+            // çapa çifti, olaylar ve --scene-opacity yönetmenin kaydırma güncellemesinde eşzamanlı yazılır: durulma gerekmez
+            await stepTo(page, y, 0.5, false);
+            const got = await kodAt(page);
+            const want = r.want(got.y);
+            const at = `satır ${r.id} (${r.label}) s ${fmt(svh(m, got.y))}`;
+            const anchorRe = new RegExp(`^${want.anchor}$`);
+            if (!anchorRe.test(got.anchor.at))
+              misses.push(`${at}: çapa ${got.anchor.at} ≠ /${want.anchor}/`);
+            expect.soft(got.anchor.at, `${at}: çapa`).toMatch(anchorRe);
             expect
-              .soft(Math.abs(a.mix - r.mix), `satır ${r.id} anchorMix ${fmt(a.mix)} ≠ ${r.mix}`)
-              .toBeLessThanOrEqual(0.01);
-          } else expect.soft(a.at, `satır ${r.id} etkin çapa`).toBe(r.anchor);
+              .soft(
+                Math.abs(got.opacity - want.opacity),
+                `${at}: --scene-opacity ${fmt(got.opacity)} (beklenen ${fmt(want.opacity)})`,
+              )
+              .toBeLessThanOrEqual(0.03);
+            if (want.key === null) {
+              if (got.opacity > 0.01)
+                misses.push(`${at}: panel yok beklenir, opaklık ${got.opacity}`);
+              expect.soft(got.opacity, `${at}: panel yok (sahne sönük)`).toBeLessThanOrEqual(0.01);
+              continue;
+            }
+            const re = new RegExp(`^${want.key}$`);
+            if (!got.shown || !re.test(got.key))
+              misses.push(`${at}: program "${got.key}" (görünür ${got.shown}) ≠ /${want.key}/`);
+            expect.soft(got.shown, `${at}: panel görünür`).toBe(true);
+            expect.soft(got.key, `${at}: program`).toMatch(re);
+            if (want.anchor.includes('→'))
+              expect
+                .soft(
+                  Math.abs(got.mix - got.anchor.mix),
+                  `${at}: köprü ilerlemesi ${fmt(got.mix)} = anchorMix ${fmt(got.anchor.mix)}`,
+                )
+                .toBeLessThanOrEqual(0.002);
+          }
         });
       }
       note(info, 'K-CHOREO-7 sapmalar', misses.length ? misses : 'yok');
+      if (skipped.length) note(info, 'K-CHOREO-7 eşikte atlanan konumlar', skipped);
     });
 
-    test('K-CONTACT-3 sayfa sonunda sahne K5’te: rotX 68 ± 1°, arcGlow 1, ışık 70/14, cut −0.05, rim 0.35', async ({
+    test('K-CHOREO-3 köprüler geri alınabilir: köprü içinde aynı y aşağı ve yukarı gelişte aynı kare; köprü dışında tek program', async ({
+      page,
+    }, info) => {
+      await openHome(page);
+      const m = await measure(page);
+      const spans = bridgeSpans(m);
+      // köprülerin görünen kısmında 3'er konum (iki yönden okunur) + her 20 svh'de bir konum (köprü dışı denetimi)
+      const probes = spans.flatMap((s) =>
+        [0.25, 0.5, 0.75].map((f) => ({
+          bridge: s.chapter,
+          y: Math.round(s.v0 + f * (s.v1 - s.v0)),
+        })),
+      );
+      const grid: number[] = [];
+      for (let y = 0; y < m.maxScroll; y += 0.2 * m.vh) grid.push(Math.round(y));
+      grid.push(Math.round(m.maxScroll));
+      const ys = [...new Set([...grid, ...probes.map((p) => p.y)])].sort((a, b) => a - b);
+      const down = new Map<number, KodState>();
+      for (const y of ys) {
+        await stepTo(page, y, 0.5, false);
+        down.set(y, await kodAt(page));
+      }
+      // sayfa sonundan yukarı: köprü konumlarına bu kez aşağıdan gelinir
+      const up = new Map<number, KodState>();
+      for (const p of [...probes].sort((a, b) => b.y - a.y)) {
+        await stepTo(page, p.y, 0.5, false);
+        up.set(p.y, await kodAt(page));
+      }
+      const declared = (y: number) => spans.some((s) => y >= s.y0 - 1 && y <= s.y1 + 1);
+      const count = { köprü: 0, dışı: 0, sönük: 0 };
+      const classify = (s: KodState, at: string) => {
+        if (bridging(s))
+          expect
+            .soft(declared(s.y), `${at}: köprü yalnız bildirilen IN aralığında (§4.12.4 #24)`)
+            .toBe(true);
+        if (!s.shown) {
+          count.sönük++;
+          return;
+        }
+        if (bridging(s)) {
+          count.köprü++;
+          expect.soft(s.key, `${at}: köprüde iki program`).toContain('>');
+          expect
+            .soft(Math.abs(s.mix - s.anchor.mix), `${at}: köprü ilerlemesi = anchorMix`)
+            .toBeLessThanOrEqual(0.002);
+        } else {
+          count.dışı++;
+          expect.soft(s.key, `${at}: köprü dışında tek program`).not.toContain('>');
+        }
+      };
+      for (const [y, s] of down) classify(s, `s ${fmt(svh(m, y))} aşağı`);
+      const pairs: string[] = [];
+      for (const p of probes) {
+        const a = down.get(p.y);
+        const b = up.get(p.y);
+        if (!a || !b) continue;
+        const at = `${p.bridge} köprüsü s ${fmt(svh(m, p.y))}`;
+        classify(b, `${at} yukarı`);
+        pairs.push(`${at}: aşağı "${a.key}" ${fmt(a.mix)}, yukarı "${b.key}" ${fmt(b.mix)}`);
+        expect.soft(a.shown, `${at}: köprünün görünen kısmında panel görünür`).toBe(true);
+        expect.soft(b.shown, `${at}: panel görünürlüğü yönden bağımsız`).toBe(a.shown);
+        if (!a.shown || !b.shown) continue;
+        expect.soft(bridging(a), `${at}: köprü içinde`).toBe(true);
+        expect.soft(b.key, `${at}: program (aşağı "${a.key}", yukarı "${b.key}")`).toBe(a.key);
+        expect
+          .soft(Math.abs(b.mix - a.mix), `${at}: köprü ilerlemesi ${fmt(a.mix)} / ${fmt(b.mix)}`)
+          .toBeLessThanOrEqual(0.002);
+        expect
+          .soft(
+            rectDiff(a.panel, b.panel),
+            `${at}: panel ${rectStr(a.panel)} / ${rectStr(b.panel)}`,
+          )
+          .toBeLessThanOrEqual(1);
+      }
+      note(info, 'K-CHOREO-3 konum', { toplam: ys.length, ...count });
+      note(info, 'K-CHOREO-3 aşağı / yukarı', pairs);
+    });
+
+    test('K-CHOREO-3 köprü içindeki konuma sıçrayarak (kesme) gelmek yavaş kaydırmayla aynı kareyi verir', async ({
+      page,
+    }, info) => {
+      await openHome(page);
+      const m = await measure(page);
+      const probes = bridgeSpans(m).flatMap((s) =>
+        [1 / 3, 2 / 3].map((f) => ({ bridge: s.chapter, y: Math.round(s.v0 + f * (s.v1 - s.v0)) })),
+      );
+      const jumps: string[] = [];
+      for (const p of probes) {
+        // yavaş: bir önceki konumdan kesme eşiğinin altında adımlarla; hızlı: sayfanın öbür ucundan tek adımda
+        await stepTo(page, p.y, 0.5, false);
+        const ref = await kodAt(page);
+        await jumpTo(page, p.y > m.maxScroll / 2 ? 0 : m.maxScroll);
+        await jumpTo(page, p.y);
+        const c = await kodAt(page);
+        const at = `${p.bridge} köprüsü s ${fmt(svh(m, p.y))} sıçrama`;
+        jumps.push(`${at}: "${c.key}" ${fmt(c.mix)} (yavaş "${ref.key}" ${fmt(ref.mix)})`);
+        expect.soft(ref.shown, `${at}: köprünün görünen kısmında panel görünür`).toBe(true);
+        expect.soft(c.shown, `${at}: panel görünür`).toBe(ref.shown);
+        if (!c.shown || !ref.shown) continue;
+        expect.soft(c.key, `${at}: program`).toBe(ref.key);
+        expect
+          .soft(Math.abs(c.mix - ref.mix), `${at}: köprü ilerlemesi`)
+          .toBeLessThanOrEqual(0.002);
+        expect
+          .soft(rectDiff(c.panel, ref.panel), `${at}: panel dikdörtgeni`)
+          .toBeLessThanOrEqual(1);
+      }
+      note(info, 'K-CHOREO-3 sıçrama', jumps);
+    });
+
+    test('K-CONTACT-3 sayfa sonunda panel zsh (contact) programında; yazılan adres DOM’daki mailto adresiyle aynı', async ({
       page,
     }) => {
-      await openHome(page, HOME_TARGET);
+      await openHome(page);
       const m = await measure(page);
       await stepTo(page, m.maxScroll, 0.9);
-      const v = (await readTarget(page)).values;
-      const want: [string, number, number][] = [
-        ['rotX', 68, 1],
-        ['arcGlow', 1, 0.01],
-        ['lightAz', 70, 0.5],
-        ['lightEl', 14, 0.5],
-        ['cut', -0.05, 0.01],
-        ['rim', 0.35, 0.01],
-      ];
-      for (const [k, w, tol] of want)
-        expect
-          .soft(Math.abs((v[k] ?? Number.NaN) - w), `${k}: ${fmt(v[k])} ≠ ${w}`)
-          .toBeLessThanOrEqual(tol);
+      const s = await kodAt(page);
+      expect.soft(s.shown, 'panel görünür').toBe(true);
+      expect.soft(s.key, 'program').toBe('contact');
+      expect.soft(s.anchor.at, 'çapa').toBe('contact-ring');
+      const mail = await page.evaluate(() => ({
+        data:
+          (
+            (window as unknown as StageWindow).__stage.store.getState().data as {
+              kod?: { email?: string };
+            } | null
+          )?.kod?.email ?? null,
+        dom: [
+          ...document.querySelectorAll<HTMLAnchorElement>(
+            '[data-chapter="contact"] a[href^="mailto:"]',
+          ),
+        ].map((a) =>
+          decodeURIComponent((a.getAttribute('href') ?? '').slice(7).split('?')[0] ?? ''),
+        ),
+        panel:
+          document.querySelector('[data-stage-anchor="contact-ring"] .kod-panel')?.textContent ??
+          '',
+      }));
+      expect(mail.dom.length, 'contact’ta mailto bağlantısı').toBeGreaterThan(0);
+      for (const d of mail.dom)
+        expect.soft(mail.data, 'panelin yazdığı adres = DOM mailto').toBe(d);
+      expect.soft(mail.panel, 'zsh son karesi: $ mail <e-posta>').toContain(`mail ${mail.data}`);
     });
   },
 );
@@ -1227,14 +1328,16 @@ test.describe(
   'K-CHOREO-4 yol bağımsızlığı (kaydırarak gel = o konumda yeniden yükle)',
   { tag: ['@desktop-chromium'] },
   () => {
+    // canlı sahne her yeniden yüklemede yeniden kurulur (CI'da yavaş): bölümler üç teste bölünür
     for (const group of [
-      ['hero', 'about', 'areas'],
-      ['work', 'journey', 'contact'],
+      ['hero', 'about'],
+      ['areas', 'work'],
+      ['journey', 'contact'],
     ]) {
-      test(`K-CHOREO-4 ${group.join(' / ')}: bölüm başına 3 konum; açılar ± 0.5°, skalerler ± 0.01`, async ({
+      test(`K-CHOREO-4 ${group.join(' / ')}: bölüm başına 3 konum; program ve adım birebir, panel dikdörtgeni ± 2 px`, async ({
         page,
       }, info) => {
-        await openHome(page, HOME_TARGET);
+        await openHome(page);
         const m = await measure(page);
         const diffs: string[] = [];
         for (const id of group) {
@@ -1243,21 +1346,42 @@ test.describe(
             const y = y0 + f * (y1 - y0);
             await test.step(`${id} p ${f} (s ${fmt(svh(m, y))})`, async () => {
               await stepTo(page, y);
-              const a = await readTarget(page);
+              const a = await kodAt(page);
               await page.reload();
               await ready(page);
-              const b = await readTarget(page);
+              const b = await kodAt(page);
+              const at = `${id} s ${fmt(svh(m, a.y))}`;
+              const pairA = `${a.anchor.from}→${a.anchor.to}`;
+              const pairB = `${b.anchor.from}→${b.anchor.to}`;
+              const same =
+                Math.abs(b.y - a.y) <= 1 &&
+                pairA === pairB &&
+                Math.abs(b.anchor.mix - a.anchor.mix) <= 0.01 &&
+                b.shown === a.shown &&
+                (!a.shown || (b.key === a.key && rectDiff(a.panel, b.panel) <= 2));
+              if (!same)
+                diffs.push(
+                  `${at}: kaydırarak ${pairA} ${fmt(a.anchor.mix)} "${a.key}" ${a.shown ? rectStr(a.panel) : 'yok'}; yeniden yüklemede ${pairB} ${fmt(b.anchor.mix)} "${b.key}" ${b.shown ? rectStr(b.panel) : 'yok'}`,
+                );
               expect
-                .soft(Math.abs(b.y - a.y), `${id} ${f}: geri yüklenen kaydırma ${b.y} ≠ ${a.y}`)
+                .soft(Math.abs(b.y - a.y), `${at}: geri yüklenen kaydırma ${b.y} ≠ ${a.y}`)
                 .toBeLessThanOrEqual(1);
-              for (const k of STATE) {
-                const tol = ANGLES.has(k) ? 0.5 : 0.01;
-                const d = Math.abs((b.values[k] ?? Number.NaN) - (a.values[k] ?? Number.NaN));
-                const msg = `${id} s ${fmt(svh(m, a.y))} ${k}: kaydırarak ${fmt(a.values[k])}, yeniden yüklemede ${fmt(b.values[k])}`;
-                if (!(d <= tol)) diffs.push(msg);
-                expect.soft(d, msg).toBeLessThanOrEqual(tol);
-              }
-              expect.soft(b.anchor.at, `${id} ${f}: etkin çapa`).toBe(a.anchor.at);
+              expect.soft(pairB, `${at}: çapa çifti`).toBe(pairA);
+              expect
+                .soft(Math.abs(b.anchor.mix - a.anchor.mix), `${at}: anchorMix`)
+                .toBeLessThanOrEqual(0.01);
+              expect
+                .soft(Math.abs(b.opacity - a.opacity), `${at}: --scene-opacity`)
+                .toBeLessThanOrEqual(0.02);
+              expect.soft(b.shown, `${at}: panel görünürlüğü`).toBe(a.shown);
+              if (!a.shown || !b.shown) return;
+              expect.soft(b.key, `${at}: program ve adım`).toBe(a.key);
+              expect
+                .soft(
+                  rectDiff(a.panel, b.panel),
+                  `${at}: panel ${rectStr(a.panel)} / ${rectStr(b.panel)}`,
+                )
+                .toBeLessThanOrEqual(2);
             });
           }
         }
@@ -1268,21 +1392,21 @@ test.describe(
 );
 
 test.describe(
-  'K-CHOREO-6 taş metnin arkasında değil (1440×900)',
+  'K-CHOREO-6 panel metnin arkasında değil (1440×900)',
   { tag: ['@desktop-chromium'] },
   () => {
     for (const group of [
       ['hero', 'about', 'areas'],
       ['work', 'journey', 'testimonials', 'contact'],
     ])
-      test(`K-CHOREO-6 ${group.filter((g) => g !== 'testimonials').join(' / ')}: bölüm başına 10 konumda taş dairesi hiçbir metin satırıyla kesişmez (hero H1 hariç)`, async ({
+      test(`K-CHOREO-6 ${group.filter((g) => g !== 'testimonials').join(' / ')}: bölüm başına 10 konumda panel dikdörtgeni hiçbir metin satırıyla kesişmez (hero H1 hariç)`, async ({
         page,
       }, info) => {
         await openHome(page);
-        await stoneNotBehindText(page, info, '1440×900', group);
+        await panelNotOverText(page, info, '1440×900', group);
       });
 
-    test('K-ABOUT-3 hero → areas IN boyunca 5 svh adımlarla taş about metnine binmez', async ({
+    test('K-ABOUT-3 hero → areas IN boyunca 5 svh adımlarla panel about metnine binmez', async ({
       page,
     }, info) => {
       await openHome(page);
@@ -1291,23 +1415,23 @@ test.describe(
       let checked = 0;
       for (let y = 0; y <= end + 1; y += 0.05 * m.vh) {
         await stepTo(page, y, 0.5, false);
-        const r = await stoneVsText(page, '[data-chapter="about"]');
-        if (r.stone?.visible) checked++;
+        const r = await panelVsText(page, '[data-chapter="about"]');
+        if (r.shown) checked++;
         for (const o of r.offenders.filter((x) => x.textOverlap > 0.5))
           expect
             .soft(
               o.textOverlap,
-              `s ${fmt(svh(m, r.y))}: ${o.sel} "${o.text}" metnine ${o.textOverlap} px (taş ${fmt(r.stone?.cx)},${fmt(r.stone?.cy)} r ${fmt(r.stone?.r)})`,
+              `s ${fmt(svh(m, r.y))}: ${o.sel} "${o.text}" metnine ${o.textOverlap} px (panel ${rectStr(r.panel)} "${r.key}")`,
             )
             .toBeLessThanOrEqual(0.5);
       }
-      note(info, 'K-ABOUT-3 konum', checked);
+      note(info, 'K-ABOUT-3 panel görünür konum', checked);
     });
   },
 );
 
 test.describe(
-  'K-CHOREO-6 taş metnin arkasında değil (390×844)',
+  'K-CHOREO-6 panel metnin arkasında değil (390×844)',
   { tag: ['@desktop-chromium'] },
   () => {
     test.use({
@@ -1321,11 +1445,11 @@ test.describe(
       ['hero', 'about', 'areas'],
       ['work', 'journey', 'testimonials', 'contact'],
     ])
-      test(`K-CHOREO-6 mobil ${group.filter((g) => g !== 'testimonials').join(' / ')}: bölüm başına 10 konumda taş dairesi hiçbir metin satırıyla kesişmez`, async ({
+      test(`K-CHOREO-6 mobil ${group.filter((g) => g !== 'testimonials').join(' / ')}: bölüm başına 10 konumda panel dikdörtgeni hiçbir metin satırıyla kesişmez`, async ({
         page,
       }, info) => {
         await openHome(page, HOME_MOBILE);
-        await stoneNotBehindText(page, info, '390×844', group);
+        await panelNotOverText(page, info, '390×844', group);
       });
   },
 );
@@ -1351,96 +1475,89 @@ test.describe('I2 reveal zamanlaması (§13.3.5)', { tag: ['@desktop-chromium'] 
   });
 });
 
-test.describe('I3 dwell sabitliği (§13.3.5, K-AREAS-5)', { tag: ['@desktop-chromium'] }, () => {
-  test('I3 dwell stillness: areas dwell’lerinde rotY sabit; work / journey dwell’lerinde rotYScroll ≤ 33.4°/100 svh, kamera sabit', async ({
-    page,
-  }, info) => {
-    await openHome(page, HOME_TARGET);
-    await page.mouse.move(-1, -1); // işaretçi pencere dışında
-    const m = await measure(page);
-    const c = ctxOf(m, await stageData(page));
-    const { S, N } = c;
-    const windows: { kind: 'areas' | 'work' | 'journey'; name: string; y0: number; y1: number }[] =
-      [];
-    if (m.areas)
-      for (let k = 0; k < N; k++)
+test.describe(
+  'I3 dwell sabitliği (§13.3.5, §4.12.2 #5, K-AREAS-5)',
+  { tag: ['@desktop-chromium'] },
+  () => {
+    test('I3 dwell stillness: areas adım ve journey girdi dwell’lerinde program, adım ve panel dikdörtgeni sabit; work dwell’lerinde panel yok', async ({
+      page,
+    }, info) => {
+      await openHome(page);
+      await page.mouse.move(-1, -1); // işaretçi pencere dışında (hareketsiz)
+      const m = await measure(page);
+      const a = m.areas;
+      expect(a, 'areas pin etkin').not.toBeNull();
+      if (!a) return;
+      const windows: {
+        kind: 'areas' | 'work' | 'journey';
+        name: string;
+        y0: number;
+        y1: number;
+        key: string | null;
+      }[] = [];
+      // areas: adım k'nın dönüş sonundan sonraki adımın başına (s 250–300, 315–350, 365–400, 415–450 referans)
+      for (let k = 0; k < a.N; k++)
         windows.push({
           kind: 'areas',
           name: `areas dwell ${k}`,
-          y0: areasY(c, k === 0 ? 10 : 10 + S * k + 0.3 * S),
-          y1: areasY(c, 10 + S * (k + 1)),
+          y0: areasY(m, k === 0 ? 10 : 10 + a.S * k + 0.3 * a.S),
+          y1: areasY(m, 10 + a.S * (k + 1)),
+          key: `area:${k}`,
         });
-    for (const kind of ['work', 'journey'] as const) {
-      const body = phaseOf(m, kind, 'body');
-      const lines = m.activation[kind];
-      lines.forEach((l, k) => {
-        const y0 = Math.max(l, body.y0);
-        const y1 = Math.min(lines[k + 1] ?? Infinity, body.y1);
-        if (y1 - y0 > 0.02 * m.vh)
-          windows.push({
-            kind,
-            name: `${kind} ${kind === 'work' ? 'makale' : 'girdi'} ${k + 1}`,
-            y0,
-            y1,
-          });
-      });
-    }
-    const rates: string[] = [];
-    for (const w of windows) {
-      await test.step(`${w.name} (s ${fmt(svh(m, w.y0))}–${fmt(svh(m, w.y1))})`, async () => {
-        const pts: { s: number; v: Values }[] = [];
-        for (let i = 0; i < 5; i++) {
-          const y = w.y0 + ((i + 0.5) / 5) * (w.y1 - w.y0);
-          await jumpTo(page, y);
-          const r = await readTarget(page);
-          pts.push({ s: svh(m, r.y), v: r.values });
-        }
-        const first = pts[0]!;
-        const last = pts.at(-1)!;
-        for (const p of pts.slice(1)) {
-          for (const k of CAMERA)
+      for (const kind of ['work', 'journey'] as const) {
+        const body = phaseOf(m, kind, 'body');
+        const lines = m.activation[kind];
+        lines.forEach((l, k) => {
+          const y0 = Math.max(l, body.y0);
+          const y1 = Math.min(lines[k + 1] ?? Infinity, body.y1);
+          if (y1 - y0 > 0.02 * m.vh)
+            windows.push({
+              kind,
+              name: `${kind} ${kind === 'work' ? 'makale' : 'girdi'} ${k + 1}`,
+              y0,
+              y1,
+              key: kind === 'work' ? null : `journey:${k}`,
+            });
+        });
+      }
+      const report: string[] = [];
+      for (const w of windows) {
+        await test.step(`${w.name} (s ${fmt(svh(m, w.y0))}–${fmt(svh(m, w.y1))})`, async () => {
+          const pts: KodState[] = [];
+          for (let i = 0; i < 5; i++) {
+            await stepTo(page, w.y0 + ((i + 0.5) / 5) * (w.y1 - w.y0), 0.5, false);
+            pts.push(await kodAt(page));
+          }
+          const first = pts[0];
+          if (!first) return;
+          report.push(
+            `${w.name}: ${w.key === null ? `opaklık ${pts.map((p) => fmt(p.opacity)).join('/')}` : `"${first.key}" ${rectStr(first.panel)}`}`,
+          );
+          for (const p of pts) {
+            const at = `${w.name} s ${fmt(svh(m, p.y))}`;
+            if (w.key === null) {
+              // K-WORK-6: work'te panel yok; sahne sönük, kare çizilmez
+              expect.soft(p.opacity, `${at}: panel yok (sahne sönük)`).toBeLessThanOrEqual(0.01);
+              continue;
+            }
+            expect.soft(p.shown, `${at}: panel görünür`).toBe(true);
+            expect.soft(p.key, `${at}: program ve adım`).toBe(w.key);
             expect
               .soft(
-                Math.abs((p.v[k] ?? 0) - (first.v[k] ?? 0)),
-                `${w.name} s ${fmt(p.s)}: ${k} ${fmt(p.v[k])} ≠ ${fmt(first.v[k])}`,
-              )
-              .toBeLessThanOrEqual(0.01);
-          if (w.kind === 'areas') {
-            const rot = (x: Values) => (x.rotYScroll ?? 0) + (x.rotYEvent ?? 0);
-            expect
-              .soft(
-                Math.abs(rot(p.v) - rot(first.v)),
-                `${w.name} s ${fmt(p.s)}: rotY ${fmt(rot(p.v))} ≠ ${fmt(rot(first.v))}`,
+                rectDiff(p.panel, first.panel),
+                `${at}: panel ${rectStr(p.panel)} ≠ ${rectStr(first.panel)} (dwell'de kaydırma kaynaklı değişim yok)`,
               )
               .toBeLessThanOrEqual(0.5);
-          } else {
-            for (const k of STILL) {
-              const tol = ANGLES.has(k) ? 0.5 : 0.01;
-              expect
-                .soft(
-                  Math.abs((p.v[k] ?? 0) - (first.v[k] ?? 0)),
-                  `${w.name} s ${fmt(p.s)}: ${k} ${fmt(p.v[k])} ≠ ${fmt(first.v[k])} (dwell'de yalnız rotYScroll değişir)`,
-                )
-                .toBeLessThanOrEqual(tol);
-            }
           }
-        }
-        if (w.kind !== 'areas') {
-          const ds = last.s - first.s;
-          const dr = Math.abs((last.v.rotYScroll ?? 0) - (first.v.rotYScroll ?? 0));
-          rates.push(`${w.name}: ${fmt((dr / Math.max(ds, 1e-6)) * 100)}°/100 svh`);
-          expect
-            .soft(dr, `${w.name}: rotYScroll ${fmt(dr)}° / ${fmt(ds)} svh > 33.4°/100 svh (+1°)`)
-            .toBeLessThanOrEqual((33.4 * ds) / 100 + 1);
-        }
-      });
-    }
-    note(info, 'I3 dönüş hızları', rates);
-  });
-});
+        });
+      }
+      note(info, 'I3 dwell pencereleri', report);
+    });
+  },
+);
 
 test.describe('K-GEN-9 / K-CHOREO-5 kesme kuralı (§5.9.7)', { tag: ['@desktop-chromium'] }, () => {
-  test('K-GEN-9 header’dan uzak atlama (#giris → #yolculuk) ≤ 150 ms’de söner, varışta ≤ 250 ms’de döner; komşu atlama sönmez', async ({
+  test('K-GEN-9 header’dan uzak atlama (#giris → #yolculuk) ≤ 150 ms’de söner, varışta ≤ 250 ms’de döner; komşu atlama (#giris → #ben) sönmez', async ({
     page,
   }, info) => {
     await page.addInitScript(recordScene);
@@ -1448,14 +1565,16 @@ test.describe('K-GEN-9 / K-CHOREO-5 kesme kuralı (§5.9.7)', { tag: ['@desktop-
     await clearRecords(page);
     await page.locator('header a[href="#yolculuk"]').first().click();
     await settle(page, 600);
+    await cutDone(page);
+    const fin = await kodAt(page);
     let rec = await records(page);
     const t0 = rec.find((r) => r.kind === 'click')?.t ?? 0;
-    const far = cutTiming(rec, t0, 'arrive');
+    const far = cutTiming(rec, t0, 'arrive', 'op', fin);
     note(info, 'K-GEN-9 uzak atlama (ms)', far);
     note(info, 'K-GEN-9 uzak atlama zaman çizelgesi', timeline(rec, t0));
     expect(far.reachedZero, 'uzak atlamada --scene-opacity 0’a iner').toBe(true);
     expect
-      .soft(far.stale, 'varışta sahne görünürken rig hedef durumu çizmiş olmalı (eski kare yok)')
+      .soft(far.stale, 'varışta sahne görünürken rig varış karesini çizmiş olmalı (eski kare yok)')
       .toEqual([]);
     expect
       .soft(
@@ -1470,6 +1589,7 @@ test.describe('K-GEN-9 / K-CHOREO-5 kesme kuralı (§5.9.7)', { tag: ['@desktop-
       )
       .toBeLessThanOrEqual(250);
     expect.soft(far.flash, 'atlama sürerken sahne görünmez kalır').toBe(0);
+    expect.soft(fin.key, 'varış: journey programı').toMatch(/^journey:-?\d+$/);
     const top = await page.evaluate(() => {
       const pad =
         Number.parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0;
@@ -1477,7 +1597,8 @@ test.describe('K-GEN-9 / K-CHOREO-5 kesme kuralı (§5.9.7)', { tag: ['@desktop-
     });
     expect.soft(Math.abs(top), 'varış: #yolculuk başı scroll-padding’de').toBeLessThanOrEqual(2);
 
-    // komşu atlama: başa dön (anında sıçrama kendi kesmesini yapar; durulmasını bekle), sonra #giris → #ben
+    // komşu atlama: başa dön (anında sıçrama kendi kesmesini yapar; bitmesini bekle), sonra #giris → #ben. Hedef
+    // about'ta opacityTrack 1'dir: sahne görünür kalır ve kesme yoktur (opacityCut 1)
     await jumpTo(page, 0);
     await clearRecords(page);
     await page.locator('header a[href="#ben"]').first().click();
@@ -1485,8 +1606,15 @@ test.describe('K-GEN-9 / K-CHOREO-5 kesme kuralı (§5.9.7)', { tag: ['@desktop-
     rec = await records(page);
     const t1 = rec.find((r) => r.kind === 'click')?.t ?? 0;
     const near = cutTiming(rec, t1, 'arrive');
-    note(info, 'K-GEN-9 komşu atlama', { minOp: near.minOp, finalY: near.finalY });
+    note(info, 'K-GEN-9 komşu atlama', {
+      minOp: near.minOp,
+      minCut: near.minCut,
+      finalY: near.finalY,
+    });
     expect.soft(near.minOp, 'komşu atlamada --scene-opacity 0’a inmez').toBeGreaterThan(0.01);
+    expect
+      .soft(near.minCut, 'komşu atlamada kesme yok (opacityCut 1)')
+      .toBeGreaterThanOrEqual(0.999);
   });
 
   test('K-CHOREO-5 proje sayfasından geri: kaydırma ± 2 svh, sahne keser (100 / 200 ms), morf yeniden oynamaz; ileri en üstte', async ({
@@ -1500,12 +1628,13 @@ test.describe('K-GEN-9 / K-CHOREO-5 kesme kuralı (§5.9.7)', { tag: ['@desktop-
       return a.getBoundingClientRect().top + window.scrollY - 0.1 * window.innerHeight;
     });
     await stepTo(page, y);
-    const before = await readTarget(page);
+    const before = await kodAt(page);
     const link = page.locator('[data-work-article]').nth(1).locator('a[href^="/projeler/"]');
     const href = (await link.getAttribute('href')) ?? '';
     await link.click();
     await page.waitForURL(`**${href}`);
     await settle(page, 600);
+    await cutDone(page);
     const projectOpacity = await page.evaluate(() =>
       Number.parseFloat(getComputedStyle(document.getElementById('scene-layer')!).opacity),
     );
@@ -1513,11 +1642,24 @@ test.describe('K-GEN-9 / K-CHOREO-5 kesme kuralı (§5.9.7)', { tag: ['@desktop-
     await page.goBack();
     await page.waitForURL((u) => u.pathname === '/');
     await settle(page, 600);
+    await cutDone(page);
+    const after = await kodAt(page);
     const rec = await records(page);
     const pop = rec.find((r) => r.kind === 'popstate')?.t ?? rec[0]?.t ?? 0;
-    const t = cutTiming(rec, pop, 'zero');
-    const after = await readTarget(page);
-    note(info, 'K-CHOREO-5 rota geri (ms)', { projeSayfasiOpaklik: projectOpacity, ...t });
+    const t = cutTiming(rec, pop, 'zero', 'op', after);
+    // work'te panel yoktur (K-WORK-6): --scene-opacity orada zaten 0'dır; belirme kesme çarpanında (opacityCut) ölçülür
+    const dark = after.opacity <= 0.01;
+    const back = dark ? cutTiming(rec, pop, 'zero', 'cut') : t;
+    note(info, 'K-CHOREO-5 rota geri (ms)', {
+      projeSayfasiOpaklik: projectOpacity,
+      belirmeOlcutu: dark ? 'opacityCut (work: sahne sönük)' : '--scene-opacity',
+      ...t,
+      belirme: {
+        reachedZero: back.reachedZero,
+        backRaw: back.backRaw,
+        backFrameFree: back.backFrameFree,
+      },
+    });
     note(info, 'K-CHOREO-5 rota geri zaman çizelgesi', timeline(rec, pop));
     expect
       .soft(Math.abs(svh(m, after.y - before.y)), `geri: kaydırma ${after.y} ≠ ${before.y}`)
@@ -1528,10 +1670,11 @@ test.describe('K-GEN-9 / K-CHOREO-5 kesme kuralı (§5.9.7)', { tag: ['@desktop-
         .soft(t.dropFrameFree, `geri: popstate’ten ${fmt(t.dropFrameFree)} ms sonra hâlâ > 0`)
         .toBeLessThanOrEqual(100);
     } else note(info, 'K-CHOREO-5', 'proje sayfasında sahne zaten gizli (opaklık 0): sönme anlık');
+    expect(back.reachedZero, 'geri: kesme (opacityCut 0 → 1)').toBe(true);
     expect
       .soft(
-        t.backFrameFree ?? Number.NaN,
-        `geri: oturmadan ${fmt(t.backFrameFree ?? undefined)} ms sonra hâlâ < 1 (ham ${fmt(t.backRaw ?? undefined)} ms)`,
+        back.backFrameFree ?? Number.NaN,
+        `geri: oturmadan ${fmt(back.backFrameFree ?? undefined)} ms sonra hâlâ < 1 (ham ${fmt(back.backRaw ?? undefined)} ms)`,
       )
       .toBeLessThanOrEqual(200);
     const morph = rec.filter(
@@ -1544,19 +1687,22 @@ test.describe('K-GEN-9 / K-CHOREO-5 kesme kuralı (§5.9.7)', { tag: ['@desktop-
       )
       .toEqual([]);
     expect
-      .soft(
-        t.stale,
-        'sahne görünürken rig hedef durumu çizmiş olmalı (eski kare / morf zinciri yok)',
-      )
+      .soft(t.stale, 'sahne görünürken rig dönüş karesini çizmiş olmalı (eski kare yok)')
       .toEqual([]);
-    for (const k of STATE) {
-      const tol = ANGLES.has(k) ? 0.5 : 0.01;
-      expect
-        .soft(
-          Math.abs((after.values[k] ?? Number.NaN) - (before.values[k] ?? Number.NaN)),
-          `geri: ${k} ${fmt(after.values[k])} ≠ ${fmt(before.values[k])}`,
-        )
-        .toBeLessThanOrEqual(tol);
+    // dinlenmiş durum (§4.12.2 #3): çapa çifti, opaklık ve (görünürse) program ve panel aynı
+    expect
+      .soft(`${after.anchor.from}→${after.anchor.to}`, 'geri: çapa çifti')
+      .toBe(`${before.anchor.from}→${before.anchor.to}`);
+    expect
+      .soft(Math.abs(after.anchor.mix - before.anchor.mix), 'geri: anchorMix')
+      .toBeLessThanOrEqual(0.01);
+    expect
+      .soft(Math.abs(after.opacity - before.opacity), 'geri: --scene-opacity')
+      .toBeLessThanOrEqual(0.02);
+    expect.soft(after.shown, 'geri: panel görünürlüğü').toBe(before.shown);
+    if (after.shown && before.shown) {
+      expect.soft(after.key, 'geri: program').toBe(before.key);
+      expect.soft(rectDiff(after.panel, before.panel), 'geri: panel').toBeLessThanOrEqual(2);
     }
     await page.goForward();
     await page.waitForURL(`**${href}`);
@@ -1565,24 +1711,28 @@ test.describe('K-GEN-9 / K-CHOREO-5 kesme kuralı (§5.9.7)', { tag: ['@desktop-
       .toBe(0);
   });
 
-  test('K-CHOREO-5 sayfa içi geri (#yolculuk → geri): sahne keser, morf zinciri oynamaz', async ({
+  test('K-CHOREO-5 sayfa içi geri (#yolculuk → geri): sahne keser, eski kare görünmez', async ({
     page,
   }, info) => {
     await page.addInitScript(recordScene);
     await openHome(page);
     await page.locator('header a[href="#yolculuk"]').first().click();
     await settle(page, 600);
+    await cutDone(page);
     await clearRecords(page);
     await page.goBack();
     await settle(page, 600);
+    await cutDone(page);
+    const fin = await kodAt(page);
     const rec = await records(page);
     const pop = rec.find((r) => r.kind === 'popstate')?.t ?? rec[0]?.t ?? 0;
-    const t = cutTiming(rec, pop, 'zero');
+    const t = cutTiming(rec, pop, 'zero', 'op', fin);
     note(info, 'K-CHOREO-5 çapa geri (ms)', t);
     note(info, 'K-CHOREO-5 çapa geri zaman çizelgesi', timeline(rec, pop));
     expect
       .soft(await page.evaluate(() => window.scrollY), 'geri: başa dönüldü')
       .toBeLessThanOrEqual(2);
+    expect.soft(fin.key, 'geri: hero programı').toBe('hero');
     expect(t.reachedZero, 'geri: sahne söner').toBe(true);
     expect
       .soft(t.dropFrameFree, `geri: popstate’ten ${fmt(t.dropFrameFree)} ms sonra hâlâ > 0`)
@@ -1594,10 +1744,7 @@ test.describe('K-GEN-9 / K-CHOREO-5 kesme kuralı (§5.9.7)', { tag: ['@desktop-
       )
       .toBeLessThanOrEqual(200);
     expect
-      .soft(
-        t.stale,
-        'sahne görünürken rig hedef durumu çizmiş olmalı (eski kare / morf zinciri yok)',
-      )
+      .soft(t.stale, 'sahne görünürken rig dönüş karesini çizmiş olmalı (eski kare yok)')
       .toEqual([]);
   });
 
@@ -1608,6 +1755,7 @@ test.describe('K-GEN-9 / K-CHOREO-5 kesme kuralı (§5.9.7)', { tag: ['@desktop-
     const m = await measure(page);
     await page.locator('header a[href="#yolculuk"]').first().click(); // URL #yolculuk olur
     await settle(page, 600);
+    await cutDone(page);
     // ziyaretçi tekerlekle work'ün 2. makalesine geri çıkar
     const y = await page.evaluate(() => {
       const a = document.querySelectorAll<HTMLElement>('[data-work-article]')[1]!;
@@ -1645,40 +1793,58 @@ test.describe('K-GEN-9 / K-CHOREO-5 kesme kuralı (§5.9.7)', { tag: ['@desktop-
   });
 });
 
-test.describe('about ve areas (K-ABOUT-1, K-AREAS-3/4/6)', { tag: ['@desktop-chromium'] }, () => {
-  test('K-ABOUT-1 s 30 / 65 / 100 / 140: kesit çizgisi scaleX = cutProgress (± 0.02); s 100 cut 0.35; s 140 cut 0, ringContrast 1', async ({
+test.describe('about ve areas (K-ABOUT-1/2, K-AREAS-3/4/6)', { tag: ['@desktop-chromium'] }, () => {
+  test('K-ABOUT-1 about’ta panel about.dart’ı gösterir: köprüden sonra about:*, açılan blok oranı azalmaz, BODY sonunda dosya tam', async ({
+    page,
+  }) => {
+    await openHome(page);
+    const m = await measure(page);
+    const pts: [string, number, RegExp][] = [
+      ['about IN p 0.30 (hero → about köprüsü)', yAt(m, 'about', 'in', 0.3), /^hero>about:[\d.]+$/],
+      ['about IN p 0.65', yAt(m, 'about', 'in', 0.65), /^about:[\d.]+$/],
+      ['about IN sonu', yAt(m, 'about', 'in', 1), /^about:[\d.]+$/],
+      ['about BODY p 0.5', yAt(m, 'about', 'body', 0.5), /^about:[\d.]+$/],
+      ['about BODY sonu', yAt(m, 'about', 'body', 1), /^about:1$/],
+    ];
+    let last = 0;
+    for (const [label, y, re] of pts) {
+      await stepTo(page, y);
+      const s = await kodAt(page);
+      expect.soft(s.shown, `${label}: panel görünür`).toBe(true);
+      expect.soft(s.key, `${label}: program`).toMatch(re);
+      const reveal = Number(s.key.split('about:')[1] ?? Number.NaN);
+      expect
+        .soft(reveal, `${label}: about.dart açılan blok oranı (${s.key}) azalmaz`)
+        .toBeGreaterThanOrEqual(last);
+      last = Number.isFinite(reveal) ? reveal : last;
+    }
+  });
+
+  test('K-ABOUT-2 lede bölünmez, global blok reveal’ıyla bir kez açılır (≤ 700 ms) ve geri kaydırmada kapanmaz', async ({
     page,
   }) => {
     await openHome(page, HOME_TARGET);
+    const lede = page.locator('[data-chapter="about"] > p[data-reveal]');
+    await expect(lede, 'about lede’i').toHaveCount(1);
+    await expect(lede, 'global blok reveal’ı').toHaveAttribute('data-reveal', 'block');
+    expect(await lede.locator('.split-line').count(), 'split-line yok').toBe(0);
+    const ms = await lede.evaluate((el) =>
+      Math.max(
+        ...getComputedStyle(el)
+          .transitionDuration.split(',')
+          .map((d) => Number.parseFloat(d) * (d.trim().endsWith('ms') ? 1 : 1000)),
+      ),
+    );
+    expect(ms, 'reveal süresi (transition-duration)').toBeLessThanOrEqual(700);
+    // okuma hızında about'a gelinir: açılır ve tam görünür olur
     const m = await measure(page);
-    const pts: [string, number][] = [
-      ['s 30', yAt(m, 'about', 'in', 0.3)],
-      ['s 65', yAt(m, 'about', 'in', 0.65)],
-      ['s 100', yAt(m, 'about', 'in', 1)],
-      ['s 140', yAt(m, 'about', 'body', 1)],
-    ];
-    for (const [label, y] of pts) {
-      await stepTo(page, y);
-      const v = (await readTarget(page)).values;
-      const cp = (1.1 - (v.cut ?? Number.NaN)) / 1.1;
-      const scaleX = await page.evaluate(() => {
-        const t = getComputedStyle(document.querySelector('[data-cut-line]')!).transform;
-        return t === 'none' ? 1 : new DOMMatrixReadOnly(t).a;
-      });
-      expect
-        .soft(Math.abs(scaleX - cp), `${label}: scaleX ${fmt(scaleX)} ↔ cutProgress ${fmt(cp)}`)
-        .toBeLessThanOrEqual(0.02);
-      if (label === 's 100')
-        expect
-          .soft(Math.abs((v.cut ?? 0) - 0.35), `s 100 cut ${fmt(v.cut)}`)
-          .toBeLessThanOrEqual(0.01);
-      if (label === 's 140') {
-        expect.soft(Math.abs(v.cut ?? 1), `s 140 cut ${fmt(v.cut)}`).toBeLessThanOrEqual(0.01);
-        expect
-          .soft(Math.abs((v.ringContrast ?? 0) - 1), `s 140 ringContrast ${fmt(v.ringContrast)}`)
-          .toBeLessThanOrEqual(0.01);
-      }
-    }
+    await readingScroll(page, 0, Math.round(svh(m, phaseOf(m, 'about', 'body').y0)));
+    await expect(lede).toHaveClass(/\bis-revealed\b/);
+    await expect.poll(() => lede.evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
+    // geri kaydırmada kapanmaz
+    await jumpTo(page, 0);
+    await expect(lede).toHaveClass(/\bis-revealed\b/);
+    expect(await lede.evaluate((el) => getComputedStyle(el).opacity), 'başa dönünce').toBe('1');
   });
 
   test('K-AREAS-3 açıklama değişimleri sA(k) + 0.15·S’de (± 2 svh), sayaç ve aria-current aynı anda; K-AREAS-4 iki açıklama aynı anda görünmez', async ({
@@ -1686,11 +1852,12 @@ test.describe('about ve areas (K-ABOUT-1, K-AREAS-3/4/6)', { tag: ['@desktop-chr
   }, info) => {
     await openHome(page, HOME_TARGET);
     const m = await measure(page);
-    const c = ctxOf(m, await stageData(page));
-    expect(m.areas, 'areas pin etkin').not.toBeNull();
+    const a = m.areas;
+    expect(a, 'areas pin etkin').not.toBeNull();
+    if (!a) return;
     const changes: string[] = [];
-    for (let k = 1; k < c.N; k++) {
-      const sk = areasY(c, 10 + c.S * k + 0.15 * c.S);
+    for (let k = 1; k < a.N; k++) {
+      const sk = areasY(m, 10 + a.S * k + 0.15 * a.S);
       await test.step(`değişim ${k} (beklenen s ${fmt(svh(m, sk))})`, async () => {
         await stepTo(page, sk - 0.03 * m.vh);
         // ±3 svh, 0.25 svh adımlarla (kesme eşiğinin çok altında); her adımda iki kare sonra DOM durumu
@@ -1718,7 +1885,7 @@ test.describe('about ve areas (K-ABOUT-1, K-AREAS-3/4/6)', { tag: ['@desktop-chr
         for (const st of states) {
           expect
             .soft(st.counter, `s ${fmt(svh(m, st.y))}: sayaç etkin adımla aynı`)
-            .toBe(`${pad(st.active + 1)} / ${pad(c.N)}`);
+            .toBe(`${pad(st.active + 1)} / ${pad(a.N)}`);
           expect
             .soft(st.current, `s ${fmt(svh(m, st.y))}: aria-current="step" etkin adımda`)
             .toBe(st.active);
@@ -1740,8 +1907,8 @@ test.describe('about ve areas (K-ABOUT-1, K-AREAS-3/4/6)', { tag: ['@desktop-chr
       [3, 1],
       [2, -1],
     ] as const) {
-      if (k >= c.N) continue;
-      const sk = areasY(c, 10 + c.S * k + 0.15 * c.S);
+      if (k >= a.N) continue;
+      const sk = areasY(m, 10 + a.S * k + 0.15 * a.S);
       await stepTo(page, sk - dir * 0.02 * m.vh);
       const worst = await page.evaluate(
         async (top) => {
@@ -1774,16 +1941,98 @@ test.describe('about ve areas (K-ABOUT-1, K-AREAS-3/4/6)', { tag: ['@desktop-chr
     }
   });
 
+  test('K-AREAS-3 (panel) program adımı açıklama, sayaç ve aria-current ile aynı karede değişir (aşağı ve yukarı)', async ({
+    page,
+  }, info) => {
+    await openHome(page);
+    const m = await measure(page);
+    const a = m.areas;
+    expect(a, 'areas pin etkin').not.toBeNull();
+    if (!a) return;
+    const changes: string[] = [];
+    for (const [k, dir] of [
+      [1, 1],
+      [2, 1],
+      [3, 1],
+      [2, -1],
+    ] as const) {
+      if (k >= a.N) continue;
+      const sk = areasY(m, 10 + a.S * k + 0.15 * a.S);
+      await test.step(`adım ${k} ${dir > 0 ? 'aşağı' : 'yukarı'} (beklenen s ${fmt(svh(m, sk))})`, async () => {
+        const from = sk - dir * 0.02 * m.vh;
+        await stepTo(page, from);
+        // ±2 svh, 0.5 svh adımlarla; her adımda iki kare (yönetmen, areas:step) ve rig'in o kaydırmadaki karesi
+        const states = await page.evaluate(
+          async ({ start, step, n }) => {
+            const st = (window as unknown as StageWindow).__stage;
+            const s = document.querySelector('[data-chapter="areas"]')!;
+            const idx = (sel: string, attr: string) =>
+              Number(s.querySelector(sel)?.getAttribute(attr) ?? Number.NaN);
+            const frame = () => new Promise<void>((r) => requestAnimationFrame(() => r()));
+            const out: {
+              y: number;
+              active: number;
+              current: number;
+              counter: string;
+              key: string;
+            }[] = [];
+            for (let i = 0; i <= n; i++) {
+              window.scrollTo({ top: Math.round(start + i * step), behavior: 'instant' });
+              await frame();
+              await frame();
+              if (st.store.getState().loop !== 'never') {
+                const f0 = st.live.frames;
+                st.store.getState().invalidate();
+                const t0 = performance.now();
+                while (st.live.frames === f0 && performance.now() - t0 < 10_000) await frame();
+              }
+              out.push({
+                y: window.scrollY,
+                active: idx('[data-area-desc][data-active]', 'data-area-desc'),
+                current: idx('[data-area-step][aria-current="step"]', 'data-area-step'),
+                counter: s.querySelector('[data-areas-counter]')?.textContent ?? '',
+                key: st.live.kod.key,
+              });
+            }
+            return out;
+          },
+          { start: from, step: dir * 0.005 * m.vh, n: 8 },
+        );
+        let flip: number | null = null;
+        states.forEach((st, i) => {
+          const at = `s ${fmt(svh(m, st.y))}`;
+          expect
+            .soft(st.key, `${at}: program adımı = etkin açıklama ${st.active}`)
+            .toBe(`area:${st.active}`);
+          expect.soft(st.current, `${at}: aria-current="step" etkin adımda`).toBe(st.active);
+          expect
+            .soft(st.counter, `${at}: sayaç etkin adımla aynı`)
+            .toBe(`${pad(st.active + 1)} / ${pad(a.N)}`);
+          if (flip === null && i > 0 && st.active !== states[i - 1]?.active) flip = st.y;
+        });
+        expect(flip, `adım ${k} ±2 svh içinde değişir`).not.toBeNull();
+        changes.push(
+          `${k} ${dir > 0 ? '↓' : '↑'}: ${fmt(svh(m, flip ?? Number.NaN))} (beklenen ${fmt(svh(m, sk))})`,
+        );
+        expect
+          .soft(Math.abs(svh(m, (flip ?? Number.NaN) - sk)), `adım ${k} değişim konumu`)
+          .toBeLessThanOrEqual(2);
+      });
+    }
+    note(info, 'K-AREAS-3 panel değişim konumları (svh)', changes);
+  });
+
   test('K-AREAS-6 başlık tıklaması 0.8 s içinde sA(k) + 0.65·S’ye (± 2 svh); etkin olmayan açıklamaya focusin o adıma kaydırır', async ({
     page,
   }, info) => {
     await page.addInitScript(recordScene);
     await openHome(page, HOME_TARGET);
     const m = await measure(page);
-    const c = ctxOf(m, await stageData(page));
-    expect(m.areas, 'areas pin etkin').not.toBeNull();
-    const k = Math.min(2, c.N - 1);
-    await stepTo(page, areasY(c, 10 + 0.5 * c.S)); // dwell 0
+    const a = m.areas;
+    expect(a, 'areas pin etkin').not.toBeNull();
+    if (!a) return;
+    const k = Math.min(2, a.N - 1);
+    await stepTo(page, areasY(m, 10 + 0.5 * a.S)); // dwell 0
     await clearRecords(page);
     await page.locator(`[data-area-step="${k}"]`).click();
     await settle(page, 600);
@@ -1793,7 +2042,7 @@ test.describe('about ve areas (K-ABOUT-1, K-AREAS-3/4/6)', { tag: ['@desktop-chr
     const { arrive, prevMove } = arrival(rec, t0);
     const last = arrive === undefined ? undefined : { t: arrive };
     const prev = prevMove === undefined ? undefined : { t: prevMove };
-    const want = areasY(c, 10 + c.S * k + 0.65 * c.S);
+    const want = areasY(m, 10 + a.S * k + 0.65 * a.S);
     const y = await page.evaluate(() => window.scrollY);
     note(info, 'K-AREAS-6 tıklama', {
       sure: last ? fmt(last.t - t0) : null,
@@ -1817,12 +2066,12 @@ test.describe('about ve areas (K-ABOUT-1, K-AREAS-3/4/6)', { tag: ['@desktop-chr
       )
       .toBeLessThanOrEqual(800);
 
-    const j = c.N - 1;
+    const j = a.N - 1;
     await page.locator(`[data-area-desc="${j}"] a`).first().focus();
     await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: 5000 }).not.toBe(y);
     await settle(page, 600);
     const y2 = await page.evaluate(() => window.scrollY);
-    const want2 = areasY(c, 10 + c.S * j + 0.65 * c.S);
+    const want2 = areasY(m, 10 + a.S * j + 0.65 * a.S);
     expect
       .soft(
         Math.abs(svh(m, y2 - want2)),
@@ -1837,49 +2086,82 @@ test.describe('about ve areas (K-ABOUT-1, K-AREAS-3/4/6)', { tag: ['@desktop-chr
 });
 
 test.describe('work (K-WORK-1/2/3)', { tag: ['@desktop-chromium'] }, () => {
-  test('K-WORK-2 aktivasyonlar T_work − 25 + 70k svh’de (± 2); K-WORK-1 BODY’de silme dışında tam bir figür açık', async ({
+  test('K-WORK-2 aktivasyonlar T_work − 25 + 70k svh’de (± 2): silme ya da ASCII derlemesi başlar; K-WORK-1 BODY’de silme dışında tam bir figür açık', async ({
     page,
   }, info) => {
     await openHome(page, HOME_TARGET);
     const m = await measure(page);
-    const d = await stageData(page);
     const T = m.chapters.find((x) => x.id === 'work')!.top;
+    // Derleme kaplaması yalnız çözülmüş kapakta çizilir (§4.9.4): tembel kapaklar önceden yüklenir
+    await page.evaluate(() =>
+      Promise.all(
+        [...document.querySelectorAll<HTMLImageElement>('[data-work-figure] img')].map((img) => {
+          img.loading = 'eager';
+          return img.decode().catch(() => undefined);
+        }),
+      ),
+    );
+    // Etkinleşme izi (work:active, §5.9.5): figür k'ya data-active eklenir (silme başlar, k ≥ 1) ya da kapağına ASCII
+    // derleme kanvası eklenir (proje 1'in figürü ilk boyamadan beri açıktır: tek iz derlemedir)
+    await page.evaluate(() => {
+      const hits: { k: number; y: number; what: string }[] = [];
+      (window as unknown as { __work: typeof hits }).__work = hits;
+      const figs = [...document.querySelectorAll<HTMLElement>('[data-work-figure]')];
+      const on = figs.map((f) => f.hasAttribute('data-active'));
+      new MutationObserver((list) => {
+        for (const r of list) {
+          if (r.type === 'attributes') {
+            const k = figs.indexOf(r.target as HTMLElement);
+            if (k < 0) continue;
+            const now = figs[k]?.hasAttribute('data-active') ?? false;
+            if (now && !on[k]) hits.push({ k, y: window.scrollY, what: 'silme' });
+            on[k] = now;
+          } else
+            for (const n of r.addedNodes)
+              if (n instanceof HTMLCanvasElement && n.classList.contains('ascii-compile'))
+                hits.push({
+                  k: figs.findIndex((f) => f.contains(n)),
+                  y: window.scrollY,
+                  what: 'derleme',
+                });
+        }
+      }).observe(document.querySelector('[data-chapter="work"]')!, {
+        subtree: true,
+        childList: true,
+        attributes: true,
+        attributeFilter: ['data-active'],
+      });
+    });
     const found: string[] = [];
     for (let k = 0; k < m.counts.P; k++) {
       // DOM sayımı: başlık bloğu 30 svh + makale 70 svh, aktivasyon "top 55%" (§4.9.3, §5.9.5)
       const sk = T + (0.3 + 0.7 * k - 0.55) * m.vh;
-      const area = d.projects[k]?.area ?? null;
       await test.step(`proje ${k + 1} (beklenen s ${fmt(svh(m, sk))})`, async () => {
         await stepTo(page, sk - 0.03 * m.vh);
-        const at = await page.evaluate(
-          async ({ from, to, step, k, fill }) => {
-            const st = (window as unknown as StageWindow).__stage;
+        await page.evaluate(() => {
+          (window as unknown as { __work: unknown[] }).__work.length = 0;
+        });
+        await page.evaluate(
+          async ({ from, to, step }) => {
             for (let y = from; y <= to; y += step) {
               window.scrollTo({ top: Math.round(y), behavior: 'instant' });
               for (let i = 0; i < 2; i++) await new Promise((r) => requestAnimationFrame(r));
-              await new Promise((r) => setTimeout(r, 60));
-              const glyph = [
-                ...document.querySelectorAll<HTMLElement>('[data-work-specimen-glyph]'),
-              ].findIndex((g) => !g.hidden);
-              const on = k === 0 ? fill !== null && (st.target[fill] ?? 0) > 0.13 : glyph === k;
-              if (on) return window.scrollY;
             }
-            return null;
           },
-          {
-            from: sk - 0.03 * m.vh,
-            to: sk + 0.03 * m.vh,
-            step: 0.0025 * m.vh,
-            k,
-            fill: area === null ? null : `fill${area}`,
-          },
+          { from: sk - 0.03 * m.vh, to: sk + 0.03 * m.vh, step: 0.0025 * m.vh },
         );
+        const hits = await page.evaluate(() =>
+          (
+            window as unknown as { __work: { k: number; y: number; what: string }[] }
+          ).__work.slice(),
+        );
+        const hit = hits.find((h) => h.k === k);
         found.push(
-          `${k + 1}: ${fmt(at === null ? undefined : svh(m, at))} (beklenen ${fmt(svh(m, sk))})`,
+          `${k + 1}: ${fmt(hit ? svh(m, hit.y) : undefined)} ${hit?.what ?? ''} (beklenen ${fmt(svh(m, sk))}; izler ${hits.map((h) => `${h.k + 1} ${h.what}`).join(', ') || 'yok'})`,
         );
-        expect(at, `proje ${k + 1} ±3 svh içinde etkinleşir`).not.toBeNull();
+        expect(hit, `proje ${k + 1} ±3 svh içinde etkinleşir (silme ya da derleme)`).toBeDefined();
         expect
-          .soft(Math.abs(svh(m, (at ?? Number.NaN) - sk)), `proje ${k + 1} aktivasyon konumu`)
+          .soft(Math.abs(svh(m, (hit?.y ?? Number.NaN) - sk)), `proje ${k + 1} aktivasyon konumu`)
           .toBeLessThanOrEqual(2);
       });
     }
@@ -2031,98 +2313,71 @@ test.describe(
   'journey ve contact (K-JOURNEY-2/3, K-CONTACT-5)',
   { tag: ['@desktop-chromium'] },
   () => {
-    test('K-JOURNEY-2 aktivasyonlar T_journey − 15 + 35k svh’de (± 2), bant tween’i 500 ms, tek vurgulu yıl; K-JOURNEY-3 bant içe, arcGlow 0.2', async ({
+    test('K-JOURNEY-2 aktivasyonlar T_journey − 15 + 35k svh’de (± 2); paneldeki vurgu aynı karede aynı girdiye geçer; tek vurgulu yıl', async ({
       page,
     }, info) => {
-      await openHome(page, HOME_TARGET);
+      await openHome(page);
       const m = await measure(page);
-      const d = await stageData(page);
       const T = m.chapters.find((x) => x.id === 'journey')!.top;
       const rows: unknown[] = [];
-      const centers: number[] = [];
       for (let k = 0; k < m.counts.E; k++) {
         // DOM sayımı: başlık bloğu 40 svh + girdi 35 svh, aktivasyon "top 55%" (§4.10.2, §5.9.5)
         const sk = T + (0.4 + 0.35 * k - 0.55) * m.vh;
-        const band = d.entries[k]?.band ?? NO_BAND;
         await test.step(`girdi ${k + 1} (beklenen s ${fmt(svh(m, sk))})`, async () => {
           await stepTo(page, sk - 0.03 * m.vh);
-          const r = await page.evaluate(
-            async ({ from, to, step, k, band }) => {
+          // ±3 svh, 0.5 svh adımlarla; her adımda iki kare (yönetmen, journey:active) ve rig'in o kaydırmadaki karesi
+          const states = await page.evaluate(
+            async ({ start, step, n }) => {
               const st = (window as unknown as StageWindow).__stage;
-              const [b0 = 0, b1 = 0] = band;
-              const active = () =>
-                [...document.querySelectorAll('[data-journey-entry]')].findIndex((e) =>
-                  e.hasAttribute('data-active'),
-                );
-              for (let y = from; y <= to; y += step) {
-                window.scrollTo({ top: Math.round(y), behavior: 'instant' });
-                const t0 = performance.now();
-                for (let i = 0; i < 2; i++) await new Promise((r) => requestAnimationFrame(r));
-                if (active() !== k) continue;
-                // bant tween'i: hedef değerine ulaşana kadar kare kare örnekle
-                const samples: [number, number, number][] = [];
-                while (performance.now() - t0 < 1200) {
-                  samples.push([
-                    performance.now() - t0,
-                    st.target.bandStart ?? 0,
-                    st.target.bandEnd ?? 0,
-                  ]);
-                  await new Promise((r) => requestAnimationFrame(r));
+              const entries = [...document.querySelectorAll('[data-journey-entry]')];
+              const layer = document.getElementById('scene-layer');
+              const frame = () => new Promise<void>((r) => requestAnimationFrame(() => r()));
+              const out: { y: number; active: number[]; key: string; shown: boolean }[] = [];
+              for (let i = 0; i <= n; i++) {
+                window.scrollTo({ top: Math.round(start + i * step), behavior: 'instant' });
+                await frame();
+                await frame();
+                if (st.store.getState().loop !== 'never') {
+                  const f0 = st.live.frames;
+                  st.store.getState().invalidate();
+                  const t0 = performance.now();
+                  while (st.live.frames === f0 && performance.now() - t0 < 10_000) await frame();
                 }
-                const final = (s: [number, number, number]) =>
-                  Math.abs(s[1] - b0) < 1e-3 && Math.abs(s[2] - b1) < 1e-3;
-                const firstFinal = samples.find(final)?.[0] ?? null;
-                const lastOff = samples.filter((s) => !final(s)).at(-1)?.[0] ?? null;
-                const frames = samples
-                  .slice(1)
-                  .map((s, i) => s[0] - samples[i]![0])
-                  .sort((a, b) => a - b);
-                return {
+                out.push({
                   y: window.scrollY,
-                  firstFinal,
-                  lastOff,
-                  frame: frames[Math.floor(frames.length / 2)] ?? 0,
-                };
+                  active: entries.flatMap((e, j) => (e.hasAttribute('data-active') ? [j] : [])),
+                  key: st.live.kod.key,
+                  shown:
+                    !!layer &&
+                    Number.parseFloat(getComputedStyle(layer).opacity) > 0.01 &&
+                    st.live.panel.visible,
+                });
               }
-              return null;
+              return out;
             },
-            {
-              from: sk - 0.03 * m.vh,
-              to: sk + 0.03 * m.vh,
-              step: 0.0025 * m.vh,
-              k,
-              band: [band[0], band[1]],
-            },
+            { start: sk - 0.03 * m.vh, step: 0.005 * m.vh, n: 12 },
           );
-          expect(r, `girdi ${k + 1} ±3 svh içinde etkinleşir`).not.toBeNull();
-          if (!r) return;
+          for (const s of states) {
+            const at = `s ${fmt(svh(m, s.y))}`;
+            expect.soft(s.active.length, `${at}: en çok bir etkin girdi`).toBeLessThanOrEqual(1);
+            expect.soft(s.shown, `${at}: panel görünür`).toBe(true);
+            if (s.shown)
+              expect
+                .soft(s.key, `${at}: panel vurgusu DOM’daki etkin girdiyle aynı`)
+                .toBe(`journey:${s.active[0] ?? -1}`);
+          }
+          const found = states.find((s) => s.active.includes(k))?.y ?? null;
+          expect(found, `girdi ${k + 1} ±3 svh içinde etkinleşir`).not.toBeNull();
           rows.push({
             k: k + 1,
-            s: fmt(svh(m, r.y)),
+            s: fmt(found === null ? undefined : svh(m, found)),
             beklenen: fmt(svh(m, sk)),
             // girdinin düzendeki "top 55%" çizgisi (reveal dönüşümü hariç)
             cizgi: fmt(svh(m, m.activation.journey[k] ?? Number.NaN)),
-            bantSon: fmt(r.firstFinal ?? undefined),
-            sonAra: fmt(r.lastOff ?? undefined),
-            kare: fmt(r.frame),
           });
           expect
-            .soft(Math.abs(svh(m, r.y - sk)), `girdi ${k + 1} aktivasyon konumu`)
+            .soft(Math.abs(svh(m, (found ?? Number.NaN) - sk)), `girdi ${k + 1} aktivasyon konumu`)
             .toBeLessThanOrEqual(2);
-          // tween ani değildir ve 500 ms'de biter. Kare hızından bağımsız: ilk "varmış" örnek ≥ 400 ms (iki kare
-          // beklemesi 400 ms'yi aşarsa ölçülemez), son "arada" örnek ≤ 500 ms + 2 kare (tween bir sonraki tick'te başlar)
-          expect
-            .soft(
-              r.firstFinal ?? 0,
-              `girdi ${k + 1}: bant ${fmt(r.firstFinal ?? undefined)} ms’de vardı (tween ≈ 500 ms)`,
-            )
-            .toBeGreaterThanOrEqual(400);
-          expect
-            .soft(
-              r.lastOff ?? 0,
-              `girdi ${k + 1}: bant ${fmt(r.lastOff ?? undefined)} ms’de hâlâ arada`,
-            )
-            .toBeLessThanOrEqual(500 + 2 * r.frame);
           await settle(page);
           const hi = await page.evaluate(() => {
             const probe = document.createElement('span');
@@ -2138,31 +2393,64 @@ test.describe(
                   .filter((t) => getComputedStyle(t).color === accent)
                   .map(() => i),
               ),
+              times: entries.reduce(
+                (n, e) =>
+                  n +
+                  [...e.querySelectorAll('time')].filter(
+                    (t) => getComputedStyle(t).color === accent,
+                  ).length,
+                0,
+              ),
             };
           });
           expect.soft(hi.active, `girdi ${k + 1}: tek etkin girdi`).toEqual([k]);
           expect
             .soft([...new Set(hi.accent)], `girdi ${k + 1}: vurgulu yıl yalnız etkin girdide`)
             .toEqual([k]);
-          const v = (await readTarget(page)).values;
-          centers.push(((v.bandStart ?? 0) + (v.bandEnd ?? 0)) / 2);
+          expect.soft(hi.times, `girdi ${k + 1}: aynı anda tek <time> vurgu renginde`).toBe(1);
         });
       }
-      note(info, 'K-JOURNEY-2 aktivasyon ve bant (svh, ms)', rows);
-      note(info, 'K-JOURNEY-3 bant merkezleri', centers);
-      for (let i = 1; i < centers.length; i++)
+      note(info, 'K-JOURNEY-2 aktivasyon (svh)', rows);
+    });
+
+    test('K-JOURNEY-3 journey boyunca panel git log’u gösterir (gece paneli yalnız panelin içi); html / body zemini değişmez', async ({
+      page,
+    }, info) => {
+      await openHome(page);
+      const m = await measure(page);
+      const bg = () =>
+        page.evaluate(() => [
+          getComputedStyle(document.documentElement).backgroundColor,
+          getComputedStyle(document.body).backgroundColor,
+        ]);
+      const base = await bg();
+      await expect(
+        page.locator('[data-stage-anchor="journey-core"] .kod-panel').first(),
+        'journey statik paneli gece paletinde',
+      ).toHaveAttribute('data-night', '');
+      const pts: [string, number][] = [
+        ...[0.4, 0.55].map((p): [string, number] => [
+          `IN p ${p} (köprü)`,
+          yAt(m, 'journey', 'in', p),
+        ]),
+        ...[0.8, 0.95].map((p): [string, number] => [`IN p ${p}`, yAt(m, 'journey', 'in', p)]),
+        ...[0.1, 0.3, 0.5, 0.7, 0.9].map((p): [string, number] => [
+          `BODY p ${p}`,
+          yAt(m, 'journey', 'body', p),
+        ]),
+      ];
+      const seen: string[] = [];
+      for (const [label, y] of pts) {
+        await stepTo(page, y);
+        const s = await kodAt(page);
+        seen.push(`${label}: "${s.key}"`);
+        expect.soft(s.shown, `${label}: panel görünür`).toBe(true);
         expect
-          .soft(centers[i]!, `bant merkezi ${i + 1} ≤ ${i}: içe doğru`)
-          .toBeLessThanOrEqual(centers[i - 1]!);
-      expect.soft(centers.at(-1)!, 'son bant ilkinden içeride').toBeLessThan(centers[0]!);
-      const body = phaseOf(m, 'journey', 'body');
-      for (const f of [0.1, 0.3, 0.5, 0.7, 0.9]) {
-        await jumpTo(page, body.y0 + f * (body.y1 - body.y0));
-        const v = (await readTarget(page)).values;
-        expect
-          .soft(Math.abs((v.arcGlow ?? 0) - 0.2), `journey BODY p ${f}: arcGlow ${fmt(v.arcGlow)}`)
-          .toBeLessThanOrEqual(0.01);
+          .soft(s.key, `${label}: git log programı`)
+          .toMatch(label.includes('köprü') ? /^->journey:-?\d+$/ : /^journey:-?\d+$/);
+        expect.soft(await bg(), `${label}: html / body zemini`).toEqual(base);
       }
+      note(info, 'K-JOURNEY-3 programlar', { zemin: base, seen });
     });
 
     test('K-CONTACT-5 H2 contact IN p 0.55’te, metin p 0.70’te açılır (± 3 svh; tekerlek, 10 svh/s)', async ({
@@ -2237,161 +2525,6 @@ test.describe(
   },
 );
 
-/* ── §5.19 "Track'ler, event'ler, determinizm": piksel düzeyinde yol bağımsızlığı ── */
-
-type PixelLayout = {
-  vh: number;
-  maxScroll: number;
-  areas: { bodyY0: number; bodyLen: number; S: number; N: number } | null;
-  activation: { work: number[]; journey: number[] };
-};
-
-const pixelLayout = (page: Page) =>
-  page.evaluate(() => {
-    const l = (window as unknown as { __stage: { live: { layout: PixelLayout | null } } }).__stage
-      .live.layout;
-    return l
-      ? { vh: l.vh, maxScroll: l.maxScroll, areas: l.areas, activation: l.activation }
-      : null;
-  });
-
-/** İşaretçi pencere dışında, sahne duraklatılmış (idle ve nabızlar donar); hedef oturunca kare tek adımda oturtulur */
-async function freezeAndSnap(page: Page): Promise<{ cx: number; cy: number; r: number }> {
-  await page.mouse.move(-1, -1);
-  await page.evaluate(() =>
-    (
-      window as unknown as { __stage: { store: { getState(): { setPaused(v: boolean): void } } } }
-    ).__stage.store
-      .getState()
-      .setPaused(true),
-  );
-  await settle(page, 400);
-  await page.evaluate(
-    () =>
-      new Promise<void>((resolve) => {
-        type S = {
-          live: { snapNextFrame: boolean; frames: number };
-          store: { getState(): { invalidate(): void } };
-        };
-        const st = (window as unknown as { __stage: S }).__stage;
-        st.live.snapNextFrame = true;
-        st.store.getState().invalidate();
-        const f0 = st.live.frames;
-        const wait = () =>
-          st.live.frames > f0 && !st.live.snapNextFrame
-            ? requestAnimationFrame(() => resolve())
-            : requestAnimationFrame(wait);
-        requestAnimationFrame(wait);
-      }),
-  );
-  return page.evaluate(() => {
-    const s = (
-      window as unknown as { __stage: { live: { stone: { cx: number; cy: number; r: number } } } }
-    ).__stage.live.stone;
-    return { cx: s.cx, cy: s.cy, r: s.r };
-  });
-}
-
-/** Taş dairesinin kutusu, ham RGB */
-async function stoneShot(page: Page, c: { cx: number; cy: number; r: number }) {
-  const vp = page.viewportSize()!;
-  const x = Math.max(0, Math.floor(c.cx - c.r));
-  const y = Math.max(0, Math.floor(c.cy - c.r));
-  const clip = {
-    x,
-    y,
-    width: Math.max(1, Math.min(vp.width - x, Math.ceil(2 * c.r))),
-    height: Math.max(1, Math.min(vp.height - y, Math.ceil(2 * c.r))),
-  };
-  return sharp(await page.screenshot({ clip }))
-    .raw()
-    .toBuffer({ resolveWithObject: true });
-}
-
-type RawImage = { data: Buffer; info: { width: number; height: number; channels: number } };
-
-/** Farklı piksellerin oranı (kanal toplam farkı > 30) */
-function diffRatio(a: RawImage, b: RawImage): number {
-  if (a.info.width !== b.info.width || a.info.height !== b.info.height) return 1;
-  let diff = 0;
-  const n = a.info.width * a.info.height;
-  for (let i = 0; i < a.data.length; i += a.info.channels) {
-    const d =
-      Math.abs(a.data[i]! - b.data[i]!) +
-      Math.abs(a.data[i + 1]! - b.data[i + 1]!) +
-      Math.abs(a.data[i + 2]! - b.data[i + 2]!);
-    if (d > 30) diff++;
-  }
-  return diff / n;
-}
-
-test.describe(
-  '§5.19 piksel düzeyinde yol bağımsızlığı (yavaş kaydırma, sıçrama, yeniden yükleme)',
-  { tag: ['@desktop-chromium'] },
-  () => {
-    const targets: ReadonlyArray<readonly [string, (l: PixelLayout) => number]> = [
-      [
-        'areas adım 1 dwell',
-        (l) =>
-          l.areas
-            ? l.areas.bodyY0 +
-              ((10 + l.areas.S * 1 + 0.65 * l.areas.S) / (20 + l.areas.S * l.areas.N)) *
-                l.areas.bodyLen
-            : Number.NaN,
-      ],
-      ['work makale 2 dwell', (l) => (l.activation.work[1] ?? Number.NaN) + 0.1 * l.vh],
-      ['journey girdi 3 dwell', (l) => (l.activation.journey[2] ?? Number.NaN) + 0.1 * l.vh],
-      ['sayfa sonu (K5)', (l) => l.maxScroll],
-    ];
-    for (const [name, yOf] of targets) {
-      test(`${name}: üç yoldan gelinen kanvas görüntüleri ≤ %1 farklı`, async ({ page }) => {
-        test.setTimeout(180_000);
-        await page.goto('/?debug&tier=high');
-        await waitForStagePhase(page, ['ready'], 30_000);
-        await settle(page);
-        const l = await pixelLayout(page);
-        expect(l, 'live.layout').not.toBeNull();
-        const y = Math.round(Math.min(l!.maxScroll, yOf(l!)));
-        expect(Number.isFinite(y), `${name} konumu`).toBe(true);
-        // (a) yavaş kaydırma: 40 svh yukarıdan okuma hızıyla
-        const svhOf = (px: number) => (100 * px) / l!.vh;
-        await page.evaluate(
-          (v) => window.scrollTo({ top: v, behavior: 'instant' }),
-          y - 0.4 * l!.vh,
-        );
-        await settle(page);
-        await readingScroll(page, Math.round(svhOf(y) - 40), Math.round(svhOf(y)));
-        await page.evaluate((v) => window.scrollTo({ top: v, behavior: 'instant' }), y);
-        const ca = await freezeAndSnap(page);
-        const a = await stoneShot(page, ca);
-        // (b) sıçrama: en üstten tek adımda (kesme kuralı)
-        await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
-        await settle(page);
-        await page.evaluate((v) => window.scrollTo({ top: v, behavior: 'instant' }), y);
-        const cb = await freezeAndSnap(page);
-        const b = await stoneShot(page, cb);
-        // (c) o konumda yeniden yükleme (tarayıcı geri yüklemesi)
-        await page.reload();
-        await waitForStagePhase(page, ['ready'], 30_000);
-        const cc = await freezeAndSnap(page);
-        const c = await stoneShot(page, cc);
-        for (const [label, o] of [
-          ['sıçrama', cb],
-          ['yeniden yükleme', cc],
-        ] as const)
-          expect
-            .soft(
-              Math.hypot(o.cx - ca.cx, o.cy - ca.cy) + Math.abs(o.r - ca.r),
-              `${name} ${label} daire`,
-            )
-            .toBeLessThanOrEqual(1);
-        expect.soft(diffRatio(a, b), `${name}: yavaş ↔ sıçrama`).toBeLessThanOrEqual(0.01);
-        expect.soft(diffRatio(a, c), `${name}: yavaş ↔ yeniden yükleme`).toBeLessThanOrEqual(0.01);
-      });
-    }
-  },
-);
-
 /* ───────────── V-48: flow anchor senkronu (§5.19 "Kamera ve anchor") ───────────── */
 
 /** Kare başına örnek: rAF'te gönderilen mesaj karenin boyamasından sonra okunur (Lenis yalnız rAF'te kaydırır) */
@@ -2399,58 +2532,30 @@ interface SyncSample {
   f: number; // live.frames: rig'in çizdiği kare sayısı
   y: number; // boyanan kaydırma
   dom: number; // about-cut çapasının boyanan ekran merkezi
-  stone: number; // live.stone.cy: rig'in son karesindeki Taş merkezi
+  panel: number; // live.panel merkezi: rig'in son karesindeki panel (eğimsiz düzen kutusu)
 }
 type SyncWindow = Window & { __v48?: { out: SyncSample[]; stop: boolean } };
 
 /**
- * V-48 (§16.2): masaüstünde Lenis tekerlek kaydırmasında Taş, flow çapasıyla (about-cut) ≤ 1 kare sapmayla kayar. Her
- * karenin boyamasından sonra boyanan kaydırma, çapanın ekran merkezi ve rig'in son Taş merkezi okunur; rig'in kullandığı
- * kaydırma y_rig = y − (stone − dom) önceki karelerin y'siyle eşlenir (k = kaç kare geride). Lenis gsap.ticker'da kaydırır,
- * rig R3F rAF'inde okur: boştaki döngü kaydırmanın ilk karesinde uyanır (k = 1), sonraki kareler k = 0.
+ * V-48 (§16.2): masaüstünde Lenis tekerlek kaydırmasında panel, flow çapasıyla (about-cut) ≤ 1 kare sapmayla kayar. Her
+ * karenin boyamasından sonra boyanan kaydırma, çapanın ekran merkezi ve rig'in son panel merkezi okunur; rig'in kullandığı
+ * kaydırma y_rig = y − (panel − dom) önceki karelerin y'siyle eşlenir (k = kaç kare geride). Lenis gsap.ticker'da kaydırır,
+ * rig R3F rAF'inde okur: k = 0 ya da 1 olabilir, ≥ 2 olamaz.
  */
 test.describe('V-48 flow anchor senkronu (Lenis, masaüstü)', { tag: ['@desktop-chromium'] }, () => {
-  test('about-cut (flow): tekerlek kaydırmasında Taş metinle ≤ 1 kare sapmayla kayar', async ({
+  test('about-cut (flow): tekerlek kaydırmasında panel metinle ≤ 1 kare sapmayla kayar', async ({
     page,
   }, info) => {
     await openHome(page);
     await page.waitForFunction(() => document.documentElement.classList.contains('lenis'));
-    const range = await page.evaluate(() => {
-      const l = (window as unknown as StageWindow).__stage.live.layout;
-      const inn = l?.phases.find((q) => q.chapter === 'about' && q.phase === 'in');
-      const body = l?.phases.find((q) => q.chapter === 'about' && q.phase === 'body');
-      return inn && body ? { from: inn.y0 + 0.65 * (inn.y1 - inn.y0), to: body.y1 } : null;
-    });
-    expect(range, 'about IN / BODY fazları').not.toBeNull();
-    // about IN 0.6'dan BODY sonuna kadar çapa yalnız about-cut'tır (flow; hero-rest → about-cut karışımı 1'de)
-    const start = Math.round(range!.from);
-    // İşaretçi pencere içinde (tekerlek olayı sayfaya, dolayısıyla Lenis'e ulaşsın) ama Taş'tan uzakta (eğim yok)
+    const m = await measure(page);
+    // about IN p 0.6'dan BODY sonuna kadar çapa yalnız about-cut'tır (flow; hero-rest → about-cut köprüsü bitti)
+    const start = Math.round(yAt(m, 'about', 'in', 0.65));
+    const end = phaseOf(m, 'about', 'body').y1;
+    // İşaretçi pencere içinde (tekerlek olayı sayfaya, dolayısıyla Lenis'e ulaşsın) ama panelden uzakta
     await page.mouse.move(24, 450);
     await jumpTo(page, start);
-    // Damped karışım hedefe otursun ve döngü boşa düşsün. Damping adımı kare başına 1/30 s'ye kırpılır: yerel SwiftShader'da
-    // ≈ 2.5 s, CI'da (≈ 2 fps) ≈ 20 s
-    await page.waitForFunction(
-      () => {
-        const st = (window as unknown as StageWindow).__stage;
-        return Math.abs(st.rendered.anchorMix! - st.target.anchorMix!) < 1e-4;
-      },
-      null,
-      { timeout: 60_000 },
-    );
-    // En kötü durum: döngü boştayken (400 ms kare yok) kaydırma başlar; ilk karede rig henüz uyanmamış olabilir
-    await page.evaluate(async () => {
-      const st = (window as unknown as StageWindow).__stage;
-      const frame = () => new Promise<void>((r) => requestAnimationFrame(() => r()));
-      let last = st.live.frames;
-      let still = performance.now();
-      while (performance.now() - still < 400) {
-        await frame();
-        if (st.live.frames !== last) {
-          last = st.live.frames;
-          still = performance.now();
-        }
-      }
-    });
+    await freshFrame(page);
     await page.evaluate(() => {
       const st = (window as unknown as StageWindow).__stage;
       const el = document.querySelector<HTMLElement>('[data-stage-anchor="about-cut"]')!;
@@ -2459,11 +2564,12 @@ test.describe('V-48 flow anchor senkronu (Lenis, masaüstü)', { tag: ['@desktop
       const ch = new MessageChannel();
       ch.port1.onmessage = () => {
         const r = el.getBoundingClientRect();
+        const p = st.live.panel;
         v48.out.push({
           f: st.live.frames,
           y: window.scrollY,
           dom: r.top + r.height / 2,
-          stone: st.live.stone.cy,
+          panel: p.y + p.h / 2,
         });
       };
       const tick = () => {
@@ -2474,7 +2580,7 @@ test.describe('V-48 flow anchor senkronu (Lenis, masaüstü)', { tag: ['@desktop
       requestAnimationFrame(tick);
     });
     await pageDelay(page, 200); // durgun örnekler: ofset c0
-    const span = Math.min(900, 0.85 * (range!.to - start));
+    const span = Math.min(900, 0.85 * (end - start));
     for (let i = 0; i < 3; i++) {
       await page.mouse.wheel(0, Math.round(span / 3));
       await pageDelay(page, 150);
@@ -2498,8 +2604,8 @@ test.describe('V-48 flow anchor senkronu (Lenis, masaüstü)', { tag: ['@desktop
       return v.out;
     });
     expect(s.length, 'örnek sayısı (CI ≈ 2 fps: 9–16)').toBeGreaterThanOrEqual(6);
-    const c0 = s[0]!.stone - s[0]!.dom; // durgun hâlde Taş merkezi − çapa merkezi (0 beklenir)
-    // Rig'in kullandığı kaydırma: y_rig = y − (stone − dom − c0); k = kaç kare geriden geldiği
+    const c0 = s[0]!.panel - s[0]!.dom; // durgun hâlde panel merkezi − çapa merkezi (0 beklenir: panel çapada ortalı)
+    // Rig'in kullandığı kaydırma: y_rig = y − (panel − dom − c0); k = kaç kare geriden geldiği
     const hist = { k0: 0, k1: 0, k2: 0, unmatched: 0 };
     let maxPx = 0;
     let moving = 0;
@@ -2507,7 +2613,7 @@ test.describe('V-48 flow anchor senkronu (Lenis, masaüstü)', { tag: ['@desktop
       const cur = s[i]!;
       if (Math.abs(cur.y - s[i - 1]!.y) < 2) continue; // bu karede hareket yok ya da k ayırt edilemez
       moving++;
-      const off = cur.stone - cur.dom - c0;
+      const off = cur.panel - cur.dom - c0;
       maxPx = Math.max(maxPx, Math.abs(off));
       const yRig = cur.y - off;
       let k = -1;
@@ -2569,7 +2675,7 @@ test.describe('K-JOURNEY-7 mobil journey bandı (390×844)', { tag: ['@desktop-c
       page.evaluate(() =>
         Number.parseFloat(getComputedStyle(document.getElementById('scene-layer')!).opacity),
       );
-    // bant görüntü alanının ortasındayken Taş görünür
+    // bant görüntü alanının ortasındayken panel görünür
     await stepTo(page, band.top - 0.3 * band.vh);
     expect(await layerOpacity(), 'bant görünürken opaklık').toBeGreaterThan(0.99);
     // 5 svh adımlarla bandın çıkışından geçilir (kesme eşiğinin çok altında)
@@ -2591,10 +2697,7 @@ test.describe('K-JOURNEY-7 mobil journey bandı (390×844)', { tag: ['@desktop-c
     expect(await layerOpacity(), 'bant çıktıktan sonra opaklık').toBeLessThanOrEqual(0.01);
     // frame loop never: 1 s boyunca rig karesi yok
     const loop = await page.evaluate(
-      () =>
-        (
-          window as unknown as { __stage: { store: { getState(): { loop: string } } } }
-        ).__stage.store.getState().loop,
+      () => (window as unknown as StageWindow).__stage.store.getState().loop,
     );
     expect(loop, 'frame loop').toBe('never');
     const frames = () =>

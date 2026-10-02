@@ -1,0 +1,161 @@
+/* src/components/kod/kod-panel.css — KOD statik paneli (§4 KOD). 56 × 24 hücre; satır = 2 hücre genişliği (1 : 2).
+   Panel, çapanın kutusuna sığar (container query); WebGL paneli aynı dikdörtgene yerleşir (crossfade hizalı). */
+.kod-panel {
+  --k0: var(--color-ink);
+  --k1: var(--color-ink-muted);
+  --k2: var(--color-ink-subtle);
+  --k3: var(--color-accent);
+  --k4: var(--color-brass);
+  --k5: var(--color-line);
+  --k6: var(--color-surface);
+  --k7: color-mix(in srgb, var(--color-ink-muted) 50%, var(--color-accent));
+  /* panel çapanın kutusunu doldurur (oran 56 : 48); WebGL paneli aynı dikdörtgene yerleşir */
+  --kod-w: min(100cqw, 100cqh * 56 / 48);
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  width: var(--kod-w);
+  aspect-ratio: 56 / 48;
+  border-radius: calc(var(--kod-w) / 56);
+  background: color-mix(in srgb, var(--color-surface) 94%, transparent);
+  box-shadow: 0 calc(var(--kod-w) / 40) calc(var(--kod-w) / 14) rgb(14 21 48 / 0.12);
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+/* Gece paneli (journey, §5.20.6): her temada koyu değerler; token'lar light-dark() olduğundan color-scheme yeter */
+.kod-panel[data-night] {
+  color-scheme: dark;
+  box-shadow: 0 calc(var(--kod-w) / 40) calc(var(--kod-w) / 14) rgb(14 21 48 / 0.3);
+}
+/* Adım kareleri (areas): yalnız etkin olan görünür */
+.kod-panel[data-kod-step]:not([data-active]) {
+  visibility: hidden;
+}
+/* Çapa dışı kullanım (404): akışta, sütun genişliğinde */
+.kod-panel.kod-inline {
+  position: relative;
+  left: auto;
+  top: auto;
+  translate: none;
+  --kod-w: min(100%, 40rem);
+}
+.kod-pre {
+  margin: 0;
+  /* 56 hücre panele sığar: Martian Mono yarı dar ilerleme 0.65 em (ölçüldü) */
+  font-family: var(--font-mono);
+  font-stretch: 87.5%;
+  font-weight: 450;
+  font-size: calc(var(--kod-w) / 56 / 0.65);
+  line-height: 2ch;
+  letter-spacing: 0;
+  white-space: pre;
+  font-variant-ligatures: none;
+  font-feature-settings:
+    'calt' 0,
+    'liga' 0;
+  color: var(--k0);
+}
+.kod-row {
+  display: block;
+  height: 2ch;
+}
+.kod-pre > .kod-row > span {
+  opacity: var(--a, 1);
+}
+.kod-pre .k0 {
+  color: var(--k0);
+}
+.kod-pre .k1 {
+  color: var(--k1);
+}
+.kod-pre .k2 {
+  color: var(--k2);
+}
+.kod-pre .k3 {
+  color: var(--k3);
+}
+.kod-pre .k4 {
+  color: var(--k4);
+}
+.kod-pre .k5 {
+  color: var(--k5);
+}
+.kod-pre .k6 {
+  color: var(--k6);
+}
+.kod-pre .k7 {
+  color: var(--k7);
+}
+.kod-pre .kb0,
+.kod-pre .kb1,
+.kod-pre .kb2,
+.kod-pre .kb3,
+.kod-pre .kb4,
+.kod-pre .kb5,
+.kod-pre .kb6 {
+  background: color-mix(in srgb, var(--kbc) calc(var(--ba, 0) * 100%), transparent);
+  /* zemin hücre yüksekliğinin tamamını kaplar */
+  display: inline-flex;
+  height: 2ch;
+  vertical-align: top;
+}
+.kod-pre .kb0 {
+  --kbc: var(--k0);
+}
+.kod-pre .kb1 {
+  --kbc: var(--k1);
+}
+.kod-pre .kb2 {
+  --kbc: var(--k2);
+}
+.kod-pre .kb3 {
+  --kbc: var(--k3);
+}
+.kod-pre .kb4 {
+  --kbc: var(--k4);
+}
+.kod-pre .kb5 {
+  --kbc: var(--k5);
+}
+.kod-pre .kb6 {
+  --kbc: var(--k6);
+}
+/* Kutu çizgileri, oklar, ✓, ●: Martian Mono'da yok; tarayıcı yedek monospace fonttan çizer (ilerleme ≈ 0.6 em).
+   Koşu kutusu n × 1ch'ye sabitlenir (1ch Martian Mono'nun) ve harf aralığı ilerlemeyi 1ch'ye eşitler: hiza bozulmaz. */
+.kod-pre .kd {
+  display: inline-flex;
+  width: calc(var(--n, 1) * 1ch);
+  height: 2ch;
+  overflow: hidden;
+  vertical-align: top;
+  letter-spacing: calc(1ch - 0.6em);
+}
+.kod-pre .ks {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 1ch;
+  height: 2ch;
+  text-align: center;
+  vertical-align: top;
+  overflow: visible;
+  font-size: 0.86em;
+  line-height: calc(2ch / 0.86);
+}
+/* K-VAR-6: baskıda statik panel basılmaz (dekoratif) */
+@media print {
+  .kod-panel {
+    display: none;
+  }
+}
+/* Kapak "derleme" efekti (AsciiCompile): görselin üstünde, yalnız oynarken görünür */
+.ascii-compile {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+}

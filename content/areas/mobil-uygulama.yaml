@@ -16,3 +16,4 @@ capabilities:
   - { tr: "Mevcut uygulamalara yeni özellikler ekliyorum.", en: "I add new features to existing applications." }
   - { tr: "Farklı ekran boyutlarına uygun arayüzler geliştiriyorum.", en: "I adapt interfaces to different screen sizes." }
 skills: [mobil-uygulama-gelistirme]
+figure: phone # KOD diyagramı: phone | tree | api | pipeline | list

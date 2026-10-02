@@ -15,7 +15,7 @@ interface FilterArea {
   title: string;
   lang?: string; // EN sayfada TR yedeği ise 'tr'
   count: number;
-  /** kadrandaki dilim indeksi (liste modunda null); filtre taşı o dilime döndürür (§5.9.10) */
+  /** alan indeksi; filtre KOD panelini `ls projects/ --area=<id>` programına geçirir (§5.9.10) */
   sector: number | null;
 }
 

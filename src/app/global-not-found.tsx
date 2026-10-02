@@ -4,13 +4,13 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ClockFigure } from '@/components/figures/ClockFigure';
+import { KodPanel } from '@/components/kod/KodPanel';
 import { MotionToggle } from '@/components/motion/MotionToggle';
 import { EmailLink } from '@/components/ui/EmailLink';
 import { fontVariables } from '@/fonts';
 import { staticRoutes, type Locale } from '@/i18n/config';
 import { getDictionary } from '@/i18n/get-dictionary';
-import { getContact, getPerson, isLocaleEnabled } from '@/lib/content';
+import { getContact, getKodData, getPerson, isLocaleEnabled } from '@/lib/content';
 import { headScript } from '@/lib/head-script';
 
 const tr = getDictionary('tr');
@@ -84,7 +84,18 @@ export default function GlobalNotFound() {
             )}
           </div>
           <div className="col-span-4 mx-auto w-full max-w-sm md:col-span-6 md:col-start-2 lg:col-span-5 lg:col-start-8">
-            <ClockFigure label={tr.notFound.clock} />
+            <KodPanel
+              className="kod-inline"
+              data={getKodData('about-page', undefined, 'tr')}
+              program={{ kind: 'notfound', path: '/…' }}
+              extra={{
+                links: [
+                  [staticRoutes.home.tr, tr.notFound.home],
+                  [staticRoutes.projects.tr, tr.notFound.projects],
+                  [staticRoutes.contact.tr, tr.notFound.contact],
+                ],
+              }}
+            />
           </div>
         </main>
         <footer className="container-page border-t border-line py-6">

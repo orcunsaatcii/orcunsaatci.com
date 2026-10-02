@@ -5,6 +5,7 @@
 import { useStore } from 'zustand';
 import { createStore } from 'zustand/vanilla';
 import type { Intensity } from '@/experience/profile';
+import type { KodData } from '@/lib/kod/types';
 import { NO_BAND } from '@/lib/section-geometry';
 import type { MeasuredAnchor } from './anchors';
 import type { ProbeSignals } from './capabilities';
@@ -35,6 +36,8 @@ export interface StageData {
   activeArea?: number | null; // plan-small: /calisma-alanlari/[area]
   /** SPEC-SAPMA: §5.9.1 — persona yoğunluğu (areas dönüş easing'i, §5.9.4); içerik yalnız sunucuda okunur */
   intensity?: Intensity;
+  /** KOD programlarının içerik verisi (§4 KOD); sunucuda içerikten üretilir */
+  kod?: KodData;
 }
 
 export interface StageState {
@@ -211,16 +214,29 @@ export const live = {
   velocityAt: 0, // performance.now() zaman damgası
   lastInput: 0, // performance.now(): son kaydırma/işaretçi girişi
   pointer: { x: 0, y: 0, px: -1, py: -1, active: false }, // x,y ∈ [-1,1] (y yukarı +); px,py CSS px
-  stone: { cx: 0, cy: 0, r: 0, visible: false }, // rig'in son karesindeki ekran dairesi
+  /** rig'in son karesindeki panel dikdörtgeni (CSS px, eğimsiz; §5.20.4). Prob, route glide ve ?debug okur */
+  panel: { x: 0, y: 0, w: 0, h: 0, visible: false },
+  /**
+   * KOD durumu (?debug ve testler, §5.20): görünen program anahtarı (köprüde "A>B"), köprü ilerlemesi, donma
+   * (duraklatma ya da boşta: kendiliğinden hareket yok, K-HERO-9/10), süzülme saati (s), sönümlü paralaks (−1…1),
+   * hot reload oynadı mı; replayHot debug düğmesidir.
+   */
+  kod: {
+    key: '',
+    mix: 0,
+    frozen: false,
+    drift: 0,
+    parX: 0,
+    parY: 0,
+    hot: false,
+    replayHot: false,
+  },
   inHero: true, // idle drift kapısı (home, y < layout.heroExit; §4.6.4)
   snapNextFrame: true, // true → rig bir sonraki karede rendered = target yapar
   virtualAnchor: { cx: 0, cy: 0, D: 0 }, // anchorFrom === -1 iken kullanılır
   /** director'ün son refresh'te ölçtüğü anchor'lar (§5.7.4); rig kare başına yalnız okur */
   anchors: [] as readonly MeasuredAnchor[],
   frames: 0, // rig'in çizdiği kare sayısı (§5.19: opaklık < 0.01 ve gizli sekmede 2 s kare yok; ?debug testleri okur)
-  idleAngle: 0, // idle drift açısı, derece (K-HERO-9 testleri okur)
-  /** yakınlık eğimi (§5.9.6): derece ve cut nefesi; rig yazar, ?debug okur */
-  tilt: { x: 0, y: 0, breath: 0 },
   /** director'ün son refresh'te ölçtüğü düzen (fazlar, aktivasyon çizgileri); ?debug testleri okur (§13.3.4) */
   layout: null as Layout | null,
   /** /projeler filtre çipi (alan indeksi; null = filtre yok); setPlanFilter yazar (§5.9.10) */
@@ -262,7 +278,7 @@ export const directorApi: DirectorApi = {
 export const nav = {
   // route geçişi köprüsü (§5.15.3)
   pending: null as 'push' | 'restore' | null, // RouteScrollSync yazar
-  snapshot: { cx: 0, cy: 0, r: 0, visible: false, opacity: 0 }, // StagePreset, eski sayfanın son karesinden yazar
+  snapshot: { x: 0, y: 0, w: 0, h: 0, visible: false, opacity: 0 }, // StagePreset, eski sayfanın son panelinden yazar
   consume(): 'push' | 'restore' | null {
     const p = this.pending;
     this.pending = null;

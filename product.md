@@ -3,9 +3,9 @@
 
 | | |
 |---|---|
-| Sürüm | 1.2 |
-| Tarih | 2026-09-29 |
-| Durum | Onaylı deneyim konsepti: **KESİT** · bölümler arası çelişki incelemesi tamamlandı (120 çözüm) · D-48 sade proje modeli (2026-09-29) · uygulamaya hazır |
+| Sürüm | 1.3 |
+| Tarih | 2026-10-02 |
+| Durum | Onaylı deneyim konsepti: **KOD** (2026-10-02, sahip onayı; KESİT'in yerini aldı, D-16) · M0–M7 ve içerik aktarımı birleşti · sıradaki iş KOD geçişi (§15.8a), ardından M8 · D-48 sade proje modeli (2026-09-29) |
 | Site sahibi | Orçun Saatçi — Bilgisayar Mühendisi ve Mobil Uygulama Geliştiricisi (persona `engineer`) |
 | Alan adı | `orcunsaatci.com` (henüz satın alınmadı; kanonik adres `https://www.orcunsaatci.com`) |
 | Yığın | Next.js 16.3 · React 19.2 · React Three Fiber 9.8 / three r186 · GSAP 3.15 + Lenis · Tailwind 4.3 · Vercel Hobby |
@@ -20,6 +20,7 @@
   - [0.3 Normatif dil](#03-normatif-dil)
   - [0.4 Yer tutucular ve "DOĞRULANMADI" işaretleri](#04-yer-tutucular-ve-doğrulanmadi-işaretleri)
   - [0.5 Sözlük](#05-sözlük)
+  - [0.6 KOD geçişi: eski terimlerin karşılıkları](#06-kod-geçişi-eski-terimlerin-karşılıkları)
 - [1. Ürün özeti](#1-ürün-özeti)
   - [1.1 Vizyon ve konumlandırma](#11-vizyon-ve-konumlandırma)
   - [1.2 Hedefler ve başarı ölçütleri](#12-hedefler-ve-başarı-ölçütleri)
@@ -47,7 +48,7 @@
   - [3.8 Türkçe'ye özgü kurallar](#38-türkçeye-özgü-kurallar)
   - [3.9 Navigasyon, header ve footer içerikleri](#39-navigasyon-header-ve-footer-içerikleri)
   - [3.10 Kabul kriterleri](#310-kabul-kriterleri)
-- [4. Deneyim konsepti: KESİT](#4-deneyim-konsepti-kesit)
+- [4. Deneyim konsepti: KOD](#4-deneyim-konsepti-kod)
   - [4.1 Konsept, metafor ve atmosfer](#41-konsept-metafor-ve-atmosfer)
   - [4.2 İmza anları](#42-imza-anları)
   - [4.3 Sahneleme kuralı: "3D kaydırmayla, DOM adım adım"](#43-sahneleme-kuralı-3d-kaydırmayla-dom-adım-adım)
@@ -56,10 +57,10 @@
   - [4.6 hero](#46-hero)
   - [4.7 about](#47-about)
   - [4.8 areas (DOM'u tutan tek pin)](#48-areas-domu-tutan-tek-pin)
-  - [4.9 work (Numune Görüntüleyici)](#49-work-numune-görüntüleyici)
+  - [4.9 work (Derleme)](#49-work-derleme)
   - [4.10 journey](#410-journey)
   - [4.11 contact](#411-contact)
-  - [4.12 Tam kaydırma koreografi tablosu ve değişmezler (invariants)](#412-tam-kaydırma-koreografi-tablosu-ve-değişmezler-invariants)
+  - [4.12 Program tablosu ve değişmezler (invariants)](#412-program-tablosu-ve-değişmezler-invariants)
   - [4.13 Derin sayfalar ve route geçiş koreografisi](#413-derin-sayfalar-ve-route-geçiş-koreografisi)
   - [4.14 Mikro etkileşimler](#414-mikro-etkileşimler)
   - [4.15 Mobil uyarlama](#415-mobil-uyarlama)
@@ -86,6 +87,7 @@
   - [5.17 Context loss ve hata toleransı](#517-context-loss-ve-hata-toleransı)
   - [5.18 Debug ve QA araçları](#518-debug-ve-qa-araçları)
   - [5.19 Kabul kriterleri](#519-kabul-kriterleri)
+  - [5.20 KOD işleyicisi](#520-kod-işleyicisi)
 - [6. Tasarım sistemi](#6-tasarım-sistemi)
   - [6.1 Tasarım ilkeleri](#61-tasarım-ilkeleri)
   - [6.2 Tipografi](#62-tipografi)
@@ -185,6 +187,7 @@
   - [15.6 M5 Stage entegrasyonu (lazy boot, tier'lar, store, director, anchor'lar, poster crossfade)](#156-m5-stage-entegrasyonu-lazy-boot-tierlar-store-director-anchorlar-poster-crossfade)
   - [15.7 M6 Ana sayfa koreografisi (track'ler, event'ler, K0–K5)](#157-m6-ana-sayfa-koreografisi-trackler-eventler-k0k5)
   - [15.8 M7 Derin sayfa presetleri, route geçişleri ve mikro etkileşimler](#158-m7-derin-sayfa-presetleri-route-geçişleri-ve-mikro-etkileşimler)
+  - [15.8a KOD geçişi (M7 ile M8 arası)](#158a-kod-geçişi-m7-ile-m8-arası)
   - [15.9 M8 Sertleştirme: performans, erişilebilirlik, SEO, gerçek cihaz testleri](#159-m8-sertleştirme-performans-erişilebilirlik-seo-gerçek-cihaz-testleri)
   - [15.10 M9 İletişim formu (v1.1), analitik ve gizlilik](#1510-m9-iletişim-formu-v11-analitik-ve-gizlilik)
   - [15.11 M10 Alan adı ve lansman](#1511-m10-alan-adı-ve-lansman)
@@ -228,14 +231,14 @@ Bu belge (`product.md`), `orcunsaatci.com` kişisel sitesinin ürün ve teknik �
 | Blok | Bölümler | İçerik |
 |---|---|---|
 | Çerçeve | §0–§2 | Kullanım kuralları, ürün özeti, teknoloji yığını ve karar kaydı |
-| Ürün ve deneyim | §3–§7 | Bilgi mimarisi ve i18n, KESİT deneyimi, 3D ve hareket motoru, tasarım sistemi, içerik modeli |
+| Ürün ve deneyim | §3–§7 | Bilgi mimarisi ve i18n, KOD deneyimi, 3D ve hareket motoru, tasarım sistemi, içerik modeli |
 | Mühendislik | §8–§13 | Uygulama mimarisi, performans, erişilebilirlik, SEO, iletişim/gizlilik/güvenlik, QA ve CI |
 | Operasyon | §14–§16 | Yayına alma ve lansman, yol haritası, riskler ve açık sorular |
 | Ekler | Ek A, Ek B | Sahip için içerik anketi, kaynaklar ve doğrulama günlüğü |
 
 **Belge içi öncelik** (iki yer çelişirse):
 1. §2.3 Karar kaydı (D-01…D-48) her şeyin üstündedir.
-2. Sonra konunun **sahibi olan bölüm** gelir. Örnekler: sürümler §2.1, route'lar §3.2, keyframe'ler §5.8, uniform'lar §5.5, tokenlar §6.10, şemalar §7.3, `next.config.ts` §8.6, `securityHeaders` §12.5. Başka bir bölümdeki tekrar sahibin değeriyle çelişirse sahip bölüm geçerlidir.
+2. Sonra konunun **sahibi olan bölüm** gelir. Örnekler: sürümler §2.1, route'lar §3.2, programlar §4.12.1 ve §5.20, tokenlar §6.10, şemalar §7.3, `next.config.ts` §8.6, `securityHeaders` §12.5. Başka bir bölümdeki tekrar sahibin değeriyle çelişirse sahip bölüm geçerlidir.
 3. Aynı bölümde tablo ile düzyazı çelişirse tablo geçerlidir.
 4. Çelişkiyi bulan ajan geçerli değeri uygular ve bir `SPEC-SAPMA` kaydı düşer (§0.2.3 kural 4).
 
@@ -260,13 +263,14 @@ Milestone kimlikleri ve adları §15 ile aynıdır. "Önce oku" sütunu uygulama
 | **M5** Stage entegrasyonu (lazy boot, tier'lar, store, director, anchor'lar, poster crossfade) | §5.1, §5.7, §5.9, §5.11, §5.12, §5.17, §5.18, §9.2, §15.6 | §4.3, §4.15 | M1 onayı alınmış olmalı |
 | **M6** Ana sayfa koreografisi (track'ler, event'ler, K0–K5) | §4.6–§4.12, §5.8, §5.9, §15.7 | §4.15, §4.16 | [SABİT] değer onayları (Q-22) |
 | **M7** Derin sayfa presetleri, route geçişleri ve mikro etkileşimler | §4.13, §4.14, §5.15, §6.6, §15.8 | §3.6, §10.3 | — |
+| **KOD** KOD geçişi: KESİT → KOD (M7 ile M8 arası) | §0.6, §4 (tamamı), §5.20, §15.8a | §5.7, §5.9.5, §5.12, §5.17, §7.3.2, §13.3.4 | Sahibin canlı önizleme onayı (§15.8a) |
 | **M8** Sertleştirme: performans, erişilebilirlik, SEO, gerçek cihaz testleri | §9.1–§9.6, §10.1–§10.6, §11.8, §13.1–§13.9, §15.9 | §16.2 | Gerçek cihaz erişimi (§9.6) |
 | **M9** İletişim formu (v1.1), analitik ve gizlilik | §12.1–§12.5, §15.10 | §8.8, §13.3 | Gizlilik metni için avukat incelemesi (Q-11); Resend hesabı yalnız Q-20 "evet" ise |
 | **M10** Alan adı ve lansman | §14.1–§14.8, §15.11 | §11.4, §12.5 | Alan adı satın alma, DNS, Search Console |
 
 #### 0.2.3 Çalışma kuralları
 
-1. **ZORUNLU:** Milestone'lar sırayla uygulanır (M0 → M10). Bir milestone, §15.x'teki kabul kriterleri karşılanmadan kapanmaz. Tek istisna: M1 kapısında sahip onayı beklenirken M2–M4 (3D'siz işler) yürütülebilir; sahip yazılı olarak isterse M9'un 3D'den bağımsız işleri de öne alınabilir (§15.0.1, `SPEC-SAPMA` kaydıyla). M5–M7'nin stage işleri onaydan önce başlamaz (bkz. §15.2).
+1. **ZORUNLU:** Milestone'lar sırayla uygulanır (M0 → M10; M7 ile M8 arasına KOD geçişi girer, §15.8a). Bir milestone, §15.x'teki kabul kriterleri karşılanmadan kapanmaz. Tek istisna: M1 kapısında sahip onayı beklenirken M2–M4 (3D'siz işler) yürütülebilir; sahip yazılı olarak isterse M9'un 3D'den bağımsız işleri de öne alınabilir (§15.0.1, `SPEC-SAPMA` kaydıyla). M5–M7'nin stage işleri onaydan önce başlamaz (bkz. §15.2).
 2. **ZORUNLU:** Her milestone `npm run check` yeşilken biter. Bu script sırayla lint, typecheck, test, build ve budgets çalıştırır (§8.7). Kırmızı `check` ile milestone "bitti" sayılmaz.
 3. **YASAK:** ZORUNLU veya YASAK olarak işaretlenmiş bir kuralı ihlal etmek. Hiçbir kolaylık, süre baskısı veya "geçici" gerekçe istisna sayılmaz.
 4. **ZORUNLU:** Bir kural gerçekte uygulanamıyorsa (API farkı, sürüm farkı, tarayıcı hatası), en küçük uyumlu çözüm uygulanır ve sapma kaydedilir:
@@ -275,7 +279,7 @@ Milestone kimlikleri ve adları §15 ile aynıdır. "Önce oku" sütunu uygulama
 5. **ZORUNLU:** §2.1'de olmayan bir bağımlılık eklenmez. Kaçınılmazsa §2.1'e gerekçeli bir satır eklenir ve bir `SPEC-SAPMA` kaydı düşülür. §2.4'teki YASAK paketler hiçbir koşulda eklenmez.
 6. **ZORUNLU:** Next.js API'si bu belgeyle çelişirse gömülü Next belgesi (`node_modules/next/dist/docs/`) uygulanır ve `SPEC-SAPMA` kaydedilir.
 7. **ZORUNLU:** `⚠️ DOĞRULANMADI` maddeleri, §16.2'de eşlendikleri milestone'da doğrulanır. Sonuç §0.4.2'deki biçimde belgeye işlenir.
-8. **ZORUNLU:** Sahip görevleri ajan tarafından uydurulmaz. Bunlar: içerik, M1 onayı, alan adı satın alma, Resend hesabı ve hukuki inceleme. Eksik içerik `{{…}}` yer tutucusu olarak kalır (§0.4.1).
+8. **ZORUNLU:** Sahip görevleri ajan tarafından uydurulmaz. Bunlar: içerik, M1 onayı, KOD önizleme onayı, alan adı satın alma, Resend hesabı ve hukuki inceleme. Eksik içerik `{{…}}` yer tutucusu olarak kalır (§0.4.1).
 9. **ZORUNLU:** Kullanıcıya görünen hiçbir metin bileşen koduna sabit yazılmaz. Metin sözlüklerden (§3.5) veya içerik dosyalarından (§7) gelir.
 10. **YASAK:** Sırları (`RESEND_API_KEY`, `CONTACT_SIGNING_SECRET` vb.) depoya yazmak. Sırlar yalnız `.env.local` ve Vercel ortam değişkenlerinde durur (§8.8).
 11. **ÖNERİLİR:** Her milestone için ayrı dal (ör. `m0-kurulum`) ve ayrı PR açılır. Her PR bir Vercel önizlemesi üretir (D-28). Önizleme URL'si PR açıklamasına yazılır.
@@ -338,34 +342,61 @@ Terimler tüm belgede bu anlamlarla kullanılır. Kod adları İngilizce kalır.
 
 | Terim | Kod adı / EN | Tanım | Ayrıntı |
 |---|---|---|---|
-| **Taş** | `stone`, `stoneMesh` | Sitenin tek 3D nesnesidir ve ziyaret boyunca aynı kalır. Süperkuadrik bir formdur; şekli, gürültüsü ve yüzeyi personadan gelir (§4.17.2): etkin `engineer`'da bir **akik yumrusu (jeot)**: dışı pürüzlü, lekeli kaya kabuğu (`disp` 0.045, `geode` yüzey), kesiti kabuk hattını izleyen akik bantları (M1 revizyonu, #5), `neutral`'da düşük frekanslı gürültüyle hafifçe bozulmuş bir "çakıl". Şekil tamamen vertex shader'da kurulur. | §5.2, §5.3 |
-| **Kesit / kesme** | `cut` (= `uPlane.w`) | Taşı yatay bir düzlemle açma miktarıdır: `cut ∈ [−0.10, 1.10]`. 1.10 kesilmemiş, 0 yarı kesittir. Düzlemin üstündeki yarı çizilmez (`discard`). KESİT aynı zamanda konseptin adıdır. | §4.7, §5.4 |
-| **Kapak** (cap) | `shadeCap`, `uCapRadius` | Kesim düzleminde görünen düz yüzdür. Açıklıktan görünen iç arka yüzler düz kapak olarak gölgelenir ("cap trick"). Halkalar, dilimler, bant ve açık yay bu yüzeye çizilir. | §5.4 |
-| **Halka** | `uRings`, `ringIdx` | Kapaktaki eş merkezli çizgilerdir. Her biri bir çalışma yılıdır: 0 merkezdeki en eski yıl, `uRings−1` kenardaki bu yıl. `rings = clamp(currentYear − careerStartYear + 1, 4, 24)`. | §5.4, §5.10 |
+| **KOD paneli** | `src/lib/kod/`, `src/components/kod/KodPanel.tsx`, `src/stage/gl/KodRig.tsx` | Sitenin tek sahne nesnesidir: monospace gliflerden yapılmış, havada süzülen bir kod editörü penceresi (56 × 24 hücre, 7 : 6). Her bölüm bir program gösterir. KESİT'in taşının yerini alır (D-16, 2026-10-02). | §4.1, §5.20 |
+| **Program** | `KodProgram`, `src/lib/kod/` | Panelde gösterilen, içerikten üretilmiş dosya ya da çıktı: `main.dart`, `about.dart`, alan diyagramları, `git log`, `zsh` ve derin sayfa programları. Saf fonksiyondur; bir ekran tamponu yazar. | §4.12.1, §5.20.2 |
+| **Köprü** | `anchorMix` | Bölümler arası program değişimi: eski program glif yağmuruyla düşer, yenisi yukarıdan aşağı çözülür. Kaydırmayla scrub edilir ve geri alınabilir. | §4.12.1, §5.20.5 |
+| **Çözülme** (decode) | — | Rastgele gliflerin hedef metne oturması; oturan glif kısa bir accent parlamasıyla gelir. Adım değişiminde ≈ 1.2 s sürer. | §4.1.4, §5.20.5 |
 | **Halka göstergesi** | `HalkaIndicator` | Header'daki `aria-hidden` SVG halkadır. Kaydırma ilerlemesini gösterir; bölüm başlarında çentik taşır. | §4.14 |
-| **Dilim** (sector) | `uSectors`, `secIdx`, `uSectorFill[6]` | Kapağın açısal bölmesidir; her biri bir çalışma alanıdır (N = 3–6). Plan görünümde bir kadran (dial) gibi okunur. | §4.8, §5.10 |
-| **Bant** (band) | `uBand`, `uBandPreview`, `bandOf()` | Bir proje veya CV kaydının kapsadığı yılların halka aralığıdır. Aktif bant aydınlatılır ve kenarları aksan rengiyle çizilir. | §4.9, §4.10, §5.4 |
-| **Açık yay** (open arc) | `uArc`, `uArcGlow`, `uArcPulse` | En dış halkanın yalnız bugüne kadar çizilen kısmıdır: `dayOfYear / daysInYear`, istemcide hesaplanır. "Bir sonraki halka" iletişim bölümünün imgesidir. | §4.11, §5.4 |
-| **Ghost** | `ghostMat`, `uGhostAlpha` | Kesilip atılan yarının silüetidir. Teknik çizimdeki "gizli çizgi" gibi yaklaşık %10 alfa ile çizilir. Yalnız `high` tier'da vardır. | §5.4 |
-| **Anchor** (sahne çapası) | `data-stage-anchor`, `data-anchor-kind="viewport\|flow\|sticky"` | DOM'da taşın ekrandaki yerini ve boyutunu bildiren boş, `aria-hidden` bir `<div>`dir. Kamera `setViewOffset` ile taşı bu dikdörtgenin merkezine koyar. Id'ler: `hero-rest`, `about-cut`, `areas-dial`, `work-specimen`, `journey-core`, `contact-ring`, `page-folio`, `cv-core`. | §5.7 |
+| **Statik panel** | `.kod-panel` (`KodPanel`) | Programın son karesinin SSR HTML hâlidir (`aria-hidden`). Canvas hazır olana dek, ayrıca statik tier'da, azaltılmış harekette ve JS yokken görünür. KESİT'in posterlerinin ve SVG figürlerinin yerini alır. | §4.16.3, §5.20.6 |
+| **ASCII derlemesi** | `AsciiCompile`, `canvas.ascii-compile` | Work'te gelen kapağın içinde 2D canvas kaplaması: kapak renkli ASCII olarak belirir, yukarıdan aşağı gerçek görsele derlenir. Kapak silmesiyle (`SectionWipe`) aynı karede başlar. | §4.9.4 |
+| **Gece paneli** | `data-night` | journey programının her temada koyu tema token'larıyla çizilmesi (`data-night` → `color-scheme: dark`). Sayfa zemini değişmez. | §4.1.3 |
+| **KESİT terimleri** | `stone`, `cut`, `cap`, `uRings`, `uSectors`, `uBand`, `uArc`, `ghostMat`, K0–K5, D1–D5 | Taş, kesit, kapak, halka, dilim, bant, açık yay, ghost ve keyframe anahtarları KESİT'e özgüydü; KOD ile kaldırıldı (2026-10-02). Eski `SPEC-SAPMA` kayıtlarında geçerler. | §0.6 |
+| **Anchor** (sahne çapası) | `data-stage-anchor`, `data-anchor-kind="viewport\|flow\|sticky"` | DOM'da panelin ekrandaki yerini ve boyutunu bildiren, `aria-hidden` bir `<div>`dir; içinde statik panel durur. Panel bu dikdörtgene 7 : 6 oranla yerleşir. Id'ler: `hero-rest`, `about-cut`, `areas-dial`, `work-specimen`, `journey-core`, `contact-ring`, `page-folio`, `cv-core`. | §5.7 |
 | **Track** | `stage/tracks.ts` | Kaydırmaya bağlı, sürekli bir sahne özelliği için bildirimsel aralıktır: `{ prop, chapter, phase, start, end, from, to, ease }`. Sahne durumu `(route, scrollY)`'nin saf fonksiyonudur. Aynı `prop` için iki track çakışamaz. | §5.9 |
 | **Event** | `stage/events.ts` | Bir eşik geçişiyle tetiklenen ayrık değişimdir: aktif alan, aktif proje, aktif CV kaydı. Track'lerden ayrı alanları zamana bağlı tween'ler. Geri yükleme ve kesmede `duration: 0` ile uygulanır. | §5.9 |
-| **Dwell** (bekleme bölgesi) | — | Bir adımın okunması için ayrılan kaydırma aralığıdır. Burada yalnız işaretçi ışığı hareket eder; `work` ve `journey`'de ayrıca ≤ 33.4°/100 svh yavaş dönüş vardır. Alanlar pininde her adımın %70'idir. | §4.8, §4.12 |
+| **Dwell** (bekleme bölgesi) | — | Bir adımın okunması için ayrılan kaydırma aralığıdır. Burada panelde kaydırma kaynaklı değişim olmaz; yalnız zaman tabanlı süsler (imleç, akan log, süzülme) sürer. Alanlar pininde her adımın %70'idir. | §4.8, §4.12 |
 | **IN / BODY** | `phase: 'in' \| 'body'` | Her bölümün iki kaydırma evresidir. **IN:** bölümün üst kenarı görünümün altından üstüne gelir (100 svh); sahne önceki bölümün son durumundan bu bölümün başlangıç durumuna geçer. **BODY:** üst kenar görünümün üstündeyken başlar, alt kenar görünümün altına gelince biter (bölüm yüksekliği − 100 svh); bölümün kendi anlatısı burada oynar. Kod yerel ilerleme `p ∈ [0, 1]` kullanır. | §4.5 |
-| **K anahtarları** | K0 `hero`, K1a `about-lift`, K1b `about-cut-in`, K1 `about-half`, K2 `areas-plan`, K3 `work-specimen`, K4 `journey-core`, K5 `contact-ring`; derin sayfalar: D1 `folio`, D2 `plan-small`, D3 `cv-core`, D4 `about-page`, D5 `contact-page` | Sahnenin adlandırılmış anahtar durumlarıdır: kamera, nesne, materyal ve ışık. Tek kaynak `src/stage/keyframes.ts`'tir. | §5.8 |
-| **Preset** | `home`, `folio`, `plan-small`, `cv-core`, `about-page`, `contact-page`, `none` | Bir route'un sahne yapılandırmasıdır. Her sayfa bunu küçük bir client bileşeniyle (`<StagePreset/>`) bildirir. | §4.13, §5.15 |
-| **Tier** | `static \| low \| medium \| high` | Cihaz yeteneğine göre sahne kalite seviyesidir. `static`: WebGL yoktur; posterler ve SVG figürler kullanılır. QA'da `?tier=` ile zorlanır. | §5.11 |
-| **Poster** | `ScenePoster`, `public/stage/k{0,1,5}-{light,dark}-{640,1080,1600}.{avif,webp}` | Gerçek shader'dan önceden render edilmiş, şeffaf zeminli statik taş görüntüsüdür. Canvas hazır olana dek, ayrıca `static` tier ve azaltılmış harekette görünür. | §5.16 |
+| **Program anahtarları** | `hero`, `about`, `area`, `journey`, `contact`, `folio`, `next`, `list`, `notfound` | Panelin gösterdiği programın adıdır. Ana sayfa ve derin sayfa eşlemesi §4.12.1 ve §4.13.2'dedir. KESİT'in K0–K5 / D1–D5 anahtarlarının yerini alır. | §5.20.2 |
+| **Preset** | `home`, `folio`, `plan-small`, `cv-core`, `about-page`, `contact-page`, `none` | Bir route'un sahne yapılandırmasıdır. KOD'da `/cv` `none` kullanır; `cv-core` adı kullanılmaz (§4.13.2). Her sayfa bunu küçük bir client bileşeniyle (`<StagePreset/>`) bildirir. | §4.13, §5.15 |
+| **Tier** | `static \| low \| medium \| high` | Cihaz yeteneğine göre sahne kalite seviyesidir. `static`: WebGL yoktur; statik paneller kullanılır. QA'da `?tier=` ile zorlanır. | §5.11 |
+| **Poster** | — | KESİT'e özgüydü; KOD ile kaldırıldı. Yerine statik panel geçer. | §0.6 |
 | **Stage** (sahne) | `StageRoot`, `#scene-layer`, `--scene-opacity` | Kök layout'taki kalıcı, sabit, `aria-hidden` canvas katmanı ve onu yöneten three-free kabuktur. Aşamaları: `poster \| probing \| loading \| ready \| fallback`. | §5.1, §5.12 |
 | **ScrollDirector** | `src/stage/ScrollDirector.tsx` | Bölüm evrelerini ölçer ve track'leri kaydırmaya göre değerlendirir. Kaydırma başına React render'ı üretmez. | §5.13 |
-| **Işık taraması** | `os-sweep` (sessionStorage) | Oturumda bir kez, ziyaretçi sayfanın üstündeyse anahtar ışığın taşın dokusunu 1.2 s boyunca taramasıdır. | §4.2, §5.6 |
-| **Gün yayı** | `lightAz`, `lightEl` | Keyframe başına senaryolu ışık yönüdür: hero'da sabah (−60°/38°), alanlarda öğle (0°/80°), iletişimde akşam (70°/14°). | §5.6 |
-| **Numune görüntüleyici / bölüm silmesi** | Specimen Viewer, `SectionWipe` | `work` bölümündeki sticky görsel sütunudur. Her proje kapağı, 1 px'lik aksan çizgisini izleyen bir silme hareketiyle gelir. Altındaki küçük taş projenin yılını ve alanını gösterir. | §4.9 |
+| **Hot reload** | `os-sweep` (sessionStorage) | Oturumda bir kez, ziyaretçi sayfanın üstündeyse `main.dart`'ın kendi son karesinden ≈ 2 s'de yeniden çözülmesi (panel hiçbir an boşalmaz). KESİT'in ışık taramasının yerini alır. | §4.2, §4.6.5 |
+| **Görüntüleyici** | `work` sticky figür yığını | `work` bölümündeki sticky görsel sütunudur. Etkin proje kapağı 600 ms'lik kapak silmesiyle (`SectionWipe`) açılır; ASCII derlemesi aynı anda kapağın içinde oynar. KESİT'in numunesi kaldırıldı. | §4.9 |
 | **Proje sayfası** | `/projeler/[slug]` · `/en/projects/[slug]`, `ProjectView` | Bir projenin yalın detay sayfasıdır (D-48); "vaka çalışması" terimi kullanılmaz. Tek kaynağı `content/projects/<slug>/project.yaml`'dır, MDX gövdesi yoktur. Kapak, künye şeridi (rol · tarihler · durum · alan çipleri ve en çok 4 **Künye** satırı, `facts`), mağaza bağlantıları, ekran görüntüsü galerisi ve isteğe bağlı harici video bağlantısı gösterir. EN sürümü yalnız EN başlık ve EN özet birlikte varsa vardır. | §3.4.1, §7.3.2, §7.7.1 |
 | **Liste modu** | — | Pin koşulları sağlanmadığında (ör. N ≥ 7, küçük ekran, azaltılmış hareket) Alanlar bölümünün pinsiz, alt alta kartlı hâlidir. | §4.8 |
-| **Okuma modu** | — | Derin sayfalarda taş yalnız başlığın yanında görünür. Başlık görünümden çıkınca `--scene-opacity` 0 olur ve frame loop `never`'a geçer. | §4.13 |
+| **Okuma modu** | — | Derin sayfalarda panel yalnız başlığın yanında görünür. Başlık görünümden çıkınca `--scene-opacity` 0 olur ve frame loop `never`'a geçer. | §4.13 |
 | **Persona / profil** | `site.persona`, `src/experience/profile.ts` | Mesleğe göre deneyim parametreleri ve etiketlerdir. Varsayılan ve etkin değer `engineer`'dır (D-35). | §4.17 |
 | **motion-ready** | `html.motion-ready` | GSAP yüklenip reveal'lar kurulduktan sonra eklenen sınıftır. Gizli ön-reveal stilleri yalnız bunun altında tanımlıdır. | §5.14, §8.4 |
+
+### 0.6 KOD geçişi: eski terimlerin karşılıkları
+
+2026-10-02'de deneyim konsepti KESİT'ten KOD'a geçti (D-16, sahip onayı). §4, §5.20, §7.3.2, §13 ve §15.8a güncellendi. Belgenin geri kalanında KESİT dönemine ait ifadeler kalmış olabilir. Bunlar aşağıdaki tabloya göre okunur.
+
+| KESİT ifadesi | KOD karşılığı | Kaynak |
+|---|---|---|
+| Taş (`stone`), kesit, kapak, halka, dilim, bant, açık yay, ghost, temas gölgesi | KOD paneli ve programları | §4.1, §5.20 |
+| K0–K5 ve D1–D5 anahtarları, keyframe tablosu (§5.8), taş koreografisi | Program tablosu | §4.12.1, §4.13.2 |
+| Kamera yörüngesi, ışık, gün yayı, işaretçi ışığı, yakınlık eğimi, kaydırma sallanması | Panel yerleşimi, eğim, süzülme, işaretçi paralaksı | §5.20.4, §4.14 #1 |
+| Işık taraması (`os-sweep`) | Hot reload (aynı anahtar) | §4.6.5 |
+| Poster (`public/stage/`), `ScenePoster`, `npm run posters`, `scripts/render-posters.ts`, `/lab/stage`, lab modu, `NEXT_PUBLIC_ENABLE_LAB` | Statik panel (`.kod-panel`); poster hattı ve lab kaldırıldı | §4.16.3, §5.20.6 |
+| SVG figürler: `DialFigure`, `SpecimenGlyph`, `RingsFigure`, `ArcFigure`, `EntryGlyph`; denetleyiciler `DialRotor`, `CutLine`, `JourneyActive`'in bant kısmı | Statik panel; liste ve girdi glifleri kaldırıldı | §4.16.3 |
+| 404 `ClockFigure` | Statik HTML hata çıktısı | §4.13.6 |
+| Work numunesi (`work-specimen`, `SpecimenGlyph`) | Work'te panel yoktur; `work-specimen` boş çapadır. Kapak silmesi (`SectionWipe`) kalır; ASCII derlemesi onunla aynı karede oynar | §4.9.4 |
+| About `CutLine`, `.cut-line` ve `cutProgress` lede satır eşikleri | Lede global blok reveal'ı (`data-reveal="block"`, bir kez, ≤ 700 ms); `about:cut` yalnız about.dart bloklarını sürer | §4.7.4 |
+| Areas kadranı, iğne, dilim dönüşü | Alan diyagramı (`figure`), ≈ 1.2 s çözülme | §4.8.5 |
+| Journey bandı, karot | `git log --graph` (gece paneli) | §4.10.3 |
+| D3 `cv-core` (`/cv`'de sticky taş sütunu) | Yok: `/cv` sahnesizdir (preset `none`) | §4.13.2 |
+| Contact açık yayı, yay nabzı, halka dalgası | `zsh` terminali, `$ mail` yazımı | §4.11.3 |
+| Hover-to-scene (bant ve dilim önizlemesi) | Yok; panel hover'a tepki vermez | §4.4, §4.14 #3 |
+| Eyebrow'lar KESİT / DİLİMLER / NUMUNELER / HALKALAR / BİR SONRAKİ HALKA | KAYNAK / MODÜLLER / DERLEME / SÜRÜM GEÇMİŞİ / TERMİNAL | §4.17.2 |
+| `stone.*`, `cap.*` persona parametreleri; `--scene-stone-*` tonları | Kaldırıldı; palet rolleri | §4.17.2, §4.1.3 |
+| "Parçacık ve instancing YASAK" | Parçacık yasağı sürer; instancing yalnız KOD glif ızgarası için serbesttir | §4.3, D-16 |
+
+- **Öncelik:** Çelişkide D-16, §4, §5.20 ve §15.8a geçerlidir (§0.1).
+- 2026-10-02'den önce yazılmış `SPEC-SAPMA` kayıtları tarihî kayıttır; içlerindeki taş ifadeleri KESİT dönemini anlatır.
+- Değişmeyenler: içerik, sayfalar, tasarım sistemi, i18n, Lenis, ScrollDirector (ölçüm, bölüm fazları, adım olayları), çapalar, route geçişleri, work kapak silmesi (`SectionWipe`), okuma modu, kademe yoklaması, kalıcı canvas katmanı, bağlam kaybı ve erişilebilirlik kuralları.
 
 ---
 
@@ -376,21 +407,19 @@ Terimler tüm belgede bu anlamlarla kullanılır. Kod adları İngilizce kalır.
 **Ürün.** Orçun Saatçi adına kurulan kişisel site. Biyografiyi, CV'yi, portfolyoyu ve çalışma alanlarını tek bir bütünlüklü deneyimde sunar. Türkçe birincil dildir ve kökte yayınlanır. İngilizce sayfa başına isteğe bağlıdır ve `/en` altında yayınlanır (D-08, D-11).
 
 **Konumlandırma cümlesi:**
-- TR: "Orçun Saatçi'nin kim olduğunu, ne yaptığını ve hangi alanlarda çalıştığını; kariyerinden türetilmiş tek bir 3D nesnenin kesiti üzerinden anlatan, önce içerik sonra hareket ilkesiyle kurulmuş kişisel portfolyo ve CV sitesi."
-- EN: "A personal portfolio and CV site that shows who Orçun Saatçi is, what he does and where he works, told through a section cut into a single 3D object derived from his career. Content first, motion second."
+- TR: "Orçun Saatçi'nin kim olduğunu, ne yaptığını ve hangi alanlarda çalıştığını; içeriğinden üretilmiş programları gösteren tek bir kod editörü paneli üzerinden anlatan, önce içerik sonra hareket ilkesiyle kurulmuş kişisel portfolyo ve CV sitesi."
+- EN: "A personal portfolio and CV site that shows who Orçun Saatçi is, what he does and where he works, told through a single code-editor panel that runs programs generated from his content. Content first, motion second."
 
-**Konsept: KESİT.** Alt başlık: "Bir pratiğin kesiti" / *"A section through a practice."* İç slogan: *Dışı kimlik, içi emek.* Deneyimin tamamı §4'te tanımlanır.
-- Ziyaret boyunca **tek bir nesne** vardır: Taş. Kaydırdıkça Taş kesilerek açılır.
-- Kesit yüzü **veriyle dürüsttür**. Halka sayısı, bant aralıkları, dilim sayısı ve açık yay CV ile alan içeriğinden hesaplanır (§5.10). Süs amaçlı gürültü yoktur.
-  - **Halkalar:** her çalışma yılı bir halkadır. *Saatçi* soyadı buraya bağlanır; halkalar zamanın kendisidir.
-  - **Dilimler:** her çalışma alanı bir dilimdir.
-  - **Açık dış halka:** bugüne kadar çizilir. İletişim bölümü bunu "bir sonraki halka" daveti olarak kullanır.
-- **Atmosfer:** "gece kadranında bir mineral numunesi". Editoryal, kesin ve sessiz bir karakter. Drama ışıktan (senaryolu gün yayı) ve bakış açısından doğar. Sayfalar zıplamaz, yana kaymaz, yanıp sönmez.
+**Konsept: KOD** (D-16, 2026-10-02; KESİT'in yerini aldı). Alt başlık: "Glif glif bir kod editörü" / *"A code editor, glyph by glyph."* İç slogan: *Her bölüm bir dosya.* Deneyimin tamamı §4'te tanımlanır.
+- Ziyaret boyunca **tek bir sahne nesnesi** vardır: monospace gliflerden yapılmış, süzülen bir kod editörü paneli. Her bölüm bu editörde bir programdır: `main.dart`, `about.dart`, alan diyagramları, `git log`, `zsh`.
+- Programlar **veriyle dürüsttür**: yalnız site içeriğindeki olguları yazar (§4.1.2). Genel kod süsü (dosya adları, `Ln/Col`) serbesttir.
+- **Okunabilirlik kuralı:** her program bir bakışta kod ya da diyagram olarak okunur (§4.1.5).
+- **Atmosfer:** sessiz bir masada açık duran tek bir editör penceresi. Editoryal, kesin ve sessiz bir karakter. Hareket çözülme, yazma, akan log ve glif yağmurundan doğar. Sayfalar zıplamaz, yana kaymaz, yanıp sönmez.
 
 **Ürün ilkeleri** (tasarım ilkeleri §6.1'de, deneyim yasaları §4.4'tedir):
 1. **İçerik HTML'dir, 3D atmosferdir.** Hiçbir bilgi yalnız canvas'ta bulunmaz. Site JS'siz, WebGL'siz ve azaltılmış harekette eksiksiz okunur.
 2. **Önce statik kare.** Her bölüm, hareket tamamen kapalıyken de bitmiş görünür.
-3. **Tek nesne, tek yönetmen, bir kez harcanan cesaret.** Tek mesh, tek shader, 2–3 draw call ve tek bir DOM pini vardır. Tipografi, renk ve yerleşim sade tutulur.
+3. **Tek nesne, tek yönetmen, bir kez harcanan cesaret.** Tek KOD paneli, 2 draw call (glifler + plaka) ve tek bir DOM pini vardır. Tipografi, renk ve yerleşim sade tutulur.
 4. **Hız pazarlık konusu değildir.** H1 LCP öğesidir. 3D ve hareket paketleri kritik yolda değildir (D-33, D-34).
 5. **Sıfır işletme maliyeti.** Tek ücretli kalem alan adıdır (§1.6).
 
@@ -413,7 +442,7 @@ Her ölçüt otomatik veya belgelenmiş manuel bir kontrolle doğrulanır. "Kap�
 | G11 | SEO temeli | `next build` yalnız ○/● route üretir. İndekslenebilir her sayfa `sitemap.xml`'dedir ve öz-kanonik ile karşılıklı hreflang (+ `x-default`) taşır. JSON-LD geçerlidir. Bilinmeyen URL HTTP 404 döner. | e2e SEO smoke (§13.3); Rich Results Test manuel (M10) | M3 |
 | G12 | Mobil | 360×800 ve 390×844'te yatay kaydırma yoktur. Dokunma hedefleri ≥ 44×44 CSS px'tir. `pixel-7` ve `iphone-15` projeleri yeşildir. | Playwright | M8 |
 | G13 | Hareket tercihine saygı | Azaltılmış harekette canvas yoktur, three chunk'ı istenmez ve tüm metin `opacity: 1`'dir. Duraklatma düğmesi otomatik hareketi durdurur (WCAG 2.2.2). | Playwright `reduced-motion` | M4 |
-| G14 | Etki | Sahip M1'de K0–K5 posterlerini onaylar. 5 kişilik testte Alanlar pininde "takıldı mı?" diye soran olmaz (bkz. §16.1). | M1 kapısı; manuel test | M1, M8 |
+| G14 | Etki | Sahip M1'de K0–K5 posterlerini onayladı (KESİT); KOD konseptini 2026-10-02'de onayladı ve KOD geçişinin canlı önizlemesini onaylar (§15.8a). 5 kişilik testte Alanlar pininde "takıldı mı?" diye soran olmaz (bkz. §16.1). | M1 kapısı, KOD geçişi; manuel test | M1, KOD, M8 |
 | G15 | Sıfır işletme maliyeti | Alan adı dışında aylık ödeme 0'dır. Vercel Hobby kotalarından hiçbiri aşılmaz (ör. görsel dönüşümü < 5K/ay). | Vercel Usage paneli, aylık | M10 ve sonrası |
 
 ### 1.3 Hedef kitle ve kullanım senaryoları
@@ -434,7 +463,7 @@ Her ölçüt otomatik veya belgelenmiş manuel bir kontrolle doğrulanır. "Kap�
 |---|---|---|---|
 | Sayfalar | Ana sayfa (6 bölüm), `/hakkimda`, `/cv`, `/projeler`, `/projeler/[slug]` (yalın proje sayfası, D-48), `/calisma-alanlari`, `/iletisim`, `/gizlilik` ve EN içerik varsa `/en` karşılıkları (§3.2). İki dilli 404. `/calisma-alanlari/[area]` kodu hazırdır ve `features.areaPages` açık ve içerik varsa yayınlanır. | — | Yayınlar sayfası (`features.publicationsPage`). §3.2'de route'u yoktur; eklenecekse önce §3.2 güncellenir. |
 | Referanslar | `testimonials` bölümü kod olarak hazırdır. `features.testimonials` kapalı başlar ve içerik gelince açılır. | — | — |
-| 3D ve hareket | KESİT'in tamamı: K0–K5, D1–D5, tier'lar, posterler, azaltılmış hareket / JS'siz / statik varyantlar, route geçişleri, mikro etkileşimler | — | — |
+| 3D ve hareket | KOD'un tamamı: programlar, köprüler ve çözülmeler, tier'lar, statik paneller, azaltılmış hareket / JS'siz / statik varyantlar, route geçişleri, mikro etkileşimler | — | — |
 | Persona | `engineer` (meslek bildirildi: Bilgisayar Mühendisi ve Mobil Uygulama Geliştiricisi; Q-01, §4.17) | — | Meslek değişirse persona değişikliği (§4.17 prosedürü) |
 | CV | `/cv` (print stilli), PDF (TR; EN içerik varsa EN), JSON Resume | — | — |
 | İletişim | `mailto:` + "Kopyala" + sosyal bağlantılar + CV PDF (D-22) | Form (`features.contactForm`). Yalnız alan adı alınıp Resend alanı doğrulandıktan sonra açılır. | Turnstile, yalnız spam gelirse |
@@ -486,35 +515,35 @@ Sahibin brief'i (Türkçe, aynen) ve ek kısıtlar atomik ifadelere bölünmüş
 | B03 | "CV'mi" | `journey` bölümü + `/cv` + PDF + JSON Resume, hepsi tek YAML kaynaktan | §4.10, §7.6, D-13 | `/cv` 200 döner. `/files/orcun-saatci-cv-tr.pdf` 200 döner ve `X-Robots-Tag: noindex` taşır; metni seçilebilir; İ, Ş, Ğ, ı doğru çıkar. `resume.tr.json` JSON Resume şemasına göre geçerlidir. |
 | B04 | "portfolyomu" | `work` bölümü (P = 3–5 öne çıkan proje), `/projeler`, `/projeler/[slug]` (yalın proje sayfası, D-48) | §4.9, §7.7, §7.8 | Her öne çıkan proje ana sayfada kapağıyla görünür ve "Projeyi incele →" ile 1 tıkla proje sayfasına gider (e2e) |
 | B05 | "çalışma alanlarımı" | `areas` bölümü + `/calisma-alanlari` (+ İSTEĞE BAĞLI alan sayfaları) | §4.8, §7.3, §3.2 | N alanın tümünün başlığı etkileşim olmadan DOM'da görünür: pin modu, liste modu ve `no-js`'te |
-| B06 | "modern, özgün ve etkileyici" | KESİT konsepti, isimden türeyen metafor, 7 imza anı | §4.1, §4.2, §6.1 | M1 kapısı (sahip onayı). §4.2'deki 7 imza anı `desktop-chromium`da bir e2e senaryosuyla gözlenir. |
-| B07 | "Sitede 3D öğeler … olsun" | Kalıcı WebGL2 sahnesi, tek Taş | §5.1–§5.5, D-14, D-18 | `desktop-chromium`: `load` sonrası canvas ilk kareyi render eder (sahne-hazır işareti, §5.18) ve `aria-hidden="true"` taşır |
+| B06 | "modern, özgün ve etkileyici" | KOD konsepti (sahibin mesleğinden türeyen kod editörü), 7 imza anı | §4.1, §4.2, §6.1 | KOD geçişi kapısı (sahibin canlı önizleme onayı, §15.8a). §4.2'deki 7 imza anı `desktop-chromium`da bir e2e senaryosuyla gözlenir. |
+| B07 | "Sitede 3D öğeler … olsun" | Kalıcı WebGL2 sahnesi, tek KOD paneli (eğik, süzülen glif ızgarası) | §5.1, §5.20, D-14, D-18 | `desktop-chromium`: `load` sonrası canvas ilk kareyi render eder (sahne-hazır işareti, §5.18) ve `aria-hidden="true"` taşır |
 | B08 | "sayfayı kaydırdıkça ilerleyen animasyonlar" | 3D özellikleri kaydırmaya scrub edilir. Sahne `(route, scrollY)`'nin saf fonksiyonudur. | §4.3, §4.12, §5.9, §5.13 | `tracks.test.ts`: aynı `prop` için çakışan track yok; aynı `scrollY` her zaman aynı `stageTarget`'ı üretir |
 | B09 | "aşağı kaydırırken bir 3D nesne dönebilsin" | `rotY` track'leri: `about` 0→35°; `areas` her adımda −360°/N; `work` ve `journey` yavaş dönüş | §4.7–§4.10, §5.8 | Birim test: `areas` adım k'nın dwell'inde `rotY = ψₖ = 45 − k·360/N` |
-| B10 | "bakış açısı değişebilsin" | Kamera keyframe'leri K0–K5; `areas` girişinde dolly-zoom (r 4.6→7.2, fov 28→18, el 55→88) | §4.8, §5.7, §5.8 | Birim test: `areas` IN boyunca `r·tan(fov/2)` ≈ 1.14–1.15 kalır; K2'de `el = 88` |
-| B11 | "içerikler bu hareketlerle uyumlu biçimde ortaya çıksın" | Reveal'lar sahne olaylarıyla aynı eşiklerde tetiklenir: kesme çizgisi + lede satırları, bölüm silmesi + numune olayı, CV bant olayları | §4.5, §4.7, §4.9, §4.10, §5.14 | §4.12 değişmezi (e2e): her metin reveal'ı, bloğun üst kenarı görünümün %75'ini geçmeden tamamlanır (§4.12.3 istisnaları ve pin içi değişimler hariç) |
+| B10 | "bakış açısı değişebilsin" | Panel çapadan çapaya süzülür, program başına eğim değişir; bölümler arası glif yağmuru (köprü) | §4.12.1, §5.20.4, §5.20.5 | e2e: her köprüde `?debug` çapa ve program anahtarı §4.12.1 ile aynıdır (K-CHOREO-7) |
+| B11 | "içerikler bu hareketlerle uyumlu biçimde ortaya çıksın" | Reveal'lar sahne olaylarıyla aynı eşiklerde tetiklenir: areas açıklaması + program adımı (`areas:step`), kapak silmesi + ASCII derlemesi (`work:active`), etkin yıl + `git log` vurgusu (`journey:active`); about.dart blokları `about:cut` ile açılır. KESİT'in kesim çizgisi ve lede satır eşikleri kaldırıldı. | §4.5, §4.7, §4.9, §4.10, §5.14 | §4.12 değişmezi (e2e): her metin reveal'ı, bloğun üst kenarı görünümün %75'ini geçmeden tamamlanır (§4.12.3 istisnaları ve pin içi değişimler hariç) |
 | B12 | "Bazı bölümlerde sahne ekranda sabit kalırken kaydırmaya devam ettikçe bir görsel anlatı ilerlesin" | Tek DOM pini `areas` (CSS sticky, N adım); `work`'te sticky görüntüleyici; `journey`'de sticky taş sütunu | §4.8, §4.9, §4.10, D-16 | e2e: pin adımlarında başlıklar sırayla `aria-current="step"` olur; son adımdan sonra sonraki bölüme ulaşılır (kaydırma tuzağı yok) |
 | B13 | "Bölümler arasındaki geçişler akıcı olsun" | IN evreleri önceki bölümün son durumundan sürekli geçiş yapar. Sönümleme maath `smoothTime` ile: sahne 0.21 s, kamera 0.25 s (λ 6 / 5 karşılığı, §5.9.8). Arka plan sabittir. | §4.5, §4.12, §5.9 | Birim test: her bölüm sınırında track değerleri süreklidir (sınırın iki yanında aynı değer). e2e: tam kaydırmada CLS ≤ 0.05. |
-| B14 | "siteyi gezmek bütünlüklü bir deneyim hissettirsin" | Tek kalıcı canvas; route değişiminde taş süzülür veya keser; `<ViewTransition>` | §4.13, §5.15, D-18, D-32 | e2e: ana sayfa → proje sayfası istemci gezinmesinde canvas DOM düğümü yeniden oluşturulmaz ve `webglcontextlost` tetiklenmez |
-| B15 | "Fare hareketlerine … tepki veren ince etkileşimler" | İşaretçi ışığı (az ±25°, el ±12°) ve taş yakınlık eğimi ≤ 6°. Yalnız `(hover: hover) and (pointer: fine)` ve `data-motion="full"` iken çalışır. | §4.14, §5.6 | e2e: kapılar dışında işaretçi etkisi yok. Etki sınırları (istisnalar §4.14.1'de): DOM hareketi ≤ 12 px, 3D eğim ≤ 6°, DOM efekt süresi ≤ 600 ms. |
+| B14 | "siteyi gezmek bütünlüklü bir deneyim hissettirsin" | Tek kalıcı canvas; route değişiminde panel süzülür veya keser; `<ViewTransition>` | §4.13, §5.15, D-18, D-32 | e2e: ana sayfa → proje sayfası istemci gezinmesinde canvas DOM düğümü yeniden oluşturulmaz ve `webglcontextlost` tetiklenmez |
+| B15 | "Fare hareketlerine … tepki veren ince etkileşimler" | Panelde işaretçi paralaksı (≤ 4° / 2.5°). Yalnız `(hover: hover) and (pointer: fine)` ve `data-motion="full"` iken çalışır. | §4.14, §5.20.4 | e2e: kapılar dışında işaretçi etkisi yok. Etki sınırları (istisnalar §4.14.1'de): DOM hareketi ≤ 12 px, panel eğimi ≤ 6°, DOM efekt süresi ≤ 600 ms. |
 | B16 | "… ve üzerine gelmeye tepki veren" | Hover-to-scene (alan → dilim; proje → bant + dilim; CV → bant), bağlantı alt çizgisi animasyonu, 4 manyetik öğe (iki hero CTA, "Kopyala", e-posta; §4.14.3) | §4.14, §6.6 | e2e: her hover etkisi `:focus-visible` ile de tetiklenir. Dokunmatikte merkez satır etkinleştirmesi çalışır. |
 | B17 | "güçlü tipografi" | Mona Sans (wdth + wght) + Martian Mono, kendi barındırılan alt kümeler, akışkan ölçek, Türkçe dizgi kuralları | §6.2, D-21 | Font istekleri yalnız kendi kökenine gider. TR metinde "fi" bağlaşımı oluşmaz. OG ve PDF'te Ğ Ş İ ı doğru çizilir (görsel kontrol, §13.4). |
 | B18 | "dengeli boşluklar" | 4/8 tabanlı boşluk ölçeği; 12/4 kolonlu grid; boşluk tokenları | §6.4, §6.10 | Bileşenlerde boşluk değerleri `--spacing-*` tokenlarından gelir (kod incelemesi). 360×800'de yatay kaydırma yoktur. |
-| B19 | "özenli görseller" | Kapaklar hover'a bağlı olmadan her zaman görünür; 16:10 AVIF/WebP; alt metin kuralları; gerçek shader'dan posterler | §6.7, §9.3, §4.9, §5.16 | Her `<img>` `alt` taşır (dekoratifse `alt=""`) ve boyut veya `sizes` bilgisi içerir. JS'siz ve azaltılmış harekette tüm kapaklar görünür. |
+| B19 | "özenli görseller" | Kapaklar hover'a bağlı olmadan her zaman görünür; 16:10 AVIF/WebP; alt metin kuralları; work'te ASCII derlemesi | §6.7, §9.3, §4.9 | Her `<img>` `alt` taşır (dekoratifse `alt=""`) ve boyut veya `sizes` bilgisi içerir. JS'siz ve azaltılmış harekette tüm kapaklar görünür. |
 | B20 | "profesyonel bir karakter" | Tek aksan tek anlam; özel imleç ve parçacık YASAK; portfolyo dili | §4.4, §6.1, §7.9, D-16 | §2.4 taraması temizdir (ör. `cursor: none` yok). Metinler §7.9'daki yasaklı sözcük kontrolünden geçer. |
 | B21 | "Animasyonlar içeriği desteklesin" | Kural: "3D kaydırmayla, DOM adım adım". Hiçbir metin veya görsel opaklığı kaydırma konumuna bağlı değildir. | §4.3, D-16, D-46 | Kod taraması: ScrollTrigger `scrub` yalnız stage track'lerinde kullanılır. e2e: dwell'lerde metin `opacity: 1`'dir. |
-| B22 | "metinleri okumayı … zorlaştırmasın" | Taş gövde metninin arkasında durmaz. Dwell bölgeleri vardır. Reveal ≤ 700 ms sürer ve bir kez oynar. | §4.4, §4.5, §6.9 | Kontrast sondası (§5.18) metin dikdörtgenlerinin altında taş pikseli bulmaz (hero H1 hariç). axe renk kontrastı 0 ihlal verir. |
+| B22 | "metinleri okumayı … zorlaştırmasın" | Panel gövde metninin arkasında durmaz. Dwell bölgeleri vardır. Reveal ≤ 700 ms sürer ve bir kez oynar. | §4.4, §4.5, §6.9 | K-CHOREO-6: panel dikdörtgeni hiçbir metin dikdörtgeniyle kesişmez (hero dahil). axe renk kontrastı 0 ihlal verir. |
 | B23 | "projelerimi incelemeyi … zorlaştırmasın" | Kapaklar her zaman görünür; proje sayfasına 1 tık; `/projeler` listesi ve alan filtresi | §4.9, §7.7, §7.8 | e2e: `/projeler` JS'siz tüm projeleri listeler. Filtre (`?alan=`) yalnız istemcide çalışır; canonical `/projeler` kalır. |
 | B24 | "iletişim bilgilerime ulaşmayı zorlaştırmasın" | Her sayfadan ≤ 1 tık; e-posta düz metin + `mailto:` + Kopyala; JS'siz görünür | §3.9, §4.11, §12.1 | e2e (tüm route'lar, `no-js` dâhil): header'da iletişim bağlantısı ve footer'da görünür `a[href^="mailto:"]` bulunur |
-| B25 | "Bu deneyim mobilde de iyi çalışsın" | Mobil yerleşim (taş bantlarda), tier'lar, dokunmatik eşdeğerleri | §4.15, §5.11, §9.5, §9.6 | `pixel-7` ve `iphone-15` e2e yeşildir; `scrollWidth ≤ innerWidth`; dokunma hedefleri ≥ 44×44 px |
+| B25 | "Bu deneyim mobilde de iyi çalışsın" | Mobil yerleşim (panel bantlarda), tier'lar, dokunmatik eşdeğerleri | §4.15, §5.11, §9.5, §9.6 | `pixel-7` ve `iphone-15` e2e yeşildir; `scrollWidth ≤ innerWidth`; dokunma hedefleri ≥ 44×44 px |
 | B26 | "hızlı açılsın" | D-33 bütçeleri; 3D ve hareket paketleri `load` sonrası yüklenir | §9.1, §9.2, §9.4 | LHCI mobil: LCP ≤ 2.5 s, Perf ≥ 0.85. `npm run budgets`: ilk JS ≤ 175 KB gz. |
 | B27 | "SEO açısından güçlü bir temele sahip olsun" | Tam statik SSG, metadata, canonical/hreflang, sitemap, JSON-LD, OG görselleri | §11, D-06 | LHCI SEO = 1.0; `next build` yalnız ○/●; sitemap'te hreflang alternatifleri; bilinmeyen URL HTTP 404 |
-| B28 | "Ziyaretçiler hem görsel deneyimden etkilensin" | İmza anları, ışık taraması, dolly-zoom, bir sonraki halka | §4.2, §5.6 | G14: M1 onayı ve 5 kişilik test |
+| B28 | "Ziyaretçiler hem görsel deneyimden etkilensin" | KOD imza anları: hot reload, alan diyagramları, ASCII derlemesi, `git log`, terminal, glif yağmuru | §4.2, §5.20 | G14: KOD önizleme onayı ve 5 kişilik test |
 | B29 | "… kim olduğumu … kolayca anlayabilsin" | Hero: H1'de ad + unvan, konumlandırma cümlesi, konum | §4.6, §7.9 | G1: 5 saniye testi |
 | B30 | "… neler yaptığımı …" | Seçili projeler, `about` ve CV özetleri ana sayfada | §4.7, §4.9, §4.10 | `no-js`: ana sayfa HTML'inde P öne çıkan projenin başlığı ve özeti ile E CV kaydı bulunur |
 | B31 | "… ve hangi alanlarda çalıştığımı kolayca anlayabilsin" | Alan başlıkları her zaman görünür; açıklamalar DOM'dadır ve gizlenmez | §4.8 | B05'e ek olarak: etkin olmayan alan açıklamaları `aria-hidden` taşımaz |
 | B32 | Ek kısıt: "Next.js zorunlu" | Next.js 16.3.x App Router | §2.1, D-01 | `package.json`'da `next` 16.3.x'tir; 2026-09-30 ve sonrasında ≥ 16.3.7 |
 | B33 | Ek kısıt: "alan adı sonra alınacak" | Kanonik www; alan adından önce indeksleme kapalı; e-posta ve form alan adına bağlı | §1.6, §14.3–§14.6, D-09, D-22, D-28 | Alan adından önce `robots.txt` `Disallow: /` döner. Sonra `http://orcunsaatci.com` → `https://orcunsaatci.com` → `https://www.orcunsaatci.com` 308 zinciri çalışır (§14.4.3, §14.7). |
-| B34 | Ek kısıt: "Vercel Hobby (ücretsiz)" | Ticari olmayan çerçeve; kotalar içinde kalma | §1.6, §14.2, D-28, D-30, D-31 | Fiyat, paket ve rezervasyon öğesi yoktur. Posterler `/_next/image` üzerinden istenmez (e2e ağ kaydı). |
+| B34 | Ek kısıt: "Vercel Hobby (ücretsiz)" | Ticari olmayan çerçeve; kotalar içinde kalma | §1.6, §14.2, D-28, D-30, D-31 | Fiyat, paket ve rezervasyon öğesi yoktur. Statik paneller HTML'dir; görsel dönüşüm kotası harcamaz. |
 | B35 | Ek kısıt: "meslek bilinmiyor" | `engineer` persona (meslek sonradan bildirildi, Q-01), `{{…}}` yer tutucular, `profile.ts` | §0.4, §4.17, D-35, D-36 | `VERCEL_ENV=production` ile tek bir yer tutucu bile build'i düşürür (check-content testi) |
 
 ### 1.8 Kabul kriterleri
@@ -561,7 +590,7 @@ Sütunlar:
 | `prettier` | `^3.9.9` | 3.9.9 | dev | M0 | D-27 |
 | `prettier-plugin-tailwindcss` | `^0.8.1` | 0.8.1 | dev | M0 | D-27 |
 | `eslint-config-prettier` | `^10.1.8` | 10.1.8 | dev | M0 | Sözleşme tablosunda yok. Kalite araştırması §5'in önerisidir: flat config'te en sona konur ve biçim kurallarını kapatır (§13.7). |
-| `tsx` | `^4.23.15` | 4.23.15 | dev | M0 | Build betiklerini çalıştırır (`check-content.ts`, `build-cv.tsx`, `render-posters.ts`). |
+| `tsx` | `^4.23.15` | 4.23.15 | dev | M0 | Build betiklerini çalıştırır (`check-content.ts`, `build-cv.tsx`; KESİT'in `render-posters.ts`'i kaldırıldı). |
 
 #### 2.1.2 3D ve hareket
 
@@ -592,7 +621,7 @@ Sütunlar:
 | `schema-dts` | `^2.0.0` | 2.0.0 | dev | M3 | Yalnız tipler (`WithContext`, `Graph`) |
 | `@jsonresume/schema` | `^1.3.1` | 1.3.1 | dev | M3 | JSON Resume doğrulaması (`scripts/build-cv.tsx`, §7.6). CJS; tip bildirimi `scripts/jsonresume.d.ts` (§7.1.2, U-07). |
 | `@react-pdf/renderer` | `^4.9.0` | 4.9.0 | dev | M3 | D-13. Yalnız ESM. Yalnız `scripts/build-cv.tsx` içinde kullanılır. |
-| `sharp` | `^0.35.5` | 0.35.5 | dev | M1 | Poster kodlama (AVIF/WebP), görsel ölçüleri ve baskın renk (§7.3.4; bulanık yer tutucu yoktur, `placeholder="empty"`, §9.3.1) |
+| `sharp` | `^0.35.5` | 0.35.5 | dev | M1 | Görsel ölçüleri ve baskın renk (KESİT'teki poster kodlaması kaldırıldı) (§7.3.4; bulanık yer tutucu yoktur, `placeholder="empty"`, §9.3.1) |
 | `next-mdx-remote-client` | `^2.1.12` | 2.1.12 | dep | Yalnız yedek | **Kurulmaz.** Yalnız `@content-collections/mdx` başarısız olursa devreye girer (D-12). peer `react >=19.1`. |
 
 #### 2.1.4 Analitik ve v1.1
@@ -836,7 +865,7 @@ Sırayla uygulanır:
 
 ### 2.3 Karar kaydı
 
-Sözleşmenin 47 kararı (D-01…D-47) ve sonradan kayda geçen sahip kararı D-48'dir. Bağlayıcıdır ve bu belgedeki her şeyin üstündedir (§0.1). Her kararın ayrıntısı "Ayrıntı" sütunundaki bölümdedir.
+Sözleşmenin 47 kararı (D-01…D-47) ve sonradan kayda geçen sahip kararı D-48'dir. D-16 2026-10-02'de sahip kararıyla güncellendi (KESİT → KOD); bağlı kararlar (D-18, D-19, D-31, D-38, D-40, D-42, D-45) aynı tarihte notlandı. Bağlayıcıdır ve bu belgedeki her şeyin üstündedir (§0.1). Her kararın ayrıntısı "Ayrıntı" sütunundaki bölümdedir.
 
 | ID | Karar | Gerekçe | Ayrıntı |
 |---|---|---|---|
@@ -855,10 +884,10 @@ Sözleşmenin 47 kararı (D-01…D-47) ve sonradan kayda geçen sahip kararı D-
 | D-13 | **CV** tek YAML kaynaktan üç çıktı üretir:<br>1. print stil sayfalı `/cv` sayfası;<br>2. bağımsız `@react-pdf/renderer` betiğinden PDF (`scripts/build-cv.tsx`, `tsx` ile; Türkçe destekli TTF'ler kayıtlı, heceleme kapalı);<br>3. JSON Resume dosyaları.<br>Çıktılar `public/files/`'a yazılır. PDF ve JSON `X-Robots-Tag: noindex` ile servis edilir. | Tek kaynak, üç çıktı, ATS dostu. Varsayılan PDF fontu `İ Ş Ğ ı ş ğ`'yi bozar (test edildi). react-pdf'in App Router route handler'larında hata geçmişi vardır. Aranması gereken sayfa HTML `/cv`'dir. | §7.6 |
 | D-14 | **3D:** `three` 0.186.x + `@react-three/fiber` 9.8.x + `@react-three/drei` 10.7.x (**yalnız `PerformanceMonitor`**).<br>- WebGL2 `WebGLRenderer`. **YASAK:** WebGPU, postprocessing, GLTF, doku, three.js ışık nesneleri.<br>- Shader'lar **TS template-string modülleridir** (raw-loader veya Turbopack kuralı yok). | Tek mesh + tek shader, 2–3 draw call; varlık indirmesi yoktur. `WebGPURenderer` three.js'te hâlâ deneyseldir ve `ShaderMaterial` desteklemez. Turbopack `type: 'raw'` 16.3.6'da `undefined` döndürdü. | §5 |
 | D-15 | **Hareket:**<br>- `gsap` 3.15.x (ScrollTrigger, SplitText; ticari kullanım dâhil ücretsiz) + `@gsap/react`.<br>- `lenis` 1.3.26: yalnız masaüstü tekerleği, `syncTouch: false`; azaltılmış harekette **mount edilmez**.<br>- `maath` (damping) ve `zustand` 5 (vanilla store).<br>- **YASAK:** `motion`/framer-motion, `r3f-perf`, `@react-three/postprocessing`, GSAP ScrollSmoother. `leva` yalnız geliştirmede ve isteğe bağlıdır. | Tek zaman çizelgesi yönetmeni. Lenis doğal kaydırmayı korur; sticky, çapalar ve sayfada bul çalışır. ScrollSmoother bir sarmalayıcıyı transform eder ve sticky/fixed'i bozar. `r3f-perf` drei 9 üzerinden React 18 peer çatışması getirir. `motion` yaklaşık 42 KB gz gereksiz yüktür. | §5.13, §5.14 |
-| D-16 | Deneyim **KESİT**'tir (onaylı konsept).<br>- **YASAK:** özel imleç, parçacık, arka plan rengi scrub'ı, kaydırmaya bağlı metin veya görsel opaklığı, GSAP `pin`/pin-spacer.<br>- Tam olarak **bir DOM pini** vardır (`areas`), CSS `position: sticky` ile. `work` ve `journey` sticky medya/sahne sütunları kullanır; metinleri doğal akışta kayar. | Jüri kararıdır (ağırlıklı puan 8.60): okunabilirlik, uygulanabilirlik ve mobil performansta en güçlü seçenek. Sticky kompozitörde çalışır. Geç eklenen pin-spacer ise CLS üretir. | §4 |
-| D-17 | Modül sınırı: `src/stage/` three-free'dir (store, tracks, director, anchors, capabilities, presets, poster, root). `src/stage/gl/`, `three`, `@react-three/*` ve `maath` import edebilen **tek** yerdir. ESLint `no-restricted-imports` ile zorlanır. | three'nin ana pakete sızması derleme anında engellenir. Ana paket bütçesi (D-33) korunur. | §8.2 |
-| D-18 | **Her** kök layout'ta tek bir kalıcı `<StageRoot/>` mount edilir: fixed, `aria-hidden`, `pointer-events: none`, DOM'un altında.<br>- `load` + idle sonrası tembel açılış (§9.2).<br>- Poster yedeği.<br>- Tier'lar: `static \| low \| medium \| high`. | Tek WebGL bağlamı vardır; shader'lar bir kez derlenir; sahne route değişimlerinde yaşar. iOS'un bağlam sınırlarına takılmaz. | §5.1, §5.12 |
-| D-19 | **404:**<br>- `src/app/global-not-found.tsx` (`experimental.globalNotFound: true`) iki dillidir ve eşleşmeyen URL'lere hizmet eder.<br>- Her ağacın `notFound()` çağrıları için kendi `not-found.tsx`'i vardır.<br>- 404 "saati" bir **SVG `ClockFigure`**'dür: client bileşeni; yerel saati gösterir, dakikada bir güncellenir, azaltılmış harekette donar.<br>- **404 WebGL kullanmaz.** Konseptteki D6 saat keyframe'inin yerini alır. | Kök `app/layout.tsx` olmadığında eşleşmeyen URL'ler için tek çözüm budur. 404'te GPU ve JS maliyeti gereksizdir. | §3.7 |
+| D-16 | Deneyim **KOD**'dur (sahip onayı, 2026-10-02; **KESİT'in yerini aldı**). Monospace gliflerden yapılmış, süzülen bir kod editörü paneli; her bölüm bir program gösterir (§4).<br>- **Okunabilirlik kuralı (ZORUNLU):** her program bir bakışta kod-yerli içerik ya da diyagram olarak okunur.<br>- **YASAK:** özel imleç, parçacık, arka plan rengi scrub'ı, kaydırmaya bağlı metin veya görsel opaklığı, GSAP `pin`/pin-spacer.<br>- Instancing yalnız KOD glif ızgarası için serbesttir (§5.20.4).<br>- Tam olarak **bir DOM pini** vardır (`areas`), CSS `position: sticky` ile. `work` ve `journey` sticky medya/sahne sütunları kullanır; metinleri doğal akışta kayar.<br>- Kaldırılanlar: taş ve materyalleri, K0–K5 / D1–D5, posterler ve `/lab/stage`, SVG figürler, KESİT eyebrow'ları (§0.6). | KESİT jüri kararıydı (ağırlıklı puan 8.60). Sahip onu canlıda görünce reddetti; BÜTÜN, AKIŞ, EKRAN ve KOD prototiplerini karşılaştırıp KOD'u seçti ve geçiş planını onayladı. Okunabilirlik kuralı sahibin BÜTÜN geri bildiriminden gelir ("hiçbir şey anlaşılmıyor"). Sticky kompozitörde çalışır; geç eklenen pin-spacer CLS üretir. | §4, §5.20, §15.8a |
+| D-17 | Modül sınırı: `src/stage/` three-free'dir (store, tracks, director, anchors, capabilities, presets, çapa işaretlemesi, root; KOD programları `src/lib/kod/` da three-free'dir). `src/stage/gl/`, `three`, `@react-three/*` ve `maath` import edebilen **tek** yerdir. ESLint `no-restricted-imports` ile zorlanır. | three'nin ana pakete sızması derleme anında engellenir. Ana paket bütçesi (D-33) korunur. | §8.2 |
+| D-18 | **Her** kök layout'ta tek bir kalıcı `<StageRoot/>` mount edilir: fixed, `aria-hidden`, `pointer-events: none`, DOM'un altında.<br>- `load` + idle sonrası tembel açılış (§9.2).<br>- Statik panel yedeği (KOD, §5.20.6; KESİT'te poster).<br>- Tier'lar: `static \| low \| medium \| high`. | Tek WebGL bağlamı vardır; shader'lar bir kez derlenir; sahne route değişimlerinde yaşar. iOS'un bağlam sınırlarına takılmaz. | §5.1, §5.12 |
+| D-19 | **404:**<br>- `src/app/global-not-found.tsx` (`experimental.globalNotFound: true`) iki dillidir ve eşleşmeyen URL'lere hizmet eder.<br>- Her ağacın `notFound()` çağrıları için kendi `not-found.tsx`'i vardır.<br>- 404 görseli **statik HTML hata çıktısıdır** (`$ open <yol>` → `Error: 404`; KOD, 2026-10-02, §4.13.6). KESİT'teki SVG `ClockFigure`'ün yerini alır.<br>- **404 WebGL kullanmaz.** Konseptteki D6 saat keyframe'inin yerini alır. | Kök `app/layout.tsx` olmadığında eşleşmeyen URL'ler için tek çözüm budur. 404'te GPU ve JS maliyeti gereksizdir. | §3.7 |
 | D-20 | **Tema:**<br>- Varsayılan **sistem**dir. Seçici: "Sistem / Koyu / Açık" (EN: "System / Dark / Light").<br>- Inline head script ilk boyamadan önce `<html>` üzerinde `data-theme="light\|dark"`'ı çözer.<br>- Sanat yönetiminin referansı **koyu** temadır. İki tema da v1'de yayınlanır. | 3D ışık ve malzemeler koyuda ayarlanır. Mesai saatinde CV okuyan işe alımcılar için açık tema birinci sınıftır. Tema yanıp sönmesi (FOUC) olmaz. | §6.3, §8.4 |
 | D-21 | **Fontlar:** Mona Sans (değişken, `wdth` + `wght`) + Martian Mono.<br>- `next/font/local` ile kendi sunucumuzdan özel WOFF2 alt kümeleri; Latin + Türkçe kapsanır, `ss01`/`ss03`/`case`/`locl` korunur. **YASAK:** bu aileler için `next/font/google`.<br>- Ligatürleri çıkarılmış statik TTF örnekleri `assets/fonts/ttf/` içinde OG görselleri ve PDF için durur.<br>- Alt kümeler `scripts/subset-fonts.sh` (fontTools) ile üretilir. | Google Fonts CSS API `case` ve `ss01–ss08`'i atar, Türkçeyi iki dosyaya böler ve sınırda kerning kaybolur. Satori WOFF2 okumaz. İki dosya toplam yaklaşık 125 KB'tır. | §6.2 |
 | D-22 | **İletişim:**<br>- v1 = `mailto:` + "Kopyala" düğmesi + sosyal bağlantılar + CV PDF. Form yoktur.<br>- **v1.1** (`features.contactForm` bayrağı): aşamalı geliştirmeli Server Action + zod + Resend + honeypot + imzalı zaman tuzağı + Vercel WAF hız sınırı. Yalnız alan adı alınıp Resend alanı doğrulandıktan sonra açılır. | Alan adı olmadan düzgün bir gönderen adresi ve teslim edilebilirlik yoktur. v1'de KVKK yükü azalır. mailto JS'siz de çalışır. | §12.1, §12.2 |
@@ -870,21 +899,21 @@ Sözleşmenin 47 kararı (D-01…D-47) ve sonradan kayda geçen sahip kararı D-
 | D-28 | **Barındırma:** Vercel Hobby.<br>- GitHub deposu sahibin **kişisel** hesabındadır (Hobby org depolarını bağlayamaz).<br>- Her PR için bir önizleme deploy'u çalışır.<br>- Vercel Deployment Protection lansmana kadar açık kalır.<br>- `robots.ts` indekslemeye yalnız `VERCEL_ENV === 'production' && SITE_INDEXABLE === 'true'` iken izin verir. | Ücretsizdir. İndeksleme alan adı hazır olana dek kapalı kalır, böylece `vercel.app` kopyası indekslenmez. Önizlemeler zaten `X-Robots-Tag: noindex` alır. | §11.4, §14.1, §14.2 |
 | D-29 | **Alan adı:**<br>- Önerilen: Cloudflare Registrar. DNS kayıtları Vercel'e işaret eden **DNS-only (gri bulut)** kayıtlardır; değerler Vercel alan adı kartından kopyalanır. AAAA kayıtları kaldırılır; CAA Let's Encrypt'e izin vermelidir.<br>- `iletisim@orcunsaatci.com` için Cloudflare Email Routing kullanılır.<br>- Alternatif: Vercel'den satın alma + ImprovMX. | Cloudflare maliyetine satar ($10.46/yıl) ve ücretsiz e-posta yönlendirme verir. Vercel, önüne ters proxy konmamasını önerir (görünürlük, gecikme, önbellek). Vercel üçüncü taraf DNS'te IPv6 desteklemez. | §14.3–§14.5 |
 | D-30 | **Ticari olmayan çerçeve:** Vercel Hobby ücretli hizmet reklamını yasaklar.<br>- Metin yetkinlikleri ve işleri sunar. Fiyat, paket, rezervasyon veya ödeme yoktur.<br>- Sahip hizmet satmak isterse Vercel Pro'ya geçiş işaretlenir. | Hobby yalnız ticari olmayan kişisel kullanım içindir; "bir ürün veya hizmetin satışının reklamı" ticari sayılır. Kişisel CV ve portfolyo kişisel kullanımdır. | §1.6, §7.9 |
-| D-31 | **Görseller:**<br>- `next/image` ayarları: `formats: ['image/avif','image/webp']`, `qualities: [75]`, kırpılmış `deviceSizes`/`imageSizes`, `minimumCacheTTL: 2678400`.<br>- Mümkün olan her yerde statik import kullanılır.<br>- `preload` prop'u (kullanımdan kalkan `priority` değil) yalnız sayfanın tek LCP görselinde kullanılır.<br>- **Sahne posterleri `public/stage/` içinde önceden kodlanmış AVIF/WebP'dir.** Düz `<img>`/`<picture>` ile, optimizer'dan GEÇMEDEN servis edilir; aylık 5K dönüşüm kotası korunur. | Hobby'de ayda 5K dönüşüm vardır; kota aşılınca yeni görseller 402 döner. `priority` 16.0'dan beri kullanımdan kalkmıştır. Statik import boyut, blur ve değişmez önbellek verir. | §9.3 |
+| D-31 | **Görseller:**<br>- `next/image` ayarları: `formats: ['image/avif','image/webp']`, `qualities: [75]`, kırpılmış `deviceSizes`/`imageSizes`, `minimumCacheTTL: 2678400`.<br>- Mümkün olan her yerde statik import kullanılır.<br>- `preload` prop'u (kullanımdan kalkan `priority` değil) yalnız sayfanın tek LCP görselinde kullanılır.<br>- Sahne posterleri KOD ile kaldırıldı (2026-10-02): sahne yedeği HTML statik paneldir ve görsel dönüşümü harcamaz. KESİT'te posterler `public/stage/` içinde önceden kodlanmış AVIF/WebP'ydi ve optimizer'dan geçmezdi. | Hobby'de ayda 5K dönüşüm vardır; kota aşılınca yeni görseller 402 döner. `priority` 16.0'dan beri kullanımdan kalkmıştır. Statik import boyut, blur ve değişmez önbellek verir. | §9.3 |
 | D-32 | **Route geçişleri:**<br>- React `<ViewTransition>` her `page.tsx`'in içeriğini sarar (layout'u değil).<br>- `<Link transitionTypes={['nav-forward'\|'nav-back']}>`.<br>- `view-transition-name: scene` / `site-header`, animasyon `none`.<br>- Azaltılmış harekette süreler 0'dır. `next-view-transitions` paketi ve `template.tsx` hileleri kullanılmaz. | React 19.3'te kararlıdır ve Next 16.3'te yapılandırma istemez. Desteklemeyen tarayıcıda gezinme animasyonsuz çalışır. Canvas geçiş sırasında canlı kalır. | §4.13, §5.15 |
 | D-33 | **Bütçeler** (hepsi gzip):<br>- ilk route JS **≤ 175 KB**<br>- stage chunk **≤ 300 KB**<br>- motion chunk (gsap + ScrollTrigger + SplitText + lenis) **≤ 60 KB**; `load`'dan önce asla istenmez<br>- lab mobil LCP **≤ 2.5 s** (saha p75 hedefi ≤ 2.0 s)<br>- CLS **≤ 0.05**<br>- INP **≤ 200 ms** (hedef 150)<br>- içerik route'larında TBT **≤ 200 ms**<br>- Lighthouse: Perf **≥ 0.85** (mobil lab), A11y **1.0**, Best Practices **≥ 0.95**, SEO **1.0** | Ölçülen çatı tabanı yaklaşık 130 KB'tır. three + R3F yaklaşık 248–256 KB'tır. GSAP'ı erken import etmek FCP'yi 1.1 s'den 2.0 s'ye çıkardı (ölçüldü). | §9.1, §9.4 |
 | D-34 | **Hero `<h1>` LCP öğesidir.** Asla animasyonlanmaz, maskelenmez, soldurulmaz veya gizlenmez. | LCP JS'ye ve 3D'ye bağlı kalmaz. 5 saniye testi (G1) JS'siz geçer. | §4.6 |
 | D-35 | **Persona:**<br>- `content/site/site.yaml` → `persona: neutral \| engineer \| designer \| architect \| researcher \| manager`.<br>- `src/experience/profile.ts` personayı deneyim parametrelerine ve etiketlere eşler. JSON-LD alt türü ve etiketler de personayı izler.<br>- Varsayılan ve etkin değer `engineer`'dır (sahibin mesleği: Bilgisayar Mühendisi ve Mobil Uygulama Geliştiricisi; Q-01, 2026-09-29). Diğer değerler belgelenmiş seçenek olarak kalır. | Meslek Q-01 ile bildirildi. Bileşenler, shader'lar ve koreografi değişmeden uyarlama yapılır. | §4.17 |
 | D-36 | `{{…}}` içerik yer tutucularına geliştirmede izin vardır. `scripts/check-content.ts`, `VERCEL_ENV=production` iken kalan olursa **production build'ini başarısız kılar**. | Yer tutucu metnin canlıya çıkması imkânsız hâle gelir. | §0.4.1, §7.5 |
-| D-37 | **Sayılar:**<br>- Alanlar N = 3–6. 7 veya daha fazlası → Alanlar **liste modu**nu kullanır (kadran pini yok).<br>- Öne çıkan projeler P = 3–5.<br>- Ana sayfadaki CV kayıtları E ≤ 6; gerisi `/cv`'dedir. | Pin uzunluğu sınırlı kalır (N = 6'da ≤ 420 svh). Dilimler okunur olur. Ana sayfa ritmi korunur. | §4.5, §4.8 |
-| D-38 | **Depolama anahtarları** (her erişim try/catch içinde):<br>- `localStorage`: `os-motion` = `'full' \| 'reduce'`; `os-theme` = `'system' \| 'light' \| 'dark'`.<br>- `sessionStorage`: `os-sweep` = `'1'` (ışık taraması oynatıldı). | Gizli pencerede veya engellenmiş depolamada hata vermeden çalışır. Çerez yoktur. | §8.4 |
+| D-37 | **Sayılar:**<br>- Alanlar N = 3–6. 7 veya daha fazlası → Alanlar **liste modu**nu kullanır (pin yok).<br>- Öne çıkan projeler P = 3–5.<br>- Ana sayfadaki CV kayıtları E ≤ 6; gerisi `/cv`'dedir. | Pin uzunluğu sınırlı kalır (N = 6'da ≤ 420 svh). Dilimler okunur olur. Ana sayfa ritmi korunur. | §4.5, §4.8 |
+| D-38 | **Depolama anahtarları** (her erişim try/catch içinde):<br>- `localStorage`: `os-motion` = `'full' \| 'reduce'`; `os-theme` = `'system' \| 'light' \| 'dark'`.<br>- `sessionStorage`: `os-sweep` = `'1'` (hot reload oynatıldı; KESİT'te ışık taraması). | Gizli pencerede veya engellenmiş depolamada hata vermeden çalışır. Çerez yoktur. | §8.4 |
 | D-39 | **`<html>` durumu**, boyamadan önce inline head script tarafından ayarlanır:<br>- `class="js"`<br>- `data-motion="full\|reduce"`<br>- `data-theme="light\|dark"` (çözülmüş)<br>- `data-theme-pref="system\|light\|dark"`<br>- `.motion-ready` yalnız GSAP yüklenip reveal'lar kurulduktan sonra eklenir.<br>- Gizli ön-reveal stilleri **yalnız** `html[data-motion="full"].motion-ready` altında tanımlıdır. | JS veya GSAP yüklenemezse hiçbir içerik gizli kalmaz. Tema ve hareket kararı ilk karede doğrudur. | §8.4, §5.14 |
-| D-40 | `_` ile başlayan App Router klasörleri özeldir ve route üretmez. Poster laboratuvarı bu yüzden **`/lab/stage`**'dir:<br>- dosya: `src/app/(tr)/lab/stage/page.tsx`<br>- yalnız `NEXT_PUBLIC_ENABLE_LAB === '1'` iken render edilir, aksi hâlde `notFound()`<br>- `robots` `/lab`'ı engeller ve hiçbir yerden bağlantı verilmez.<br>Konseptteki `/_lab/stage`'in yerini alır. | `_lab` klasörü Next'te route üretmez. Laboratuvar production'da görünmez ve indekslenmez. | §5.16 |
+| D-40 | `_` ile başlayan App Router klasörleri özeldir ve route üretmez. Poster laboratuvarı bu yüzden **`/lab/stage`**'dir:<br>- dosya: `src/app/(tr)/lab/stage/page.tsx`<br>- yalnız `NEXT_PUBLIC_ENABLE_LAB === '1'` iken render edilir, aksi hâlde `notFound()`<br>- `robots` `/lab`'ı engeller ve hiçbir yerden bağlantı verilmez.<br>Konseptteki `/_lab/stage`'in yerini alır.<br>- **KOD ile kaldırıldı (2026-10-02):** poster laboratuvarı, `/lab/stage` ve `NEXT_PUBLIC_ENABLE_LAB` yoktur. `_` önekli klasör kuralı geçerli kalır. | `_lab` klasörü Next'te route üretmez. Laboratuvar production'da görünmez ve indekslenmezdi. | §5.16 |
 | D-41 | **Header navigasyonu:**<br>- Ana sayfada header bağlantıları sayfa içi çapalardır (`#ben`, `#alanlar`, `#projeler`, `#yolculuk`, `#iletisim`). Lenis ile yumuşak kaydırılır; uzak atlamalar stage kesme kuralını kullanır.<br>- Diğer tüm sayfalarda header bağlantıları derin sayfalara gider.<br>- Bölüm CTA'ları, footer ve dil değiştirici her zaman gerçek URL kullanır. | Ana sayfada anlatı içinde gezinme kesintisiz olur. Derin sayfalarda indekslenebilir hedefler ve iç bağlantılar oluşur. | §3.9 |
-| D-42 | **Stage presetleri:**<br>- İsimler: `home`, `folio`, `plan-small`, `cv-core`, `about-page`, `contact-page`, `none`.<br>- Keyframe anahtarları: K0 `hero`, K1a `about-lift`, K1b `about-cut-in`, K1 `about-half`, K2 `areas-plan`, K3 `work-specimen`, K4 `journey-core`, K5 `contact-ring`; derin sayfalar D1 `folio`, D2 `plan-small`, D3 `cv-core`, D4 `about-page`, D5 `contact-page`.<br>- Konseptteki D6 saat anahtarı çıkarılmıştır (D-19). | Tek bir isim kaydı olur. Kod, testler ve posterler aynı anahtarları kullanır. | §5.8 |
+| D-42 | **Stage presetleri:**<br>- İsimler: `home`, `folio`, `plan-small`, `cv-core`, `about-page`, `contact-page`, `none`.<br>- KESİT'in keyframe anahtarları (K0–K5, D1–D5) KOD ile kaldırıldı (2026-10-02). Her preset artık bir ya da daha çok program gösterir; program anahtarları §5.20.2'dedir.<br>- KOD'da `/cv` `none` preset'ini kullanır; `cv-core` adı kayıtta kalır ama KOD'da kullanılmaz (§4.13.2).<br>- Konseptteki D6 saat anahtarı çıkarılmıştır (D-19). | Tek bir isim kaydı olur. Kod ve testler aynı preset ve program anahtarlarını kullanır. | §4.13.2, §5.20.2 |
 | D-43 | **Ana sayfa bölümleri:**<br>- Kimlikler: `hero`, `about`, `areas`, `work`, `journey`, `contact`.<br>- İsteğe bağlı `testimonials`, `journey` ile `contact` arasına girer (`features.testimonials` bayrağı).<br>- DOM çapa id'leri (TR / EN): `giris`/`intro`, `ben`/`me`, `alanlar`/`areas`, `projeler`/`work`, `yolculuk`/`journey`, `referanslar`/`testimonials`, `iletisim`/`contact`. | Kod kimlikleri dilden bağımsızdır. URL çapaları okunur ve yerelleştirilmiştir. | §3.3 |
 | D-44 | Analytics ve Speed Insights iki kök layout'ta da yüklenir. İlk JS bütçesine dâhildirler; ≤ 175 KB olduğu doğrulanır. | İki ağaç, iki kök layout demektir. Bütçe gerçek yükü ölçmelidir. | §12.3, §9.4 |
-| D-45 | Preloader ve giriş ekranı yoktur. WebGL hazır olana dek statik bir poster yerini tutar. | Brief "hızlı açılsın" der. Preloader LCP'yi geciktirir. | §4.6, §5.12 |
+| D-45 | Preloader ve giriş ekranı yoktur. WebGL hazır olana dek statik panel (programın son karesi, HTML) yerini tutar; KESİT'te poster. | Brief "hızlı açılsın" der. Preloader LCP'yi geciktirir. | §4.6, §5.12 |
 | D-46 | **Reveal kütüphanesi:** yalnız maskeli başlık satırları için SplitText (GSAP).<br>- Gövde metni asla bölünmez.<br>- Hero'nun ikincil metni için yalnız CSS'le yapılan ilk boyama fade'i JS'siz çalışır.<br>- Kurallar: konseptin "Global reveal rules" listesi (§4.5). | SplitText `aria` desteğiyle ekran okuyucu uyumludur. Okunabilirlik korunur. İlk boyama JS'e bağlı değildir. | §4.5, §5.14 |
 | D-47 | **Bağımlılık güncellemeleri:** Renovate veya Dependabot. Şunlar yok sayılır: `typescript` ≥ 7, `eslint` ≥ 10, `react` ≥ 19.4 (R3F peer'ı) ve tüm peer'lar izin vermedikçe `three` minor artışları. `three` ile `@types/three` birlikte güncellenir. | D-02 ve D-03'teki kırılmalar otomatik PR'larla geri gelmez. | §13.8 |
 | D-48 | **Yalın proje modeli** (sahip kararı, 2026-09-29). Projeler vaka çalışması olarak değil, yalın **proje sayfası** olarak sunulur.<br>- **Kaldırılanlar:** `team`; müşteri ve izin grubunun tamamı (müşteri adı ve URL'si, sektör, konum, izin/NDA seçimi, izin notu, `confidential` bayrağı) ve ona bağlı davranışlar (müşteri adını gizleme, gizli projede noindex, JSON-LD `sourceOrganization`, gizli işlerde logo ve marka kuralları); proje düzeyinde teknoloji listesi (`stack`); `metrics` ve Metrics bileşeni; `outcome`; TL;DR maddeleri ve şeridi; kaynak kodu (repo), basın ve canlı web bağlantıları; yüklenen proje videosu (MP4) ve poster karesi; vaka çalışmasının tamamı: `content/projects/<slug>/{tr,en}.mdx` gövdeleri, şablonu ve bölüm sırası, sahip soruları, StickySteps/Step, Metrics ve Video MDX bileşenleri, 400–1200 kelime hedefi, sabitlenmiş süreç anlatısı, öğrenimler ve katkılar. CV yetkinlikleri ve alan etiketleri kalır.<br>- **Kalan içerik alanları:** `slug` (klasör adı, ASCII kebab), `title` ve `summary` (`{tr, en?}`, ≤ 60 / ≤ 160), `start` (YYYY-MM), `end` (isteğe bağlı; boşsa sürüyor), `role` (`{tr, en?}`, ≤ 60), `kind` (`client \| personal \| research \| oss \| academic \| product`), `status` (`live \| done \| archived \| ongoing \| concept`), `areas` (1–3 alan; ilki birincil), `featured`, `order`, `facts` ("Künye", ≤ 4 `{label, value}` satırı), `links` (≤ 4; `kind` yalnız `live`: App Store, Google Play, Huawei AppGallery, etiket mağaza adı; ve `video`: harici YouTube/Vimeo bağlantısı), `cover` (16:10, **zorunlu**), `mobileCover` (4:5), `preview` (4:3), `gallery` (0–12 görsel; dikey telefon ekran görüntüleri özgün oranında) ve mevcut SEO geçersiz kılmaları (`seo`). Yayın yardımcı alanlarıyla birlikte şemanın tam hâli §7.3.2'dedir. Kaynak yalnız `content/projects/<slug>/project.yaml`'dır; görseller `public/media/projects/<slug>/` altında kalır.<br>- **Proje sayfası** (`/projeler/[slug]`, `/en/projects/[slug]`) sırası: breadcrumb → hero (h1 başlık, özet, `preload`'lu LCP görseli olarak kapak) → künye şeridi (rol · tarihler · durum · alan çipleri ve Künye satırları) → mağaza bağlantıları → galeri → isteğe bağlı harici video bağlantısı → "Sonraki proje" (D1 folio değişmez) → benzer projeler (aynı birincil alan) → iletişim CTA'sı.<br>- **Dil:** Yayımlanan her projenin TR sayfası her zaman vardır. EN sayfa yalnız EN `title` **ve** EN `summary` birlikte varsa vardır.<br>- **JSON-LD:** `WebPage` + `CreativeWork` + `BreadcrumbList`. `Article`, `sourceOrganization` ve engineer → `SoftwareSourceCode` eşlemesi yoktur. | Sahip, çalıştığı şirketin mobil uygulaması hakkında ayrıntılı bilgi yayımlayamaz; kişisel projelerinde de bu düzeyde ayrıntı yayımlamak istemez. Sitede görünmeyecek alanlar tasarımda, şemada ve ankette de tutulmaz. Böylece gizli bilginin sızma riski ve sahibin içerik yükü kalkar; içerik doğrulaması sadeleşir. Bir mobil uygulama geliştiricisi için mağaza bağlantıları ve ekran görüntüleri projenin kanıtıdır. | §3.4.1, §4.9, §7.3.2, §7.5.2, §7.7.1, §11.6.2, Ek A §A.5 |
@@ -922,20 +951,20 @@ Sözleşmenin 47 kararı (D-01…D-47) ve sonradan kayda geçen sahip kararı D-
 | GSAP `pin: true` / pin-spacer | CLS; React altında DOM mutasyonu | CSS `position: sticky` | D-16 |
 | Birden fazla DOM pini | Kaydırmayı rehin alma hissi | Yalnız `areas` | D-16 |
 | Özel imleç, imleç izi, `mix-blend-mode` imleci | Okunabilirlik ve profesyonellik | Yerel imleç | D-16 |
-| Parçacıklar, instancing | Konseptin sadeliği, performans | Tek Taş | D-16 |
+| Parçacıklar | Konseptin sadeliği, performans | Tek KOD paneli; instancing yalnız glif ızgarasında (§5.20.4) | D-16 |
 | Arka plan rengi scrub'ı, bölüm arka planını tersine çevirme | Geçişin ortasında düşük kontrast | Tema başına sabit zemin | D-16 |
 | Kaydırma konumuna bağlı metin veya görsel opaklığı | Okuma ve inceleme zorlaşır | Zaman tabanlı, bir kez oynayan reveal | D-16, D-46 |
 | Gövde metnini bölmek (SplitText vb.) | Okunabilirlik, ekran okuyucu | Yalnız ≤ 12 kelimelik h2/h3 maskeli satır | D-46 |
 | Metni `visibility: hidden` veya `autoAlpha` ile gizlemek | Ekran okuyucular metni kaybeder | Yalnız `opacity` / `transform` | §5.14 |
 | Hero `<h1>`'i animasyonlamak, maskelemek veya gizlemek | LCP | Statik H1 | D-34 |
-| Preloader, yüzde sayacı, giriş ekranı | LCP gecikir | Poster | D-45 |
+| Preloader, yüzde sayacı, giriş ekranı | LCP gecikir | Statik panel | D-45 |
 | Mona Sans / Martian Mono için `next/font/google` | `case`/`ss0x` düşer; Türkçe iki dosyaya bölünür | `next/font/local` özel alt kümeler | D-21 |
 | `next/image` `priority` prop'u; `images.domains`; `onLoadingComplete` | 16'da kullanımdan kalktı | `preload` (tek LCP görseli), `remotePatterns`, `onLoad` | D-31 |
-| Sahne posterlerini `next/image` optimizer'dan geçirmek | Ayda 5K dönüşüm kotası | Önceden kodlanmış `<img>` / `<picture>` | D-31 |
+| Herhangi bir sahne görselini `next/image` optimizer'dan geçirmek | Ayda 5K dönüşüm kotası | KOD'da sahne görseli yoktur; statik panel HTML'dir | D-31 |
 | `next-view-transitions`, `template.tsx` hileleri | React `<ViewTransition>` yerleşiktir | `<ViewTransition>` | D-32 |
 | Çerez yazan üçüncü taraf betiği; çerez banner'ı | KVKK yükü; gereksiz | Çerezsiz Vercel Analytics | D-23 |
 | Fiyat listesi, paket, rezervasyon, ödeme, reklam | Hobby ticari kullanım kuralı | Portfolyo dili | D-30 |
-| 404'te WebGL | GPU ve JS maliyeti | SVG `ClockFigure` | D-19 |
+| 404'te WebGL | GPU ve JS maliyeti | Statik HTML hata çıktısı (§4.13.6) | D-19 |
 | `leva`'yı production paketine sokmak | Paket boyutu | Yalnız geliştirmede, dinamik import | D-15 |
 | `_` önekli route klasörü beklemek (ör. `_lab`) | Route üretmez | `/lab/stage` | D-40 |
 | pnpm, yarn veya lockfile'sız kurulum | Tek paket yöneticisi ve tekrarlanabilir kurulum | npm + `package-lock.json` | D-04 |
@@ -983,7 +1012,7 @@ Sözleşmenin 47 kararı (D-01…D-47) ve sonradan kayda geçen sahip kararı D-
 | **C: Desteklenmez** | Yukarıdakilerin altı | Garanti yoktur. SSR HTML okunabilir kalır. | — |
 
 Ek kurallar:
-- **WebGL2**, 3D sahne için **ZORUNLU**dur. Yoksa `static` tier devreye girer: posterler ve SVG figürler kullanılır, DOM koreografisi çalışır (§5.11).
+- **WebGL2**, 3D sahne için **ZORUNLU**dur. Yoksa `static` tier devreye girer: statik paneller kullanılır, DOM koreografisi çalışır (§5.11, §4.16).
 - **JS kapalıyken** tüm içerik, gezinme ve iletişim çalışır (§4.16, G8).
 - Referans test cihazları (iPhone 12 sınıfı, orta segment Android, Intel iGPU'lu dizüstü) ve ölçüm yöntemi §9.6'dadır.
 
@@ -1041,7 +1070,7 @@ TR (kök, <html lang="tr">)                              EN (/en, <html lang="en
 └─ /gizlilik             KVKK + Gizlilik (noindex)       └─ /en/privacy (noindex)
 
 Bağlantısız / teknik:
-/lab/stage (yalnız NEXT_PUBLIC_ENABLE_LAB=1) · /files/* (CV PDF + JSON Resume) · /sitemap.xml · /robots.txt
+/files/* (CV PDF + JSON Resume) · /sitemap.xml · /robots.txt   (KESİT'in /lab/stage'i KOD ile kaldırıldı)
 /manifest.webmanifest · /icon · /apple-icon · /favicon.ico · opengraph-image (ağaç başına + proje başına)
 ```
 
@@ -1054,7 +1083,7 @@ Yapısal kurallar:
 | Tıklama derinliği | İndekslenebilir her sayfaya ana sayfadan en fazla **2 tıkla** ulaşılır (ana sayfa → liste → detay). | e2e taraması (§11.8) |
 | İletişime erişim | Her sayfadan **en fazla 1 tıkla** e-postaya veya `/iletisim` sayfasına ulaşılır: header'da "İletişim", derin sayfaların footer'ında `mailto:`, ana sayfada `contact` bölümü. | e2e (§3.10) |
 | Bölüm → derin sayfa | Her ana sayfa bölümü, derin sayfasına **gerçek URL** ile bağlanır (§3.3). | e2e |
-| Gizli route | `/lab/stage` hiçbir sayfadan bağlanmaz; sitemap'te yer almaz. | e2e + sitemap testi |
+| Gizli route | KOD ile kaldırıldı (2026-10-02): `/lab/stage` yoktur (D-40). Robots'taki `/lab` engeli zararsızdır, kalabilir. | sitemap testi |
 | Sayfa sayısı (TR) | 7 içerik sayfası (`home`, `about`, `cv`, `projects`, `expertise`, `contact`, `privacy`) + P proje + (`features.areaPages` açıksa) `hasPage: true` olan alanlar. EN bunun alt kümesidir (§3.4). | `metadata.test.ts` (`listPages()`) |
 
 ### 3.2 Route tablosu
@@ -1065,14 +1094,14 @@ Route anahtarları, contract'taki kanonik route tablosuyla birebir aynıdır. Bu
 |---|---|---|---|---|---|---|---|---|---|
 | `home` | `/` | `/en` | `page.tsx` | `page.tsx` | ○ | — | evet | `home` | EN: `site.locales` içinde `en` |
 | `about` | `/hakkimda` | `/en/about` | `hakkimda/page.tsx` | `about/page.tsx` | ○ | — | evet | `about-page` | EN: `about.en.mdx` var |
-| `cv` | `/cv` | `/en/cv` | `cv/page.tsx` | `cv/page.tsx` | ○ | — | evet | `cv-core` (yalnız ≥ 80rem) | — |
+| `cv` | `/cv` | `/en/cv` | `cv/page.tsx` | `cv/page.tsx` | ○ | — | evet | `none` (KOD, §4.13.2; KESİT'te `cv-core` ≥ 80rem) | — |
 | `projects` | `/projeler` | `/en/projects` | `projeler/page.tsx` | `projects/page.tsx` | ○ | — | evet | `plan-small` | `?alan=` yalnız istemcide okunur (§7.8) |
 | `project` | `/projeler/[slug]` | `/en/projects/[slug]` | `projeler/[slug]/page.tsx` | `projects/[slug]/page.tsx` | ● | `getProjects(locale)` | evet* | `folio` | EN: `title.en` ve `summary.en` birlikte var (§3.4.1, D-48) |
 | `expertise` | `/calisma-alanlari` | `/en/expertise` | `calisma-alanlari/page.tsx` | `expertise/page.tsx` | ○ | — | evet | `plan-small` (0.80 × sütun 8–12) | — |
 | `area` | `/calisma-alanlari/[area]` | `/en/expertise/[area]` | `calisma-alanlari/[area]/page.tsx` | `expertise/[area]/page.tsx` | ● | `getAreaPageIds(locale)` (§7.3.6; `features.areaPages` kapalıysa `[]`) | evet* | `plan-small` | `features.areaPages` + `hasPage`; EN: `areas/<id>.en.mdx` var |
 | `contact` | `/iletisim` | `/en/contact` | `iletisim/page.tsx` | `contact/page.tsx` | ○ | — | evet | `contact-page` | — |
 | `privacy` | `/gizlilik` | `/en/privacy` | `gizlilik/page.tsx` | `privacy/page.tsx` | ○ | — | **noindex, follow** | `none` | EN: `privacy.en.mdx` var |
-| `lab` | `/lab/stage` | — | `lab/stage/page.tsx` | — | ○ | — | robots `disallow` + `noindex, nofollow` | lab | `NEXT_PUBLIC_ENABLE_LAB === '1'`, değilse `notFound()` (D-40) |
+| `lab` | `/lab/stage` | — | `lab/stage/page.tsx` | — | ○ | — | robots `disallow` + `noindex, nofollow` | lab | `NEXT_PUBLIC_ENABLE_LAB === '1'`, değilse `notFound()` (D-40) · **KOD ile kaldırıldı (2026-10-02)** |
 | 404 | eşleşmeyen her URL | | `not-found.tsx` + `src/app/global-not-found.tsx` | `not-found.tsx` | ○ | — | noindex (Next otomatik ekler) | `none` (SVG saat) | §3.7 |
 
 \* İçerik düzeyi istisna: `seo.noindex: true` olan proje veya alan → `noindex, follow`, sitemap dışı (§11.3).
@@ -1314,7 +1343,7 @@ export const staticRoutes = {
   expertise: { tr: '/calisma-alanlari' as Route, en: '/en/expertise' as Route, indexable: true,  parent: 'home' },
   contact:   { tr: '/iletisim' as Route,         en: '/en/contact' as Route,   indexable: true,  parent: 'home' },
   privacy:   { tr: '/gizlilik' as Route,         en: '/en/privacy' as Route,   indexable: false, parent: 'home' },
-  lab:       { tr: '/lab/stage' as Route,        en: null,                     indexable: false, parent: null },
+  lab:       { tr: '/lab/stage' as Route,        en: null,                     indexable: false, parent: null }, // KOD ile kaldırılır (D-40)
 } as const satisfies Record<StaticRouteKey, StaticRouteDef>;
 
 const SLUG = '([a-z0-9]+(?:-[a-z0-9]+)*)';
@@ -1519,7 +1548,7 @@ const tr = {
   },
   notFound: {
     title: 'Sayfa bulunamadı',
-    lead: 'Bu kesit boş, ama saat doğru.',
+    lead: 'Bu yol derlemede yok.',   // KOD (2026-10-02); KESİT'te 'Bu kesit boş, ama saat doğru.'
     body: 'Bağlantı eskimiş ya da adres yanlış yazılmış olabilir.',
     home: 'Ana sayfaya dön', projects: 'Projeler', contact: 'İletişim', latest: 'Son projeler',
   },
@@ -1552,7 +1581,7 @@ const en = {
   },
   notFound: {
     title: 'Page not found',
-    lead: 'This section is empty, but the clock is right.',
+    lead: "This path isn't in the build.",
     body: 'The link may be outdated or the address mistyped.',
     home: 'Back to home', projects: 'Projects', contact: 'Contact', latest: 'Latest projects',
   },
@@ -1664,14 +1693,14 @@ export function LanguageSwitcher({ locale, enPaths, labels }: LanguageSwitcherPr
 
 İçerik:
 - **Başlık:** H1 "Sayfa bulunamadı" / "Page not found".
-- **Alt satır:** "Bu kesit boş, ama saat doğru." / "This section is empty, but the clock is right."
+- **Alt satır:** "Bu yol derlemede yok." / "This path isn't in the build." (KOD, 2026-10-02; §4.13.6)
 - **Gövde:** `notFound.body` metni.
 - **Bağlantılar (gerçek URL):**
   - Ana sayfa;
   - Projeler;
   - İletişim;
   - e-posta (`mailto:`), iletişime tek tık kuralı için.
-- **Görsel:** `ClockFigure` (SVG, istemci). Yerel saati gösterir, dakikada bir günceller, azaltılmış harekette yükleme anındaki saatte donar. Davranış ayrıntısı §4.13 ve §6.6'dadır.
+- **Görsel:** satır içi KOD hata çıktısı (`.kod-panel.kod-inline`): `$ open /…` → `Error: 404 · sayfa bulunamadı`, "stack trace" satırları ve önerilen yollar. `aria-hidden`'dır, içinde bağlantı yoktur, hareket etmez. Davranış ayrıntısı §4.13.6'dadır. KESİT'in `ClockFigure`'ü kaldırıldı.
 - **Ağaç 404'ü:** ÖNERİLİR olarak "Son projeler" başlığı altında 3 proje listelenir (`getProjects(locale).slice(0, 3)`).
 - **Kimlik:** Kök öğe `data-404="tree"` ya da `data-404="global"` taşır (test kancası).
 
@@ -1692,9 +1721,9 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { fontVariables } from '@/fonts';             // §6.2 / §8.4: tüm font değişkenlerini taşıyan className
 import { headScript } from '@/lib/head-script';      // §8.4
-import { ClockFigure } from '@/components/figures/ClockFigure';
-import { MotionToggle } from '@/components/motion/MotionToggle';   // §10.2.2: ClockFigure güncellemesinin durdurma denetimi (WCAG 2.2.2)
-import { getContact, getSite } from '@/lib/content';
+import { KodPanel } from '@/components/kod/KodPanel';          // §4.13.6: satır içi KOD hata çıktısı (KESİT'te ClockFigure)
+import { MotionToggle } from '@/components/motion/MotionToggle';   // §10.2.2: minimal footer'da tutarlılık için kalır
+import { getContact, getKodData, getSite } from '@/lib/content';
 import { staticRoutes } from '@/i18n/config';
 
 // robots yazılmaz: Next 404 yanıtına noindex'i kendisi ekler; ikincisi çift etiket üretir (SPEC-SAPMA M2)
@@ -1712,7 +1741,12 @@ export default function GlobalNotFound() {
       </head>
       <body>
         <main id="main" data-404="global">
-          <ClockFigure />
+          <KodPanel
+            className="kod-inline"                                 // akışta, sütun genişliğinde (§4.13.6)
+            data={getKodData('about-page', undefined, 'tr')}
+            program={{ kind: 'notfound', path: '/…' }}
+            extra={{ links: [/* [href, etiket]: ana sayfa, projeler, iletişim */] }}
+          />
           <h1>
             Sayfa bulunamadı
             {hasEn && (
@@ -1721,7 +1755,7 @@ export default function GlobalNotFound() {
               </span>
             )}
           </h1>
-          <p>Bu kesit boş, ama saat doğru.</p>
+          <p>Bu yol derlemede yok.</p>
           <ul>
             <li><Link href={staticRoutes.home.tr}>Ana sayfaya dön</Link></li>
             <li><Link href={staticRoutes.projects.tr}>Projeler</Link></li>
@@ -1942,13 +1976,15 @@ Footer bağlantıları ve dil değiştirici **her zaman gerçek URL** kullanır 
 
 ---
 
-## 4. Deneyim konsepti: KESİT
+## 4. Deneyim konsepti: KOD
 
-Bu bölüm ziyaretçinin **gördüğü ve hissettiği** her şeyi sayılarıyla tanımlar. Nasıl inşa edileceği (shader, store, director, anchor ölçümü) §5'te, token değerleri §6'da, içerik şemaları §7'dedir.
+> **Karar (D-16, 2026-10-02, sahip onayı):** Deneyim konsepti **KOD**'dur. Sahip KESİT'i (kesilerek açılan taş) canlıda gördükten sonra reddetti. BÜTÜN, AKIŞ, EKRAN ve KOD prototiplerini karşılaştırdı, KOD'u seçti ve geçiş planını onayladı ("onaylıyorum"). Taş, posterler, SVG figürler, K0–K5 / D1–D5 anahtarları ve taş koreografisi kaldırıldı. Bölüm modeli, yükseklikler, pin, reveal kuralları, okuma modu ve route geçişleri sürer. Geçişin iş planı §15.8a'dadır.
+
+Bu bölüm ziyaretçinin **gördüğü ve hissettiği** her şeyi sayılarıyla tanımlar. Nasıl inşa edildiği (director, çapalar, KOD işleyicisi) §5'te (§5.20), token değerleri §6'da, içerik şemaları §7'dedir.
 
 **Okuma kuralları:**
-- Sayılar, sahibin onayladığı `concept/final.md` ("KESİT") dosyasından birebir alınmıştır. Sözleşme kararlarıyla (D-xx) değişen yerler açıkça işaretlidir.
-- **[SABİT]** işareti: final.md'de tanımsız olan ve uygulanabilirlik için bu belgede sabitlenen değer. M1 (poster onayı) ya da M6 (koreografi) sırasında sahibin onayıyla ayarlanabilir; tümü §4.12.4'te listelenir.
+- Değerler, sahibin seçtiği KOD prototipinden ve onaylanan tasarım kararlarından alınmıştır. Sözleşme kararlarıyla (D-xx) değişen yerler açıkça işaretlidir.
+- **[SABİT]** işareti: prototipte tanımsız olan ya da prototipten alınıp uygulanabilirlik için bu belgede sabitlenen değer. KOD geçişinde (§15.8a) sahibin onayıyla ayarlanabilir; tümü §4.12.4'te listelenir.
 - **Referans görünüm alanı:** 1440×900.
   - Konteyner 1312 px, kenar boşluğu 64 px, oluk 24 px, kolon genişliği 87.33 px.
   - Kolon *c*'nin sol kenarı: `x = 64 + (c−1)·111.33`.
@@ -1956,9 +1992,9 @@ Bu bölüm ziyaretçinin **gördüğü ve hissettiği** her şeyi sayılarıyla 
 - **Birimler:**
   - `s`: ana sayfada svh cinsinden kaydırma konumu (`scrollY / (innerHeight/100)`, `svh` tabanlı).
   - `p`: bir faz içindeki yerel ilerleme, `[0, 1]`.
-  - `D`: taşın ekrandaki izdüşüm çapı (px).
+  - `Pw`: KOD panelinin ekrandaki genişliği (px).
   - Açılar derecedir.
-- Koddaki tek doğruluk kaynakları: keyframe'ler `src/stage/keyframes.ts` (§5.8), track'ler `src/stage/tracks.ts` (§5.9), geometri `src/lib/section-geometry.ts` (§5.10). Buradaki tablolar bu dosyaların **kabul referansıdır**: kod tablodan saparsa hata koddadır; bilinçli bir değişiklikse önce bu bölüm güncellenir, sonra kod.
+- Koddaki tek doğruluk kaynakları: programlar `src/lib/kod/` (§5.20.2), track'ler `src/stage/tracks.ts` (§5.9), çapalar `src/stage/anchors.ts` (§5.7). Buradaki tablolar bu dosyaların **kabul referansıdır**: kod tablodan saparsa hata koddadır; bilinçli bir değişiklikse önce bu bölüm güncellenir, sonra kod.
 
 ### 4.1 Konsept, metafor ve atmosfer
 
@@ -1966,60 +2002,70 @@ Bu bölüm ziyaretçinin **gördüğü ve hissettiği** her şeyi sayılarıyla 
 
 | | TR | EN |
 |---|---|---|
-| Ad | **KESİT** ("hayattan bir kesit") | *Section / cross-section* |
-| Alt başlık | Bir pratiğin kesiti | A section through a practice |
-| İç slogan (ziyaretçiye gösterilmez) | Dışı kimlik, içi emek. | The outside is identity; the inside is the work. |
+| Ad | **KOD** | *Code* |
+| Alt başlık | Glif glif bir kod editörü | A code editor, glyph by glyph |
+| İç slogan (ziyaretçiye gösterilmez) | Her bölüm bir dosya. | Every chapter is a file. |
 
 #### 4.1.2 Metafor
 
-Bir insan dışarıdan tek ve pürüzsüz bir form gibi okunur: bir ad ve bir unvan. Neyden yapıldığını görmek için içinden kesit alınır. Mimar kesit çizer, mühendis kesit görünüşü çıkarır, jeolog karot alır, ormancı yıllık halkaları sayar.
+Sahip mobil uygulama geliştiricisidir; işini en dürüst gösteren yüzey kodun kendisidir. Sitenin tek sahne nesnesi **KOD paneli**dir: monospace gliflerden yapılmış, havada hafifçe süzülen bir kod editörü penceresi. Her bölüm bu editörde bir **dosya** ya da **program**dır.
 
-Sitenin tüm ziyaret boyunca **tek bir nesnesi** vardır: **Taş**. Ziyaretçi kaydırdıkça Taş **kesilir**. Kesit yüzeyi (kapak, cap) şunları taşır:
-
-| Öğe | Anlamı | Veriden nasıl türer (§5.10) |
+| Bölüm | Program | Ne gösterir |
 |---|---|---|
-| **Halkalar** | Pratiğin her yılı için bir halka. En eski merkezde, en yeni kenarda. *Saatçi* saat ustası demektir; halkalar kelimenin tam anlamıyla zamandır. | `rings = clamp(currentYear − {{KARİYER_BAŞLANGIÇ_YILI}} + 1, 4, 24)` |
-| **Dilimler** | Her çalışma alanı için bir dilim; yüzeye yukarıdan bakınca görünür. | `sectors = N` (3–6), dilim sırası = içerikteki alan sırası |
-| **Bantlar** | Bir girdinin ya da projenin kapsadığı yıllar (halka aralığı). | `bandOf(entry) = [ringOf(start), ringOf(end ?? currentYear)]` |
-| **Açık dış halka** | Yalnızca bugünün tarihine kadar çizilmiş, bitmemiş dış halka. | `arc = dayOfYear / daysInYear` (yalnız istemcide, SSR'da asla) |
-| **"Bir sonraki halka"** | İletişim bölümü bu açık halkayı kapanış imgesine çevirir. | — |
+| hero | `main.dart` | Adı taşıyan küçük bir Flutter uygulaması |
+| about | `about.dart` | Kişinin olguları, bir `Developer(...)` nesnesinin parametreleri olarak |
+| areas | alan diyagramları | Alan başına bir diyagram: telefon, klasör ağacı, API, CI hattı ya da liste |
+| work | ASCII → görsel | Kapak silmeyle açılırken önce renkli ASCII çizilir, sonra gerçek görsele "derlenir" (DOM üstünde, §4.9.4) |
+| journey | `git log --graph` | CV kayıtları, commit geçmişi olarak |
+| contact | `zsh` | Bir terminal: `$ mail <e-posta>` |
+
+Program tablosu §4.12.1'de, programların teknik sözleşmesi §5.20.2'dedir.
 
 **Veri dürüstlüğü:**
-- Halka sayısı, bant aralıkları, dilim sayısı ve açık yay yalnızca CV ve alan içeriğinden hesaplanır.
-- **YASAK:** veriyle ilişkisi olmayan dekoratif halka, dilim ya da desen. İstisna: persona kapak deseninin malzeme dokusu (ör. `geode` bant tonları, laminalar ve kristal çekirdek ya da `contours` mikro ızgarası; §4.17.2, §5.4.3) halka, dilim ve bant sayısını ya da konumunu değiştirmez ve bu yasağa girmez.
-- Yılı olmayan bir projenin bandı çizilmez (bant görünürlüğü 0 kalır).
+- Programlar yalnızca içerikten üretilir (§7). Dekoratif metin yalnız site içeriğindeki olguları söyler.
+- Genel kod süsü serbesttir: dosya adları, `Ln/Col`, `dart · utf-8`, `$` istemi, `tail -f`, klasör adları.
+- **YASAK:** içerikte olmayan bir olgu (teknoloji, kurum, yıl, metrik, müşteri) yazmak. Olgusu olmayan satır yazılmaz.
 
-#### 4.1.3 Atmosfer
+#### 4.1.3 Atmosfer ve ton
 
-**"Gece kadranı üzerinde bir mineral numune."** His editoryal, hassas ve sessizdir: bir müze kataloğu ile saat ustası tezgâhının kesişimi.
+**"Sessiz bir masada açık duran tek bir editör penceresi."** His editoryal, hassas ve sessizdir.
 
-- **Malzemeler:**
-  - ince taneli bir taş; yüzeyi personadan gelir (§4.17.2): etkin `engineer`'da `geode` (pürüzlü, lekeli kaya kabuğu; kesit yüzü cilalı akik bantları), `neutral`'da mat grafit;
-  - kâğıt gibi okunan, açık renkli cilalı bir kesit yüzeyi;
-  - mürekkep rengi kılcal çizgili halkalar;
-  - **tek** yakut vurgu (`--color-accent`);
-  - sıcak pirinç kenar ışığı (`--color-brass`).
-- **Hareket eden şeyler:** yalnızca kamera, kesim, ışık ve kadran. Sayfa zıplamaz, yana kaymaz, parlamaz.
-- **Arka plan:** tema başına tek, sabit tuval rengi (`--color-canvas`). **YASAK:** arka plan rengi scrub'ı (D-16) ve İletişim'de arka planı tersine çevirmek.
-- **Taş temaya göre ters döner:**
-  - açık tuvalde koyu grafit taş ve açık renkli kesit yüzeyi;
-  - koyu tuvalde açık renkli mineral taş ve lacivert kesit yüzeyi.
-  - Değerler §6.3'te, uniform eşlemesi §5.5'te.
-- **Tema:** varsayılan "sistem"dir; art direction referansı koyu temadır; iki tema da v1'de gelir (D-20).
-- **Dramın kaynakları:**
-  - **ışık:** senaryolu bir "gün yayı";
-  - **bakış açısı:** 3/4 görünüş → plan görünüşü → numune → karot → ziyaretçiye dönen yüz.
+- **Panel:** yuvarlatılmış bir pencere. Üstte üç nokta (accent, brass, muted) ve dosya adı, altta durum satırı (sol ve sağ etiket) vardır. Arkasında yumuşak gölgeli bir plaka durur. Panel hafif eğiktir ve yavaşça süzülür.
+- **Sözdizimi renkleri site paletinden gelir** (§6.3):
 
-**Gün yayı** (anahtar ışığın bölüm başına yönü; uygulama §5.6, değerler §5.8):
-
-| An | Işık az / el | His |
+| Rol | Token | Kullanım |
 |---|---|---|
-| hero | −60 / 38 | sabah, soldan sıyıran |
-| about | −30 / 55 | yükselen |
-| areas | 0 / 80 | öğle, tepeden |
-| work | 25 / 22 | ikindi, alçaktan ve önden |
-| journey | −20 / 60 | |
-| contact | 70 / 14 | son ışık, sağdan alçak |
+| `ink` | `--color-ink` | Düz kod, adlar, sayı değerleri (ör. `since:` yılı; tam opak), dosya adı, kutu etiketleri |
+| `muted` | `--color-ink-muted` | Anahtar sözcükler, noktalama, `@override`, pencere çerçevesi, durum satırının sol ve sağ etiketleri (saydamlık 0.85) |
+| `subtle` | `--color-ink-subtle` | Yorumlar, satır numaraları |
+| `accent` | `--color-accent` | Dizgeler, `$` istemi, imleç, etkin satır ve etkin commit |
+| `brass` | `--color-brass` | Adlandırılmış parametreler, `✓`, eğitim işareti |
+| `panel` | `--color-surface` | Plaka |
+
+- **Gece paneli:** journey programı her temada **koyu tema** token'larıyla çizilir (statik panelde `data-night` → `color-scheme: dark`; token'lar `light-dark()` olduğu için koyu değerler çözülür). Gece yalnız panelin içidir; sayfa zemini değişmez (arka plan rengi scrub'ı YASAK, D-16).
+- **Hareket eden şeyler:** yalnız panel ve glifleri (§4.1.4). Sayfa zıplamaz, yana kaymaz, parlamaz.
+- **Arka plan:** tema başına tek, sabit tuval rengi (`--color-canvas`). **YASAK:** arka plan rengi scrub'ı (D-16) ve İletişim'de arka planı tersine çevirmek.
+- **Tema:** varsayılan "sistem"dir; art direction referansı koyu temadır; iki tema da v1'de gelir (D-20).
+
+#### 4.1.4 Animasyon dili
+
+| Hareket | Ne olur | Nerede |
+|---|---|---|
+| **Çözülme** (decode/scramble) | Değişen hücrelerde rastgele glifler belirir, sonra hedef glife oturur. Oturan glif kısa bir accent parlamasıyla gelir. Yukarıdan aşağı, satır başına gecikmeyle ilerler. | Adım değişimleri (zaman tabanlı, ≈ 1.2 s) ve köprüler (kaydırmayla) |
+| **Yazma** | Metin karakter karakter yazılır; imleç yanıp söner. | `$ mail …`, `$ flutter build`, `ls … --area` |
+| **Akan log** | Yeni satır altta belirir, eskiler yukarı kayar ve söner. | `api` diyagramı (`tail -f api.log`) |
+| **Glif yağmuru** | Eski program sütun sütun aşağı düşer, düşerken karışır ve söner; yenisi yukarıdan aşağı çözülür. Pencere çerçevesi yerinde kalır. | Bölüm köprüleri (kaydırmayla scrub; geri alınabilir) |
+| **Derleme** | ASCII görsel yukarıdan aşağı bir taramayla gerçek görsele döner. | work kapakları (§4.9.4) |
+
+Süreler §4.12.4'te **[SABİT]** olarak, uygulama §5.20.5'tedir.
+
+#### 4.1.5 Okunabilirlik kuralı
+
+- **ZORUNLU:** Her program bir bakışta kod-yerli bir içerik ya da bir diyagram olarak okunur. Kural, sahibin BÜTÜN prototipine geri bildiriminden gelir: "hiçbir şey anlaşılmıyor".
+- **ZORUNLU:** Dinlenme anında (dwell) panelde rastgele glif yoktur; panel programın son karesini gösterir. Bu kare, aynı programın statik paneliyle hücre hücre aynıdır (§4.16.3).
+- **ZORUNLU:** Rastgele glifler yalnız geçişlerde görünür: köprülerde ve ≈ 1.2 s'lik adım çözülmelerinde.
+- **ZORUNLU [SABİT]:** Masaüstünde panel en az 360 px genişliktedir (hücre ≈ 6.4 px; 1024 px ve üstünde sağlanır, §4.5.6). Tek istisna kısa masaüstündeki hero'dur: görüntü alanı 800 px'ten kısaysa (ör. 1024×768, iPad yatay) hero paneli en az 320 px'tir, çünkü hero satırı yükseklikle sınırlıdır. Mobilde panel bandı doldurur; 390×844'te en az 280 px'tir (§4.15.2).
+- Panel yalnız dekordur. Bilginin tamamı DOM metnindedir (§4.4 yasa 1).
 
 ### 4.2 İmza anları
 
@@ -2027,36 +2073,36 @@ Sitenin tüm ziyaret boyunca **tek bir nesnesi** vardır: **Taş**. Ziyaretçi k
 
 | # | Ad | Nerede | Ziyaretçinin gördüğü | Tanım |
 |---|---|---|---|---|
-| 1 | **Işık taraması** | Yükleme (hero) | Anahtar ışık taşın dokusunu bir kez tarar ve tane canlanır. Oturumda bir kez, 1.2 s. | §4.6.5 |
-| 2 | **Kesim** | about IN | Sayfada 1 px'lik bir kılcal çizgi büyür. Aynı değer taşı keser. Lede, kesim ilerledikçe satır satır belirir. | §4.7 |
-| 3 | **Plan görünüşü** | areas IN | Dolly-zoom: kamera geri çekilirken FOV daralır ve perspektif neredeyse ortografik bir çizime düzleşir. | §4.8 |
-| 4 | **Kadran** | areas pin | Kesit yüzeyi, sabit bir kılcal ibrenin altında her adımda bir dilim döner (şifreli kilit gibi). | §4.8 |
-| 5 | **Numune silmesi** | work | Her kapak, 1 px'lik bir çizginin taşıdığı "kesit silmesi"yle gelir. Alttaki küçük taş projenin alanına döner ve yılını yakar. | §4.9 |
-| 6 | **Karot** | journey | Aşağı kaydırdıkça yanan bant içeri, derine ve geçmişe ilerler. | §4.10 |
-| 7 | **Bir sonraki halka** | contact | Kesit yüzü ziyaretçiye döner. Yalnızca bitmemiş dış yay vurgu renginde parlar. | §4.11 |
+| 1 | **Hot reload** | Yükleme (hero) | `main.dart` bir kez yeniden çözülür; ad satırı vurgulanır ve imleç orada yanıp söner. Oturumda bir kez. | §4.6.5 |
+| 2 | **Kaynak** | about | `about.dart`: kişinin olguları bir `Developer(...)` nesnesinin parametreleri olarak okunur. | §4.7 |
+| 3 | **Modüller** | areas pin | Her adımda o alanın diyagramı çözülür: telefon, klasör ağacı, API, CI hattı. | §4.8 |
+| 4 | **Derleme** | work | Kapak 600 ms'lik silmeyle açılırken renkli ASCII olarak belirir, sonra yukarıdan aşağı gerçek görsele derlenir. | §4.9 |
+| 5 | **Sürüm geçmişi** | journey | `git log --graph`: kariyer commit'leri, `(HEAD)` bugünkü rolde, etkin kayıt vurgulu. Gece paneli. | §4.10 |
+| 6 | **Terminal** | contact | `$ mail <e-posta>` yazılır, `✓` basılır, yeni istem açılır. | §4.11 |
+| 7 | **Glif yağmuru** | bölüm köprüleri | Eski program sütun sütun düşer, yenisi çözülür; kaydırmayla ileri geri oynar. | §4.12.1 |
 
-"Fazla sessiz" riski (final.md risk #1) için iki önlem var:
+"Fazla sessiz" riski (R-01) için iki önlem var:
 - `intensity` parametresi (§4.17.4);
-- K0–K5'in M1'de poster olarak sahibe onaylatılması (§15, M1 kapısı).
+- KOD geçişinde canlı önizlemenin sahibe gösterilmesi (§15.8a).
 
 ### 4.3 Sahneleme kuralı: "3D kaydırmayla, DOM adım adım"
 
 | Katman | Nasıl değişir | Kural |
 |---|---|---|
-| **3D sürekli özellikler:** kamera (`r`, `az`, `el`, `fov`), nesne dönüşü, kesim (`cut`), halka kontrastı, ışık, çapa karışımı, varlık (`tone`) | Kaydırmayla **scrub** edilir: `(route, scrollY)`'nin saf fonksiyonu (§5.9) | Geri alınabilir. Yalnızca okur ilerledikçe ilerler. |
-| **3D ayrık seçimler:** hangi bant/dilim yanık, etkin proje, etkin girdi | Eşiklerde **event** olarak zamanla tween edilir | Atlamada ve geri yüklemede `duration: 0` ile anında uygulanır. Durum her zaman kaydırmanın fonksiyonu kalır. |
-| **DOM metin ve görseller** | Kaydırma eşiğinde tetiklenen, **zaman tabanlı** adımlar | Bir kez oynar, ≤ 700 ms sürer, **asla yeniden gizlenmez**. **YASAK:** metin/görsel opaklığını ya da konumunu kaydırma konumuna bağlamak. |
+| **Panelin sürekli özellikleri:** çapa karışımı (`anchorMix`) ve onunla sürülen köprü (glif yağmuru ve çözülme), varlık (`--scene-opacity`) | Kaydırmayla **scrub** edilir: `(route, scrollY)`'nin saf fonksiyonu (§5.9) | Geri alınabilir. Yalnızca okur ilerledikçe ilerler. |
+| **Panelin ayrık seçimleri:** program adımı (etkin alan, etkin kayıt, sonraki proje, filtre) | Eşiklerde **event** olur; değişim ≈ 1.2 s'lik zaman tabanlı çözülmedir | Atlamada ve geri yüklemede çözülme oynamaz, son kare anında yazılır. Durum her zaman kaydırmanın fonksiyonu kalır. |
+| **DOM metin ve görseller** | Kaydırma eşiğinde tetiklenen, **zaman tabanlı** adımlar | Bir kez oynar, ≤ 700 ms sürer, **asla yeniden gizlenmez**. Work kapak değişimi de zaman tabanlıdır: 600 ms'lik `clip-path` silmesi (§4.9.4). Tek bildirilmiş istisna, silmeyle aynı karede başlayan work ASCII derlemesidir (≈ 1.2 s; §4.9.4, §4.12.3). **YASAK:** metin/görsel opaklığını ya da konumunu kaydırma konumuna bağlamak. |
 
 **Kaydırmaya bağlanabilecek DOM özellikleri (kapalı beyaz liste).** Bunların dışında hiçbir DOM özelliği kaydırma konumuna bağlanamaz:
-1. about `CutLine`: `transform: scaleX(cutProgress)`. Dekoratiftir, `aria-hidden`.
-2. `HalkaIndicator` ilerleme yayı. Doğrudan geri bildirimdir (§4.14 #10).
-3. `#scene-layer` üzerindeki `--scene-opacity`. Tuval katmanıdır; metin ya da görsel değildir.
-4. Statik tier'da Areas `DialFigure` SVG'sinin `transform: rotate()` değeri. Bu, 3D `rotY` track'iyle aynı değerdir (§4.16).
+1. `HalkaIndicator` ilerleme yayı. Doğrudan geri bildirimdir (§4.14 #10).
+2. `#scene-layer` üzerindeki `--scene-opacity`. Tuval katmanıdır; metin ya da görsel değildir.
+
+KESİT'teki about `CutLine` ölçeği ve statik kademede kadranın dönüşü KOD ile kaldırıldı.
 
 **Tuval:**
 - `position: fixed`, `aria-hidden="true"`, `pointer-events: none`; tüm DOM'un **altındadır** (katman sırası §6.4).
-- **YASAK:** taşın gövde metninin arkasında durması.
-- Tek istisna hero H1'dir. Taşın yumuşak temas gölgesi "Saatçi"nin büyük harf çizgisinin arkasına düşer: "adın üzerinde duran bir kâğıt ağırlığı". Kontrast güvencesi §6.9'dadır.
+- **YASAK:** panelin gövde metninin arkasında durması.
+- İstisna yoktur: hero çapası eyebrow satırının altında, H1 kutusunun 24 px üstünde biter; panel H1'e değmez (§4.5.6). KESİT'teki "temas gölgesi" istisnası kaldırıldı.
 
 **Pin kuralı (D-16):**
 - DOM görüntü alanını tutan **tek** bölüm `areas`'tır. CSS `position: sticky` ile yapılır.
@@ -2070,8 +2116,8 @@ Sitenin tüm ziyaret boyunca **tek bir nesnesi** vardır: **Taş**. Ziyaretçi k
 
 **Genel yasaklar (D-16):**
 - özel imleç (her türü);
-- parçacıklar ve instancing;
-- arka plan rengi scrub'ı;
+- parçacıklar (serbest süs parçacığı). **Instancing yasağı KOD glif ızgarası için kalkar** (D-16, 2026-10-02): glifler sabit sayılı bir metin ızgarasının hücreleridir (§5.20.4); yağmurda düşen glifler de bu hücrelerdir;
+- arka plan rengi scrub'ı (gece paneli yalnız panelin içidir, §4.1.3);
 - kaydırmaya bağlı metin ya da görsel opaklığı.
 
 ### 4.4 Etkileşim yasaları
@@ -2079,16 +2125,17 @@ Sitenin tüm ziyaret boyunca **tek bir nesnesi** vardır: **Taş**. Ziyaretçi k
 Bu üç yasa pazarlığa kapalıdır (c3 konseptinden alındı). Her yeni etkileşim önerisi önce bu yasalara göre değerlendirilir.
 
 1. **Etkileşim isteğe bağlıdır.**
-   - Her bilgi ve her eylem; hover, eğme ya da sahneye dokunma **olmadan** erişilebilir.
-   - Sahnenin gösterdiği her bilgi (yıl aralığı, alan) DOM'da metin olarak da bulunur.
-   - Hover-to-scene yalnızca bir güçlendirmedir. Taş ekranda değilken görünmemesi kabul edilir.
+   - Her bilgi ve her eylem; hover ya da sahneye dokunma **olmadan** erişilebilir.
+   - Panelin gösterdiği her bilgi (ad, unvan, alan, yıl, kurum, e-posta) DOM'da metin olarak da bulunur.
+   - Panel hover'a tepki vermez. İşaretçi paralaksı yalnızca bir güçlendirmedir.
 2. **Sahne okumaya yol verir.**
-   - Taş metnin arkasında durmaz.
+   - Panel metnin arkasında durmaz.
    - Okunan metin bloğunun altında kaydırma kaynaklı hareket olmaz (dwell bölgeleri, §4.12.2).
-   - Kendiliğinden (boşta) hareket, son girdiden en geç **20 s** (ince işaretçi) / **8 s** (kaba işaretçi, dokunmatik) sonra durur; low tier'da idle drift yoktur (§5.11.1).
+   - Kendiliğinden hareket (süzülme, imleç, akan log, hat animasyonu), son girdiden en geç **20 s** (ince işaretçi) / **8 s** (kaba işaretçi, dokunmatik) sonra durur; imleç görünür kalır. Low tier'da süzülme yoktur (§5.20.7).
 3. **Tek vurgu, tek anlam.**
-   - Yakut (`--color-accent`) yalnızca **"etkin / şimdi / sen"** anlamına gelir: etkin dilim, etkin bant, açık dış yay, dalga, saat ibreleri, bağlantı vurguları, birincil CTA, etkin nav noktası.
-   - **YASAK:** vurgu rengini dekor, kategori ya da uyarı rengi olarak kullanmak.
+   - DOM'da yakut (`--color-accent`) yalnızca **"etkin / şimdi / sen"** anlamına gelir: etkin alan, etkin yıl, bağlantı vurguları, birincil CTA, etkin nav noktası.
+   - **YASAK:** DOM'da vurgu rengini dekor, kategori ya da uyarı rengi olarak kullanmak.
+   - **Bildirilmiş istisna (KOD):** panelin içinde accent bir sözdizimi rolüdür (dizgeler, `$` istemi, imleç; §4.1.3). Panel `aria-hidden` ve dekoratiftir; dizgeler sahibin kendi olgularıdır.
 
 ### 4.5 Bölüm modeli
 
@@ -2130,8 +2177,8 @@ Bu üç yasa pazarlığa kapalıdır (c3 konseptinden alındı). Her yeni etkile
 **Olay konumu formülleri.** Referans içindir; çalışma zamanında `T` ve öğe üstleri ölçülür.
 - **Areas adım *k*** (0 tabanlı):
   - başlangıç `sA(k) = T_areas + 10 + 50k`;
-  - *k* ≥ 1 için dönüş `[sA, sA+15]`, metin değişimi `sA + 7.5`, dwell `[sA+15, sA+50]`;
-  - *k* = 0'da dönüş yoktur; `[sA, sA+50]` tamamen dwell'dir;
+  - *k* ≥ 1 için değişim penceresi `[sA, sA+15]`; metin ve program değişimi ortasında, `sA + 7.5`'te; dwell `[sA+15, sA+50]`;
+  - *k* = 0'da değişim yoktur; `[sA, sA+50]` tamamen dwell'dir;
   - oturma (settle) `[T_areas, T_areas+10]`, bırakma (release) `[T_areas + 10 + 50N, T_areas + 20 + 50N]`.
 - **Work makale *k*** (1 tabanlı):
   - üst kenar `u = T_work + 30 + 70(k−1)`;
@@ -2150,7 +2197,7 @@ Bu üç yasa pazarlığa kapalıdır (c3 konseptinden alındı). Her yeni etkile
 
 | Sayı | İzin verilen | Aşılırsa |
 |---|---|---|
-| N (alan) | 3–6 | N ≥ 7 → Areas **liste modu** (pin yok, kadran yok). N < 3'ü şema reddeder (§7.3). |
+| N (alan) | 3–6 | N ≥ 7 → Areas **liste modu** (pin yok, adım yok). N < 3'ü şema reddeder (§7.3). |
 | P (öne çıkan proje) | 3–5 | Şema reddeder (§7.3). |
 | E (ana sayfa CV girdisi) | ≤ 6 | Fazlası yalnızca `/cv`'de görünür. |
 
@@ -2181,10 +2228,10 @@ Uygulama §5.14'te, easing/süre token'ları §6.5'te.
    - `clip-path: inset(8% round 6px) → inset(0 round 6px)` ve iç görsel `scale 1.08 → 1`;
    - **700 ms** `--ease-out`, bir kez.
    - design-direction araştırmasındaki 1000 ms, onaylı konseptin sahneleme kuralındaki "reveal ≤ 700 ms" tavanı (§4.3) nedeniyle **geçersizdir**.
-10. **Bölüme özgü tetikler** (about ve contact senkron istisnalarıdır; work yalnızca farklı bir başlangıç noktasıdır, §4.12.3):
-    - work makaleleri `top 80%` (§4.9);
-    - about lede satırları `cutProgress` eşikleri (§4.7);
+10. **Bölüme özgü tetikler** (contact senkron istisnasıdır; work yalnızca farklı bir başlangıç noktasıdır, §4.12.3):
+    - work makaleleri `top 85%` (§4.9, §4.12.3 SPEC-SAPMA);
     - contact metni IN p 0.55 / 0.70 (§4.11).
+    - KESİT'teki about lede eşikleri (`cutProgress`) kaldırıldı; lede kural 3'ü uygular.
 11. **Hero ikincil metninin yalnız-CSS solması (D-46):**
     - Eyebrow, konumlandırma cümlesi ve CTA'lar `translateY(12px) → 0` ile görünür olur; 500 ms `--ease-out` **[SABİT]**; gecikmeler 120 / 190 / 260 ms.
     - Sınıf `.hero-in`'dir ve kuralı §6.10'dadır: JS'siz de çalışır; `data-motion="reduce"` iken ve JS yokken işletim sistemi azaltılmış hareket istiyorsa çalışmaz.
@@ -2211,7 +2258,7 @@ Uygulama §5.14'te, easing/süre token'ları §6.5'te.
 |---|---|---|
 | Komşu bölüm (`d ≤ 1`) | Lenis varsa `lenis.scrollTo(target, { duration: 0.9 })` **[SABİT: süre]**. Yoksa `scrollTo({ behavior: 'smooth' })`. | Canlı scrub: sahne ara durumlardan geçer. |
 | Uzak atlama (`d > 1`) | aynı | **Kesme kuralı:** başlangıçta `--scene-opacity` 150 ms'de 0'a iner; varışta sahne türetilmiş duruma **anında** oturur (event'ler `duration: 0`); 250 ms'de geri gelir. |
-| Areas "Bu bölümü atla ↓" | aynı | Komşu olsa da **her zaman kesme kuralı** **[SABİT]**. Aksi halde kadran 0.9 s'de tüm adımları hızla döner. |
+| Areas "Bu bölümü atla ↓" | aynı | Komşu olsa da **her zaman kesme kuralı** **[SABİT]**. Aksi halde panel 0.9 s'de tüm adımları art arda çözer. |
 | Azaltılmış hareket | `behavior: 'auto'` (anında) | Sahne yok. |
 
 - Ana sayfadayken header'daki ad bağlantısı (`href="/"` / `"/en"`) `#giris` / `#intro` çapasına aynı kurallarla gider.
@@ -2220,19 +2267,26 @@ Uygulama §5.14'te, easing/süre token'ları §6.5'te.
 
 #### 4.5.6 Sahne çapaları (ölçü kaydı)
 
-Çapa mekanizması, ölçüm zamanları ve `D` hesabı §5.7'dedir. Buradaki değerler, her çapanın DOM'da taşıyacağı niteliklerdir: `data-stage-anchor`, `data-anchor-kind`, `data-anchor-size` (= `sizeFrac`) ve `data-anchor-align`.
+Çapa mekanizması ve ölçüm zamanları §5.7'de, panelin çapaya yerleşimi §5.20.4'tedir. Buradaki değerler, her çapanın DOM'da taşıyacağı niteliklerdir: `data-stage-anchor` ve `data-anchor-kind`. Çapa id'leri KESİT'ten kalır ve değişmez. `data-anchor-size` ve `data-anchor-align` öznitelikleri çapalarda durur ama KOD bunları yok sayar.
 
-| `data-stage-anchor` | Kind | Yer | `data-anchor-size` | Align | D (1440×900) |
-|---|---|---|---|---|---|
-| `hero-rest` | `flow` | hero, k8–12; header + 16 px → H1 büyük harf çizgisi | Özel kural: `D = min(0.68·anchorW, anchorH − 24)` (§5.7) | `bottom` | 362 |
-| `about-cut` | `flow` | about, k8–12; dikey merkez = kesim çizgisi | 0.72 | `center` | 384 |
-| `areas-dial` | `sticky` | areas sahnesi, k7–12, y 13–94 svh | 0.80 | `center` | 515 |
-| `work-specimen` | `sticky` | work, k10–12, y 62–94 svh | 0.72 | `center` | 207 |
-| `journey-core` | `sticky` | journey, k8–12, y 12–88 svh | 0.80 | `center` | 426 |
-| `contact-ring` | `viewport` | k8–12, y 14–86 svh | 0.80 | `center` | 426 |
-| `page-folio` | `flow` | Preset'e göre (§4.13.2) | `folio` 0.70 · `plan-small` 0.80 · `about-page` 0.72 · `contact-page` 0.80 | `center` | 217 · 248 (`/calisma-alanlari`'nda 426) · 384 · 426 |
-| `cv-core` | `sticky` | `/cv`, k10–12, y 14–86 svh (yalnız ≥ 80rem) | 0.80 | `center` | 248 |
-| Mobil bantlar (aynı id'ler) | `flow` (areas: `sticky`) | §4.15.2 | 0.86 | `center` | ≈ 290 (hero, 390×844) |
+**Panel dikdörtgeni:** panel 56 × 24 hücredir; hücre oranı 1 : 2, panelin en-boy oranı 7 : 6'dır. Panel çapanın kutusunu **doldurur** ve ortalanır (contain): `W × H` çapa kutusu iken `Pw = min(W, H · 7/6)`, `Ph = Pw · 6/7`. Statik panel aynı hesabı CSS container birimleriyle yapar (`min(100cqw, 100cqh · 7/6)`).
+
+| `data-stage-anchor` | Kind | Yer | Program | Pw (1440×900, ölçülen ≈) |
+|---|---|---|---|---|
+| `hero-rest` | `flow` | hero, k8–12; üstü header + 16 px, altı eyebrow satırının (satır 1) altı: H1 kutusunun 24 px üstü | `main.dart` | 466 |
+| `about-cut` | `flow` | about, k8–12; lede'nin yanında | `about.dart` | 533 |
+| `areas-dial` | `sticky` | areas sahnesi, k7–12, y 13–94 svh | alan *k*; adım başına bir statik panel (§4.8.4) | 644 |
+| `work-specimen` | `sticky` | work; **boştur**: statik panel yoktur, yalnız köprünün hedef dikdörtgenidir (§4.9.4) | — | — |
+| `journey-core` | `sticky` | journey, k8–12, y 12–88 svh | `git log` (gece) | 533 |
+| `contact-ring` | `viewport` | k8–12, y 14–86 svh | `zsh` | 533 |
+| `page-folio` (kare) | `flow` | k8–12; `about-page`, `contact-page`, `/calisma-alanlari` | §4.13.2 | 533 |
+| `page-folio` (kompakt) | `flow` | k8–12; proje sayfası, `/projeler`, alan sayfası. Yükseklik başlık bloğunu izler, en az `19.5rem`. Başlık bloğu k1–7'dedir. Proje sayfasının "Sonraki proje" slotu da k8–12 kompakttır; bağlantısı k1–7'dedir. | §4.13.2 | ≥ 364 |
+| `cv-core` | — | **KOD'da yoktur:** `/cv` sahnesizdir (§4.13.2) | — | — |
+| Mobil bantlar (aynı id'ler) | `flow` (areas: `sticky`) | §4.15.2. Panel bandı doldurur. Derin sayfa bantları 7 : 6 oranlıdır, en çok `42svh` (§4.13.5). | aynı | ≈ 348 (hero, 390×844) |
+
+- **ZORUNLU [SABİT]:** Masaüstünde `Pw ≥ 360` px (okunabilirlik, §4.1.5). Bu, 1024 px ve üstünde sağlanır; yalnız görüntü alanı 800 px'ten kısayken hero `Pw ≥ 320` px'tir (1024×768'de ≈ 341). Mobilde 390×844'te `Pw ≥ 280` px. `stage.spec.ts`'teki "§4.5.6 panel okunabilirliği" testi 1024×768, 1440×900 ve 390×844'ü ölçer.
+- KESİT'te k10–12'de duran `page-folio` çapaları (folio, plan-small) bu kural yüzünden k8–12'ye genişledi; başlık bloğu k1–7'ye daraldı (KESİT'te k1–9).
+- Hero çapası KESİT'teki gibi H1'in büyük harf çizgisine uzanmaz: alt kenarı eyebrow satırının altındadır ve panel H1'e değmez (§4.6.3).
 
 ### 4.6 `hero`
 
@@ -2249,11 +2303,12 @@ Masaüstü 1440×900 (12 kolon; kenar 64, oluk 24)
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │ Orçun Saatçi     Hakkımda  Alanlar  Projeler  Özgeçmiş  İletişim   TR·EN  ◯  │ header 64 px (◯ = Halka 40 px)
 │                                                                              │
-│ {jobTitle} · {{ŞEHİR}}                                ┌─ hero-rest ───────┐  │ eyebrow (mono), k1–6
-│                                                       │     ╭────────╮    │  │ çapa k8–12 (x 843–1376)
-│                                                       │    (   TAŞ    )   │  │ üst: header + 16 px
-│                                                       │     ╰──▁▁▁──╯    │  │ alt: H1 büyük harf çizgisi (≈ 468 px)
-│ Orçun Saatçi ─────────────── H1, tek satır, nowrap ───┴──── gölge ───────┘  │ gölge "Saatçi"nin arkasında
+│                                                       ┌─ hero-rest ───────┐  │ çapa k8–12 (x 843–1376); üst: header + 16 px
+│                                                       │ ╭●●● main.dart──╮ │  │ KOD paneli (main.dart): contain, Pw ≈ 466 px
+│                                                       │ │Text('Orçun')▌ │ │  │
+│ {jobTitle} · {{ŞEHİR}}                                │ ╰───────────────╯ │  │ eyebrow (mono), k1–6; satır 1'in altı
+│                                                       └───────────────────┘  │ çapa altı = eyebrow satırının altı (H1'in 24 px üstü)
+│ Orçun Saatçi ─────────────── H1, tek satır, nowrap ───────────────────────── │ panel H1'e değmez
 │ {{KONUMLANDIRMA_CÜMLESİ}} (≤ 18 kelime)                                      │ type-lead, k1–6
 │ ( Projeleri incele → )   ( İletişime geç )             [❚❚ Animasyonu durdur] │ 2 manyetik CTA · duraklatma 44 px
 │ Kaydır ──                                                  {{ŞEHİR}} · 14:32 │ mono
@@ -2265,9 +2320,9 @@ Mobil 390×844 (4 kolon; kenar 16–20)
 ┌────────────────────────────────┐
 │ Orçun Saatçi        Menü ◯     │ header 56 px (Halka 32 px menü düğmesinde)
 ├────────────────────────────────┤
-│          ╭────────╮            │ hero bandı 40 svh (innerHeight < 740 → 34 svh)
-│         (   TAŞ    )           │ D = 0.86 × min(bandW, bandH) ≈ 290 px
-│          ╰──▁▁▁──╯       [❚❚]  │ duraklatma: bandın sağ altı, 44 px
+│ ╭●●● main.dart─────────╮       │ hero bandı 40 svh (innerHeight < 740 → 34 svh)
+│ │ child: Text('Orçun')▌│       │ panel bandı doldurur (contain, 7:6) ≈ 348 px
+│ ╰──────────────────────╯  [❚❚] │ duraklatma: bandın sağ altı, 44 px
 ├────────────────────────────────┤
 │ {jobTitle} · {{ŞEHİR}}         │ eyebrow
 │ Orçun                          │ H1 iki satır, --text-display
@@ -2296,76 +2351,88 @@ Sunucuda render edilir ve ilk boyamada görünürdür. DOM sırası görsel sır
 | Kaydırma ipucu | `<p aria-hidden="true">` | "Kaydır" / "Scroll" (mono) + 32 px kılcal çizgi | Çizgi bir kez 1.2 s'de büyür (CSS). Azaltılmış harekette büyüme yok, çizgi tam boyda. |
 | Yerel saat | `LocalTime` | "{{ŞEHİR}} · 14:32" | §4.14 #15 |
 | Duraklatma | `PauseButton`: `<button type="button">` | Görünür metin durumla değişir: oynuyor "Animasyonu durdur" / "Pause animation", durmuş "Animasyonu başlat" / "Play animation". İkon ❚❚ ↔ ▶ (`aria-hidden`). | ≥ 44×44 px. Sahne bölgesinin sağ altında. Yalnızca `data-motion="full"` iken ve **hidrasyondan sonra** render edilir; mutlak konumludur, CLS yapmaz. Etiket durumla değişir; `aria-pressed` taşımaz (§10.2.2). |
-| Sahne çapası | `<div data-stage-anchor="hero-rest" data-anchor-kind="flow" data-anchor-align="bottom" aria-hidden="true">` | — | k8–12. Alt kenarı H1'in büyük harf çizgisinde (aynı grid satırı); üstü header + 16 px. |
-| Posterler | Çapanın içinde iki `<img>` (açık/koyu) | `public/stage/k0-{light,dark}-{640,1080,1600}.{avif,webp}` | Kare, `alt=""`, `loading="lazy"`, `fetchpriority="low"`, açık `width`/`height` (CLS yok). Etkin olmayan tema `display: none` (⚠️ §5.16). Optimizer'dan geçmez (D-31). Boyut = canlı taşın `D`'si. |
+| Sahne çapası | `<div data-stage-anchor="hero-rest" data-anchor-kind="flow" aria-hidden="true">` | — | k8–12. Üstü header + 16 px; alt kenarı eyebrow satırının (satır 1) altında, H1 kutusunun 24 px üstünde. Panel çapayı doldurur (contain) ve H1'e değmez (§4.5.6). |
+| Statik panel | Çapanın içinde `KodPanel`: `<div class="kod-panel" data-kod-program="hero" data-kod="<program JSON>" aria-hidden="true"><pre class="kod-pre" translate="no"><span class="kod-row">…</span>…</pre></div>` | `main.dart` son karesi (§4.6.4, §4.16.3) | SSR'dır, JS gerektirmez. 24 satırın her biri bir blok öğedir (`.kod-row`): her satır küçük bir LCP adayıdır, LCP H1 kalır (D-34; ⚠️ §4.6.9). Canlı panelle aynı dikdörtgende durur; canvas hazır olunca 600 ms'de söner (§5.20.6). KESİT'in `k0` posterlerinin yerini alır. |
 
 - SPEC-SAPMA: §4.6.2, §4.6.3 (M5, 2026-09-30) — K-HERO-6 için masaüstünde (≥ 64rem) sahne kutusu satır aralığı + H1 kutusunun üstünden büyük harf çizgisine uzaklık kadar aşağı uzanır: `margin-bottom: calc(-1 × (1.5rem + 0.111 × --text-display-fit))` (Mona Sans, `line-height` 0.92; 1024–1920 px'te Chromium, WebKit ve Firefox'ta ölçüldü). Çapanın alt kenarı büyük harf çizgisindedir (1440×900'de 537.98 / 538 px); M4 notundaki "H1'in üstüne kadar" ifadesinin yerini alır. H1 `position: relative` alır: DOM'da önce gelen sahne kutusundan sonra boyanır, Taş'ın gölgesi harflerin arkasında kalır. Duraklatma düğmesi masaüstünde CTA satırının sağındadır (tel çerçeve; 1. satırın sağ altı Taş'ın üstüne düşerdi); 64rem altında sahne bandının sağ altında kalır. Not: analitik alt hizalama (`cy = alt − 0.5·D·ry`, §5.7.5) yüzey kabartısını (`disp` 0.045) ve 12° kamera eğimini içermez; opak Taş tabanı büyük harf çizgisinin ≈ 7 px altına iner ve "tçi" harflerinin tepesine değer. Kontrast probu H1 kutusunu 2.5–2.96:1 ölçer (büyük metin eşiği 3.0; §5.18.2). İnce ayar M8 görsel QA'sındadır.
+- KOD notu (2026-10-02): Yukarıdaki M5 kaydı KOD ile geçersizdir. Sahne kutusunu H1'in büyük harf çizgisine uzatan negatif `margin-bottom` kaldırıldı; `hero-rest` artık eyebrow satırının altında, H1'in 24 px üstünde biter ve panel H1'e değmez (§4.5.6, K-HERO-6).
 - SPEC-SAPMA: §4.6.2, §4.6.3 (M6, 2026-10-01) — Masaüstünde duraklatma düğmesi CTA satırında ve yerel saat ipucu satırında **metin bölgesinin (k1–7) sağındadır**; k8–12 sütunu hero'nun altında boş kalır. Gerekçe K-CHOREO-6 (§4.12.2 #7): about IN'in anchor karışımı (s 0–30'da 0 → 0.45, §4.12.1 satır 2) Taşı s ≈ 17–35'te k8–12'de y ≈ 512–547'ye indirir; o sütundaki düğme ve saat metni Taşın arkasında kalıyordu. Tablo değerleri (K-CHOREO-7) korunur; §4.15.2'nin "metin k1–6/7, sahne k7/8–12" ızgarasıyla da uyumludur. Mobilde düğme bandın sağ altında kalır, 12 px aşağı iner (D = 0.86·bant dairesi metnin satır kutusuna 5.4 px değiyordu). Not: s 0–36'da Taş K1a karışımı yüzünden ekranda ≈ 130 px iner ve "Saatçi"nin arkasından geçer (§4.6.8 "sayfayla yukarı çıkar" ifadesiyle çelişir); H1 istisnadır, M8 görsel QA'sında sahibe gösterilir.
 
-#### 4.6.4 3D durumu: K0 `hero`
+#### 4.6.4 KOD programı: `main.dart`
 
-| Çapa | r | az | el | fov | D | rotY | rotX | cut | ringContrast | sectorMix | ghost | arcGlow | Işık az/el | tone |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `hero-rest`: flow; k8–12 = x 843–1376; header+16 → H1 büyük harf çizgisi ≈ 468 px; align bottom | 5.2 | −25 | 12 | 30 | 362 = `min(0.68·anchorW, anchorH − 24)` | 0 (+ idle) | 0 | 1.10 (kesilmemiş) | 0 | 0 | 0 | 0 | −60 / 38 | 1 |
+Pencere başlığı `main.dart`; durum satırı solda `dart · utf-8`, sağda `Ln 13, Col <n>`. Veri: `person.name`, `person.jobTitle`, şehir (§7.3).
 
-- Taş bütündür ve adın üzerinde durur. Temas gölgesi "Saatçi"nin büyük harf çizgisinin arkasındadır.
-- **Idle drift:**
-  - `rotY` +2°/s ile döner.
-  - Son girdiden 20 s sonra (kaba işaretçide, yani dokunmatikte 8 s) yumuşakça durur. Low tier'da yoktur.
-  - İşaretçi ya da kaydırma girdisiyle yeniden başlar.
-  - Yalnızca hero etkin bölümken (`s < 30`) birikir.
-  - **ZORUNLU:** `s = 100`'de render edilen `rotY`, K1b değerinden (30°) en fazla 1° sapar. Biriken açının nasıl sönümleneceği §5.9'dadır.
+```dart
+import 'package:flutter/material.dart';
 
-- SPEC-SAPMA: §4.6.4 (M5, 2026-09-30) — "İşaretçi ya da kaydırma girdisi": `live.lastInput` ince işaretçide `pointermove`, her türlü `pointerdown` ve `scroll` ile yazılır (`src/stage/pointer.ts` `trackInput`; store'daki `trackPointer()`'ın yerini alır). İzleyici yalnız canlı sahne mount'ken çalışır ve ilk pakete girmez. Drift hızının zarfı (`idleS`) gerçek süreyle söner (kare başına ≤ 1 s): kare süresi 1/30 s'yi aşan cihazda kırpılmış dt, 20 s'deki duruşu 10+ kat uzatıyordu (CI SwiftShader ≈ 2 fps'te 40 s). Açı birikimi kırpılmış dt ile kalır: yavaş karede drift hızı düşer (SwiftShader'da ≈ 1.3°/s), sıçrama olmaz.
+void main() => runApp(const Portfolio());
+
+class Portfolio extends StatelessWidget {
+  const Portfolio({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Profile(
+      city: '<şehir>',
+      subtitle: '<jobTitle>',
+      child: Text('<ad>'),
+    );
+  }
+}
+```
+
+- Satır numaraları soldadır (`subtle`). Ad satırı (13) vurgulanır: zemin accent ≈ %7, satır numarası tam opak.
+- İmleç ad satırının sonunda yanıp söner (periyot 1.06 s **[SABİT]**).
+- Sözdizimi renkleri §4.1.3'tedir: `'<ad>'` accent, `city:` brass, `const` muted.
+- Panel hafif eğiktir (tüm programlarda pitch −2°, yaw −6°) ve süzülür (§5.20.4). Hero'da kaydırma kaynaklı değişim yoktur.
 
 #### 4.6.5 Yükleme sekansı
 
-Zaman tabanlıdır. Koreografinin toplamı ≤ 1400 ms'dir. Önyükleyici ve giriş ekranı yoktur (D-45). Girdi hiçbir zaman engellenmez.
+Zaman tabanlıdır. Koreografinin toplamı ≤ 1400 ms'dir (hot reload hariç). Önyükleyici ve giriş ekranı yoktur (D-45). Girdi hiçbir zaman engellenmez.
 
 | t | DOM | Sahne |
 |---|---|---|
-| İlk boyama | H1 ve tüm metin görünür. Eyebrow → konumlandırma → CTA'lar CSS ile belirir (120 / 190 / 260 ms, §4.5.4 #11). | Poster görünür (ya da lazy yükleniyor). |
+| İlk boyama | H1 ve tüm metin görünür. Eyebrow → konumlandırma → CTA'lar CSS ile belirir (120 / 190 / 260 ms, §4.5.4 #11). | Statik panel (`main.dart` son karesi) görünür. |
 | `load` → idle | Hareket paketi (GSAP, ScrollTrigger, SplitText, Lenis) `load`'dan sonra istenir (D-33). Reveal'lar kurulur ve `.motion-ready` eklenir. | `load` + 1 s + idle beklenir (`STAGE_IDLE`; değerler §9.2.3) → yetenek yoklaması → Stage paketi import edilir (§5.12, §9.2). |
-| Canvas hazır | — | Canvas opaklık 0 ile mount edilir → `renderer.compileAsync(scene, camera)` → sahne mevcut kaydırmanın durumuna **atlar** → ilk kare → poster'dan canvas'a **600 ms** crossfade. |
-| İlk kare sonrası | — | **Işık taraması:** `az −120° → −60°`, `el 20° → 38°`, 1200 ms `expo.out`. Yalnızca ilk kare anında `scrollY < 0.2 × innerHeight` ise oynar. Oturumda bir kez: `sessionStorage['os-sweep'] = '1'`, okuma/yazma try/catch içinde (D-38). Duraklatılmışken ve azaltılmış harekette atlanır. |
+| Canvas hazır | — | Martian Mono yüklenince glif atlası kurulur (§5.20.3) → canvas opaklık 0 ile mount edilir → panel mevcut kaydırmanın durumuna **atlar** → ilk kare statik panelle hizalıdır → statik panelden canvas'a **600 ms** crossfade. |
+| İlk kare sonrası | — | **Hot reload:** `main.dart` kendi son karesinden (statik panelin karesi) bir kez yeniden çözülür: her dolu hücre gecikmesine kadar kendi glifini tutar, sonra 0.28 s karışık glif gösterir ve accent parlamasıyla oturur (gecikmeler ×1.5, başlangıç +0.3 s; ≈ 2 s; §4.1.4). Panel hiçbir an boşalmaz. Statik panel bu sırada söner. Yalnızca ilk kare anında `scrollY < 0.2 × innerHeight` ise oynar. Oturumda bir kez: `sessionStorage['os-sweep'] = '1'`, okuma/yazma try/catch içinde (D-38). Duraklatılmışken ve azaltılmış harekette atlanır. |
 
 #### 4.6.6 Metin/3D senkronu
 
-Varışta **bilinçli olarak yoktur**. Durağanlık buradaki ifadedir.
+Varışta **bilinçli olarak yoktur**. Durağanlık ve yanıp sönen imleç buradaki ifadedir.
 
 #### 4.6.7 Etkileşimler
 
 - **Masaüstü:**
-  - tırmıklayan ışık (§4.14 #1);
-  - taşa yakınlık eğimi (#2);
+  - işaretçi paralaksı (§4.14 #1);
   - iki manyetik CTA (#5);
   - duraklatma (#12);
   - bağlantı alt çizgileri (#4).
-- **Dokunmatik:**
-  - kaydırma sallanması (#1);
-  - taşa dokununca tek tarama (#2).
+- **Dokunmatik:** panel tepki vermez.
 
 #### 4.6.8 Çıkış geçişi
 
-Taş addan kalkar ve sayfayla birlikte yukarı çıkar. Işığı öğleye doğru yükselmeye başlar (about IN, §4.7).
+about IN köprüsü (§4.12.1): `main.dart` glif yağmuruyla düşer, `about.dart` yukarıdan aşağı çözülür; panel `hero-rest`'ten `about-cut` çapasına süzülür.
 
 #### 4.6.9 Mobil farkları (< 64rem)
 
 - **Hero bandı:**
   - header'ın hemen altında, 40 svh; `innerHeight < 740` ise 34 svh;
-  - `D = 0.86 × min(bandW, bandH)` (390×844'te ≈ 290 px);
+  - panel bandı doldurur (contain, 7:6; 390×844'te `Pw` ≈ 348 px);
   - H1 bandın altında, iki satır.
 - CTA'lar tam genişlikte, 48 px yüksekliğinde ve alt alta.
 - Duraklatma düğmesi bandın sağ altındadır.
-- **Yatay telefon** (`height < 500px`): bant genişliğin %50'si kadardır ve sağda durur; metin solda. Taş **yalnızca** hero'da görünür (§4.15).
-- ⚠️ **DOĞRULANMADI: mobil LCP.**
-  - Sorun: mobilde poster alanı (≈ 290² px) iki satırlık H1 metin kutusundan büyük olabilir. Bu durumda poster LCP adayı olur ve D-34'ü bozar.
-  - Doğrulama: M4'te ve M8'de Lighthouse mobil (390×844 ve 360×640) ile LCP öğesi kontrol edilir.
-  - Poster LCP çıkarsa §9.5.4'teki çözüm sırası uygulanır: önce 64rem altındaki satır kırılımı `<br>` ile tek metin bloğu yapılır; yetmezse mobil hero bandında poster ve canlı taş birlikte `D ≤ floor(sqrt(0.8 × A_h1))` ile sınırlanır (`A_h1`: 360 × 640 ve 390 × 844'te ölçülen en küçük H1 kutusu alanı).
+- İşaretçi paralaksı yoktur.
+- **Yatay telefon** (`height < 500px`): bant genişliğin %50'si kadardır ve sağda durur; metin solda. Panel **yalnızca** hero'da görünür (§4.15).
+- ⚠️ **DOĞRULANMADI: LCP.**
+  - Sorun: statik panel tek bir metin bloğu olsaydı (mobilde ≈ 348 × 298 px) iki satırlık H1'den büyük olur ve LCP adayı olurdu (D-34).
+  - Önlem: statik panel 24 satırın her birini ayrı bir blok öğe (`.kod-row`) olarak üretir; her satır ayrı ve küçük bir LCP adayıdır.
+  - Doğrulama: KOD geçişinde (§15.8a) ve M8'de Lighthouse mobil (390×844 ve 360×640) ve masaüstüyle LCP öğesi kontrol edilir.
+  - Başarısızsa: mobil hero bandındaki statik panel, H1 kutusu alanının %80'inden küçük tutulur (`Pw ≤ floor(sqrt(0.8 × A_h1 × 7/6))`; `A_h1`: 360×640 ve 390×844'te ölçülen en küçük H1 kutusu alanı).
 
 #### 4.6.10 Azaltılmış hareket karşılığı
 
-- K0 posteri adın üzerinde durur (dekoratif, `alt=""`).
+- Statik panel `main.dart` son karesiyle adın üzerinde durur (dekoratif, `aria-hidden`). İmleç yanıp sönmez, sabit görünür.
 - Stage paketi, CSS solması, kaydırma ipucu büyümesi ve duraklatma düğmesi yoktur.
 - Yerel saat yükleme anındaki saatte donar (§4.14 #15).
 
@@ -2375,7 +2442,7 @@ Taş addan kalkar ve sayfayla birlikte yukarı çıkar. Işığı öğleye doğr
 
 ### 4.7 `about`
 
-**Hakkımda — "Kesim"**: 140 svh, pinsiz.
+**Hakkımda — "Kaynak"**: 140 svh, pinsiz.
 
 #### 4.7.1 Amaç
 
@@ -2388,61 +2455,66 @@ Grid: metin k1–6, sahne k8–12.
 | Öğe | Etiket / nitelikler | İçerik (TR / EN) | Kurallar |
 |---|---|---|---|
 | Bölüm | `<section id="ben" data-chapter="about">` (EN `id="me"`) | — | `min-height: 140svh` |
-| Eyebrow | `<p class="type-eyebrow">` | `labels.eyebrows.about`: "KESİT" / "CROSS-SECTION" | §4.17 |
+| Eyebrow | `<p class="type-eyebrow">` | `labels.eyebrows.about`: "Kaynak" / "Source" (ekranda KAYNAK) | §4.17 |
 | Başlık | `<h2>` | "Hakkımda" / "About" | Maskeli satır reveal'ı, `top 88%` |
-| Lede | `<p class="type-3xl">`, `wght` 520 | `{{KISA_BİYOGRAFİ_LEDE}}` (3–5 satır) | `max-width: 24ch`. Satırları `cutProgress` eşiklerinde açılır (§4.7.4). |
-| Kesim çizgisi | `CutLine`: `<span class="cut-line" aria-hidden="true">` | — | 1 px `--color-ink`. Sol kenar boşluğundan taş kolonuna uzanır (k1–8). Lede'nin hemen altında. `transform-origin: left`. |
+| Lede | `<p class="type-3xl">`, `wght` 520 | `{{KISA_BİYOGRAFİ_LEDE}}` (3–5 satır) | `max-width: 24ch`. Blok reveal'ı (§4.5.4 #3); bölünmez (D-46). |
 | Paragraflar | 2 × `<p class="type-body">` | `{{BİYOGRAFİ_PARAGRAF_1}}`, `{{BİYOGRAFİ_PARAGRAF_2}}` | 52ch. Blok reveal'ı. |
 | Olgular | `<dl>` (Martian Mono) | Konum / Location: `{{ŞEHİR}}`. Deneyim / Experience: "12 yıl" / "12 years", build yılı − `{{KARİYER_BAŞLANGIÇ_YILI}}` ile hesaplanır. Diller / Languages: `{{DİLLER}}`. Şu an / Currently: `{{ŞU_AN}}` | `tabular-nums` |
 | Portre (İSTEĞE BAĞLI) | `<figure>` + `next/image` 4:5 + `<figcaption>` | `{{PORTRE}}`, alt metin §6.7 | Yalnızca `features.portraitOnHome = true` ise ve portre varsa render edilir. Olguların altında, k1–3. Klip reveal'ı: 700 ms, bir kez (§4.5.4 #9). |
 | Bağlantı | `<a>` | "Tüm hikâye →" → `/hakkimda` / "Full story →" → `/en/about` | Gerçek URL (D-41) |
-| Sahne çapası | `<div data-stage-anchor="about-cut" data-anchor-kind="flow" aria-hidden="true">` | — | k8–12. Dikey merkezi kesim çizgisindedir (aynı grid satırı). |
+| Sahne çapası | `<div data-stage-anchor="about-cut" data-anchor-kind="flow" aria-hidden="true">` | — | k8–12, lede'nin yanında. İçinde statik panel (`about.dart`, §4.16.3) bulunur. KESİT'in kesim çizgisi (`CutLine`) kaldırıldı. |
 
-#### 4.7.3 3D durumu: K1a `about-lift` → K1b `about-cut-in` → K1 `about-half`
+#### 4.7.3 KOD programı: `about.dart`
 
-| Key | Ne zaman | Çapa | r | az | el | fov | D | rotY | cut | ringContrast | ghost | Işık |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| K1a `about-lift` | IN p = 0.30 (s 30) | hero-rest → about-cut karışımı 0.45 | 5.2 | −25 | 12 | 30 | ≈ 370 | 12 | 1.10 | 0 | 0 | −60 / 38 |
-| K1b `about-cut-in` | IN sonu (s 100) | `about-cut` | 4.8 | −14 | 40 | 28 | 384 | 30 | 0.35 | 0.6 | 0.10 | −40 / 48 |
-| K1 `about-half` | BODY sonu (s 140) | `about-cut` | 4.6 | −14 | 55 | 28 | 384 | 35 | 0.0 (yarım kesit) | 1.0 | 0.10 | −30 / 55 |
+Pencere başlığı `about.dart`; durum satırı solda `dart · utf-8`, sağda `<açık blok>/<blok sayısı>` (ör. `2/4`). Statik panel ve `/hakkimda` (`about-page`) **dosyanın tamamını** gösterir. Ana sayfadaki canlı panelde bloklar about boyunca sırayla açılır: açık blok sayısı `max(1, ⌈cutProgress · B⌉)`'dir (`about:cut`, §5.9.5); yeni blok ≈ 1.2 s'de çözülür (§5.20.5).
 
-`rotX` 0, `sectorMix` 0, `arcGlow` 0, `tone` 1 (tüm about boyunca).
+```dart
+// Hakkımda
+const <değişken> = Developer(
+  name: '<ad>',
+  title: '<unvan>',
+  city: '<şehir>',
+  since: <yıl>,
+  areas: [
+    '<alan 1>',
+    '<alan 2>',
+  ],
+  skills: [
+    '<yetkinlik>', '<yetkinlik>', '<yetkinlik>',
+    '<yetkinlik>',
+  ],
+  now: '<kurum> · <rol>',
+);
+```
 
-**Faz tablosu.** Kesim değeri DOM'u ve 3D'yi birlikte sürer: `cutProgress = (1.10 − cut) / 1.10`.
-
-| Faz / yerel p | s (svh) | Kamera | Nesne | Materyal / ışık | DOM |
-|---|---|---|---|---|---|
-| IN 0.00–0.30 | 0–30 | K0 (sabit) | Çapa karışımı 0 → 0.45; `rotY` 0 → 12 | bütün taş | Hero metni doğal kayar. Eyebrow ve H2 `top 88%`'de açılır. |
-| IN 0.30–1.00 | 30–100 | r 5.2→4.8, az −25→−14, el 12→40, fov 30→28 | **cut 1.10 → 0.35**; `rotY` 12 → 30; çapa karışımı 0.45 → 1 (p 0.30–0.60) | Kapak görünür; ringContrast 0 → 0.6; ghost 0 → 0.10; ışık −60/38 → −40/48 | **`cut-line` `scaleX = cutProgress`** (scrub, yalnız dekor). **Lede satırları** eşiklerde açılır (§4.7.4). |
-| BODY 0–1 | 100–140 | r 4.8→4.6, el 40→55 | cut 0.35 → 0.0; `rotY` 30 → 35 | ringContrast 0.6 → 1.0; ışık → −30/55 | Paragraflar, olgular, portre ve bağlantı global kurallarla açılır. |
+- **Bloklar** (bu sırayla; boş blok yazılmaz): (1) baş: yorum (`// Hakkımda` / `// About`), `const <değişken> = Developer(`, `name`, `title`, `city` ve varsa `since`; (2) `areas` listesi; (3) `skills` listesi; (4) kuyruk: varsa `now`, ardından `);`.
+- **Kaynaklar:** `name` = `person.name`; `title` = `person.jobTitle`; `city` = `person.location.city`; `since` = `person.careerStartYear` (yoksa satır yazılmaz); `areas` = alan başlıkları (içerik sırası); `skills` = `person.knowsAbout`; `now` = `home.about.now`, yoksa süren deneyimden `<kurum> · <rol>`, o da yoksa satır yazılmaz. Başka anahtar ve başka yorum yoktur.
+- `<değişken>`: `person.asciiName`'in ilk sözcüğü, küçük harf, yalnız `[a-z0-9_]` (ör. `orcun`); boş kalırsa `dev`.
+- **Biçim:** her satır en çok 50 sütundur; taşan satır `…` ile kısalır. `skills` dizeleri 50 sütuna sarılır (girinti 4, en çok 6 satır); tek başına sığmayan öğe `…` ile kesilir. Satır numaraları soldadır. Panelin 22 içerik satırına sığmayan satırlar yazılmaz.
+- **Açılış** (yalnız ana sayfa canlı paneli): açılış sürerken önceki bloklar sönüktür (saydamlık × 0.55); en son açılan blok parlak satır numaraları, metnin solunda accent oluk çizgisi (`┃`) ve son satırının sonunda imleç taşır. Dosya tamken (statik panel, `/hakkimda`, azaltılmış hareket ve son blok açıldıktan sonra canlı panel) hiçbir blok sönük değildir, oluk çizgisi yoktur ve imleç `);`'nin altındaki boş satırın başında yanıp söner.
+- Dinlenme anında imleç dışında hiçbir şey hareket etmez.
 
 #### 4.7.4 Metin/3D senkronu
 
-- Lede'nin görsel satır sayısı `L`'dir; lede bölünmez (D-46), `L` satır yüksekliğinden ölçülür ve satırlar `clip-path` ile açılır (§5.14.4). Satır *k* (0 tabanlı), `cutProgress ≥ 0.05 + 0.60·k / max(1, L−1)` olduğunda **bir kez** açılır: 700 ms `expo.out`, maskeli.
-  - L = 4 için eşikler 0.05 / 0.25 / 0.45 / 0.65.
-  - Son satır `cutProgress` 0.65'te açılır. Bu, IN bitmeden önceye denk gelir: IN sonunda `cutProgress` = 0.682.
-- `cut-line` genişliği IN sonunda %68, BODY sonunda %100'dür.
-- Geri kaydırmada çizgi kısalır (scrub), açılmış satırlar **açık kalır**.
-- Bu senkron global "%75 kuralı"nın bildirilmiş bir istisnasıdır (§4.12.3).
+Bilinçli olarak yoktur. Lede ve paragraflar global reveal kurallarıyla açılır (§4.5.4 #3); lede bölünmez (D-46). KESİT'in kesim senkronu ve §4.12.3'teki about istisnası kaldırıldı.
 
 #### 4.7.5 Etkileşimler
 
-- tırmıklayan ışık ve yakınlık (§4.14 #1–2); taş kesikken yakınlık kesimi −0.04 "nefes aldırır";
+- işaretçi paralaksı (§4.14 #1);
 - "Tüm hikâye →" alt çizgi animasyonu (#4).
 
 #### 4.7.6 Çıkış geçişi
 
-Ghost (kesilip atılan yarının silüeti, yalnız high tier) kalır. Areas IN kamerayı doğrudan yukarı, plan görünüşüne taşır (dolly-zoom).
+areas IN köprüsü (§4.12.1): `about.dart` düşer, alan 0'ın programı çözülür; panel `areas-dial` çapasına süzülür ve büyür.
 
 #### 4.7.7 Mobil farkları
 
-- Lede'nin üstünde **36 svh bant** vardır.
-- Kesim çizgisi tam genişliktir ve bandın dikey merkezinden geçer.
-- Kesim masaüstündekiyle birebir aynı çalışır (aynı track'ler, aynı eşikler).
+- Lede'nin üstünde **36 svh bant** vardır; panel bandı doldurur (contain).
+- Köprü masaüstündekiyle aynı track'leri kullanır; bantlar arası geçiş el değiştirmedir (§4.15.3).
 
 #### 4.7.8 Azaltılmış hareket karşılığı
 
-- K1 yarım kesit posteri (`k1-{light,dark}`) ve statik, tam genişlikte kesim çizgisi gösterilir.
+- Statik panel `about.dart`'ın tamamını gösterir.
 - Lede ve tüm metin baştan görünürdür.
 - Portre klip reveal'ı yoktur.
 
@@ -2467,7 +2539,7 @@ Ghost (kesilip atılan yarının silüeti, yalnız high tier) kalır. Areas IN k
   - `html.js`;
   - `data-motion="full"`;
   - 3 ≤ N ≤ 6.
-- Koşullardan biri sağlanmazsa **liste modu** devreye girer: alt alta `<article>`'lar, her birinde 64 px satır içi SVG dilim glifi (`DialFigure`'ün 64 px küçük varyantı, ilgili dilim vurgulu, `aria-hidden`). GPU maliyeti sıfırdır.
+- Koşullardan biri sağlanmazsa **liste modu** devreye girer: alt alta `<article>`'lar; kartlarda glif yoktur (KESİT'in 64 px dilim glifi kaldırıldı). Panel bu bölümde söner (§4.8.8).
 - Düzen koşulları (medya sorguları, `html.js`, `data-motion`) head script sayesinde ilk boyamada bellidir. Sonradan düzen değişmez, CLS olmaz.
 - **ZORUNLU:** Etkin adımın DOM durumu (açıklama, sayaç, `aria-current`) hareket paketine (GSAP) **bağlı değildir**. Hidrasyondan en geç 100 ms sonra, herhangi bir kaydırma konumunda doğrudur. Hafif bir kaydırma dinleyicisi ölçülen aralıklardan hesaplar (§5.13). `/#alanlar` ile doğrudan gelen ziyaretçi, GSAP yüklenmeden de doğru adımı görür.
 
@@ -2478,12 +2550,12 @@ Masaüstü 1440×900 — sticky sahne 100 svh; bölüm 320 svh (N = 4)
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │ header 64                                                                    │
 │ Bu bölümü atla ↓                                    ┌─ areas-dial (k7–12) ───┐│ y 13–94 svh
-│ DİLİMLER                                            │        ╭──────╮        ││ x 732–1376
-│ Uzmanlık alanları                         (h2)      │     ╱   │     │   ╲     ││ merkez (1054, 481)
-│ {{ALANLAR_CÜMLESİ}}                                 │   ─(────┼─────┼────)─   ││ D = 515 px
-│ 01  {{ALAN_1}}                                      │     ╲   │     │   ╱     ││ plan görünüşü
-│ 02  {{ALAN_2}} ──────────── iğne (1 px) ───────────▶│ ◀ 9 yönü: etkin dilim  ││ etkin dilim = vurgu
-│ 03  {{ALAN_3}}                                      │        ╰──────╯        ││
+│ MODÜLLER                                            │ ╭●●● tree lib ───────╮ ││ x 732–1376
+│ Uzmanlık alanları                         (h2)      │ │// Yazılım Mimarisi │ ││ Pw ≈ 515 px
+│ {{ALANLAR_CÜMLESİ}}                                 │ │$ tree lib          │ ││ alan k'nın diyagramı
+│ 01  {{ALAN_1}}                                      │ │├─ presentation/ # …│ ││ (figure: tree)
+│ 02  {{ALAN_2}}   ◀ etkin                            │ │└─ data/ # REST     │ ││ durum satırı: k/N
+│ 03  {{ALAN_3}}                                      │ ╰ clean arch ── 2/4 ─╯ ││
 │ 04  {{ALAN_4}}                                      └────────────────────────┘│
 │ ┌ açıklama yuvası ──────────────────────┐                                    │
 │ │ {{ALAN_2_AÇIKLAMA}} (2–3 satır, lg)   │                                    │
@@ -2502,84 +2574,82 @@ Sticky sahnenin içindedir. Solda k1–6, sağda k7–12.
 |---|---|---|---|
 | Bölüm | `<section id="alanlar" data-chapter="areas">` (EN `id="areas"`) | — | Pin koşulunda `min-height: calc((120 + 50 * N) * 1svh)`; N sunucuda hesaplanıp `style` ile yazılır (`--areas-n`). |
 | Atlama bağlantısı | `<a href="#projeler">` (EN `#work`) | "Bu bölümü atla ↓" / "Skip this section ↓" | Sahnenin **ilk odaklanabilir öğesi**. Her zaman görünür (mono, küçük). Tıklama alanı ≥ 24×24 px. Kesme kuralını uygular (§4.5.5). |
-| Eyebrow | `<p class="type-eyebrow">` | "DİLİMLER" / "SECTORS" | `labels.eyebrows.areas` |
+| Eyebrow | `<p class="type-eyebrow">` | "Modüller" / "Modules" (ekranda MODÜLLER) | `labels.eyebrows.areas` |
 | Başlık | `<h2>` | `labels.areas` (etkin `engineer`, §4.17.2): "Uzmanlık alanları" / "Areas of expertise" | Maskeli reveal |
 | Cümle | `<p>` | `{{ALANLAR_CÜMLESİ}}` (ör. "Dört alanda, tek bir yöntemle çalışıyorum.") | Blok reveal'ı |
-| Liste | `<ol>`; her `<li>` içinde `<h3>` + açıklama | **N alanın hepsi her zaman görünür** | Sıra = içerik sırası = dilim sırası |
+| Liste | `<ol>`; her `<li>` içinde `<h3>` + açıklama | **N alanın hepsi her zaman görünür** | Sıra = içerik sırası = program adım sırası |
 | Alan başlığı | `<h3>`. Pin modunda içine `<button type="button">` konur. | mono indeks `01` + `{{ALAN_k}}` (`type-2xl`) | Etkin olanda `aria-current="step"`. Etkin olmayanlar `--color-ink-muted`. SSR düz metin üretir; buton, istemci pin modunu doğruladıktan sonra render edilir (hidrasyon uyumsuzluğu olmaz). |
 | Açıklama | `<div class="area-desc">`, DOM'da kendi başlığının hemen ardından | `{{ALAN_k_AÇIKLAMA}}` (2–3 satır, `type-lg`); ≤ 6 etiket çipi (mono); "Bu alandaki projeler →" → `/projeler?alan=<slug>` (EN `/en/projects?alan=<slug>`) | Masaüstünde mutlak konumla **tek ortak yuvaya** yerleşir. Yalnızca etkin olan `opacity: 1`, diğerleri `opacity: 0` ama **asla `aria-hidden` değildir**. Etkin olmayan bir açıklamanın içine `focusin` gelirse o adıma kaydırılır. |
 | Sayaç | `<p aria-hidden="true">` (mono) | `02 / 04` | Bilgiyi `aria-current` taşır. |
 | İlerleme | `<div role="group" aria-label="Alan adımları">` + N `<button>` | Her birinin erişilebilir adı: "Alan k: {{ALAN_k}}" | Görsel 1 px segment; **tıklama alanı ≥ 24×24 px** (WCAG 2.5.8). Tıklama adımın dwell'ine gider. |
-| İğne | `<span class="needle" aria-hidden="true">` | — | 1 px kılcal çizgi. Etkin başlığın sağ ucundan kadranın sol kenarına uzanır: `x = çapa merkezi − D/2` (1440×900'de 796.5 px). Adım değişince `--ease-tick` ile 400 ms'de yeni konuma geçer. |
-| Sahne çapası | `<div data-stage-anchor="areas-dial" data-anchor-kind="sticky">` (`aria-hidden` yok: içindeki `DialFigure` `role="img"`dir, §10.4.4) | — | k7–12, y 13–94 svh. İçinde SSR'lı `DialFigure` bulunur (poster karşılığı, §4.16.3). |
+| Sahne çapası | `<div data-stage-anchor="areas-dial" data-anchor-kind="sticky" aria-hidden="true">` | — | k7–12, y 13–94 svh. İçinde adım başına bir statik panel bulunur (`data-kod-step="k"`); yalnız `data-active` olanı görünür, etkin adımı `AreasPin` değiştirir (§4.16.3). KESİT'in `DialFigure`'ü ve iğnesi (`needle`) kaldırıldı. |
 
-#### 4.8.5 3D durumu: K2 `areas-plan`
+#### 4.8.5 KOD programı: alan diyagramları
 
-| Çapa | r | az | el | fov | D | rotY | rotX | cut | ringContrast | sectorMix | ghost | arcGlow | Işık | tone |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `areas-dial`: sticky; k7–12 = x 732–1376; y 13–94 svh; merkez (1054, 481) | 7.2 | 0 | 88 | 18 | 515 = 0.80 · min(644, 729) | ψₖ = 45 − k·Δ (Δ = 360/N) | 0 | 0.0 | 0.4 | 1.0 | 0.10 | 0 | 0 / 80 | 1 |
+Her alan bir diyagram gösterir. Diyagramı alanın içerik alanı `figure` seçer (§7.3.2; varsayılan `list`). Program adımı = alan sırası *k* (içerik sırası). Durum satırının sağında `k+1/N` yazar.
 
-- **Dilim yönü (§5.7):** `uSectorOffset = 135° − 180°/N` ile ψₖ döndürmesi, dilim *k*'nin merkezini plan görünüşünde ekranın **saat 9 yönüne** (iğnenin geldiği yere) getirir.
-- N = 4 için ψ = 45°, −45°, −135°, −225°.
-
-**IN fazı** (s 140 → 240; %12.0–20.5):
-
-| IN yerel p | Kamera | Nesne | Materyal / ışık |
+| `figure` | Pencere başlığı · durum solu (kod süsü) | Gösterdiği | Canlı kısım |
 |---|---|---|---|
-| 0.0–1.0 | **Dolly-zoom:** r 4.6 → 7.2, fov 28 → 18 (uçlarda `r·tan(fov/2)` ≈ 1.147 → 1.140, sabit sayılır), el 55 → 88, az −14 → 0 | Çapa about-cut → areas-dial (p 0–0.7); `rotY` 35 → 45 (= ψ₀); cut 0 | ringContrast 1.0 → 0.4 (halkalar geri çekilir); ışık −30/55 → 0/80 |
-| 0.4–1.0 | — | — | **sectorMix 0 → 1**: N radyal kılcal çizgi merkezden dışa doğru çizilir |
-| 0.6–1.0 | — | — | `fill[1…N−1]` 0 → 0.15 (p 0.6–1.0); **`fill[0]` 0 → 1** (p 0.8–1.0). Ayrı track'lerdir; hiçbir özelliğin iki sahibi olmaz. |
+| `phone` | `preview` + yalnız etiketlerde geçen platformlar (`iOS`, `Android`, `iPadOS`, `Web`; ör. `preview · Android`; platform etiketi yoksa yalnız `preview`) · `flutter` | `// <alan başlığı>`; ASCII telefon çerçevesi (dinamik ada, accent başlık kartı, 4 uygulama satırı, sekme çubuğu); sağında alanın `tags`'i: ilk ikisi ok satırında (`←── <etiket 1> · <etiket 2>`), sonraki ikisi dal satırlarında (`├─→`, `└─→`), beşincisi soluk not | Uygulama satırları 1.5 s'de bir kayar |
+| `tree` | `tree lib` · `clean architecture` | `// <alan başlığı>`; `$ tree lib` ve Clean Architecture klasör ağacı (`presentation/`, `state/`, `domain/`, `data/`); klasörlerin `#` notları alanın `tags`'inden | yok |
+| `api` | `api.log` · `http` | `// <alan başlığı>`; `App` ↔ `API` kutuları, istek oku (accent, `GET /invoices · <protokol>`) ve yanıt oku (`200 OK`, brass); altta `$ tail -f api.log` (`App → GET  /invoices  <protokol>` ve `API ← 200 OK` satırları). Protokol adları yalnız etiketlerden gelir (etiketi tam olarak `REST`, `SOAP`, `GraphQL` ya da `gRPC` olanlar; birden çoksa sırayla; SOAP isteği `POST`'tur). Protokol etiketi yoksa istekler protokol eki olmadan yazılır (`GET /invoices`) | İstek ve yanıt paketi (`●`) 2.4 s'de bir gidip gelir; log 1.2 s'de bir satır akar |
+| `pipeline` | `ci · flutter build` · `ci/cd` | `// <alan başlığı>`; `build → test → <mağazalar>` kutuları ve `$ flutter build` CI günlüğü (`✓ build`, `✓ test`, `→ <mağaza> ✓`). Mağaza kutusu yalnız etiketlerdeki mağazalardan gelir (`App Store`, `Google Play`, `AppGallery`; en çok 2); mağaza etiketi yoksa tek bir genel `release` adımı yazılır | Adım etkinleşince komut yazılır; aşamalar sırayla dönen bir imleçle (spinner) başlar ve `✓` ile biter; sonunda yeni istem |
+| `list` | `<alan id>.md` · `notes` | `// <alan başlığı>`, alanın `capabilities` maddeleri liste olarak (`- …`, 48 sütuna sarılır) ve etiket varsa altta brass `# <etiket> · <etiket>` satırı | yok |
+
+- Diyagram etiketleri yalnız alanın `tags` ve `capabilities` alanlarından gelir (§4.1.2): platform, protokol ve mağaza adı içerikte yoksa yazılmaz. Klasör adları, `GET`/`POST /invoices`, `200 OK`, `tail -f`, `build`/`test`/`release` adımları genel kod süsüdür.
+- Canlı kısımlar kendiliğinden harekettir: son girdiden 20 s / 8 s sonra ve duraklatmada durur. Durduğunda, azaltılmış harekette ve statik panelde programın son karesi gösterilir (imleç görünür).
+
+**IN fazı** (s 140 → 240): about → areas köprüsü (§4.12.1). Panel `about-cut`'tan `areas-dial`'a süzülür ve büyür; `about.dart` düşer, alan 0'ın programı çözülür.
 
 **BODY fazı** (220 svh = `20 + 50N`; s 240 → 460):
 
-| Segment | s (svh, küresel %) | 3D (scrub) | DOM (eşikte, zaman tabanlı) |
+| Segment | s (svh, küresel %) | Panel | DOM (eşikte, zaman tabanlı) |
 |---|---|---|---|
-| Oturma | 240–250 (%20.5–21.4) | K2'de kalır, k = 0 | Açıklama 0 baştan görünür; sayaç 01/04 |
-| Adım k = 0 | 250–300 (%21.4–25.6) | **dwell:** işaretçi tepkileri dışında **hiçbir şey hareket etmez** | — |
-| Adım k ≥ 1, **dönüş** (adımın ilk %30'u = 15 svh) | `250+50k → 265+50k` | **`rotY` ψₖ₋₁ → ψₖ** (−Δ dönüş, smoothstep); `fill[k−1]` 1 → 0.15; `fill[k]` 0.15 → 1 | Dönüş ortasında (`257.5 + 50k`): açıklama değişir (çıkış 180 ms, giriş 300 ms), başlık vurgusu kayar, iğne "tık" eder, sayaç değişir |
-| Adım k ≥ 1, **dwell** (kalan %70 = 35 svh) | `265+50k → 300+50k` | **hiçbir şey hareket etmez** (işaretçi tepkileri hariç) | Sabit ve okunabilir |
-| Bırakma | 450–460 (%38.5–39.3) | sectorMix 1 → 0.5; tüm dolgular → 0.15 | Sahne yukarı kaymaya başlar |
+| Oturma | 240–250 (%20.5–21.4) | alan 0 | Açıklama 0 baştan görünür; sayaç 01/04 |
+| Adım k = 0 | 250–300 (%21.4–25.6) | **dwell:** program değişmez | — |
+| Adım k ≥ 1, **değişim penceresi** (adımın ilk %30'u = 15 svh) | `250+50k → 265+50k` | Ortada (`257.5 + 50k`) `areas:step` → alan k'nın programı ≈ 1.2 s'de çözülür (zaman tabanlı) | Aynı anda: açıklama değişir (çıkış 180 ms, giriş 300 ms), başlık vurgusu kayar, sayaç değişir |
+| Adım k ≥ 1, **dwell** (kalan %70 = 35 svh) | `265+50k → 300+50k` | Program değişmez | Sabit ve okunabilir |
+| Bırakma | 450–460 (%38.5–39.3) | alan N−1 | Sahne yukarı kaymaya başlar |
 
-- N = 4'te dönüşler s 300–315, 350–365 ve 400–415'te; metin değişimleri 307.5, 357.5 ve 407.5'te olur.
-- Kadran her adımda 15 svh içinde 90° döner. Bu bilinçli bir "klik"tir ve design-direction'daki sürekli dönüş tavanının (≤ 90° / 100 svh) **bildirilmiş istisnasıdır** (§4.12.2).
+- N = 4'te değişimler s 307.5, 357.5 ve 407.5'te olur.
+- Çözülme zaman tabanlıdır: okur değişim anında dursa da tamamlanır. KESİT'in kadran dönüşüne ait hız istisnası bu yüzden kalktı.
 
 #### 4.8.6 Metin/3D senkronu
 
-- Dönüş ortası aynı anda şunları tetikler: açıklama değişimi, `aria-current` taşınması, iğne tiki ve sayaç değişimi.
-- 3D dönüş scrub'dır: okur dönüş penceresinde durursa kadran yarı dönük kalır. Metin ise ayrıktır.
-- Geri kaydırmada her şey simetrik geri döner. Açıklama değişimi aynı eşikte ters yönde oynar.
+- Değişim anı (`257.5 + 50k`) aynı karede şunları başlatır: açıklama değişimi, `aria-current` taşınması, sayaç değişimi ve panel çözülmesi.
+- Geri kaydırmada her şey simetrik geri döner: aynı eşikte önceki alanın programı çözülür.
 
 #### 4.8.7 Etkileşimler
 
-- **Başlık hover/odak** kaydırma yapmaz. `uSectorPreview = (k, 1)` ayarlanır: dilime +0.25 renk tonu, 240 ms'de; bırakıldıktan 400 ms sonra söner.
-- **Başlık tıklaması** (pin modunda buton): adımın dwell ortasına gider: `lenis.scrollTo(sA(k) + 0.65·step, { duration: 0.8 })` (`step` = 50 svh). Arada kadran canlı döner. Lenis yoksa native `scrollTo({ behavior: 'smooth' })` kullanılır.
+- **Başlık hover/odak** kaydırma yapmaz ve paneli değiştirmez.
+- **Başlık tıklaması** (pin modunda buton): adımın dwell ortasına gider: `lenis.scrollTo(sA(k) + 0.65·step, { duration: 0.8 })` (`step` = 50 svh). Arada geçilen adımlar art arda çözülür. Lenis yoksa native `scrollTo({ behavior: 'smooth' })` kullanılır.
 - **İlerleme segmentleri** başlık tıklamasıyla aynı davranır.
 - **`focusin`**: etkin olmayan bir açıklamanın içine odak gelirse o adıma kaydırılır (aynı hedef).
-- Tırmıklayan ışık dwell'de de çalışır.
+- İşaretçi paralaksı dwell'de de çalışır.
 
 #### 4.8.8 Mobil farkları (< 64rem)
 
 - **Mobil pin** şu koşulların hepsinde etkindir: `width ≥ 360` **ve** `height ≥ 600` (svh) **ve** `data-motion="full"` **ve** 3 ≤ N ≤ 6.
   - Bölüm yüksekliği **`100 + 20 + 40N`** = 280 svh (N = 4).
-  - Adım 40 svh'dir. Aynı %30/%70 oranıyla dönüş 12 svh, dwell 28 svh; değişim adım başlangıcından 6 svh sonra.
+  - Adım 40 svh'dir. Aynı %30/%70 oranıyla değişim penceresi 12 svh, dwell 28 svh; değişim adım başlangıcından 6 svh sonra.
   - Tıklama hedefi `sA(k) + 0.65·40`'tır.
 - **Sticky sahne ikiye bölünür:**
-  - üstte **42 svh kadran bandı**;
+  - üstte **42 svh panel bandı**;
   - altta **58 svh metin alanı**: atlama bağlantısı, eyebrow + h2, tüm başlıklar kompakt liste halinde (her biri tek satır, `sm`), etkin açıklama, etiketler, sayaç + segmentler.
 - **ZORUNLU [SABİT]:** Metin alanının içeriği 58 svh'ye sığmıyorsa (ölçüm: `scrollHeight > clientHeight`, `document.fonts.ready` sonrası), bölüm **liste moduna** düşer.
-- **Liste modunda** sahne bu bölümde görünmez **[SABİT]**: `--scene-opacity` areas IN p 0.2–0.5 arasında 1 → 0 olur ve frame loop `never`'a geçer. Mobilde work'te de kapalı kalır ve journey IN p 0.3–0.6 arasında geri gelir (§4.15.3, §5.9.4 `mobile-list`). Masaüstü liste modunda work IN p 0.2–0.5 arasında geri gelir.
+- **Liste modunda** sahne bu bölümde görünmez **[SABİT]**: `--scene-opacity` areas IN p 0.2–0.5 arasında 1 → 0 olur ve frame loop `never`'a geçer. Work'te panel zaten yoktur; panel masaüstünde ve mobilde journey IN p 0.3–0.6 arasında geri gelir (§4.15.3).
 
 ```text
 Mobil 390×844 — pinli varyant (sticky 100 svh)
 ┌────────────────────────────────┐
 │ ┌────────────────────────────┐ │
-│ │     areas-dial bandı       │ │ üst 42 svh: plan görünüşü kadran
-│ │         ╭──────╮           │ │ D = 0.86 × min(bandW, bandH)
-│ │  iğne ─(   ◔   )           │ │
-│ │         ╰──────╯           │ │
+│ │     areas-dial bandı       │ │ üst 42 svh: KOD paneli
+│ │ ╭●●● tree lib ─────────╮   │ │ panel bandı doldurur (contain, 7:6)
+│ │ │$ tree lib            │   │ │ alan k'nın diyagramı
+│ │ ╰─────────────── 2/4 ──╯   │ │
 │ └────────────────────────────┘ │
 │ Bu bölümü atla ↓               │ alt 58 svh metin alanı
-│ DİLİMLER · Uzmanlık alanları   │
+│ MODÜLLER · Uzmanlık alanları   │
 │ 01 {{ALAN_1}}                  │ kompakt liste (sm, tek satır)
 │ 02 {{ALAN_2}}   ◀ etkin        │ aria-current="step"
 │ 03 {{ALAN_3}}                  │
@@ -2595,21 +2665,21 @@ Mobil 390×844 — pinli varyant (sticky 100 svh)
 #### 4.8.9 Azaltılmış hareket karşılığı
 
 - Pin yoktur. Tüm açıklamalar alt alta liste halindedir.
-- Taşın yerine **satır içi SVG plan görünüşü kadranı** (`DialFigure`) vardır: N etiketli dilim, `role="img"`, `aria-label` alanları sıralar ("Çalışma alanları: {{ALAN_1}}, {{ALAN_2}}, …").
-- Liste kartlarında 64 px glifler bulunur.
+- `areas-dial` çapası adım panellerini akışta taşır; pin olmadığı için adım 0'ın paneli görünür (§4.16.3). Paneller `aria-hidden`'dır; alanların adları DOM'daki listededir. KESİT'in `DialFigure`'ü kaldırıldı.
+- Liste kartlarında glif yoktur.
 - Hover yalnızca renk ve alt çizgiyi değiştirir.
 
 #### 4.8.10 Çıkış geçişi
 
-Kılcal çizgiler yarıya çekilir (sectorMix 0.5). Work IN kamerayı alçak bir ön görünüşe indirir; taş görüntüleyicinin altında bir numuneye küçülür.
+work IN köprüsü (§4.12.1): alan N−1'in programı glif yağmuruyla düşer ve panel söner (`--scene-opacity` work IN p 0.2–0.5: 1 → 0, masaüstü ve mobil). Work'te WebGL paneli yoktur (§4.9.4).
 
 #### 4.8.11 Kabul
 
 §4.18 → **K-AREAS-1 … K-AREAS-12**.
 
-### 4.9 `work` (Numune Görüntüleyici)
+### 4.9 `work` (Derleme)
 
-**Seçili projeler**: 330 svh (P = 4). "Sabit sahne, akan metin": yalnızca medya sütunu sticky'dir.
+**Seçili projeler — "Derleme"**: 330 svh (P = 4). "Sabit sahne, akan metin": yalnızca medya sütunu sticky'dir.
 
 #### 4.9.1 Amaç
 
@@ -2622,15 +2692,14 @@ Masaüstü 1440×900 — work BODY (makale 2 etkin)
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │ header 64                                                                    │
 │ 02 / 04 (mono)                          ┌── görüntüleyici k7–12 (sticky) ───┐│ top 14 svh
-│ <h3> {{PROJE_2_ADI}}                    │                                   ││ 16:10 ≈ 644×402 px
-│ {{PROJE_2_ÖZET}} (tek satır)            │   kapak (next/image, gerçek alt)  ││ etkin olmayanlar:
+│ <h3> {{PROJE_2_ADI}}                    │                                   ││ 16:10 ≈ 644×402 px; etkinleşmede
+│ {{PROJE_2_ÖZET}} (tek satır)            │   kapak (next/image, gerçek alt)  ││ silme 600 ms + ASCII ≈ 1.2 s; etkin olmayanlar:
 │ rol · yıl · [alan]                      │                                   ││ clip-path inset(0 0 0 100%)
 │ Projeyi incele →                        └───────────────────────────────────┘│
 │ App Store ↗ · Google Play ↗ (ops.)      02 / 04 · 2023 · [Alan]              │ caption, 61 svh, k7–9, aria-hidden
-│                                                       ┌─ work-specimen ─────┐│ k10–12, y 62–94 svh
-│                                                       │      ╭────╮  D 207  ││ merkez (1221, 702)
-│ (metin k1–5, doğal kayar; article min 70 svh)         │     ( ◐   ) numune  ││ yüz izleyiciye eğik (rotX 62)
-│                                                       └─────────────────────┘│
+│                                                                              │
+│ (metin k1–5, doğal kayar; article min 70 svh)         KOD paneli yok (§4.9.4)│ etkinleşmede kapak silinerek açılır ve ASCII'den derlenir
+│                                                                              │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -2641,84 +2710,68 @@ Masaüstü (≥ 64rem, `html.js[data-motion="full"]`) 12 kolonlu bir grid kullan
 | Öğe | Etiket / nitelikler | İçerik (TR / EN) | Kurallar |
 |---|---|---|---|
 | Bölüm | `<section id="projeler" data-chapter="work">` (EN `id="work"`) | — | Kapı sağlanınca `min-height: calc((50 + 70 * P) * 1svh)`; P sunucuda `style` ile yazılır. |
-| Başlık bloğu (30 svh) | eyebrow `<p>`, `<h2>`, `<p>` | "NUMUNELER" / "SPECIMENS"; `labels.work`: "Seçili projeler" / "Selected projects"; `{{PROJELER_CÜMLESİ}}` | Global reveal |
+| Başlık bloğu (30 svh) | eyebrow `<p>`, `<h2>`, `<p>` | "Derleme" / "Build" (ekranda DERLEME); `labels.work`: "Seçili projeler" / "Selected projects"; `{{PROJELER_CÜMLESİ}}` | Global reveal |
 | Makale *k* | `<article aria-labelledby>` k1–5, `min-height: 70svh` | mono indeks `01 / 04`; `<h3>` `{{PROJE_k_ADI}}`; tek satırlık özet; `<dl>` meta: rol · yıl · alan çipi; **"Projeyi incele →"** (makale bağlantısı) → `/projeler/[slug]` / "View project →" → `/en/projects/[slug]`; İSTEĞE BAĞLI mağaza bağlantıları "App Store ↗", "Google Play ↗", "AppGallery ↗" (dış bağlantı; kaynak, projenin `links` listesindeki mağaza kayıtlarıdır (§7.3); etiket mağaza adıdır ve iki dilde aynıdır; video bağlantısı ana sayfada gösterilmez, yalnız proje sayfasındadır) | DOM sırası **`article → figure`** çiftleri halinde tekrar eder. |
-| Figür *k* | `<figure>` + `next/image` 16:10 (AVIF/WebP) + gerçek alt metin (§6.7) | `{{PROJE_k_KAPAK}}` | `loading="lazy"` (LCP değildir). Masaüstünde: her figür k7–12'de **tüm makale satırlarını kaplayan** bir grid öğesidir; `position: sticky; top: 14svh; align-self: start`. Figürler aynı grid alanında üst üste biner (tek görüntüleyici). Etkin olmayanlar `clip-path: inset(0 0 0 100%)`. **İlk boyamada figür 1 kırpılmamıştır** (CSS); event'ler hidrasyondan sonra devralır. Görsel `<ViewTransition name="project-cover-<slug>">` ile, makalenin `<h3>`'ü `project-title-<slug>` ile sarılır (paylaşılan öğe morph'u §4.13.3, uygulama §5.15). |
+| Figür *k* | `<figure>` + `next/image` 16:10 (AVIF/WebP) + gerçek alt metin (§6.7) | `{{PROJE_k_KAPAK}}` | `loading="lazy"` (LCP değildir). Masaüstünde: her figür k7–12'de **tüm makale satırlarını kaplayan** bir grid öğesidir; `position: sticky; top: 14svh; align-self: start`. Figürler aynı grid alanında üst üste biner (tek görüntüleyici). Etkin olmayanlar `clip-path: inset(0 0 0 100%)`. **İlk boyamada figür 1 kırpılmamıştır** (CSS); event'ler hidrasyondan sonra devralır. Görsel `<ViewTransition name="project-cover-<slug>">` ile, makalenin `<h3>`'ü `project-title-<slug>` ile sarılır (paylaşılan öğe morph'u §4.13.3, uygulama §5.15). Figür, silme kenarını taşıyan 1 px `span.work-wipe-line` (`aria-hidden`) içerir (§4.9.4). |
 | Görüntüleyici altyazısı | `<p aria-hidden="true">` (mono), sticky | `02 / 04 · 2023 · [Alan]` | k7–9, `top: 61svh`. Makale meta'sını tekrarladığı için gizlidir. `innerHeight < 760` ise görüntüleyicinin 8 px altına yerleşir **[SABİT]**. |
-| Numune çapası | `<div data-stage-anchor="work-specimen" data-anchor-kind="sticky" aria-hidden="true">` | — | k10–12, y 62–94 svh. İçinde SSR'lı `SpecimenGlyph` (etkin proje) bulunur. **`innerHeight < 760` ise numune gizlenir:** bu bölümde `tone` → 0; yalnız altyazı kalır (§4.9.4). |
+| ASCII kaplaması | `AsciiCompile`: gelen (etkinleşen) figürün içinde `<canvas class="ascii-compile" aria-hidden="true">`, mutlak konumlu | — | Yalnız istemcide, `data-motion="full"` ve ≥ 64rem iken, etkinleşmede oluşturulur; derleme bitince kaldırılır (§4.9.4). Figürün içinde olduğu için silmeyle birlikte kırpılır. SSR'da yoktur. `pointer-events: none`. `work-specimen` çapası boş kalır (statik panel yok); KESİT'in `SpecimenGlyph`'i kaldırıldı. |
 | Kapanış (20 svh) | `<a>` | "Tüm projeler (12) →" → `/projeler` / "All projects (12) →" → `/en/projects` | Sayı, o dildeki yayımlanmış proje sayısıdır. |
 
 - **Kapı:** Görüntüleyici düzeni `html.js[data-motion="full"]` ve ≥ 64rem ile sınırlıdır. Aksi halde her figür doğal akışta makalesinin yanında ya da altında durur. JS'siz ve azaltılmış hareketli ziyaretçiler her görseli görür.
 - ⚠️ **DOĞRULANMADI:** Aynı grid alanında üst üste binen sticky grid öğeleri Safari, Chrome ve Firefox'ta aynı davranmayabilir. CSS spesifikasyonu bunu destekler. İlk prototipte Playwright ile üç motorda ekran görüntüsü alınarak doğrulanır.
 
-#### 4.9.4 3D durumu: K3 `work-specimen`
+#### 4.9.4 KOD: kapak silmesi ve ASCII derlemesi
 
-| Çapa | r | az | el | fov | D | rotY (scroll) | rotX | cut | ringContrast | sectorMix | ghost | arcGlow | Işık | tone |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `work-specimen`: sticky; k10–12 = x 1066–1376; y 62–94 svh; merkez (1221, 702) | 5.6 | 0 | 20 | 26 | 207 = 0.72 · min(310, 288) | W₀ → W₀+30 (+ `rotYEvent`) | 62 | −0.02 | 0.9 | 0.5 | 0 | 0.35 | 25 / 22 | 1 |
+Work bölümünde **WebGL paneli yoktur.** Kapaklar gerçek DOM görselleridir: LCP davranışını, view transition morph'unu ve alt metni korurlar.
 
-`W₀ = wrapNear(ψ(öne çıkan proje 1'in alanı), 45 − (N−1)·Δ)`. Bu, kadranın son yönüne ±180° içindeki eşdeğer açıdır; taş kısa yoldan döner.
-
-**IN fazı** (s 460 → 560; %39.3–47.9):
-
-| IN yerel p | Kamera | Nesne | Materyal / ışık |
-|---|---|---|---|
-| 0.0–1.0 | r 7.2 → 5.6, el 88 → 20, fov 18 → 26, az 0 | Çapa areas-dial → work-specimen (p 0–0.8; D 515 → 207); `rotYScroll` 45 − (N−1)Δ → W₀ (kısa yol) | ringContrast 0.4 → 0.9; ghost 0.10 → 0; ışık 0/80 → 25/22; arcGlow 0 → 0.35 |
-| 0.3–1.0 | — | **`rotX` 0 → 62**: kesit yüzü izleyiciye eğilir ("sehpadaki numune"); cut 0 → −0.02 | — |
-| 0.0–0.6 | — | — | Tüm dolgular 0.15 → 0.12 (dolgular p 0.6'ya kadar track'lerindir) |
-| 0.7–1.0 | — | — | `uBand.z` (bant görünürlüğü) 0 → 1. Varsayılan bant aralığı proje 1'in yıllarıdır. |
-
-`innerHeight < 760` iken **[SABİT]**: `tone` work IN p 0–0.5 arasında 1 → 0, journey IN p 0–0.5 arasında 0 → 1 olur.
-
-**BODY ve proje başına anlatı** (s 560 → 790):
-- **Scrub:** `rotYScroll` tüm BODY boyunca W₀ → W₀ + 30. Numune yavaş ve sürekli döner (≈ 13° / 100 svh).
+- **Sahne:** work IN köprüsünde (`anchorMix` p 0–0.80) alan programı yağar. `--scene-opacity` p 0.2–0.5'te 1 → 0 olur (masaüstü ve mobil; areas liste modunda sönme areas IN'de olur, work'te 0 kalır) ve work BODY'de frame loop `never`'dadır. `work-specimen` çapası DOM'da boş bir kutu olarak kalır (`<div data-stage-anchor="work-specimen" class="stage-anchor work-specimen">`): programsızdır, panel orada gizlenir; director'ün çapa listesi değişmez. Panel journey IN'de geri gelir (§4.10).
 - **Event'ler:** Makale *k*, üst kenarı görüntü alanının %55'ini geçince etkinleşir: `ScrollTrigger({ trigger: article, start: 'top 55%', end: 'bottom 55%', onToggle })`.
   - P = 4 için s 535 / 605 / 675 / 745 (%45.7 / 51.7 / 57.7 / 63.7).
   - Proje 1, IN sırasında p 0.75'te etkinleşir.
-  - Etkinleşme aynı anda şu üç işi başlatır:
+  - Etkinleşme (`work:active`) aynı karede şu işleri başlatır:
 
-| # | Katman | Ne olur | Süre / easing |
+| # | Katman | Ne olur | Süre |
 |---|---|---|---|
-| 1 | **Kesit silmesi (DOM)** | **Aşağı kaydırırken:** figür *k*, `clip-path: inset(0 100% 0 0) → inset(0)` ile soldan sağa açılır. 1 px `--color-accent` çizgi silme kenarını taşır (`translateX` senkron) ve son 120 ms'de söner. **Yukarı kaydırırken:** tersi olur. Önce figür *k−1* alta `inset(0)` olarak konur, sonra *k* `inset(0) → inset(0 100% 0 0)` ile sağdan sola kapanır. Altyazı 300 ms'de değişir. | 600 ms `--ease-in-out` |
-| 2 | **Numune (3D)** | `rotYEvent → ψ(area_k) − W₀`: projenin alan dilimi saat 9 yönüne, yani görsele döner. `uBand.xy → bandOf(proje k)`. `uSectorFill[area_k] → 0.6`, diğerleri → 0.12. | 600 ms `power3.inOut`, aynı başlangıç |
-| 3 | **Makale metni** | `top 80%`'de açılır: başlık satırları maskeli, ardından özet, meta ve bağlantılar blok halinde. Bu, etkinleşmeden **25 svh önce**dir; metin görsel değişmeden okunur olur. | §4.5.4 |
+| 1 | **Kapak silmesi (DOM, `SectionWipe`)** | **Aşağı kaydırırken:** figür *k*, `clip-path: inset(0 100% 0 0) → inset(0)` ile soldan sağa açılır. 1 px `--color-accent` çizgi silme kenarını taşır (`translateX` senkron) ve son 120 ms'de söner. **Yukarı kaydırırken:** tersi olur. Önce figür *k−1* alta `inset(0)` olarak konur, sonra *k* `inset(0) → inset(0 100% 0 0)` ile sağdan sola kapanır. Altyazı 300 ms'de değişir. Silme bitince etkin olmayan figürler `inset(0 0 0 100%)` durumuna döner. | 600 ms `--ease-in-out` |
+| 2 | **ASCII derlemesi (2D canvas, `AsciiCompile`)** | Gelen figürün içindeki kaplama kapağı renkli ASCII olarak çizer: hücre başına glif yoğunluğu parlaklıktan (` .:-=+*#%@`), renk görselden gelir. ASCII rastgele gliflerden çözülür, sonra "derlenir": yukarıdan aşağı bir tarama gerçek görseli açar, taramanın önünde ince bir accent bant gider. Bitince kaplama kaldırılır. Kaplama figürün içinde olduğu için silmeyle birlikte kırpılır: ASCII, silmenin açtığı kadar görünür; derleme silme bittikten sonra da sürer. | Aynı karede başlar. Çözülme ≈ 400 ms + derleme ≈ 800 ms = ≈ 1.2 s **[SABİT]** |
+| 3 | **Makale metni** | `top 85%`'te açılır (§4.12.3): başlık satırları maskeli, ardından özet, meta ve bağlantılar blok halinde. Metin görsel değişmeden okunur olur. | §4.5.4 |
 
-- **ZORUNLU:** Görseller asla scrub edilmez.
-- Her makalenin dwell'inde (üst kenarı %55'ten, alt kenarı %55'e kadar), yavaş numune dönüşü ve işaretçi tepkileri dışında hiçbir şey hareket etmez.
-- **Çakışma [SABİT]:** Bir silme sürerken etkin makale değişirse, süren silme anında sona atlar ve yeni silme başlar. Uzak atlamada ve geri yüklemede silme oynamaz; durum anında kurulur (event'ler `duration: 0`).
-- Bu bölümde `rotYEvent`, `uBand.xy` ve work `sectorFill` alanları **event'lerindir** (§5.9). Track'ler bu fazlarda bu alanlara yazmaz.
+- **ZORUNLU:** Gerçek görsel DOM'da her zaman vardır ve `alt` taşır. Kaplama `aria-hidden`'dır ve `pointer-events: none` taşır. Kapak hiçbir zaman ASCII'de kalmaz: kaplama en geç 1.4 s'de kalkar; görsel henüz çözülmemişse (`img.complete === false`) kaplama hiç çizilmez.
+- **ZORUNLU:** Görseller asla scrub edilmez. Silme ve derleme zaman tabanlıdır.
+- Yukarı kaydırmada silme ters yönde (sağdan sola) oynar; derleme iki yönde aynıdır.
+- **Çakışma [SABİT]:** Bir silme sürerken etkin makale değişirse süren silme anında sona atlar ve yeni silme başlar; süren kaplama da anında kaldırılır ve yenisi başlar. Uzak atlamada, geri yüklemede ve `instant` olaylarda silme ve derleme oynamaz: son durum anında kurulur, gerçek görsel anında görünür.
+- **Bildirilmiş istisna:** Silme (600 ms) tavanlara uyar. Derleme (≈ 1.2 s) §4.3'teki 700 ms ve §4.14.1'deki 600 ms tavanlarını aşar. Güvenceler: metin görselden 30 svh önce okunur; görsel kaplama boyunca da DOM'da ve erişilebilirlik ağacındadır; azaltılmış harekette ve mobilde kaplama yoktur (§4.12.3).
+- Silme ve kaplama WebGL'e bağlı değildir: statik tier'da da (`data-motion="full"` iken) çalışır.
 
 #### 4.9.5 Metin/3D senkronu
 
-- Makale metni `top 80%`'de, aktivasyon `top 55%`'te gelir. Okur metni görselden **25 svh önce** okur hale gelir.
-- Aktivasyon anında DOM silmesi ve 3D numune event'i **aynı karede** başlar ve ikisi de 600 ms sürer. Altyazı silmenin ortasında (300 ms) değişir.
-- Silme kenarındaki vurgu çizgisi ile numunede dönen dilim aynı anlamı taşır: "şimdi bu proje, bu alan". Dilim saat 9 yönüne, yani görsele doğru döner.
-- Geri kaydırmada her şey simetrik oynar: ters silme ve önceki projenin bandı/dilimi.
+- Makale metni `top 85%`'te, aktivasyon `top 55%`'te gelir. Okur metni görselden önce okur hale gelir.
+- Aktivasyon anında kapak silmesi (600 ms) ve ASCII derlemesi (≈ 1.2 s) **aynı karede** başlar. Altyazı silmenin ortasında (300 ms) değişir.
+- Geri kaydırmada ters silme oynar ve önceki proje aynı biçimde derlenir.
 
 #### 4.9.6 Etkileşimler
 
 - **Makale bağlantısı hover/odak:**
   - başlık 8 px sağa kayar, ok görünür;
   - görüntüleyici görseli çerçevesinin içinde `scale 1.00 → 1.02` olur (600 ms `--ease-out`);
-  - hover-to-scene: `uBandPreview` + `uSectorPreview` (§4.14 #3). Makale zaten etkinse numune bu projeyi gösteriyordur; görünür değişiklik olmaz.
 - Mağaza bağlantıları bu efektleri tetiklemez; standart dış bağlantı davranışını izler (§4.14 #4).
 - Makaleye ya da figüre dokunmak proje sayfasına gider; mağaza bağlantıları mağaza sayfasını açar.
 
 #### 4.9.7 Çıkış geçişi
 
-Numune doğrulur (`rotX` → 0), büyür ve Journey sütununa yukarıdan görülen bir karot olarak yerleşir.
+journey IN köprüsü (§4.12.1): panel `journey-core`'da gece paletinde `git log` olarak çözülerek belirir (`--scene-opacity` journey IN p 0.3–0.6: 0 → 1).
 
 #### 4.9.8 Mobil farkları
 
 - **Sticky yok.** Her makale kapağını **başlığın üstünde, satır içinde (16:10)** gösterir; kapak bir kez klip reveal'ıyla açılır (§4.5.4 #9).
 - Sahne söner: `--scene-opacity` work IN p 0.2–0.5 arasında 1 → 0 olur; frame loop `never`'a geçer.
-- Numune yoktur. Yıl ve alan makale meta'sında durur.
+- Silme ve ASCII kaplaması yoktur. Yıl ve alan makale meta'sında durur.
 
 #### 4.9.9 Azaltılmış hareket karşılığı
 
 - **Her kapak** makalesinin yanında satır içindedir.
-- Proje başına statik bir SVG `SpecimenGlyph` (bandını ve dilimini gösteren) vardır.
-- Silme, ölçek ve kayma yoktur. Hover yalnızca renk ve alt çizgiyi değiştirir.
+- ASCII kaplaması yoktur.
+- Silme, derleme, ölçek ve kayma yoktur. Hover yalnızca renk ve alt çizgiyi değiştirir.
 
 #### 4.9.10 Kabul
 
@@ -2726,7 +2779,7 @@ Numune doğrulur (`rotX` → 0), büyür ve Journey sütununa yukarıdan görül
 
 ### 4.10 `journey`
 
-**Deneyim — "Karot"**: 280 svh (E = 6). Sticky sahne sütunu vardır, scroll-jacking yoktur.
+**Deneyim — "Sürüm geçmişi"**: 280 svh (E = 6). Sticky sahne sütunu vardır, scroll-jacking yoktur.
 
 #### 4.10.1 Amaç
 
@@ -2737,63 +2790,82 @@ Kariyer yörüngesini gösteren okunur bir CV zaman çizelgesi, PDF indirme ve `
 | Öğe | Etiket / nitelikler | İçerik (TR / EN) | Kurallar |
 |---|---|---|---|
 | Bölüm | `<section id="yolculuk" data-chapter="journey">` (EN `id="journey"`) | — | Kapı sağlanınca `min-height: calc((70 + 35 * E) * 1svh)`; E sunucuda `style` ile yazılır. |
-| Eyebrow + başlık | `<p>`, `<h2>` | "HALKALAR" / "RINGS"; "Deneyim" / "Experience" | k1–7 |
+| Eyebrow + başlık | `<p>`, `<h2>` | "Sürüm geçmişi" / "Version history" (ekranda SÜRÜM GEÇMİŞİ); "Deneyim" / "Experience" | k1–7 |
 | Girdiler | `<ol>`; her girdi `<li>` (kapı altında `min-height: 35svh`) | En fazla 6 girdi, **en yeniden eskiye**. Yıllar mono `<time datetime="YYYY-MM">`–`<time>` (devam ediyorsa `cv.present`: "Halen" / "Present"); rol `<h3>`; kurum · şehir; 1–2 sonuç satırı. İçerik `{{DENEYİM_k_…}}`. | Global blok reveal'ı `top 88%`. Geçildikten sonra **tamamen okunur kalır.** |
-| Kompakt alt listeler | `<h3>` + `<ul>` | Eğitim / Education; Ödüller / Konuşmalar — Awards / Talks; Diller / Languages | Eğitim girdileri aynı bant mantığını kullanır. |
+| Kompakt alt listeler | `<h3>` + `<ul>` | Eğitim / Education; Ödüller / Konuşmalar — Awards / Talks; Diller / Languages | Eğitim kayıtları panelde brass işaretle görünür (§4.10.3). |
 | CTA'lar | `<a download>`, `<a>` | "Özgeçmişi indir" + `cv.fileMeta` (ör. "PDF · 2 sayfa · 84 KB") → `/files/orcun-saatci-cv-tr.pdf` / "Download CV" + `cv.fileMeta` (e.g. "PDF · 2 pages · 84 KB") → `/files/orcun-saatci-cv-en.pdf`; "Tam özgeçmiş →" → `/cv` / "Full CV →" → `/en/cv` | Sayfa sayısı ve boyut build'deki gerçek dosyadan hesaplanır (§7.6, §7.9.6). |
-| Sahne çapası | `<div data-stage-anchor="journey-core" data-anchor-kind="sticky">` (`aria-hidden` yok: içindeki `RingsFigure` `role="img"`dir, §10.4.4) | — | k8–12; sticky `top: 12svh`, `height: 76svh`. İçinde SSR'lı `RingsFigure` bulunur. |
+| Sahne çapası | `<div data-stage-anchor="journey-core" data-anchor-kind="sticky" aria-hidden="true">` | — | k8–12; sticky `top: 12svh`, `height: 76svh`. İçinde statik panel (`git log`, gece; §4.16.3) bulunur. KESİT'in `RingsFigure`'ü kaldırıldı. |
 
-#### 4.10.3 3D durumu: K4 `journey-core`
+#### 4.10.3 KOD programı: `git log --graph`
 
-| Çapa | r | az | el | fov | D | rotY (scroll) | rotX | cut | ringContrast | sectorMix | ghost | arcGlow | Işık | tone |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `journey-core`: sticky; k8–12; y 12–88 svh; merkez (1110, 450) | 5.8 | 0 | 72 | 26 | 426 = 0.80 · 533 | W₀+50 → W₀+110 | 0 | 0.0 | 1.0 | 0 | 0.06 | 0.2 | −20 / 60 | 1 |
+Pencere başlığı `git log --graph`; durum satırı solda `main`, sağda `<etkin girdi>/E` (E, sayfadaki journey girdilerinin yani deneyim kayıtlarının sayısıdır; eğitim sayılmaz; etkin girdi yoksa ve statik panelde boştur). **Gece paneli:** her temada koyu tema token'larıyla çizilir (§4.1.3).
 
-**IN fazı** (s 790 → 890; %67.5–76.1):
+```text
+ $ git log --graph --date=short
 
-| IN yerel p | Kamera | Nesne | Materyal / ışık |
-|---|---|---|---|
-| 0.0–1.0 | r 5.6 → 5.8, el 20 → 72, fov 26, az 0 | Çapa work-specimen → journey-core (p 0–0.7; D 207 → 426); `rotX` 62 → 0; `rotYScroll` W₀+30 → W₀+50; cut −0.02 → 0 | ringContrast 0.9 → 1.0; ghost 0 → 0.06; arcGlow 0.35 → 0.2; ışık 25/22 → −20/60 |
-| 0.0–0.5 | — | — | sectorMix 0.5 → 0; dolgular (proje P'nin deseni) → 0 |
+      * 2025-08 <rol 1> (HEAD)
+      │         @ <kurum 1>
+      │
+2025 ─┤
+      │
+      * 2024-07 <rol 2>
+      │         @ <kurum 2>
+2024 ─┤
+      │
+      │
+      * 2023-02 <rol 3>
+      │         @ <kurum 3>
+      │
+      │
+      │
+2022 ─┤
+      * 2021-10 <derece>, <bölüm>
+                @ <okul>
+```
 
-Bant, girdi 1 etkinleşene kadar proje P'nin yıllarını tutar. Girdi 1 s 875'te, yani IN p 0.85'te etkinleşir.
+- **Kaynak ve sıra:** ana sayfa journey'inin deneyim girdileri ve eğitim kayıtları birleşir ve başlangıç tarihine (`YYYY-MM`) göre **en yeniden eskiye** sıralanır (aynı tarihte içerik sırası). Her kayıt `ref` taşır: deneyimde DOM'daki journey girdisinin indeksi, eğitimde −1. `journey:active` vurguyu `ref` ile eşler; eğitim kayıtları araya girse de doğru satır vurgulanır, eğitim kaydı hiç vurgulanmaz.
+- **Sığdırma:** panel en çok 7 kayıt gösterir. Daha fazlaysa en yeni 6 kayıt yazılır, kalanlar dalın altında `… N` satırına katlanır (N = katlanan kayıt sayısı).
+- **Yerleşim:** commit satırları zamanla orantılıdır (satır 3–19) ve aralarında en az 3 satır vardır; sığmazsa yukarı sıkıştırılır. Tek dal `│` ile çizilir.
+- **Yıl çentikleri** (sol kenarda `2025 ─┤`): yılın başı, onu çevreleyen iki commit'in **gerçek satırları** arasında enterpolasyonla yerleşir. Commit satırına düşen, iki commit'in arasında kalmayan ya da başka bir çentiğe 2 satırdan yakın çentik yazılmaz. Böylece eksen commit sırasıyla hiçbir zaman çelişmez.
+- **Commit satırı:** `*` (deneyim accent, eğitim brass), `YYYY-MM` ve başlık (en çok 32 sütun); alt satırda `@ <kurum>` (en çok 38 sütun). Eğitim başlığı `<derece>, <bölüm>` biçimindedir.
+- `(HEAD)` her zaman süren (bitişi olmayan) roldedir; başlık 30 sütuna kesildiği için her zaman sığar. Yavaşça nabız atar (kendiliğinden hareket; azaltılmış harekette ve statik panelde sabittir).
+- Etkin kayıt (`journey:active`): iki satırlık zemin ≈ %17 accent, başlık accent, tarih ve kurum tam opak. Diğer kayıtlar soluktur.
+
+**IN fazı** (s 790 → 890): work → journey köprüsü (§4.12.1; `anchorMix` p 0–0.70, yalnız çözülme). `--scene-opacity` p 0.3–0.6'da 0 → 1 olur (masaüstü ve mobil). `git log` `journey-core`'da yukarıdan aşağı çözülür. Girdi 1 s 875'te, yani IN p 0.85'te etkinleşir.
 
 **BODY** (s 890 → 1070):
-- **Scrub:** `rotYScroll` BODY boyunca +0 → +60 (W₀+50 → W₀+110), ≈ 33.3° / 100 svh (varsayılan içerik, E = 6).
 - **Event'ler:** Girdi *k*, `top 55%`'te etkinleşir. E = 6 için s 875, 910, 945, 980, 1015, 1050.
-  - `uBand.xy → bandOf(girdi k)`: 500 ms `power2.out`.
+  - Paneldeki vurgu girdi *k*'nin commit'ine geçer; değişen hücreler ≈ 1.2 s'de çözülür.
   - Girdinin `<time>` etiketi `--color-accent` olur, öncekinin etiketi normale döner. Aynı anda yalnız bir yıl vurguludur.
-- Liste en yeniden eskiye sıralı olduğu için **aşağı kaydırmak yanan bandı içeri, derine ve geçmişe taşır.**
-- Dış halkanın açık yayı (bugün) boyunca 0.2 parlaklıkta görünür kalır.
-- Bu bölümde `uBand.xy` event'lerindir (§5.9).
+- Liste en yeniden eskiye sıralı olduğu için **aşağı kaydırmak vurguyu logda aşağı, geçmişe taşır.**
+- Dwell'de panel değişmez (imleç ve `(HEAD)` nabzı hariç).
 
 #### 4.10.4 Metin/3D senkronu
 
-- Girdi *k*'nin aktivasyonunda (`top 55%`) iki şey aynı anda olur: `<time>` etiketi vurgu rengine döner ve taştaki bant 500 ms'de o girdinin yıllarına gider. **Metinde vurgulanan yıl, taşta yanan halkadır.**
+- Girdi *k*'nin aktivasyonunda (`top 55%`) iki şey aynı anda olur: `<time>` etiketi vurgu rengine döner ve panelde aynı commit vurgulanır. **Metinde vurgulanan yıl, logda vurgulanan commit'tir.**
 - Girdi metni `top 88%`'de görünür; bu, aktivasyondan 33 svh öncedir.
-- Scrub'lı yavaş dönüş metinden bağımsızdır ve dwell kuralına uyar (≤ 33.4° / 100 svh).
 
 #### 4.10.5 Etkileşimler
 
-- Herhangi bir girdiye hover/odak: `uBandPreview = (bandOf(girdi), 1)` ayarlanır (yükselme 0.10, 240 ms). Etkin bant değişmez.
-- Dokunmatikte merkez satır etkinleştirmesi aynı önizlemeyi sürer (§4.14 #3).
+- Girdi hover/odağı paneli değiştirmez.
+- İşaretçi paralaksı (§4.14 #1).
 
 #### 4.10.6 Çıkış geçişi
 
-Taş yükselir ve yüzünü ziyaretçiye çevirir (Contact IN).
+contact IN köprüsü (§4.12.1): `git log` düşer, `zsh` çözülür; panel `contact-ring`'e süzülür ve gece paleti gündüze döner.
 
 #### 4.10.7 Mobil farkları
 
-- **Sticky yok.** Taş bölüm başında bir kez, **36 svh'lik bir bantta** görünür: flow çapası, K4'ün plana yakın görünüşü.
+- **Sticky yok.** Panel bölüm başında bir kez, **36 svh'lik bir bantta** görünür: flow çapası, `git log` (gece).
   - **[SABİT]:** `--scene-opacity` journey IN p 0.3–0.6 arasında 0 → 1 olur (contact kuralının aynısı).
   - Bant görüntü alanından çıkarken opaklık kaydırmayla 1 → 0 olur (`opacityTrack`, journey BODY `[0.20·vh/len, 0.36·vh/len]`, §5.9.4); bant tamamen çıktığında opaklık 0'dır (en geç 300 ms, K-JOURNEY-7) ve frame loop `never`'a geçer.
-- Her girdide bandını gösteren **24 px satır içi SVG halka glifi** (`EntryGlyph`, `section-geometry.ts`'ten, `aria-hidden`) vardır.
+- Girdilerde glif yoktur (KESİT'in 24 px `EntryGlyph`'i kaldırıldı).
 
 #### 4.10.8 Azaltılmış hareket karşılığı
 
-- Yıl etiketli SVG `RingsFigure` (`role="img"`, `aria-label` = "Kariyer halkaları: {{KARİYER_BAŞLANGIÇ_YILI}} – {{YIL}}" (§10.4.4)) vardır.
-- Her girdide 24 px `EntryGlyph` bulunur.
-- Etkin yıl vurgusu ve bant önizlemesi yoktur.
+- Statik panel `git log`'u gece paletinde gösterir; etkin vurgu yoktur (`active: -1`), sağ durum etiketi boştur, `(HEAD)` sabittir (§4.16.3).
+- Girdilerde glif yoktur.
+- Etkin yıl vurgusu yoktur.
 
 #### 4.10.9 İSTEĞE BAĞLI: `testimonials` (`features.testimonials`)
 
@@ -2801,10 +2873,10 @@ Taş yükselir ve yüzünü ziyaretçiye çevirir (Contact IN).
 - Kaynak `content/testimonials.yaml` (öne çıkanlar, §7.3). Her biri `<figure><blockquote>` + `<figcaption>` (ad, rol).
 - Metin k1–7'dedir. Global reveal uygulanır; hover efekti yoktur.
 - **Sahne:**
-  - K4'ün son durumunu tutar.
-  - **[SABİT]:** Taş journey-core'un son ekran dikdörtgeninde (k8–12, y 12–88 svh) sabit kalır.
+  - Panel journey programının son durumunu tutar.
+  - **[SABİT]:** Panel journey-core'un son ekran dikdörtgeninde (k8–12, y 12–88 svh) sabit kalır.
   - `--scene-opacity` testimonials IN boyunca 1 → 0.4, contact IN p 0–0.5 arasında 0.4 → 1 olur.
-- Mobilde taş görünmez (journey bandı zaten sönmüştür).
+- Mobilde panel görünmez (journey bandı zaten sönmüştür).
 
 #### 4.10.10 Kabul
 
@@ -2812,11 +2884,11 @@ Taş yükselir ve yüzünü ziyaretçiye çevirir (Contact IN).
 
 ### 4.11 `contact`
 
-**İletişim — "Bir sonraki halka"**: 100 svh, pinsiz, footer dahil.
+**İletişim — "Terminal"**: 100 svh, pinsiz, footer dahil.
 
 #### 4.11.1 Amaç
 
-Zahmetsiz iletişim. Sayfa sitenin en güçlü imgesiyle kapanır.
+Zahmetsiz iletişim. Sayfa, terminalde yazılan e-posta adresiyle kapanır.
 
 #### 4.11.2 DOM
 
@@ -2825,34 +2897,50 @@ k1–7'dedir. Tuval rengi sabit kalır; **arka plan tersine çevrilmez.**
 | Öğe | Etiket / nitelikler | İçerik (TR / EN) | Kurallar |
 |---|---|---|---|
 | Bölüm | `<section id="iletisim" data-chapter="contact">` (EN `id="contact"`) | — | `min-height: 100svh` (footer dahil) |
-| Eyebrow + başlık | `<p>`, `<h2>` | "BİR SONRAKİ HALKA" / "THE NEXT RING"; "İletişim" / "Contact" | H2 senkronu §4.11.4'te |
-| Lead | `<p class="type-lead">` | `labels.contactLead` (etkin `engineer`, §4.17.2): "Bir sonraki halkayı birlikte inşa edelim." / "Let's build the next ring together." (yer tutucu metin, §4.17) | |
+| Eyebrow + başlık | `<p>`, `<h2>` | "Terminal" / "Terminal" (ekranda TERMINAL / TERMİNAL, `lang`'a göre); "İletişim" / "Contact" | H2 senkronu §4.11.4'te |
+| Lead | `<p class="type-lead">` | `home.contact.lead` (§7.3.2); yoksa `labels.contactLead` (§4.17.2) | Panelde `#` yorum satırları olarak da yazılır (§4.11.3) |
 | E-posta | `<a href="mailto:{{E_POSTA}}">` | `{{E_POSTA}}` (alan adı alınınca ör. `iletisim@orcunsaatci.com`, D-29) | Boyut `type-email` (4xl · 620 · `wdth` 100% → 118% · `overflow-wrap: anywhere`; §6.2.4). Yerel kısım ile `@` arasında `<wbr />`: `{{E_POSTA_YEREL}}<wbr />@orcunsaatci.com`. **360 px genişlikte yatay taşma yok.** Manyetik, ≤ 6 px. **JS'siz asla gizli değildir.** |
 | Kopyala | `<button type="button" aria-label="E-postayı kopyala">` (EN "Copy email") | Görünür: "Kopyala" / "Copy". Başarıda 2 s boyunca "Kopyalandı" / "Copied" + ✓ SVG (§6.2.7). | Manyetik (§4.14 #5). Toast §4.14 #9. |
 | Bağlantılar | `<ul>` | `{{SOSYAL_BAĞLANTILAR}}` (`content/site/contact.yaml` sırasıyla, ör. LinkedIn / GitHub / Behance / Scholar, `↗`); "CV (PDF)"; "{{ŞEHİR}} · GMT+3 · 14:32" (`LocalTime`) | Dış bağlantılarda `↗` (`aria-hidden`) |
 | Müsaitlik (İSTEĞE BAĞLI) | `<p>` | `site.availability` → sözlük metni (§7.9), ör. "Yeni fırsatlara açığım" | Ticari teklif dili **YASAK** (D-30) |
 | Footer | `<footer>` (bölümün içinde) | ©, TR/EN, tema seçici, "Hareketi azalt", künye | İçerik §3.9 |
-| Sahne çapası | `<div data-stage-anchor="contact-ring" data-anchor-kind="viewport" aria-hidden="true">` | — | k8–12, y 14–86 svh. Poster karşılığı: K5 posteri + gerçek tarih yayını çizen `ArcFigure` katmanı. |
+| Sahne çapası | `<div data-stage-anchor="contact-ring" data-anchor-kind="viewport" aria-hidden="true">` | — | k8–12, y 14–86 svh. İçinde statik panel (`zsh` son karesi, §4.16.3) bulunur. KESİT'in K5 posteri ve `ArcFigure`'ü kaldırıldı. |
 
 - SPEC-SAPMA: §4.11.2 (M4, 2026-09-30) — `contact-ring` bir viewport çapasıdır; masaüstünde akışta yer kaplamaz (`position: absolute`, bölüm üstünden 14 svh, 72 svh yükseklik, k8–12): bölüm yüksekliğini metin + footer belirler ve bölüm 100 svh kalır. Önceki akış düzeninde 72 svh'lik çapa bölümü 104 svh'ye uzatıyordu. Mobilde H2'nin üstündeki 40 svh bant akıştadır.
 
-#### 4.11.3 3D durumu: K5 `contact-ring`
+#### 4.11.3 KOD programı: `zsh`
 
-| Çapa | r | az | el | fov | D | rotY (scroll) | rotX | cut | ringContrast | sectorMix | ghost | arcGlow | Işık | rim | tone |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `contact-ring`: viewport; k8–12; y 14–86 svh; merkez (1110, 450) | 4.9 | 0 | 22 | 30 | 426 | W₀+130 | 68 | −0.05 | 0.7 | 0 | 0 | 1.0 | 70 / 14 | 0.35 | 1 |
+Pencere başlığı `zsh`; durum satırının solunda yerel saat etiketindeki şehir ve ofset (ör. `{{ŞEHİR}} · GMT+3`) yazar.
+
+```text
+$ flutter run lib/main.dart          ← soluk geçmiş: önceki programların komutları
+$ cat about.dart
+$ flutter build
+✓ App Store  ✓ Google Play           ← yalnız içerikte mağaza bağlantısı varsa
+$ git log --graph --date=short
+
+# <lead, # yorum satırları olarak>
+
+$ mail <e-posta>
+✓
+$ ▌
+```
+
+- Geçmiş satırları soluktur (≈ %38 opaklık). Lead (`home.contact.lead`) panel genişliğine göre sarılır.
+- `$ mail <e-posta>` karakter karakter yazılır (≈ 45 ms/karakter **[SABİT]**). Bitince `✓` (brass) ve imleçli yeni istem gelir. Yazma, contact metni açılırken başlar (IN p 0.70) ve bölüme her gelişte bir kez oynar; `instant` gelişte son kare yazılır.
 
 **IN fazı** (s 1070 → 1170; %91.5–100):
 
-| IN yerel p | Kamera | Nesne | Materyal / ışık |
-|---|---|---|---|
-| 0.0–0.5 | r 5.8 → 4.9, el 72 → 22, fov 26 → 30, az 0 | Çapa journey-core → **contact-ring (viewport)**: taş son yerine metinden önce varır. `rotYScroll` +20. | Bant görünürlüğü 1 → 0 (p 0–0.4); ghost 0.06 → 0 |
-| 0.5–1.0 | — | **`rotX` 0 → 68**: kesit yüzü ziyaretçiye döner, kendini "sunar". cut 0 → −0.05. | ringContrast 1.0 → 0.7; **arcGlow 0.2 → 1.0** (yalnız açık dış yay vurgu renginde yanar); ışık −20/60 → 70/14 (son ışık, sağdan alçak); rim 0.25 → 0.35 |
+| IN yerel p | Panel | DOM |
+|---|---|---|
+| 0.0–0.5 | journey → contact köprüsü: `git log` düşer, `zsh` çözülür; panel `contact-ring`'e (viewport) metinden önce varır; gece paleti gündüze döner | Contact başlığı yaklaşır |
+| 0.55 | — | H2 maskeli satır reveal'ı |
+| 0.70 | `$ mail <e-posta>` yazılmaya başlar | Lead, e-posta ve bağlantılar blok halinde belirir |
 
 #### 4.11.4 Metin/3D senkronu
 
-- H2 (maskeli satırlar), yüz dönmeye başlayınca açılır: IN p 0.55, s ≈ 1125.
-- Lead, e-posta ve bağlantılar p 0.70'te (s ≈ 1140) blok halinde belirir.
+- H2 (maskeli satırlar) terminal çözülünce açılır: IN p 0.55, s ≈ 1125.
+- Lead, e-posta ve bağlantılar p 0.70'te (s ≈ 1140) blok halinde belirir. Aynı anda panelde aynı adres yazılır: **metinde beliren e-posta, terminalde yazılan e-postadır.**
 - Bu senkron "%75 kuralı"nın bildirilmiş bir istisnasıdır (§4.12.3).
 - **Güvenceler:**
   - e-postanın ön-reveal durumu yalnızca `.motion-ready` altında vardır;
@@ -2861,108 +2949,98 @@ k1–7'dedir. Tuval rengi sabit kalır; **arka plan tersine çevrilmez.**
 
 #### 4.11.5 Etkileşimler
 
-- **E-posta hover/odak:**
-  - manyetik ≤ 6 px;
-  - yay ucu nabız atar: `uArcPulse` 0 → 1 → 0.4, hover sürdükçe her 2.4 s'de tekrar eder, hover bitince durur.
-  - Dokunmatikte e-posta görüntü alanının merkezinden geçince **tek** nabız atar.
+- **E-posta hover/odak:** manyetik ≤ 6 px. Panelde nabız yoktur (KESİT'in yay nabzı kaldırıldı).
 - **Kopyala:**
   - Clipboard API ile kopyalanır;
   - buton 2 s boyunca "Kopyalandı" + ✓ SVG gösterir;
-  - toast açılır;
-  - **halka dalgası:** `uWave` 0 → 1, 600 ms.
+  - toast açılır.
   - Clipboard API yoksa ya da reddedilirse adres metni seçilir ve toast §7.9'daki yedek metni gösterir.
 
 #### 4.11.6 Mobil farkları
 
-- H2'nin üstünde **40 svh bant** vardır. `--scene-opacity` contact IN p 0.3–0.6 arasında 0 → 1 olur. Görünen durum K5'tir: sunulan yüz.
-- E-posta merkezdeyken yay nabzı atar.
+- H2'nin üstünde **40 svh bant** vardır. `--scene-opacity` contact IN p 0.3–0.6 arasında 0 → 1 olur. Görünen program `zsh`'dir.
 
 #### 4.11.7 Azaltılmış hareket karşılığı
 
-- K5 posteri ve üzerinde, istemcide bugüne kadar çizilen açık dış yayı vurgu renginde gösteren SVG `ArcFigure` bulunur.
-- Nabız ve dalga yoktur. Kopyalama yalnızca buton metnini ve toast'u değiştirir.
+- Statik panel `zsh`'in son karesini gösterir: `$ mail <e-posta>`, `✓` ve istem (§4.16.3).
+- Yazma yoktur. Kopyalama yalnızca buton metnini ve toast'u değiştirir.
 
 #### 4.11.8 Kabul
 
 §4.18 → **K-CONTACT-1 … K-CONTACT-8**.
 
-### 4.12 Tam kaydırma koreografi tablosu ve değişmezler (invariants)
+### 4.12 Program tablosu ve değişmezler (invariants)
 
 #### 4.12.1 Ana tablo
 
-Masaüstü, varsayılan içerik, 1440×900. `s` svh cinsinden kaydırmadır (toplam 1170), `%` = s / 1170. Aralıklar çalışma zamanında ölçülür; bunlar referans değerlerdir. Kamera hedefi her zaman (0, 0, 0)'dır.
+Masaüstü, varsayılan içerik, 1440×900. `s` svh cinsinden kaydırmadır (toplam 1170), `%` = s / 1170. Aralıklar çalışma zamanında ölçülür; bunlar referans değerlerdir. KESİT'in K0–K5 / D1–D5 anahtar tabloları ve taş koreografisi kaldırıldı (D-16, 2026-10-02).
 
-| # | Bölüm · faz | s (svh) | % | Kamera konumu, fov | Nesne | Materyal / ışık | DOM | Pin |
-|---|---|---|---|---|---|---|---|---|
-| 0 | Yükleme | ilk boya → T12 (§9.2.2): DOM solması 120–760 ms; poster → canvas ve tarama T11 (`os:stage-ready`) sonrasında | 0 | (−2.15, 1.08, 4.61), 30 | K0; poster → canvas 600 ms | Işık taraması az −120 → −60, el 20 → 38 (1.2 s; oturumda bir kez; yalnız tepede) | H1 statik (LCP). Eyebrow, lead ve CTA'lar t = 120 ms'den itibaren 12 px yukarı kayarak belirir. | — |
-| 1 | hero (boşta) | 0 | 0 | aynı | `rotY` idle +2°/s (20 s sonra durur) | −60 / 38 | — | Hayır |
-| 2 | about · IN | 0–30 | 0–2.6 | aynı | Çapa hero → about (karışım 0 → 0.45); `rotY` 0 → 12 | — | Hero metni doğal kayar. About eyebrow ve H2 `top 88%`'de. | Hayır |
-| 3 | about · IN | 30–100 | 2.6–8.5 | → (−0.89, 3.09, 3.57), 28 | **cut 1.10 → 0.35**; `rotY` 12 → 30 | ringContrast 0 → 0.6; ghost → 0.10; ışık → −40/48 | **`cut-line` `scaleX = cutProgress`**; lede satırları eşiklerde | Hayır |
-| 4 | about · BODY | 100–140 | 8.5–12.0 | → (−0.64, 3.77, 2.56), 28 | cut 0.35 → 0; `rotY` → 35 | ringContrast → 1.0; ışık → −30/55 | Paragraflar, olgular, portre, bağlantı | Hayır |
-| 5 | areas · IN | 140–240 | 12.0–20.5 | **dolly-zoom** → (0, 7.20, 0.25), fov 28 → 18 | Çapa → areas-dial; `rotY` 35 → 45 | Halkalar → 0.4; sectorMix 0 → 1 (p 0.4–1); `fill[0]` → 1 (p 0.8–1); ışık → 0/80 | Sahne yerine yükselir; liste ve cümle belirir | sticky'ye giriyor |
-| 6 | areas · oturma + adım 0 | 240–300 | 20.5–25.6 | sabit (yalnız işaretçi ışığı) | ψ₀ = 45 | Dilim 0 yanık | Açıklama 0; 01/04 | **Evet** |
-| 7 | areas · adım 1 (dönüş / dwell) | 300–315 / 315–350 | 25.6–26.9 / 26.9–29.9 | sabit | `rotY` 45 → −45 | fill 0 → 0.15, fill 1 → 1.0 | 307.5'te değişim; 02/04; iğne tiki | **Evet** |
-| 8 | areas · adım 2 | 350–365 / 365–400 | 29.9–31.2 / 31.2–34.2 | sabit | −45 → −135 | fill 1 → 0.15, fill 2 → 1.0 | 357.5'te değişim; 03/04 | **Evet** |
-| 9 | areas · adım 3 | 400–415 / 415–450 | 34.2–35.5 / 35.5–38.5 | sabit | −135 → −225 | fill 2 → 0.15, fill 3 → 1.0 | 407.5'te değişim; 04/04 | **Evet** |
-| 10 | areas · bırakma | 450–460 | 38.5–39.3 | sabit | — | sectorMix 1 → 0.5; dolgular → 0.15 | Sahne ayrılmaya başlar | Evet → Hayır |
-| 11 | work · IN | 460–560 | 39.3–47.9 | → (0, 1.92, 5.26), fov 18 → 26 | Çapa → work-specimen (D 515 → 207); `rotYScroll` → W₀; `rotX` 0 → 62 (p 0.3–1); cut → −0.02 | Halkalar → 0.9; ghost → 0; arcGlow → 0.35; ışık → 25/22; bant görünürlüğü → 1 (p 0.7–1) | Başlık reveal'ı; makale 1 reveal'ı 510'da; **proje 1 535'te etkinleşir**: silme + numune event'i | görüntüleyici sticky |
-| 12 | work · BODY | 560–790 | 47.9–67.5 | sabit | `rotYScroll` W₀ → W₀+30. **Event'ler** 605 / 675 / 745: `rotYEvent → ψ(area_k) − W₀`, bant → proje yılları, `fill[alan]` 0.6 | — | Makale reveal'ları 580 / 650 / 720; her etkinleşmede **kesit silmesi**; altyazı k/P | **Görüntüleyici ve numune sticky; metin kayar** |
-| 13 | journey · IN | 790–890 | 67.5–76.1 | → (0, 5.52, 1.79), fov 26 | Çapa → journey-core (D → 426); `rotX` 62 → 0; `rotYScroll` +20 | sectorMix → 0; dolgular → 0; halkalar → 1.0; ghost → 0.06; arcGlow → 0.2; ışık → −20/60 | Başlık reveal'ı; **girdi 1 875'te etkinleşir**: bant event'i | Sütun sticky olur |
-| 14 | journey · BODY | 890–1070 | 76.1–91.5 | sabit | `rotYScroll` +0 → +60 | **Bant event'leri** 910 / 945 / 980 / 1015 / 1050 (içe, geçmişe doğru) | Girdiler `top 88%`'de belirir; etkin yıl vurgu rengine döner | **Taş sütunu sticky; liste kayar** |
-| 15 | contact · IN | 1070–1120 | 91.5–95.7 | → (0, 1.84, 4.54), fov 30 | Çapa → contact-ring; `rotYScroll` +20 | Bant görünürlüğü → 0; ghost → 0 | Contact başlığı yaklaşır | Hayır |
-| 16 | contact · IN | 1120–1170 | 95.7–100 | sabit | **`rotX` 0 → 68** (yüz sunulur); cut → −0.05 | Halkalar → 0.7; **arcGlow → 1.0**; ışık → 70/14; rim → 0.35 | H2 1125'te; lead, e-posta ve bağlantılar 1140'ta | Hayır |
+| # | Bölüm · faz | s (svh) | Çapa | Program | Panel | DOM | Pin |
+|---|---|---|---|---|---|---|---|
+| 0 | Yükleme | ilk boya → T12 (§9.2.2) | `hero-rest` | `main.dart` | Statik panel → canvas 600 ms; hot reload (oturumda bir kez, yalnız tepede) | H1 statik (LCP). Eyebrow, lead ve CTA'lar t = 120 ms'den itibaren belirir. | — |
+| 1 | hero (boşta) | 0 | `hero-rest` | `main.dart` | İmleç ad satırında; süzülme (son girdiden 20 s sonra durur) | — | Hayır |
+| 2 | about · IN | 0–100 | `hero-rest` → `about-cut` | `main.dart` → `about.dart` | Köprü p 0–0.60 (`anchorMix` p 0.30'da 0.45) | About eyebrow ve H2 `top 88%`'de | Hayır |
+| 3 | about · BODY | 100–140 | `about-cut` | `about.dart` | dwell | Lede, paragraflar, olgular, portre, bağlantı | Hayır |
+| 4 | areas · IN | 140–240 | → `areas-dial` | `about.dart` → alan 0 | Köprü p 0–0.70 | Sahne yerine yükselir; liste ve cümle belirir | sticky'ye giriyor |
+| 5 | areas · oturma + adım 0 | 240–300 | `areas-dial` | alan 0 | dwell | Açıklama 0; 01/04 | **Evet** |
+| 6–8 | areas · adım 1–3 | 300–450 | `areas-dial` | alan *k* | `areas:step` 307.5 / 357.5 / 407.5 → ≈ 1.2 s çözülme; dwell'de sabit | Açıklama değişimleri aynı anlarda; sayaç k/04 | **Evet** |
+| 9 | areas · bırakma | 450–460 | `areas-dial` | alan N−1 | — | Sahne ayrılmaya başlar | Evet → Hayır |
+| 10 | work · IN | 460–560 | `areas-dial` → `work-specimen` (boş) | alan N−1 → yok | Köprü p 0–0.80: yalnız yağmur; `--scene-opacity` p 0.2–0.5: 1 → 0; work BODY'de loop `never` | Başlık reveal'ı; **proje 1 535'te etkinleşir**: silme + ASCII derlemesi | görüntüleyici sticky |
+| 11 | work · BODY | 560–790 | — | yok (panel gizli) | — | **Silmeler + ASCII derlemeleri** 605 / 675 / 745; makale reveal'ları; altyazı k/P | **Görüntüleyici sticky; metin kayar** |
+| 12 | journey · IN | 790–890 | `work-specimen` (boş) → `journey-core` | yok → `git log` (gece) | Köprü p 0–0.70: yalnız çözülme; `--scene-opacity` p 0.3–0.6: 0 → 1; **girdi 1 875'te** | Başlık reveal'ı | Sütun sticky olur |
+| 13 | journey · BODY | 890–1070 | `journey-core` | `git log` | `journey:active` 910 / 945 / 980 / 1015 / 1050 → vurgu ≈ 1.2 s'de çözülür | Girdiler `top 88%`'de; etkin yıl vurgu rengine döner | **Panel sütunu sticky; liste kayar** |
+| 14 | contact · IN | 1070–1170 | → `contact-ring` | `git log` → `zsh` | Köprü p 0–0.50 (mobilde 0–0.30); p 0.70'te `$ mail` yazılır | H2 1125'te; lead, e-posta ve bağlantılar 1140'ta | Hayır |
+
+**Köprüler** (bölümler arası program değişimi, §5.20.5): eski program sütun sütun düşer, yenisi yukarıdan aşağı çözülür. Köprünün ilerlemesi o bölümün IN fazındaki `anchorMix` track'idir (KESİT'ten kalan aralıklar, §4.12.4 #24); kaydırmayla scrub edilir ve geri kaydırmada ters oynar. Pencere çerçevesi düşmez. Panel dikdörtgeni iki çapa arasında smoothstep ile karışır. Programsız uca (work) giden köprüde plaka `1 − 1.6·mix` ile söner, programsız uçtan gelen köprüde `1.6·mix` ile belirir; görünürlüğü asıl `--scene-opacity` sürer (work IN p 0.2–0.5: 1 → 0, journey IN p 0.3–0.6: 0 → 1; masaüstü ve mobil). Köprü dışında `mix ≥ 0.5` hedef çapanın programını gösterir. Gece paleti journey köprülerinde aynı ilerlemeyle (smoothstep) karışır. Mobilde bantlar arası geçiş el değiştirmedir (§4.15.3): eski program eski bantta sönerken yağar, yeni program yeni bantta belirirken çözülür.
 
 **DOM olay takvimi** (varsayılan içerik, s svh):
 
 | Bölüm | Olay | s |
 |---|---|---|
 | about | Eyebrow + H2 reveal | ≈ 12 (`top 88%`) |
-| about | Lede satırları (L = 4) | `cutProgress` 0.05 / 0.25 / 0.45 / 0.65 → s ≈ 35 / 56 / 76 / 97 (`cut` track'i doğrusal varsayılarak; easing değişirse yeniden hesaplanır) |
-| areas | Açıklama değişimleri | 307.5 / 357.5 / 407.5 |
-| work | Makale reveal (`top 80%`) | 510 / 580 / 650 / 720 |
-| work | Aktivasyon (`top 55%`) | 535 / 605 / 675 / 745 |
+| areas | Açıklama ve program değişimleri | 307.5 / 357.5 / 407.5 |
+| work | Makale reveal (`top 85%`) | ≈ 505 / 575 / 645 / 715 |
+| work | Aktivasyon (`top 55%`): silme + ASCII derlemesi | 535 / 605 / 675 / 745 |
 | journey | Girdi reveal (`top 88%`) | 842 / 877 / 912 / 947 / 982 / 1017 |
 | journey | Aktivasyon (`top 55%`) | 875 / 910 / 945 / 980 / 1015 / 1050 |
-| contact | H2 / metin | 1125 / 1140 |
+| contact | H2 / metin ve `$ mail` | 1125 / 1140 |
 
 #### 4.12.2 Değişmezler
 
-Uygulamanın test etmesi **ZORUNLU** olan kurallar (testler §4.18 K-CHOREO):
+Uygulamanın test etmesi **ZORUNLU** olan kurallar (testler §4.18 K-CHOREO ve K-KOD):
 
 1. **Tek sahip.** Aynı özellik için iki track hiçbir kaydırma konumunda örtüşmez (`tracks.test.ts`).
-2. **Track / event ayrımı.** Bir bölümün event'lerinin sahip olduğu alanlara (§5.9; work'te `rotYEvent`, `uBand.xy`, `sectorFill`; journey'de `uBand.xy`), o bölümün fazlarında track yazmaz. Geri yükleme ve atlamada event'ler `duration: 0` ile uygulanır.
-3. **Saf fonksiyon.** Dinlenmiş sahne durumu `f(route, scrollY)`'dir. Zaman tabanlı süsler (idle, nabız, dalga, tarama, işaretçi) bunun üstüne eklenir ve sönünce sıfırlanır.
-   - Test: *s*'ye kaydırarak gelinen durum, sayfa *s*'de yeniden yüklendiğinde oluşan durumla eşittir. Tolerans: açılar ±0.5°, skalerler ±0.01.
+2. **Track / event ayrımı.** Program adımı event'lerindir (areas, journey, cv, folio, filtre); köprü (`anchorMix`) ve opaklık track'lerindir. Geri yükleme ve atlamada event'ler `instant` uygulanır: çözülme oynamaz, son kare yazılır.
+3. **Saf fonksiyon.** Dinlenmiş panel durumu (program, adım, çapa dikdörtgeni, köprü ilerlemesi) `f(route, scrollY)`'dir. Zaman tabanlı süsler (çözülme, yazma, akan log, imleç, süzülme, paralaks) bunun üstüne eklenir ve sönünce sıfırlanır.
+   - Test: *s*'ye kaydırarak gelinen durum, sayfa *s*'de yeniden yüklendiğinde oluşan durumla eşittir: program anahtarı ve adım birebir, çapa dikdörtgeni ±2 px.
 4. **Reveal zamanlaması.** Her metin reveal'ı, bloğun üstü görüntü alanının %75'ini geçmeden tamamlanır; tek istisnalar §4.12.3'tekilerdir. Reveal ≤ 700 ms sürer, bir kez oynar ve asla yeniden gizlenmez.
-5. **Dwell.** Kaydırma kaynaklı tek 3D hareket, work ve journey'deki yavaş sürekli dönüştür (≤ 33.4° / 100 svh; varsayılan içerikle ölçülür, E = 6).
-   - Kapsanan pencereler: areas adım dwell'leri (satır 6–9), her work makalesinin dwell'i, her journey girdisinin dwell'i.
-   - İşaretçi kaynaklı tepkiler serbesttir: ışık, yakınlık eğimi ≤ 6°, dokunmatik sallanma ≤ 4°.
-6. **Dönüş hızı.** Kaydırma kaynaklı nesne dönüşü (`rotY`/`rotX` track'leri) ≤ 90° / 100 svh'dir. Bu tavanı aşabilen üç bildirilmiş istisna vardır:
-   - (a) areas adım dönüşleri: Δ / 15 svh (N = 4'te 90° / 15 svh, bilinçli "klik");
-   - (b) work IN `rotYScroll` kısa yol yeniden yönlenmesi: ≤ 180° / 100 svh (W₀ seçimine bağlı);
-   - (c) contact IN `rotX` 0 → 68: 50 svh'de, ≈ 136° / 100 svh.
-   - final.md "diğer her yerde tavana uyulur" diyordu. (b) ve (c) bu iddiayla çelişir ve burada açıkça beyaz listeye alınmıştır.
-7. **Metnin arkasında taş yok.** 1440×900 ve 390×844'te, her kaydırma konumunda taşın ekran dairesi (çapa merkezi, yarıçap D/2) hiçbir metin öğesinin dikdörtgeniyle kesişmez. İstisna hero H1 ve temas gölgesidir.
-8. **Sabit arka plan.** `html`/`body` arka plan rengi kaydırma boyunca değişmez.
+5. **Dwell.** Dwell pencerelerinde panelde kaydırma kaynaklı değişim yoktur: program, adım ve çapa dikdörtgeni sabittir. Zaman tabanlı süsler (imleç, akan log, hat animasyonu, süzülme) §4.4 yasa 2'ye uyar.
+   - Kapsanan pencereler: areas adım dwell'leri, her work makalesinin dwell'i, her journey girdisinin dwell'i.
+6. **Dönüş hızı.** KESİT'e özgüydü (taş dönüşü); KOD ile kaldırıldı.
+7. **Metnin arkasında panel yok.** 1440×900 ve 390×844'te, her kaydırma konumunda panelin ekran dikdörtgeni (plaka dahil) hiçbir metin öğesinin dikdörtgeniyle kesişmez. İstisna yoktur (hero dahil, §4.5.6).
+8. **Sabit arka plan.** `html`/`body` arka plan rengi kaydırma boyunca değişmez. Gece paneli yalnız panelin içidir.
 9. **Tek DOM pin'i.** Metin tutan tek sticky kapsayıcı areas'tır. work ve journey'de yalnızca medya/çapa sütunu sticky'dir.
 10. **Boşta hareket sınırı.** Kendiliğinden hareket, son girdiden 20 s (ince işaretçi) / 8 s (kaba işaretçi, dokunmatik) sonra durur.
 11. **Scroll'a bağlı DOM.** Yalnızca §4.3'teki beyaz liste kaydırmaya bağlanır.
+12. **Okunabilirlik.** Dinlenme anında panelde rastgele glif yoktur; canlı panelin karesi statik panelle hücre hücre aynıdır (§4.1.5).
 
-- Not (M4, 2026-09-30, `tracks.test.ts`): Masaüstü journey BODY uzunluğu `35E − 30` svh'dir (kuyruk ≥ 30 svh). E = 1'de 5 svh, E = 2'de 40 svh kalır; `rotYScroll`'un +60°'si bu durumda ≤ 33.4°/100 svh (#5) ve 90°/100 svh (#6) sınırlarını aşar. Değişmezler varsayılan içerikle (E = 6) sınanır; küçük E için dönüşün BODY uzunluğuna ölçeklenmesi (ya da en az BODY uzunluğu) M6 koreografi ayarında karara bağlanır.
-- SPEC-SAPMA: §4.12.1 satır 14, §4.12.2 #5 (M6, 2026-10-01) — Karar: journey BODY dönüşü BODY uzunluğuna ölçeklenir: `Δ = min(60°, 33.4°·BODY/100 svh)` (`tracks.journeyTurnOf`, `StageContentCtx.journeyTurn`). Contact IN aynı açıdan +20° sürer; K5 `rotY = W₀ + 70 + Δ` (varsayılan içerikte W₀ + 130). "En az BODY uzunluğu" seçeneği küçük E'de (sahibin içeriği) 100+ svh boş kaydırma alanı bırakacağı için seçilmedi. Posterler varsayılan içerikle (Δ = 60°) üretilir; küçük E'de `#iletisim` derin bağlantısındaki 600 ms'lik crossfade'de poster ile canlı Taş arasında dönüş farkı görülebilir.
+KESİT dönemine ait notlar ve SPEC-SAPMA kayıtları (journey dönüşünün BODY'ye ölçeklenmesi vb.) taşla birlikte geçersizdir; kayıtlar git geçmişindedir.
 
 #### 4.12.3 Senkron istisnaları (bildirilmiş)
 
-| Yer | Kural | Neden %75 kuralını aşar | Güvenceler |
+| Yer | Kural | Neden %75 / 700 ms kuralını aşar | Güvenceler |
 |---|---|---|---|
-| about lede (§4.7.4) | Satır *k*, `cutProgress ≥ 0.05 + 0.60·k/max(1, L−1)` olunca açılır | Lede'nin üstü %75'i yaklaşık IN p 0.45'te geçer; son satır ise p ≈ 0.97'de açılır. Bu, imza anı #2'dir ("Kesim"). | Satırlar zaman tabanlıdır (700 ms) ve bir kez açılır. Atlama güvenliği (#5) ve 3 s güvenliği (#6) geçerlidir. Azaltılmış harekette ve JS'siz görünümde hepsi baştan görünürdür. |
-| contact (§4.11.4) | H2 IN p 0.55'te, metin p 0.70'te açılır | Metin, taş yüzünü sunmaya başladıktan sonra gelir. Bloklar o anda görüntü alanının yaklaşık %55–60'ındadır. | E-posta JS'siz asla gizli değildir. `#iletisim` ile gelişte anında açılır. Sayfa sonu (s 1170) tüm eşikleri geçer. |
-| work makaleleri (§4.9.4) | Reveal `top 80%`'de başlar | İstisna değildir; yalnızca başlangıç noktası farklıdır. %75 kuralı geçerlidir. | — |
+| contact (§4.11.4) | H2 IN p 0.55'te, metin p 0.70'te açılır | Metin, terminal çözüldükten sonra ve `$ mail` yazılırken gelir. Bloklar o anda görüntü alanının yaklaşık %55–60'ındadır. | E-posta JS'siz asla gizli değildir. `#iletisim` ile gelişte anında açılır. Sayfa sonu (s 1170) tüm eşikleri geçer. |
+| work ASCII derlemesi (§4.9.4) | Kapak 600 ms'lik silmeyle açılır (tavana uyar); aynı karede başlayan kaplama kapağı ≈ 1.2 s boyunca ASCII olarak gösterir | Derleme 700 ms reveal tavanını aşar | Gerçek görsel DOM'da ve erişilebilirlik ağacındadır; metin görselden önce okunur; kaplama en geç 1.4 s'de kalkar; azaltılmış harekette ve mobilde yoktur. |
+| work makaleleri (§4.9.4) | Reveal `top 85%`'te başlar | İstisna değildir; yalnızca başlangıç noktası farklıdır. %75 kuralı geçerlidir. | — |
+
+KESİT'teki about lede istisnası (kesim senkronu) kaldırıldı.
+
 - SPEC-SAPMA: §4.9.4, §4.12.1, §4.12.3 (M6, 2026-10-01) — Work makale metninin reveal'ı `top 85%`'te başlar (aktivasyondan 30 svh önce; tablo satırlarında 510/580/650/720 yerine ≈ 505/575/645/715). Başlık satırları (700 ms + kademe) okuma hızında (10 svh/s) ≈ 8 svh sürer; `top 80%`'de (25 svh) K-WORK-3'ün "≥ 20 svh önce tamamen açık" koşulu sağlanamıyordu (ölçülen 16.8–17.4 svh).
 
 #### 4.12.4 Bu belgede sabitlenen değerler ([SABİT])
 
-final.md'de bulunmayan ve uygulanabilirlik için eklenen değerler aşağıdadır. M1/M6'da sahibin onayıyla değiştirilebilir. Değiştirilen değer bu tabloda güncellenir.
+Prototipte bulunmayan ya da prototipten alınıp sabitlenen değerler aşağıdadır. Sahibin onayıyla değiştirilebilir; değiştirilen değer bu tabloda güncellenir.
 
 | # | Yer | Değer |
 |---|---|---|
@@ -2971,25 +3049,30 @@ final.md'de bulunmayan ve uygulanabilirlik için eklenen değerler aşağıdadı
 | 3 | §4.5.5 | Sayfa içi atlama süresi 0.9 s (komşu atlamalar dahil). Areas atlama bağlantısı her zaman kesme kuralını kullanır. M6'da onaylandı (2026-10-01). |
 | 4 | §4.6.3 | "Projeleri incele →" birincil (vurgu dolgulu), "İletişime geç" ikincil (çerçeveli). M6'da onaylandı (2026-10-01). |
 | 5 | §4.8.8 | Mobil areas metin alanı 58 svh'ye sığmazsa liste modu. M6'da onaylandı (2026-10-01). |
-| 6 | §4.8.8 | Liste modunda sahne areas IN p 0.2–0.5'te söner; masaüstünde work IN p 0.2–0.5'te, mobilde journey IN p 0.3–0.6'da geri gelir. M6'da onaylandı (2026-10-01). |
+| 6 | §4.8.8 | Liste modunda sahne areas IN p 0.2–0.5'te söner ve journey IN p 0.3–0.6'da geri gelir. M6'da onaylandı (2026-10-01); KOD uyarlaması (work'te panel yok) 2026-10-02. |
 | 7 | §4.9.3 | `innerHeight < 760`: altyazı görüntüleyicinin 8 px altında. M6'da onaylandı (2026-10-01). |
-| 8 | §4.9.4 | `innerHeight < 760`: `tone` work IN p 0–0.5'te 1 → 0, journey IN p 0–0.5'te 0 → 1. M6'da onaylandı (2026-10-01). |
-| 9 | §4.9.4 | Silme çakışması: süren silme sona atlar, yenisi başlar. M6'da onaylandı (2026-10-01). |
+| 8 | §4.9.4 | KESİT'e özgüydü (`innerHeight < 760`'ta numune `tone`'u); KOD ile kaldırıldı. |
+| 9 | §4.9.4 | Silme çakışması: süren silme sona atlar, yenisi başlar. M6'da onaylandı (2026-10-01). KOD eki: süren ASCII kaplaması da anında kalkar ve yenisi başlar. |
 | 10 | §4.10.7 | Mobil journey bandı: `--scene-opacity` IN p 0.3–0.6'da 0 → 1; bant çıkarken kaydırmayla 0'a iner (§5.9.4), bant çıktığında 0'dır (en geç 300 ms) ve loop `never`. M6'da onaylandı (2026-10-01). |
-| 11 | §4.10.9 | testimonials: taş journey-core'un son dikdörtgeninde; opaklık 1 → 0.4 (testimonials IN), 0.4 → 1 (contact IN p 0–0.5). M6'da onaylandı (2026-10-01). |
-| 12 | §4.13.2 | D2'de filtre yoksa `rotY` = ψ₀. Filtre değişiminde dönüş + dolgu 400 ms `power3.inOut`. `/calisma-alanlari` hover dolgusu 240 ms / 400 ms. M6'da onaylandı (2026-10-01). |
+| 11 | §4.10.9 | testimonials: panel journey-core'un son dikdörtgeninde; opaklık 1 → 0.4 (testimonials IN), 0.4 → 1 (contact IN p 0–0.5). M6'da onaylandı (2026-10-01). |
+| 12 | §4.13.2 | Filtre değişiminde `ls projects/ --area=<id>` yazılır ve eşleşmeyen satırlar 400 ms'de söner. KESİT'in D2 `rotY` değeri kaldırıldı. |
 | 13 | §4.13.4 | Tipsiz (geri/ileri) DOM geçişi: yalnız opaklık, 150 / 210 ms, kayma yok. M6'da onaylandı (2026-10-01). |
-| 14 | §4.13.5 | Mobil derin sayfalar: 30 svh bant; `folio`'da bant yalnız "Sonraki proje" bloğunda. M6'da onaylandı (2026-10-01). |
+| 14 | §4.13.5 | Mobil derin sayfalar: başlık bloğunun altında 7 : 6 bant, en çok `42svh` (KOD, 2026-10-02; M6'da onaylanan 30 svh'nin yerini alır); `folio`'da bant yalnız "Sonraki proje" bloğunda. |
 | 15 | §4.14 #10 | Derin sayfalarda Halka yalnız ilerleme gösterir, bölüm çentiği yoktur. M6'da onaylandı (2026-10-01). |
-| 16 | §4.16.3 | D1 / D2 / D3 poster karşılıkları: `SpecimenGlyph` / `DialFigure` / `RingsFigure`. M6'da onaylandı (2026-10-01). |
+| 16 | §4.16.3 | Statik panel karşılıkları tablosu (KESİT'in poster ve figür eşlemesinin yerini alır). |
 | 17 | §4.16.4 | "Hareketi azalt" anahtarı canlı geçer (≤ 1 s) ve görünen bölüm korunur. M6'da onaylandı (2026-10-01). |
-| 18 | §4.17.4 | `intensity` çarpanları ve easing'leri. M6'da onaylandı (2026-10-01). |
-| 19 | §4.17.2 `engineer` | Taş: akik yumrusu (jeot). `shape` [2.2, 2.3], `radii` (1, 0.8, 1), `disp` 0.045, `surface` `geode`, `cap.pattern` `geode`. M1'de onaylandı (2026-09-30, [#5](https://github.com/orcunsaatcii/orcunsaatci.com/issues/5#issuecomment-5907686488)). |
-| 20 | §5.4.3 `geode` | Kabuk: `CRUST_BUMP` 0.028, çukur tonu 0.70–1.06, lekelenme ±%12, demir tonu çarpanı (1.07, 1.0, 0.88). Akik: bant tonu `mix(capBase, mix(capBase, ringLine, 0.45), 0.15–0.70)`, laminalar %6, süt beyazı bant `t > 0.74` (%50), druzy ölçeği 34, kabuk şeridi `RIND_WIDTH` 0.035, cilalı parlama 0.10, kalsedon parıltısı %8, yıl çizgisi kontrastı ×0.5. M1'de onaylandı (2026-09-30, [#5](https://github.com/orcunsaatcii/orcunsaatci.com/issues/5#issuecomment-5907686488)). |
-| 21 | §6.3.6 | Taş tonları (`--scene-stone-base` / `--scene-stone-light`): açık `#2B2F3A` / `#7C8292`, koyu `#5A5E68` / `#B9BCC4`. M1'de onaylandı (2026-09-30, [#5](https://github.com/orcunsaatcii/orcunsaatci.com/issues/5#issuecomment-5907686488)). |
-| 22 | §5.4.1 not 3, §5.16 | Aktif bant vurgusu `mix(col, uAccent, 0.18)` + 1.5 px kenar; açık yay tarama aralığı 0.035; poster çerçevesi `POSTER_STONE_FRAC` 0.8 (R0 = `footprintRadius`, §5.7.5). M1'de onaylandı (2026-09-30, [#5](https://github.com/orcunsaatcii/orcunsaatci.com/issues/5#issuecomment-5907686488)). |
+| 18 | §4.17.4 | `intensity` çarpanları (KOD tablosu). |
+| 19–22 | §4.17.2, §5.4.3, §6.3.6, §5.4.1, §5.16 | KESİT taş değerleri (jeot şekli, akik deseni, taş tonları, bant vurgusu, poster çerçevesi). KOD ile geçersiz (2026-10-02). |
+| 23 | §4.1.5, §4.5.6 | Panel çapayı doldurur (contain, `Pw = min(W, H·7/6)`; `data-anchor-size` yok sayılır). Masaüstünde `Pw ≥ 360` px (kısa masaüstünde hero ≥ 320), 390×844'te ≥ 280 px. Hero çapası eyebrow satırının altında biter. `page-folio` k8–12: kare (≈ 533) ya da kompakt (en az `19.5rem` yükseklik, ≥ 364); başlık bloğu k1–7. Mobilde panel bandı doldurur. |
+| 24 | §4.12.1 | Köprüler = KESİT'ten kalan `anchorMix` track'leri: about IN p 0–0.60 (p 0.30'da 0.45), areas IN p 0–0.70, work IN p 0–0.80 (yalnız yağmur), journey IN p 0–0.70 (yalnız çözülme), contact IN p 0–0.50 (mobilde 0–0.30). Mobilde about ve areas köprüleri el değiştirmedir (§4.15.3). |
+| 25 | §4.1.4, §5.20.5 | Adım çözülmesi ≈ 1.2 s (karışık glif evresi 0.28 s, accent parlaması 0.3 s); yalnız renk değişen hücrede 0.35 s geçiş; hot reload oturumda bir kez, programın kendi son karesinden (panel boşalmaz), gecikmeler ×1.5 ve +0.3 s (≈ 2 s). |
+| 26 | §4.9.4 | ASCII derlemesi: çözülme ≈ 400 ms + derleme ≈ 800 ms; kaplama en geç 1.4 s'de kalkar. |
+| 27 | §4.6.4, §4.8.5, §4.11.3 | İmleç periyodu 1.06 s; yazma ≈ 45 ms/karakter; akan log 1.2 s/satır; telefon satırları 1.5 s. |
+| 28 | §4.1.3 | Gece paneli: journey her temada koyu tema token'larıyla (`/cv` KOD'da sahnesizdir). |
+| 29 | §5.20.4 | Panel eğimi tüm programlarda sabit: pitch −2°, yaw −6°. Süzülme: dikey ±%1.2 panel yüksekliği, roll ±0.2°. Paralaks: yaw ±4°·x, pitch ±2.5°·y, üstel sönüm (≈ `smoothTime` 0.32 s). |
 
-- M6 onayı (2026-10-01, [PR #12](https://github.com/orcunsaatcii/orcunsaatci.com/pull/12#issuecomment-5933166740)): sahip satır 1–18'i belgedeki değerlerle aynen onayladı (12–16 M7'de uygulanır). M6 tasarım kararları da onaylandı: hero'da duraklatma ve yerel saat metin bölgesinde (SPEC-SAPMA §4.6.2, §4.6.3), küçük E'de journey dönüşünün BODY'ye ölçeklenmesi (SPEC-SAPMA §4.12.1 satır 14), mobil bant geçişlerinde el değiştirme (SPEC-SAPMA §4.15.3, §5.8.3), work makale metninin `top 85%`'te açılması (SPEC-SAPMA §4.9.4). Hero çıkışında Taşın tablo gereği (K1a karışımı 0.45) ilk ~35 svh'de "Saatçi"nin arkasından aşağı süzülmesi kabul edildi; "önce yukarı kalkar" varyantı M8 görsel QA'sında denenir.
+- M6 onayı (2026-10-01, [PR #12](https://github.com/orcunsaatcii/orcunsaatci.com/pull/12#issuecomment-5933166740)): sahip satır 1–18'i belgedeki değerlerle aynen onayladı. Bu onay KESİT için verildi; DOM'a ait satırlar (1–7, 9–11, 13–15, 17) KOD'da da geçerlidir.
+- KOD onayı (2026-10-02, D-16): sahip KOD konseptini ve geçiş planını onayladı. Satır 23–29 KOD geçişinde (§15.8a) canlı önizlemeyle sahibe gösterilir ve onaylanınca bu tabloya tarihle işlenir.
 
 ### 4.13 Derin sayfalar ve route geçiş koreografisi
 
@@ -2997,28 +3080,30 @@ final.md'de bulunmayan ve uygulanabilirlik için eklenen değerler aşağıdadı
 
 - `<Canvas>` her kök locale layout'unda yaşar ve **hiç unmount olmaz** (D-18). WebGL context'i ve shader'lar sayfalar arasında korunur.
 - Her route, sahne preset'ini küçük bir istemci bileşeniyle bildirir: `<StagePreset name="folio" data={stageData} />` (props `{ name: PresetName; data: StageData | null }`, §5.15.3; preset adları D-42).
-- **Okuma modu:** Derin sayfalarda taş yalnızca sayfa başlığının yanında (ve bir kapanış "sonraki" bloğunda) görünür.
+- **Okuma modu:** Derin sayfalarda panel yalnızca sayfa başlığının yanında (ve bir kapanış "sonraki" bloğunda) görünür.
   - Sayfanın `page-folio` çapası görüntü alanından tamamen çıkınca (IntersectionObserver) `--scene-opacity` 300 ms'de 0'a iner ve frame loop `never`'a geçer. **Uzun okuma sıfır GPU harcar.**
-  - İstisnalar: `/cv` ≥ 80rem (sticky sütun) ve proje sayfasındaki "Sonraki proje" bloğu.
+  - İstisna: proje sayfasındaki "Sonraki proje" bloğu. `/cv` KOD'da sahnesizdir (§4.13.2).
 - **Boot kuralı:** İlk yüklenen route'un preset'i `none` ise (`/gizlilik`, 404) Stage boot edilmez ve **WebGL context'i oluşturulmaz**. Görünür bir preset'e ilk gezinmede boot edilir (§5.12).
 
 #### 4.13.2 Route preset tablosu
 
-Route'lar §3.2'dedir. Anahtar adları D-42'ye göredir. final.md'deki D6 `clock` anahtarı kaldırılmıştır (D-19).
+Route'lar §3.2'dedir. Preset adları D-42'ye göredir. KESİT'in D1–D5 taş durumları kaldırıldı; her preset artık bir program gösterir (§5.20.2).
 
-| Route (TR · EN) | Preset (key) | Çapa, D (1440×900) | Taş durumu | Kaydırma / hover |
+| Route (TR · EN) | Preset | Çapa (1440×900) | Program | Kaydırma / olay |
 |---|---|---|---|---|
-| `/` · `/en` | `home` (K0–K5) | §4.5.6 | Kaydırmaya göre K0 → K5 (§4.6–§4.11) | §4.12 |
-| `/projeler/[slug]` · `/en/projects/[slug]` | `folio` (D1) | `page-folio`: flow, k10–12, H1 bloğunun yanında; D = 0.70·W ≈ 217 | r 5.6, az 0, el 20, fov 26. `rotY` ψ(proje alanı). `rotX` 62, cut −0.02. Halkalar 0.9; bant = proje yılları; kendi alanının dilim dolgusu 0.6; arcGlow 0.35. | Hero görünürken `rotY` +0 → +20 (scrub), ardından okuma modu. **"Sonraki proje" / "Next project" bloğu** en az %30 görünür olunca (IO ≥ 0.3) taş o bloğun folio çapasında (ikinci bir `page-folio` çapası; hangisinin etkin olduğunu director seçer, §5.7) 300 ms'de belirir, **sonraki** projenin bandına ve dilimine 600 ms'de geçer, frame loop uyanır. LCP, proje sayfası hero'sundaki kapak görselidir (`next/image` `preload`, D-31). |
-| `/projeler` · `/en/projects` | `plan-small` (D2) | `page-folio`: k10–12, H1 yanında; D = 0.80·W ≈ 248 | r 7.2, az 0, el 88, fov 18. `rotY` ψ(etkin filtre alanı), filtre yoksa ψ₀ **[SABİT]**. `rotX` 0, cut 0. Halkalar 0.4, sectorMix 1, dolgular 0.15 (etkin 1.0). | Filtre çipleri (`?alan=`, istemcide okunur, D-06) o dilimi 1.0 yapar ve saat 9 yönüne döndürür (400 ms `power3.inOut` **[SABİT]**). Satır hover/odak: `uBandPreview` = proje yılları, `uSectorPreview` = alanı, yanında yüzen önizleme görseli (§4.14 #16). Dokunmatikte merkez satır etkinleştirmesi. Çapa çıkınca okuma modu. |
-| `/calisma-alanlari` · `/en/expertise` | `plan-small`, 0.80 × k8–12 | `page-folio`: k8–12, alan listesinin yanında; D ≈ 426 | D2 ile aynı; `rotY` ψ₀. | Alan hover/odak: dilim dolgusu 0.15 → 1.0 (240 ms; bırakınca 400 ms **[SABİT]**). |
-| `/calisma-alanlari/[area]` · `/en/expertise/[area]` (`features.areaPages`) | `plan-small` | D2 | Kadran ψ(alan)'a dönük, o dilim 1.0. | Çapa çıkınca okuma modu. |
-| `/cv` · `/en/cv` | `cv-core` (D3), **yalnız ≥ 80rem** | `cv-core`: sticky, k10–12, y 14–86 svh; D = 0.80·W ≈ 248 | r 5.8, az 0, el 72, fov 26. `rotX` 0, cut 0. Halkalar 1.0; bant = görünümdeki girdi. | Sayfa kaydırması boyunca `rotY` +0 → +60. Girdi event'leri journey ile aynıdır (`top 55%`, 500 ms `power2.out`); hover/odak `uBandPreview`. Okuma modu **uygulanmaz**. < 80rem'de taş yoktur (`--scene-opacity: 0`, loop `never`; sayfa belge önceliklidir). `@media print`: canvas gizli, SVG `RingsFigure` basılır. |
-| `/hakkimda` · `/en/about` | `about-page` (D4) | `page-folio`: k8–12, lede yanında; D = 0.72·W ≈ 384 | K1 ile aynı: r 4.6, az −14, el 55, fov 28; `rotY` 35; cut 0. | İlk ekrandan sonra okuma modu. |
-| `/iletisim` · `/en/contact` | `contact-page` (D5) | `page-folio`: k8–12; D = 0.80·W ≈ 426 | r 4.9, az 0, el 22, fov 30. `rotY` 60, `rotX` 68, cut −0.05. K5 ile aynı: arcGlow 1.0, ışık 70/14, rim 0.35. | E-posta hover nabzı, kopyalama dalgası (§4.11.5). |
-| `/gizlilik` · `/en/privacy` | `none` | — | `--scene-opacity: 0`, loop `never`. | — |
-| 404 (`global-not-found.tsx` + ağaç başına `not-found.tsx`) | `none` (D-19) | — | **WebGL yok.** SVG `ClockFigure` (§4.13.6). | — |
-| `/lab/stage` (yalnız `NEXT_PUBLIC_ENABLE_LAB === '1'`, D-40) | lab | — | Poster üretimi ve QA ızgarası (§5.16). | Ziyaretçiye açık değildir, hiçbir yerden bağlantı verilmez. |
+| `/` · `/en` | `home` | §4.5.6 | Bölüme göre (§4.6–§4.11) | §4.12 |
+| `/projeler/[slug]` · `/en/projects/[slug]` | `folio` | `page-folio` slot 0: flow, kompakt k8–12, H1 bloğunun yanında (başlık bloğu k1–7, yükseklik en az `19.5rem`); `Pw` ≥ 364. Slot 1 ("Sonraki proje"): k8–12 kompakt, bağlantı k1–7 | `<slug>.yaml`: proje künyesi YAML biçiminde (`title`, `role`, `year`, `status`, `areas`, `facts`, `stores`); yalnız projede olan alanlar yazılır | Hero görünürken dwell, ardından okuma modu. **"Sonraki proje" / "Next project" bloğu** en az %30 görünür olunca panel o bloğun çapasında (slot 1; hangisinin etkin olduğunu director seçer, §5.7) 300 ms'de belirir ve `next: <slug>` satırını ≈ 1.2 s'de çözer (`folio:next`); frame loop uyanır. LCP, proje sayfası hero'sundaki kapak görselidir (`next/image` `preload`, D-31). |
+| `/projeler` · `/en/projects` | `plan-small` | `page-folio`: kompakt k8–12, H1 yanında; `Pw` ≥ 364 | `$ ls projects/`: satır başına slug, yıl ve birincil alan | Filtre çipleri (`?alan=`, istemcide okunur, D-06): komut `ls projects/ --area=<id>` olarak yazılır, eşleşmeyen satırlar 400 ms'de söner **[SABİT]**. Satır hover'ı paneli değiştirmez; yüzen önizleme §4.14.5'tedir. Çapa çıkınca okuma modu. |
+| `/calisma-alanlari` · `/en/expertise` | `plan-small` | `page-folio`: kare k8–12, başlık bloğunun yanında; `Pw` ≈ 533 | `$ ls projects/` | Çapa çıkınca okuma modu. |
+| `/calisma-alanlari/[area]` · `/en/expertise/[area]` (`features.areaPages`) | `plan-small` | `page-folio`: kompakt k8–12; `Pw` ≥ 364 | `$ ls projects/ --area=<area>` | Çapa çıkınca okuma modu. |
+| `/cv` · `/en/cv` | `none` (KOD) | — | — (sahnesiz belge sayfası; `git log` ana sayfadadır) | `--scene-opacity: 0`, loop `never`; panel, çapa ve baskı figürü yoktur. |
+| `/hakkimda` · `/en/about` | `about-page` | `page-folio`: kare k8–12, lede yanında; `Pw` ≈ 533 | `about.dart` (tüm dosya) | İlk ekrandan sonra okuma modu. |
+| `/iletisim` · `/en/contact` | `contact-page` | `page-folio`: kare k8–12; `Pw` ≈ 533 | `zsh` | `$ mail <e-posta>` sayfaya gelişte bir kez yazılır. |
+| `/gizlilik` · `/en/privacy` | `none` | — | — | `--scene-opacity: 0`, loop `never`. |
+| 404 (`global-not-found.tsx` + ağaç başına `not-found.tsx`) | `none` (D-19) | — | **WebGL yok.** Satır içi KOD hata çıktısı (`.kod-panel.kod-inline`, §4.13.6). | — |
+| `/lab/stage` | — | — | **KOD ile kaldırıldı** (KESİT'in poster laboratuvarıydı, D-40). | — |
+
+- KOD notu (2026-10-02): Tasarım kararlarında `/cv` ≥ 80rem'de `cv:active` ile sticky bir `git log` gösteriyordu. Uygulama bunu bilinçli olarak kaldırdı: `/cv` `StagePreset name="none"` kullanır; `cv-core` çapası, paneli ve baskı figürü yoktur. Gerekçe: ≥ 80rem'de k8–12 genişlemesi (§4.5.6) CV metin sütununu daraltırdı; belge sayfası okunur ve basılabilir kalır. `cv:active` KOD'da kullanılmaz.
 
 #### 4.13.3 Route geçiş zaman çizelgesi (D-32)
 
@@ -3029,7 +3114,7 @@ Route'lar §3.2'dedir. Anahtar adları D-42'ye göredir. final.md'deki D6 `clock
 |---|---|---|---|
 | 0 | Daha derine giden bağlantılarda `<Link transitionTypes={['nav-forward']}>`. Geri dönüş bağlantılarında (breadcrumb, "← Tüm projeler") `['nav-back']`. | — | Header'ın altında 1 px vurgu rengi "kesim" çizgisi (`NavCutLine`) 300 ms'de `scaleX 0 → 0.7` olur (gezinme ilerleme ipucu). |
 | 0–150 | Eski sayfa çıkar: opaklık, 150 ms `--ease-in`. | — | Header sabittir (`view-transition-name: site-header`, animasyon yok). |
-| 0–400 | **Paylaşılan öğeler** morph eder (`share="morph"`, `default="none"`): `project-cover-<slug>` ve `project-title-<slug>`. Kaynak ana sayfa görüntüleyicisi ya da `/projeler` satır küçük görseli, hedef proje sayfası hero'sundaki kapaktır. | `usePathname()` commit'inde director yeni preset'i yükler. **Taş iki tarafta da görünürse** eski çapa ve durumdan yenisine süzülür (`anchorMix` 700 ms `power2.inOut` tween'i + kamera `smoothTime` 0.25 s; §5.9.8). Örneğin ana sayfadaki work numunesi aynı bant ve dilimle proje sayfasının folio çapasına uçar. **Eski sayfada gizliyse** yeni duruma kesilir ve 300 ms'de belirir. | — |
+| 0–400 | **Paylaşılan öğeler** morph eder (`share="morph"`, `default="none"`): `project-cover-<slug>` ve `project-title-<slug>`. Kaynak ana sayfa görüntüleyicisi ya da `/projeler` satır küçük görseli, hedef proje sayfası hero'sundaki kapaktır. | `usePathname()` commit'inde director yeni preset'i yükler. **Panel iki tarafta da görünürse** eski çapadan yenisine süzülür (`anchorMix` 700 ms `power2.inOut` tween'i; §5.9.8) ve program yeni sayfanınkine ≈ 1.2 s'de çözülür. Örneğin ana sayfa about'taki `about.dart` paneli `/hakkimda`'nın çapasına uçar. **Eski sayfada gizliyse** yeni duruma kesilir ve 300 ms'de belirir. | — |
 | 150–360 | Yeni sayfa girer: 210 ms opaklık + `translateY 16 → 0 px` (`--ease-out`). | Sahne katmanı `view-transition-name: scene` taşır: group/new animasyonu yok, eski snapshot `display: none`. Böylece canlı canvas görünür kalır. ⚠️ **DOĞRULANMADI:** Safari'de canlı canvas'ın `::view-transition-new(scene)` içinde güncellenmeye devam edip etmediği. Doğrulama: M7'de WebKit Playwright ve gerçek iPhone'da kayıt. Yedek: süzülme `transition.finished`'te başlar. | Çizgi `scaleX 1`'e gider, sonra 160 ms'de söner. |
 | commit sonrası | rAF içinde `ScrollTrigger.refresh()`; Lenis `resize()`; hash'siz push gezinmelerinde `scrollTo(0, { immediate: true })`. | — | — |
 
@@ -3045,40 +3130,54 @@ Route'lar §3.2'dedir. Anahtar adları D-42'ye göredir. final.md'deki D6 `clock
 - **Sayfa içi uzak atlama:** §4.5.5 (`duration: 0.9`, 150 ms sönme, varışta oturma, 250 ms belirme).
 - **Dil değişimi:**
   - Tam sayfa yüklemesidir (D-08). View transition yoktur.
-  - Stage yeniden lazy boot olur (poster → canvas).
-  - Işık taraması `os-sweep` bayrağı nedeniyle tekrar oynamaz.
+  - Stage yeniden lazy boot olur (statik panel → canvas).
+  - Hot reload `os-sweep` bayrağı nedeniyle tekrar oynamaz.
 - **Azaltılmış hareket:** View transition süreleri 0'dır. Stage mount edilmez. Header kesim çizgisi gösterilmez.
 
 #### 4.13.5 Mobil derin sayfalar (< 64rem) **[SABİT]**
 
-final.md'nin genel kuralı ("mobilde keyframe'ler açılarını korur, yalnız çapa bir banda dönüşür, `sizeFrac` 0.86") derin sayfalara şöyle uygulanır:
+Genel mobil kural ("çapa bir banda dönüşür; panel bandı doldurur", §4.15) derin sayfalara şöyle uygulanır. KOD'da derin sayfa bantları 7 : 6 oranlıdır ve en çok `42svh` yüksekliktedir (KESİT'teki 30 svh'nin yerini alır, §4.12.4 #14):
 
 | Preset | Mobil davranış |
 |---|---|
-| `folio` | Üstte bant **yoktur**; kapak başlığın hemen altında kalır ve LCP olmayı sürdürür. Taş yalnızca "Sonraki proje" bloğunun içindeki 30 svh'lik bantta görünür. |
-| `plan-small`, `about-page`, `contact-page` | `page-folio`, sayfa başlık bloğunun (H1 + lede/meta) hemen altında 30 svh'lik tam genişlik bir banda dönüşür. D = 0.86 × min(bandW, bandH). Okuma modu masaüstündeki gibi çalışır. |
-| `cv-core` | < 80rem'de kapalıdır (yukarıdaki tablo). |
+| `folio` | Üstte bant **yoktur**; kapak başlığın hemen altında kalır ve LCP olmayı sürdürür. Panel yalnızca "Sonraki proje" bloğunun içindeki 7 : 6 bantta (en çok `42svh`) görünür. |
+| `plan-small`, `about-page`, `contact-page` | `page-folio`, sayfa başlık bloğunun (H1 + lede/meta) hemen altında 7 : 6 oranlı, tam genişlik bir banda (en çok `42svh`) dönüşür. Panel bandı doldurur. Okuma modu masaüstündeki gibi çalışır. |
+| `/cv` | Panel yoktur (preset `none`, §4.13.2). |
 
 - SPEC-SAPMA: §4.13.1, §5.9.10 (M7, 2026-10-01) — Okuma modu ve folio "Sonraki proje" etkinliği IntersectionObserver yerine kaydırma konumunun saf fonksiyonudur: refresh'te ölçülen çizgilerle (slot 0 bloğunun alt kenarı; slot 1 bloğunun ≥ %30 görünür aralığı `[üst + 0.3·min(h, vh) − vh, üst + 0.7·h)`) director'ün güncellemesinde karar verilir; opaklık geçişi yine 300 ms tween'dir. Gerekçe: sahne durumu (route, scrollY)'nin saf fonksiyonu kalır (§5.1.1, K-CHOREO-4), geri yükleme ve kesmede aynı karede doğru değer yazılır.
 - SPEC-SAPMA: §4.13.2, §7.7.1 (M7, 2026-10-01) — Proje sayfası hero'su: H1 bloğu k1–9, D1 çapası k10–12 (H1 yanında), kapak altta k1–9 (`sizes` 70vw; M3'te kapak k6–12'deydi ve çapanın yerini kaplıyordu). `/calisma-alanlari` çapası liste yerine başlık bloğunun yanında (k8–12; D ≈ 426 aynı). Alan hover/odak "dilim dolgusu 0.15 → 1.0 (240 / 400 ms)" `uSectorPreview` önizlemesiyle çizilir (§4.14 #3 ile aynı yol; dolgu uniform'u filtre event'ine aittir).
 
-#### 4.13.6 404 saati: `ClockFigure` (D-19)
+#### 4.13.6 404: statik hata çıktısı (D-19)
 
-- **SVG'dir, WebGL değildir.** Geometri `section-geometry.ts`'ten gelir (§5.10):
-  - 12 radyal kılcal çizgi (saat indeksleri);
-  - düşük kontrastlı halkalar (`--color-line`);
-  - iki vurgu rengi ibre: akrep uzunluğu 0.55·R, yelkovan 0.85·R.
-- **Açılar** (saat 12'den saat yönünde): akrep `30°·(h mod 12) + 0.5°·m`, yelkovan `6°·m`.
-- **Saat:** ziyaretçinin yerel saatidir (`new Date()`, tarayıcı saat dilimi).
-- **Güncelleme:** bir sonraki dakika sınırına `setTimeout`, ardından 60 s'de bir.
-- **SSR:** ibreler render **edilmez**; mount sonrası çizilir, hidrasyon uyumsuzluğu olmaz. JS yoksa ibresiz kadran görünür.
-- **Azaltılmış hareket:** `data-motion="reduce"` iken yükleme anındaki saatte donar.
-- **WCAG 2.2.2:** Dakikalık güncellemeyi durdurma mekanizması "Hareketi azalt" anahtarıdır (footer'da; `global-not-found.tsx`'in kendi minimal footer'ında da bulunur).
-- **Erişilebilirlik:** `<svg role="img" aria-label="Yerel saat 14:32">` / "Local time 14:32"; etiket dakikada bir güncellenir, canlı bölge değildir (§10.4.4). İleti ayrıca metinle verilir.
+- **HTML'dir; WebGL ve canvas değildir.** Sunucuda render edilir, JS gerektirmez. KESİT'in `ClockFigure`'ünün yerini alır.
+- **Biçim:** satır içi bir KOD paneli: `KodPanel` + `className="kod-inline"` → `.kod-panel.kod-inline`. Çapada değildir; akışta, H1 bloğunun yanındaki sütunda durur (sarmalayıcı en çok `24rem`; `.kod-inline` en çok `40rem`). Program `notfound`'dur.
+- **Görünüm** (pencere başlığı `zsh`, durum satırı solu `404`). Programın birebir çıktısı, boş satırlar dahil:
+
+```text
+$ open /…
+
+Error: 404 · sayfa bulunamadı
+  at Router.resolve ('/…')
+  at Site.navigate
+
+# Önerilen:
+→ /                   Ana sayfaya dön
+→ /projeler           Projeler
+→ /iletisim           İletişim
+
+$ █
+```
+
+  - Yollar 20 sütunluk bir alana yazılır (en çok 18 sütun), etiketler en çok 28 sütundur. `Error` satırı accent, etiketler brass, `# Önerilen:` soluktur; `█` accent zeminli imleç hücresidir.
+  - Sayfada tek panel vardır ve TR veriyle çizilir (TR yolları ve `notFound.*` etiketleri). Program EN veride `Error: 404 · page not found` ve `# Try:` yazar; EN metin ve bağlantılar DOM'dadır (§3.7).
+  - `<path>` yerine sabit `/…` yazılır; istenen yol yazılmaz: sayfa statik HTML'dir.
+  - "Önerilen" satırları sayfanın gerçek bağlantılarını yansıtır. **Panelin içinde bağlantı yoktur**; tıklanabilir bağlantılar DOM'da ayrıca vardır (§3.7).
+- **Hareket yoktur:** imleç sabittir, yazma animasyonu yoktur. WCAG 2.2.2 kapsamında durdurulacak bir şey kalmaz; `global-not-found`'un minimal footer'ındaki `MotionToggle` tutarlılık için kalır.
+- **Erişilebilirlik:** panel `aria-hidden`'dır. İleti H1 ve alt satırla metin olarak verilir.
 - **Metin:**
   - H1 "Sayfa bulunamadı" / "Page not found";
-  - alt satır "Bu kesit boş, ama saat doğru." / "This section is empty, but the clock is right.";
-  - bağlantılar: Ana sayfa · Projeler · İletişim.
+  - alt satır `notFound.lead`: "Bu yol derlemede yok." / "This path isn't in the build." (KESİT'in "Bu kesit boş, ama saat doğru." satırının yerini alır; sahip §7.9'a göre değiştirebilir);
+  - bağlantılar: Ana sayfaya dön · Projeler · İletişim.
   - Sayfa yapısı, dil seçimi ve iki dillilik §3.7'dedir.
 - **Context kuralı:** 404'e doğrudan gelişte WebGL context'i oluşturulmaz. İstemci tarafı gezinmeyle (`notFound()`) gelindiyse mevcut sahne `none` preset'iyle gizlenir.
 
@@ -3091,7 +3190,7 @@ Bileşen envanteri ve durumları §6.6'dadır. Bu alt bölüm **davranışın** 
 - **İşaretçi efektleri** yalnızca `(hover: hover) and (pointer: fine)` **ve** `data-motion="full"` iken çalışır.
 - **Klavye eşdeğeri:** Her hover efekti `:focus-visible` ile de tetiklenir. Tek istisna manyetik yer değiştirmedir; klavye odağı hiçbir öğeyi yerinden oynatmaz.
 - **Tavanlar:**
-  - her DOM efekti ≤ **600 ms**; sahne uniform efektleri (#1 ofsetin ≈ 1.2 s'de sönmesi, #2 dokunma taraması 1.2 s, #8 yay nabzı döngüsü) ve #6'daki 0.8 s kaydırma bu tavanın dışındadır (§6.5.2'deki ışık taraması istisnası gibi);
+  - her DOM efekti ≤ **600 ms**; sahne efektleri (#1 paralaksın ≈ 1.2 s'de sönmesi, ≈ 1.2 s'lik panel çözülmeleri), work ASCII derlemesi (§4.9.4) ve #6'daki 0.8 s kaydırma bu tavanın dışındadır (§6.5.2'deki istisnalar gibi);
   - hover/basma kaynaklı DOM kayması ≤ **12 px** (istisnalar: manyetik etiket toplamda ≤ 14 px, #5; konum göstergesi olan etkin nav noktasının öğeler arası kayışı, #11; yüzen önizlemenin işaretçiyi izlemesi, #16);
   - 3D eğim ≤ **6°**;
   - **düzen değişikliği yok:** yalnız `transform`, `opacity`, `clip-path` ve renk değişir; `font-variation-settings` asla animasyonlu değildir.
@@ -3101,24 +3200,24 @@ Bileşen envanteri ve durumları §6.6'dadır. Bu alt bölüm **davranışın** 
 
 | # | Etkileşim | Masaüstü (işaretçi + klavye odağı) | Dokunmatik karşılığı | Azaltılmış hareket |
 |---|---|---|---|---|
-| 1 | **Tırmıklayan ışık** | İşaretçi x/y anahtar ışığını kaydırır: `az += 25°·pointer.x`, `el += 12°·pointer.y` (normalize −1…1). Sönümleme maath `smoothTime` 0.32 s (λ = 4 karşılığı, §5.9.8). İşaretçi pencereden çıkınca ofset ≈ 1.2 s'de 0'a döner. Tane ve halkalar ışığı müze ışığı gibi yakalar. tier ≠ `low` (medium ve high; §5.6.2, §5.11.1). | **Kaydırma sallanması:** `rotY += clamp(velocity × 0.02, ±4°)`, sönümlü yayla geri döner. Hız `ScrollTrigger.getVelocity()`'dendir (px/s, native dokunmatik kaydırma). ⚠️ DOĞRULANMADI: iOS momentum kaydırmasında hız kalitesi (M8'de gerçek iPhone'da ölçülür; kötüyse sallanma kapatılır). | kapalı |
-| 2 | **Taş yakınlığı** | İşaretçi taşın ekran yarıçapının 1.5 katı içindeyse: taş işaretçiye doğru ≤ 6° eğilir; taş zaten kesikse kesim −0.04 "nefes alır". İsabet testi çapa dikdörtgeninden türetilen daireyle yapılır (canvas `pointer-events: none`). tier ≠ `low` (medium ve high; §5.11.1). | **Taşa kısa dokunuş:** window `pointerup` < 250 ms ve < 10 px hareket ise, hedef `a, button, input, [role=button], [data-no-press]` içinde değilse ve nokta taş dairesindeyse tek tarama yapılır (az +60° ve geri, 1.2 s). Süren tarama bitmeden gelen dokunuş yok sayılır. | kapalı |
-| 3 | **Hover-to-scene** | Areas başlığı → `uSectorPreview`. Proje satırı / makale bağlantısı → `uBandPreview` + `uSectorPreview`. CV girdisi → `uBandPreview`. Hepsi 240 ms'de gelir; bırakıldıktan 400 ms sonra söner. Aynı anda tek önizleme vardır (son gelen kazanır). | **Merkez satır etkinleştirmesi:** IntersectionObserver `rootMargin: '-45% 0px -45% 0px'`. Merkezden geçen satır aynı önizlemeleri sürer (60 ms debounce). Dokunuş yine gezinir. | Yalnız DOM'da renk vurgusu; taş mount edilmez |
+| 1 | **İşaretçi paralaksı** | Panel işaretçiye göre eğilir: yaw `±4°·pointer.x`, pitch `±2.5°·pointer.y` (normalize −1…1; `intensity` §4.17.4). Üstel sönüm (≈ `smoothTime` 0.32 s). İşaretçi pencereden çıkınca eğim ≈ 1 s'de söner. Yalnız ince işaretçide, tier ≠ `low` (medium ve high; §5.20.7). Kullanıcı girdisi olduğu için duraklatmada da çalışır. KESİT'in tırmıklayan ışığının yerini alır. | Yok: dokunmatikte paralaks ve kaydırma sallanması yoktur. | kapalı |
+| 2 | ~~Taş yakınlığı~~ | KESİT'e özgüydü; KOD ile kaldırıldı. | — | — |
+| 3 | ~~Hover-to-scene~~ | KESİT'e özgüydü (bant ve dilim önizlemesi); KOD ile kaldırıldı. Panel hover'a tepki vermez (§4.4). | — | — |
 | 4 | **Bağlantılar** | Gövde içi bağlantılar **her zaman** altı çizili: 1 px `currentColor` katmanı, `background-size: 100% 1px`, `padding-bottom: 0.08em`, `box-decoration-break: clone`. Hover'da 2 px vurgu katmanı soldan sağa çizilir (240 ms `--ease-out`), çıkışta sağa doğru çekilir (160 ms). Nav bağlantıları dururken çizgisizdir; hover'da çizgi çizilir; etkin öğe çizgi yerine nokta kullanır (#11). Dış bağlantılarda sonda `↗` (`aria-hidden`); yeni sekmede açılan bağlantıya görünmez "(yeni sekmede açılır)" / "(opens in a new tab)" eklenir. | Alt çizgi her zaman görünür; `:active` vurgu rengi | Alt çizgi anında |
 | 5 | **Butonlar** | `:active` → `scale(0.98)`, 90 ms, sekme yok. **Manyetik** (yalnız: iki hero CTA, "Kopyala" ve e-posta bağlantısı): ayrıntı §4.14.3. | `:active` `scale(0.98)` | Manyetik kapalı |
 | 6 | Areas listesi | Başlık tıklaması o adımın dwell'ine kaydırır (0.8 s). İlerleme segmentleri butondur. | Dokunuş dwell'e kaydırır | Pin yok, liste |
 | 7 | Work görüntüleyici | Makale bağlantısı hover'ında başlık 8 px sağa kayar, ok belirir, görüntüleyici görseli `1.00 → 1.02` olur (600 ms `--ease-out`). | Makaleye/figüre dokunuş proje sayfasına gider (mağaza bağlantıları hariç) | Yok |
-| 8 | **E-posta** | Hover → manyetik ≤ 6 px. Açık yayın ucunda `uArcPulse` 0 → 1 → 0.4, hover sürdükçe 2.4 s'de bir tekrar. | E-posta görüntü alanının merkezinden geçince tek yay nabzı | Nabız yok |
-| 9 | **Kopyala** | "Kopyala" → Clipboard API → buton 2 s "Kopyalandı" + ✓ SVG + toast (#19) + **halka dalgası** `uWave` 0 → 1 (600 ms). Başarısızsa adres metni seçilir, yedek toast gösterilir. | Aynı | Buton metni + toast |
+| 8 | **E-posta** | Hover → manyetik ≤ 6 px. Panelde nabız yoktur (KESİT'in yay nabzı kaldırıldı). | — | — |
+| 9 | **Kopyala** | "Kopyala" → Clipboard API → buton 2 s "Kopyalandı" + ✓ SVG + toast (#19). Başarısızsa adres metni seçilir, yedek toast gösterilir. | Aynı | Buton metni + toast |
 | 10 | **Halka göstergesi** | Ayrıntı §4.14.4. | Menü düğmesinde 32 px, aynı davranış | Doğrusal güncellenir (doğrudan geri bildirimdir, kendiliğinden hareket değildir) |
 | 11 | **Etkin nav noktası** | Geçerli nav öğesinin altında 5 px vurgu noktası `translateX` ile kayar (400 ms `--ease-tick`). Scroll-spy: IntersectionObserver, `rootMargin: '-45% 0px -50% 0px'`. Sayfa içi bölümlerde `aria-current="true"`, route sayfalarında `aria-current="page"`. Canlı bölge (live region) duyurusu yok. | Menü listesinde noktayı geçerli öğenin yanında gösterir | Anında konum değişimi |
-| 12 | **Sahne duraklatma** | Hero'daki "Animasyonu durdur" düğmesi (§4.6.3): idle drift'i, yay nabızlarını, dalgayı, henüz oynamamışsa ışık taramasını ve saat güncellemelerini durdurur (WCAG 2.2.2). Kaydırmaya bağlı hareket sürer (kullanıcı kaynaklıdır). Durum store'da tutulur (`paused`), **kalıcı değildir** (D-38'de anahtarı yok). | Aynı | Gösterilmez |
+| 12 | **Sahne duraklatma** | Hero'daki "Animasyonu durdur" düğmesi (§4.6.3): panelin kendiliğinden hareketini (süzülme, imleç, akan log, yazma, hat animasyonu, `(HEAD)` nabzı), henüz oynamamışsa hot reload'u ve saat güncellemelerini durdurur (WCAG 2.2.2). İşaretçi paralaksı sürer (kullanıcı girdisidir). Kaydırmaya bağlı hareket sürer (kullanıcı kaynaklıdır). Durum store'da tutulur (`paused`), **kalıcı değildir** (D-38'de anahtarı yok). | Aynı | Gösterilmez |
 | 13 | Metin seçimi | `::selection` → `--color-selection` | Aynı | Aynı |
 | 14 | **İmleç** | **Yalnız native.** Özel imleç, iz ve blend mode yok (D-16). | — | — |
 | 15 | **Yerel saat** (`LocalTime`) | Martian Mono, `tabular-nums`. Hero'da "{{ŞEHİR}} · 14:32", contact'ta "{{ŞEHİR}} · GMT+3 · 14:32", footer'da da bulunur. Biçim: `Intl.DateTimeFormat(locale, { timeZone: '{{SAAT_DİLİMİ}}', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })` (ör. `Europe/Istanbul`). Dakika sınırında güncellenir, saniye gösterilmez. SSR saati yazmaz; genişlik `tabular-nums` ile ayrılmıştır (CLS yok); mount sonrası doldurulur. Ofset etiketi `timeZoneName: 'shortOffset'` ile üretilir. ⚠️ DOĞRULANMADI: `shortOffset` desteği hedef tarayıcılarda (§2.5) Playwright'ta doğrulanır; desteklenmiyorsa içerikteki statik etiket kullanılır. | Aynı | Yükleme anındaki saat + "(yerel saat)" / "(local time)"; güncelleme yok |
 | 16 | **Yüzen proje önizlemesi** (yalnız `/projeler` listesi) | Ayrıntı §4.14.5. | Önizleme yok; her satırda satır içi 16:10 küçük görsel | Satırın yanına sabitlenmiş önizleme; solma, takip ve ölçek yok (CSS tabanı 1 ms, §6.5.7) |
 | 17 | **Mobil menü** | — | Tam ekran katman, `height: 100dvh` (ölçülen bir değer olmadığı için `dvh` serbesttir). Menü düğmesinden daire şeklinde `clip-path` ile açılır (yarıçap 0 → %150, 500 ms `--ease-in-out`). Bağlantılar 50 ms kademelenir. Kapanış ≈ 330 ms (çıkış ≈ 0.66 × giriş kuralı, §6.5). `data-lenis-prevent`. Odak yönetimi (ilk bağlantıya odak, odak tuzağı, Esc, arka plan `inert`, odağın düğmeye dönmesi) §10.3'tedir. İçerik: nav, TR/EN, tema seçici, "Hareketi azalt", geçerli öğe noktası. | Anında açılır ve kapanır (CSS tabanı 1 ms, §6.5.7) |
-| 18 | **Tema değişimi** | "Sistem / Koyu / Açık" seçimi anında uygulanır; renk geçişi yoktur (§6.3.5). Taş uniform'ları yeniden uygulanır ve `invalidate()` çağrılır (§5.5); posterler CSS ile değişir. Bu kullanıcı kaynaklıdır, kaydırma scrub'ı değildir. | Aynı | Anında |
+| 18 | **Tema değişimi** | "Sistem / Koyu / Açık" seçimi anında uygulanır; renk geçişi yoktur (§6.3.5). Panelin renk rolleri yeniden okunur ve `invalidate()` çağrılır (§5.20.4); statik paneller CSS ile değişir. Bu kullanıcı kaynaklıdır, kaydırma scrub'ı değildir. | Aynı | Anında |
 | 19 | **Toast** | Alt ortada, `bottom: calc(16px + env(safe-area-inset-bottom))`. Giriş: 12 px yukarı + opaklık, 240 ms. 4 s görünür kalır. Çıkış 160 ms. `role="status"` (`aria-live="polite"`), kapatılabilir, odaklanmış öğenin üstüne binmez. | Aynı | Yalnız opaklık |
 | 20 | Filtre çipleri (`/projeler`) | `<button aria-pressed>`, 160 ms renk geçişi. Grup `role="group" aria-label="Alana göre filtrele"` / "Filter by area" (`a11y.filterGroup`, §7.8.2). | Aynı | Anında |
 | 21 | Proje satırı (`/projeler`) | Hover/odak: `--color-raised` arka plan, başlık 8 px içeri, `→` belirir; 160–240 ms. Her satır tek `<a>`'dır. | `:active` arka plan | Yalnız renk |
@@ -3165,33 +3264,32 @@ Bileşen envanteri ve durumları §6.6'dadır. Bu alt bölüm **davranışın** 
 - **Erişilebilirlik ve yükleme:**
   - önizleme `img`'si `aria-hidden`, `alt=""` (satır bağlantısı projeyi adlandırır);
   - görsel ilk hover/odakta mount edilir; `sizes="384px"` (§9.3.1).
-- Hover-to-scene (#3) ile birlikte çalışır.
 
 ### 4.15 Mobil uyarlama
 
 #### 4.15.1 İlkeler
 
 - < 64rem'de 4 kolon ve 16–20 px kenar boşluğu kullanılır; metin tam genişliktedir.
-- **Taş ayrılmış bantlarda yaşar, asla metnin arkasında durmaz.** Bantlar katman (overlay) değildir; metin panelleri gerekmez.
+- **Panel ayrılmış bantlarda yaşar, asla metnin arkasında durmaz.** Bantlar katman (overlay) değildir; metin panelleri gerekmez.
 - **YASAK:** WebGL üzerinde herhangi bir yerde `backdrop-filter`.
 
 #### 4.15.2 Bölüm bölüm sayılar
 
 | Konu | Masaüstü (≥ 64rem) | Mobil (< 64rem) |
 |---|---|---|
-| Grid | 12 kolon; metin k1–6/7, sahne k7/8–12 | 4 kolon, 16–20 px kenar; metin tam genişlik; taş bantlarda |
-| hero | H1 büyük harf çizgisinde çapa; D ≈ 362 px | Üstte **40 svh bant** (`innerHeight < 740` ise 34 svh). D = 0.86 × min(bandW, bandH) (390×844'te ≈ 290 px). H1 bandın altında iki satır. LCP koruması §4.6.9. |
-| about | Kesim çizgisinde flow çapası, k8–12 | Lede'nin üstünde **36 svh bant**. Kesim çizgisi tam genişlikte, bandın merkezinden geçer. Kesim masaüstüyle aynı çalışır. |
-| areas | Pin `100 + 20 + 50N` = 320 svh | Pin `100 + 20 + 40N` = **280 svh**; koşul `width ≥ 360` **ve** `height ≥ 600` (svh) **ve** hareket tam. Sticky sahnede **üstte 42 svh kadran bandı**, **altta 58 svh metin alanı**. Metin sığmazsa **[SABİT]** ya da koşul yoksa **liste modu**: alt alta kartlar, her birinde 64 px SVG dilim glifi (GPU sıfır). |
-| work | Sticky görüntüleyici + numune | **Sticky yok.** Kapak başlığın üstünde satır içi (16:10), bir kez klip reveal'ı. `--scene-opacity` work IN p 0.2–0.5'te 1 → 0; frame loop `never`. |
-| journey | Sticky taş sütunu | **Sticky yok.** Bölüm başında bir kez **36 svh bant** (flow çapası, K4). Bant çıkınca opaklık 0 ve loop `never`. Her girdide **24 px SVG halka glifi**. |
-| testimonials | K4 sonu, opaklık 0.4 | Taş yok |
-| contact | Viewport çapası, k8–12 | H2'nin üstünde **40 svh bant** (opaklık contact IN p 0.3–0.6'da 0 → 1). K5 sunulan yüz; e-posta merkezdeyken yay nabzı. |
-| Yatay telefon (`height < 500px`) | — | Taş yalnız hero'da görünür: bant genişliğin %50'si, sağda. Hero bandı çıkarken (about IN p 0.2–0.5) `--scene-opacity` kaydırmayla 0'a iner ve ardından loop `never` olur (§5.9.4). Diğer bölümler liste/statik figür kullanır. |
-| Geometri / oktav / ghost | high tier | medium ya da low tier (§5.11) |
+| Grid | 12 kolon; metin k1–6/7, sahne k7/8–12 | 4 kolon, 16–20 px kenar; metin tam genişlik; panel bantlarda |
+| hero | Eyebrow satırının altında biten çapa; `Pw` ≈ 466 px | Üstte **40 svh bant** (`innerHeight < 740` ise 34 svh). Panel bandı doldurur (390×844'te `Pw` ≈ 348 px). H1 bandın altında iki satır. LCP koruması §4.6.9. |
+| about | Lede'nin yanında flow çapası, k8–12 | Lede'nin üstünde **36 svh bant** (`about.dart`). |
+| areas | Pin `100 + 20 + 50N` = 320 svh | Pin `100 + 20 + 40N` = **280 svh**; koşul `width ≥ 360` **ve** `height ≥ 600` (svh) **ve** hareket tam. Sticky sahnede **üstte 42 svh panel bandı**, **altta 58 svh metin alanı**. Metin sığmazsa **[SABİT]** ya da koşul yoksa **liste modu**: alt alta kartlar, glif yok. |
+| work | Sticky görüntüleyici; panel yok; silme + ASCII derlemesi | **Sticky yok.** Kapak başlığın üstünde satır içi (16:10), bir kez klip reveal'ı; silme ve ASCII kaplaması yok. `--scene-opacity` work IN p 0.2–0.5'te 1 → 0; frame loop `never`. |
+| journey | Sticky panel sütunu (`git log`, gece) | **Sticky yok.** Bölüm başında bir kez **36 svh bant** (flow çapası). Bant çıkınca opaklık 0 ve loop `never`. Girdilerde glif yok. |
+| testimonials | journey son durumu, opaklık 0.4 | Panel yok |
+| contact | Viewport çapası, k8–12 | H2'nin üstünde **40 svh bant** (opaklık contact IN p 0.3–0.6'da 0 → 1); `zsh`. |
+| Yatay telefon (`height < 500px`) | — | Panel yalnız hero'da görünür: bant genişliğin %50'si, sağda. Hero bandı çıkarken (about IN p 0.2–0.5) `--scene-opacity` kaydırmayla 0'a iner ve ardından loop `never` olur (§5.9.4). Diğer bölümlerde panel yoktur. |
+| Glif ızgarası | Tüm tier'larda aynı (§5.20.7) | Aynı |
 | DPR | high tier: `[1, 2]` | medium `[1, 1.5]`, low `1` (tier'a göre, §5.11.1) |
-| Idle drift | 20 s sonra durur | 8 s sonra durur |
-| İşaretçi ışığı / yakınlık | açık | kapalı → kaydırma sallanması + dokunma taraması |
+| Kendiliğinden hareket (süzülme, imleç, log) | 20 s sonra durur | 8 s sonra durur |
+| İşaretçi paralaksı | açık (ince işaretçi) | yok |
 | Yumuşak kaydırma | Lenis (yalnız tekerlek, `lerp 0.12`, §5.13) | **native** (`syncTouch: false`); Lenis dokunmatiği asla yumuşatmaz |
 | Görüntü alanı birimleri | kaydırma uzunlukları `svh` | Kaydırma uzunlukları `svh`. Canvas katmanı `height: 100lvh` (araç çubuğu kapanınca yeniden boyutlanmaz). Ölçülen hiçbir şey için **asla** `dvh` kullanılmaz. |
 | ScrollTrigger | — | `ScrollTrigger.config({ ignoreMobileResize: true })`; `document.fonts.ready` sonrası ve `orientationchange`'de `refresh()` (§5.13, §9.5) |
@@ -3203,7 +3301,7 @@ Bileşen envanteri ve durumları §6.6'dadır. Bu alt bölüm **davranışın** 
 |---|---|---|
 | hero | 1 (bant) | çalışır |
 | about | 1 (bant) | çalışır |
-| areas (pin) | 1 (kadran bandı) | çalışır |
+| areas (pin) | 1 (panel bandı) | çalışır |
 | areas (liste modu) | IN p 0.2–0.5: 1 → 0 **[SABİT]** | `never` |
 | work | IN p 0.2–0.5: 1 → 0 | `never` |
 | journey | IN p 0.3–0.6: 0 → 1 **[SABİT]**; bant çıkarken 1 → 0 (BODY `[0.20·vh/len, 0.36·vh/len]`, §5.9.4); bant çıktığında 0 | bant görünürken çalışır |
@@ -3214,14 +3312,14 @@ Bileşen envanteri ve durumları §6.6'dadır. Bu alt bölüm **davranışın** 
 
 #### 4.15.4 Tier'ların ziyaretçiye görünen farkları
 
-Atama kuralları, `PerformanceMonitor` basamakları ve `?tier=` QA geçersiz kılması §5.11'dedir.
+Atama kuralları, `PerformanceMonitor` basamakları ve `?tier=` QA geçersiz kılması §5.11'de, KOD kademe ayrıntıları §5.20.7'dedir.
 
 | Tier | Ziyaretçinin gördüğü |
 |---|---|
-| `static` | Canlı taş yoktur; Stage paketi indirilmez. Hero/about/contact'ta posterler, diğer çapalarda SVG figürler vardır (§4.16.3). Hareket tamsa **DOM koreografisi aynen çalışır:** reveal'lar, areas pin'i (SVG kadran rotY track'iyle döner), work silmeleri, CSS sınıflarıyla bant vurguları. |
-| `low` | Canlı taş: 72×54 segment, 1 oktav, ghost yok, dpr 1, AA yok, **idle drift yok**. |
-| `medium` | 96×72, 1 oktav, ghost yok, dpr `[1, 1.5]`, idle drift (ince işaretçide 20 s, kaba işaretçide 8 s). İnce işaretçide işaretçi ışığı ve yakınlık açıktır; dokunmatikte sallanma vardır (§5.6.2, §5.11.1). |
-| `high` | 128×96, 2 oktav, **ghost açık**, dpr `[1, 2]`, AA, idle drift (ince işaretçide 20 s, kaba işaretçide 8 s), işaretçi ışığı ve yakınlık açık. |
+| `static` | Canlı panel yoktur; Stage paketi indirilmez. Çapalarda statik paneller vardır (§4.16.3). Hareket tamsa **DOM koreografisi aynen çalışır:** reveal'lar, areas pin'i, work silmeleri ve ASCII derlemesi (2D canvas), etkin yıl vurguları. |
+| `low` | Canlı panel; dpr 1, AA yok, **süzülme ve paralaks yok**. Köprüler ve çözülmeler vardır. |
+| `medium` | dpr `[1, 1.5]`, süzülme (ince işaretçide 20 s, kaba işaretçide 8 s sonra durur), ince işaretçide paralaks. |
+| `high` | dpr `[1, 2]`, AA, süzülme, ince işaretçide paralaks. |
 
 ### 4.16 Azaltılmış hareket, duraklatma, JS'siz ve statik varyantlar
 
@@ -3240,37 +3338,42 @@ Head script ilk boyamadan önce çalışır (§8.4, D-39).
 
 | Varyant | Tetik | Ne olur |
 |---|---|---|
-| **Azaltılmış hareket** ("Hareketi azalt") | OS tercihi ya da footer/menü anahtarı | **Stage paketi, Lenis, GSAP ve SplitText yoktur.** Tüm pin'ler normal akışa döner; areas açıklamalarının hepsi liste halinde görünür. Tüm metin baştan görünürdür (durum değişimleri anındadır; CSS tabanı geçişleri 1 ms yapar, §6.5.7). **Taşın yerini figürler alır** (§4.16.3), mono altyazılı `<figure>`'lar olarak. Hero ve about posterleri dekoratiftir ve altyazısızdır. View transition süresi 0'dır. Hover yalnızca renk ve alt çizgiyi değiştirir. Halka doğrusal güncellenir. Yerel saat ve 404 saati yükleme anında donar. Hero CSS solması oynamaz. |
-| **Duraklatılmış** ("Animasyonu durdur") | Hero duraklatma düğmesi | Stage mount'lu kalır. Idle drift, yay nabızları, dalga, saat güncellemeleri ve oynamamış tarama durur. Kaydırmaya bağlı hareket sürer. Kalıcı değildir. |
-| **JS yok** | JS kapalı ya da yüklenemedi | Tüm içerik görünür; gizli ön-reveal durumu yoktur. Çapalarda posterler, satır içinde SVG figürler görünür (azaltılmış hareket görünümüyle aynı figürler). **CSS sticky düzenleri** (areas sahnesi, work görüntüleyici yığını, journey sütunu) `html.js` ile kapılıdır; sayfa düz editoryal bir düzendir. Tarihe bağlı parçalar (açık yay, saat ibreleri, yerel saat) görünmez. Hero CSS solması çalışır. |
-| **Statik tier** (WebGL yok; hareket tam) | §5.11 | DOM koreografisi tam harekettekiyle aynıdır. Çapalarda posterler (hero, about, contact) ya da **animasyonlu SVG** vardır: areas kadranı aynı scrub track'inde `transform` ile döner; numune ve journey bant vurguları CSS sınıf değişimleridir. |
-| **Baskı** | `@media print` | Canvas, header, anahtarlar ve hareket yoktur. Figürler basılır. `/cv`'de bağlantıların arkasına URL basılır (§7.6). |
+| **Azaltılmış hareket** ("Hareketi azalt") | OS tercihi ya da footer/menü anahtarı | **Stage paketi, Lenis, GSAP ve SplitText yoktur.** Tüm pin'ler normal akışa döner; areas açıklamalarının hepsi liste halinde görünür. Tüm metin baştan görünürdür (durum değişimleri anındadır; CSS tabanı geçişleri 1 ms yapar, §6.5.7). **Panelin yerini statik paneller alır** (§4.16.3); dekoratiftir ve `aria-hidden`'dır. Work silmesi ve ASCII kaplaması yoktur. View transition süresi 0'dır. Hover yalnızca renk ve alt çizgiyi değiştirir. Halka doğrusal güncellenir. Yerel saat yükleme anında donar. Hero CSS solması oynamaz. |
+| **Duraklatılmış** ("Animasyonu durdur") | Hero duraklatma düğmesi | Stage mount'lu kalır. Panelin kendiliğinden hareketi (süzülme, imleç, akan log, yazma, hat animasyonu), saat güncellemeleri ve henüz oynamamış hot reload durur; program son karesini gösterir. Kaydırmaya bağlı köprüler, adım çözülmeleri ve işaretçi paralaksı sürer (kullanıcı kaynaklıdır). Kalıcı değildir. |
+| **JS yok** | JS kapalı ya da yüklenemedi | Tüm içerik görünür; gizli ön-reveal durumu yoktur. Çapalarda statik paneller görünür (azaltılmış hareket görünümüyle aynı). **CSS sticky düzenleri** (areas sahnesi, work görüntüleyici yığını, journey sütunu) `html.js` ile kapılıdır; sayfa düz editoryal bir düzendir. İstemciye bağlı parçalar (yerel saat) görünmez. Hero CSS solması çalışır. |
+| **Statik tier** (WebGL yok; hareket tam) | §5.11 | DOM koreografisi tam harekettekiyle aynıdır. Çapalarda statik paneller durur. Areas'ta adım başına statik paneller SSR'da üst üste durur; `AreasPin` etkin adımı `data-active` ile değiştirir. Work silmeleri (CSS `clip-path`) ve ASCII derlemesi (2D canvas) çalışır. |
+| **Baskı** | `@media print` | Canvas, statik paneller (`.kod-panel { display: none }`), header, anahtarlar ve hareket yoktur. `/cv`'de panel hiç yoktur; bağlantıların arkasına URL basılır (§7.6). |
 
 - **ÖNERİLİR:** Head script, `load`'dan 4 s sonra `<html>`'de hidrasyon işareti (`data-hydrated`) yoksa `js` sınıfını kaldırır. Böylece JS paketi yüklenemediğinde sayfa JS'siz düzene döner ve areas açıklamaları görünür olur (§8.4).
 
-#### 4.16.3 Poster ve figür karşılıkları (çapa başına)
+#### 4.16.3 Statik panel karşılıkları (çapa başına)
 
-Figürler `src/components/figures/` altındadır ve geometrileri `section-geometry.ts`'ten gelir (§5.10). SSR'da statik geometriyle render edilirler. Posterler D-31'e göre `public/stage/`'den plain `<img>`/`<picture>` ile sunulur (üretim §5.16).
+KESİT'in posterleri (`public/stage/`) ve SVG figürleri (`DialFigure`, `SpecimenGlyph`, `RingsFigure`, `ArcFigure`, `EntryGlyph`) KOD ile kaldırıldı. Yerlerini **statik paneller** alır: sunucu, programın son karesini çapanın içine HTML olarak yazar (`KodPanel`, §5.20.6). Statik panel; JS yokken, azaltılmış harekette, statik tier'da, Stage boot olmadan önce ve bağlam kaybında görünür.
 
-| Çapa / preset | Canvas hazır olmadan ve statik tier | Azaltılmış hareket ve JS yok |
-|---|---|---|
-| `hero-rest` (K0) | `k0-{light,dark}` posteri | Aynı poster (adın üzerinde) |
-| `about-cut` (K1) | `k1-{light,dark}` posteri | K1 posteri + statik, tam genişlikte kesim çizgisi |
-| `areas-dial` (K2) | `DialFigure` (statik tier'da rotY track'iyle döner, etkin dilim CSS sınıfıyla) | Satır içi `DialFigure`: N etiketli dilim, `role="img"`, `aria-label` alanları sıralar |
-| `work-specimen` (K3) | `SpecimenGlyph` (etkin projeye göre CSS sınıfı) | Proje başına statik `SpecimenGlyph`, makalenin yanında |
-| `journey-core` (K4) | `RingsFigure` (etkin bant CSS sınıfı) | `RingsFigure` (yıl etiketli) + girdi başına 24 px `EntryGlyph` |
-| `contact-ring` (K5) | `k5-{light,dark}` posteri + gerçek tarih yayını çizen `ArcFigure` katmanı | Aynı |
-| `page-folio` · `folio` (D1) | `SpecimenGlyph` **[SABİT]** | Aynı |
-| `page-folio` · `plan-small` (D2) | `DialFigure` **[SABİT]** | Aynı |
-| `cv-core` (D3) | `RingsFigure` **[SABİT]** | Aynı; baskıda da basılır |
-| `page-folio` · `about-page` (D4) | K1 posteri | Aynı |
-| `page-folio` · `contact-page` (D5) | K5 posteri + `ArcFigure` | Aynı |
+| Çapa / preset | Statik panel (programın son karesi) |
+|---|---|
+| `hero-rest` | `main.dart` |
+| `about-cut` | `about.dart` (tüm dosya) |
+| `areas-dial` | Adım başına bir panel (`data-kod-step="k"`). Yalnız `data-active` olanı görünür; SSR'da adım 0, pin etkinse `AreasPin` etkin adımı değiştirir |
+| `work-specimen` | — (boş kutu; work'te panel yoktur) |
+| `journey-core` | `git log` (gece; `active: -1`: etkin vurgu yok, sağ durum etiketi boş; `(HEAD)` var) |
+| `contact-ring` | `zsh` (`$ mail <e-posta>`, `✓`, istem) |
+| `page-folio` · `folio` | slot 0: `<slug>.yaml`; slot 1: `next: <slug>` |
+| `page-folio` · `plan-small` | `$ ls projects/` (alan sayfasında `--area=<area>`) |
+| `page-folio` · `about-page` | `about.dart` |
+| `page-folio` · `contact-page` | `zsh` |
+| 404 (çapa yok) | `notfound`, satır içi `.kod-panel.kod-inline` (§4.13.6) |
+| `/cv` | — (sahnesiz, §4.13.2) |
 
-- **Crossfade:** Poster ya da figürden canvas'a geçiş **600 ms** sürer. Yalnızca ilk derlenmiş kareden **ve** sahne mevcut kaydırma durumuna atladıktan sonra başlar.
-- **Context kaybında** posterler hemen geri gelir (§5.17).
-- Poster, canlı taşla aynı `D`'de boyutlanır. Böylece crossfade hizalı olur ve "pop" etkisi oluşmaz.
-
-- SPEC-SAPMA: §4.16.3 (M5, 2026-09-30) — Crossfade kuralı `:root:has(#scene-layer[data-phase="ready"])` posterlerle birlikte çapa figürlerini de (work-specimen, journey-core ve pin etkinken areas-dial) 600 ms'de söndürür; faz `ready` dışına çıkınca (`poster`, `fallback`) geçişsiz geri gelirler.
+- **Biçim:** `<div class="kod-panel" data-kod-program="<anahtar>" data-kod="<program JSON>" aria-hidden="true"><pre class="kod-pre" translate="no"><span class="kod-row">…</span>…</pre></div>`.
+  - 24 satırın her biri bir blok öğedir (`.kod-row`). Aynı rolü taşıyan bitişik hücreler tek koşu (`<span>`) olur.
+  - Koşu sınıfları: ön plan rolü `k0…k7` (ink, muted, subtle, accent, brass, line, panel, scramble); zemin rolü `kb0…kb6`, alfası `--ba` ile; elle çizilen glif koşuları `kd` (sabit n × 1ch); sembol koşuları `ks` (tek 1ch hücre, ortalı).
+  - Izgara ve yerleşim canlı panelle aynıdır (§4.5.6).
+- **Crossfade:** Statik panelden canvas'a geçiş **600 ms** sürer: `:root:has(#scene-layer[data-phase="ready"]) .stage-anchor .kod-panel { opacity: 0; transition: opacity 600ms var(--ease-out) }`. Yalnızca ilk derlenmiş kareden **ve** panel mevcut kaydırma durumuna atladıktan sonra başlar.
+- **Gece:** journey paneli `data-night` taşır → `color-scheme: dark`; token'lar `light-dark()` olduğu için panel her temada koyu değerleri çözer.
+- **Baskı:** `.kod-panel { display: none }`.
+- **Context kaybında** statik paneller hemen geri gelir (§5.17).
+- Statik panel canlı panelle aynı dikdörtgende ve aynı karede durur. Böylece crossfade hizalı olur ve "pop" etkisi oluşmaz.
 
 #### 4.16.4 "Hareketi azalt" anahtarı (`MotionToggle`)
 
@@ -3279,7 +3382,7 @@ Figürler `src/components/figures/` altındadır ve geometrileri `section-geomet
 - **Yazma:** `localStorage['os-motion']` değerine `'reduce'` ya da `'full'` yazılır (try/catch, D-38).
 - **Tam → azaltılmış geçişi [SABİT]:** ≤ 1 s içinde şunlar olur:
   - `data-motion` güncellenir;
-  - Stage unmount olur, posterler ve figürler geri gelir;
+  - Stage unmount olur, statik paneller geri gelir;
   - Lenis yok edilir;
   - ScrollTrigger ve reveal'lar öldürülür ve tüm içerik görünür olur;
   - pin'ler akışa döner;
@@ -3294,47 +3397,37 @@ Figürler `src/components/figures/` altındadır ve geometrileri `section-geomet
 
 - Sahibin mesleği: Bilgisayar Mühendisi ve Mobil Uygulama Geliştiricisi (Q-01, 2026-09-29). Varsayılan ve etkin persona **`engineer`**'dır; diğer değerler belgelenmiş seçeneklerdir.
 - Seçim yeri: `content/site/site.yaml` → `persona: neutral | engineer | designer | architect | researcher | manager` (şema §7.3).
-- **Mesleğe özgü tüm seçimler** `src/experience/profile.ts` içindedir. Bileşenler, shader'lar ve koreografi **değişmez**.
+- **Mesleğe özgü tüm seçimler** `src/experience/profile.ts` içindedir. Bileşenler, programlar ve koreografi **değişmez**.
 - JSON-LD alt tipi de persona'yı izler; eşleme §11.6'dadır.
 - **YASAK:** Persona değişiminin URL slug'larını (D-10), çapa id'lerini (D-43) ya da bölüm sırasını değiştirmesi. Yalnızca görünür etiketler ve sahne parametreleri değişir.
 
 #### 4.17.2 Persona tablosu
 
+KESİT'in `stone.*` ve `cap.*` parametreleri (taş şekli, yüzey, kapak deseni, `ringsSource`) KOD ile kaldırıldı (2026-10-02). Programlar persona'dan bağımsızdır; içerikten üretilir (§5.20.2).
+
 | Parametre | `neutral` | `engineer` (varsayılan, etkin) | `designer` | `architect` | `researcher` | `manager` |
 |---|---|---|---|---|---|---|
-| `stone.shape` / `radii` | [2.2, 2.2] / (1, 0.86, 1): çakıl | [2.2, 2.3] / (1, 0.8, 1): **akik yumrusu (jeot)** | [2.0, 2.0] / (1, 0.9, 1) | [6, 6] / (1, 0.7, 1): kaide | [2, 8] / (0.8, 1.4, 0.8): **karot silindiri** (yatay kesim = buz karotu kesiti) | [2, 8] / (1, 0.42, 1): **disk** (gövde dilimi) |
-| `stone.disp` (≤ 0.045) | 0.035 | 0.045 | 0.045 | 0.0 | 0.01 | 0.02 |
-| `stone.surface` | `graphite` | `geode` (pürüzlü, lekeli kaya kabuğu; analitik gradyanla tümsek) | `agate` (saten) | `travertine` (hash gözenekler) | `ice` (soluk, hafif kenar) | `oak` (sıcak mat) |
-| `cap.pattern` | `rings` | `geode` (kabuk hattını izleyen akik bantları, laminalar, süt beyazı kalsedon bantları, druzy kuvars çekirdek, kesitte kabuk şeridi) | `agate` (bükülmüş bantlar, %8 vurgu tonu) | `poche` (mürekkep dolgu + 45° tarama + plan konturları) | `rings`, `ringsSource: 'publications'` (halka kalınlığı yayına göre) | `growth` (halka kalınlığı ∝ ekip büyüklüğü, isteğe bağlı) |
 | `palette` | `mekanizma` | `mekanizma` | `atolye` | `emaye` (açık tema önce) | `emaye` | `atolye` |
 | `type` | `hassas` | `hassas` | `hassas` | `hassas` | `editoryal` | `hassas` |
 | `labels.areas` | Çalışma alanları / Areas of work | Uzmanlık alanları / Areas of expertise | Disiplinler / Disciplines | Ölçekler ve tipolojiler / Scales and typologies | Araştırma alanları / Research areas | Liderlik alanları / Areas of leadership |
 | `labels.work` | Seçili projeler / Selected projects | Seçili projeler / Selected projects | Seçili işler / Selected work | Yapılar ve projeler / Buildings and projects | Yayınlar ve projeler / Publications and projects | Ekipler ve sonuçlar / Teams and outcomes |
 | `intensity` | `standard` | `standard` | `expressive` | `standard` | `calm` | `calm` |
-| `labels.contactLead` (yer tutucu) | Bir sonraki halkayı birlikte yazalım. / Let's write the next ring together. | Bir sonraki halkayı birlikte inşa edelim. / Let's build the next ring together. | … birlikte tasarlayalım. / … design … | … birlikte kuralım. / … raise … | … birlikte araştıralım. / … research … | … birlikte büyütelim. / … grow … |
-
-> **M1 revizyonu (2026-09-30, sahip kararı, issue #5):** `engineer`'ın ilk hâli "yuvarlatılmış zar"dı (`[5, 5]`, `disp` 0, `anodized`, `contours`). Sahip bunu taş olarak okumadı: "pürüzsüz bir kutu". Önerilen B yönü, akik yumrusu (jeot), seçildi. Dışı sade ve pürüzlü bir kaya, kesiti yıllar boyunca oluşmuş akik bantlarıdır; bu, "Dışı kimlik, içi emek" sloganıyla birebir örtüşür. Halkalar bantların sınırıdır, en eski yıl druzy kuvars çekirdektir. Eski `anodized` ve `contours` varyantları kodda İSTEĞE BAĞLI olarak kalır.
+| `labels.contactLead` (yedek; içerikteki `home.contact.lead` ezer) | Bir sonraki projeyi birlikte yazalım. / Let's write the next project together. | Bir sonraki projeyi birlikte inşa edelim. / Let's build the next project together. | … birlikte tasarlayalım. / … design … | … birlikte kuralım. / … raise … | … birlikte araştıralım. / … research … | … birlikte büyütelim. / … grow … |
 
 **Tüm persona'larda ortak değerler:**
-- `stone.noiseFreq` 1.3, `stone.seed` 7.0, `cap.ringWarp` 0.04;
-- `work.viewer` ve `work.specimen` `true`;
-- eyebrow'lar (kaynak metin normal yazımda): Kesit / Dilimler / Numuneler / Halkalar / Bir sonraki halka (EN: Cross-section / Sectors / Specimens / Rings / The next ring); ekranda `type-eyebrow` ile KESİT / DİLİMLER / … olarak görünür.
+- `work.viewer` `true`;
+- eyebrow'lar (kaynak metin normal yazımda): Kaynak / Modüller / Derleme / Sürüm geçmişi / Terminal (EN: Source / Modules / Build / Version history / Terminal); ekranda `type-eyebrow` ile KAYNAK / MODÜLLER / … olarak görünür. KESİT'in Kesit / Dilimler / Numuneler / Halkalar / Bir sonraki halka eyebrow'ları kaldırıldı.
 - Eyebrow'lar normal yazımla saklanır. Büyük harf, doğru `lang` altında `type-eyebrow`'un CSS `text-transform: uppercase`'i ile üretilir (§3.8 kural 3, §6.2.6 kural 10, §10.4.2); tarayıcı doğrulaması ve yedeği V-58'dir.
 
 **Uygulama notları:**
-- `surface` ve `cap.pattern` shader varyantları yalnızca `#define` ile seçilir; çalışma zamanında dallanma yoktur (§5.4). Bir persona ancak onun varyantları §5.4'e göre uygulanıp `/lab/stage` QA ızgarasından geçtikten sonra seçilebilir.
-- `ringsSource` `'publications'` ya da `'teamSize'` ise gereken veri §7.3 şemasından, hesap §5.10'dan gelir.
 - **`editoryal` tip preseti** Newsreader + Instrument Sans + Martian Mono gerektirir. D-21'deki v1 font hattı yalnızca Mona Sans + Martian Mono içerir. Bu yüzden: bu fontlar §6.2 hattına eklenene kadar `researcher` persona'sı `hassas` ile derlenir ve build **başarısız olmaz** (konsola/build log'una uyarı yazılır).
-- final.md'deki `notFound: 'clock' | 'empty-section'` alanı kaldırılmıştır. 404 her persona'da SVG `ClockFigure`'dür (D-19).
+- 404 her persona'da statik hata çıktısıdır (§4.13.6, D-19).
 
 #### 4.17.3 `profile.ts` arayüzü
 
 ```ts
-// src/experience/profile.ts — three-free; stage/, views/ ve figures/ buradan okur
+// src/experience/profile.ts — three-free; stage/, views/ ve lib/kod/ buradan okur
 export type Persona = 'neutral' | 'engineer' | 'designer' | 'architect' | 'researcher' | 'manager';
-export type Surface = 'graphite' | 'anodized' | 'agate' | 'travertine' | 'ice' | 'oak' | 'geode';   // geode: M1 revizyonu (#5)
-export type CapPattern = 'rings' | 'contours' | 'agate' | 'poche' | 'growth' | 'geode';
-export type RingsSource = 'years' | 'publications' | 'teamSize';
 export type PaletteName = 'mekanizma' | 'atolye' | 'emaye';
 export type TypePreset = 'hassas' | 'editoryal';
 export type Intensity = 'calm' | 'standard' | 'expressive';
@@ -3342,15 +3435,6 @@ type L = { tr: string; en: string };
 
 export interface ExperienceProfile {
   persona: Persona;
-  stone: {
-    shape: readonly [n1: number, n2: number];            // superquadric üsleri (uShape)
-    radii: readonly [x: number, y: number, z: number];   // uRadii
-    disp: number;                                        // uDisp, ≤ 0.045 (cap tekniği için)
-    noiseFreq: number;                                   // uNoiseFreq
-    seed: number;                                        // uSeed (posterler canlı kareyle aynı olsun diye deterministik)
-    surface: Surface;
-  };
-  cap: { pattern: CapPattern; ringWarp: number; ringsSource: RingsSource };
   palette: PaletteName;
   type: TypePreset;
   intensity: Intensity;
@@ -3358,19 +3442,17 @@ export interface ExperienceProfile {
     eyebrows: Record<'about' | 'areas' | 'work' | 'journey' | 'contact', L>;
     areas: L;        // ana sayfa areas <h2>
     work: L;         // ana sayfa work <h2>
-    contactLead: L;  // contact lead (yer tutucu; içerik sahibi değiştirebilir, §7.9)
+    contactLead: L;  // contact lead yedeği (içerikteki home.contact.lead ezer, §7.9)
   };
-  work: { viewer: boolean; specimen: boolean }; // viewer=false → work her boyutta akış düzeni; specimen=false → work'te tone 0
+  work: { viewer: boolean }; // viewer=false → work her boyutta akış düzeni
 }
 
 export interface IntensityParams {                     // değerler §4.17.4
-  idleDegPerSec: number;                               // 1 | 2 | 3
-  pointerAzDeg: number;                                // 15 | 25 | 30
-  pointerElDeg: number;                                // 7 | 12 | 15
-  ghostAlphaMax: number;                               // 0.06 | 0.10 | 0.10
-  sweepFromAzDeg: number;                              // -96 | -120 | -140 (bitiş her zaman -60)
-  waveWidthPx: number;                                 // 1.5 | 2 | 2.5
-  areasTurnEase: 'sine.inOut' | 'smoothstep' | 'power3.inOut';
+  floatScale: number;                                  // süzülme genliği çarpanı: 0.5 | 1 | 1.5
+  parallaxYawDeg: number;                              // 2 | 4 | 6
+  parallaxPitchDeg: number;                            // 1.5 | 2.5 | 3.5
+  stepDecodeMs: number;                                // 1500 | 1200 | 1000
+  flashMs: number;                                     // 200 | 300 | 400
 }
 
 // Modülün dışa aktardıkları (imzalar; gövdeler §4.17.2 ve §4.17.4 tablolarından doldurulur):
@@ -3380,26 +3462,26 @@ export interface IntensityParams {                     // değerler §4.17.4
 ```
 
 - `{{KARİYER_BAŞLANGIÇ_YILI}}` profilde **değildir**; içerikten gelir (§7.3).
-- `PROFILES` tüm 6 persona'yı eksiksiz tanımlar. `profile.test.ts` her persona için her alanın dolu olduğunu ve `stone.disp ≤ 0.045` olduğunu doğrular.
+- `PROFILES` tüm 6 persona'yı eksiksiz tanımlar. `profile.test.ts` her persona için her alanın dolu olduğunu doğrular.
 
 #### 4.17.4 Yoğunluk (`intensity`) **[SABİT]**
 
-final.md risk #1 yalnızca hangi değerlerin ölçekleneceğini söyler. Çarpanlar burada sabitlenmiştir; `standard` final.md değerlerinin aynısıdır.
+`standard` prototipin değerleridir. Diğer iki yoğunluk "fazla sessiz" (R-01) ya da "fazla hareketli" geri bildirimi için ayardır.
 
 | Parametre | `calm` | `standard` | `expressive` |
 |---|---|---|---|
-| Idle drift hızı | 1°/s | 2°/s | 3°/s |
-| İşaretçi ışığı aralığı (az / el) | ±15° / ±7° | ±25° / ±12° | ±30° / ±15° |
-| Ghost alfa üst sınırı (yalnız high) | 0.06 | 0.10 | 0.10 |
-| Işık taraması başlangıç açısı (bitiş −60°) | −96° | −120° | −140° |
-| Halka dalgası (`uWave`) çizgi kalınlığı | 1.5 px | 2 px | 2.5 px |
-| Areas dönüş easing'i | `sine.inOut` | smoothstep | `power3.inOut` |
+| Panel süzülme genliği | ×0.5 | ×1 (dikey ±%1.2 panel yüksekliği, roll ±0.2°) | ×1.5 |
+| İşaretçi paralaksı (yaw / pitch) | ±2° / ±1.5° | ±4° / ±2.5° | ±6° / ±3.5° |
+| Adım çözülmesi | ≈ 1.5 s | ≈ 1.2 s | ≈ 1.0 s |
+| Accent parlaması | 0.2 s | 0.3 s | 0.4 s |
+
+- Not (2026-10-02): v1 işleyicisi (`KodRig`) `standard` değerlerini sabit kullanır; `calm` ve `expressive` çarpanları henüz bağlanmadı.
 
 **Hiçbir yoğunlukta değişmeyenler:**
-- idle durma süreleri (20 s / 8 s);
+- kendiliğinden hareketin durma süreleri (20 s / 8 s);
 - §4.14.1 tavanları (≤ 600 ms, ≤ 12 px, ≤ 6° eğim);
 - reveal süreleri ve eşikleri;
-- keyframe'ler ve kaydırma aralıkları.
+- köprü aralıkları ve kaydırma aralıkları.
 - **YASAK:** `--ease-tick` dışında aşmalı (overshoot) easing.
 
 #### 4.17.5 İçerikle parametrelenenler (kod değil)
@@ -3408,7 +3490,9 @@ final.md risk #1 yalnızca hangi değerlerin ölçekleneceğini söyler. Çarpan
 |---|---|
 | N alan (3–6), P öne çıkan (3–5), E ana sayfa girdisi (≤ 6) | içerik (§7.3), sınırlar §4.5.3 |
 | `{{KARİYER_BAŞLANGIÇ_YILI}}` | içerik (§7.3) |
-| Alan sırası (= dilim sırası) | içerikteki alan sırası |
+| Alan sırası (= program adım sırası) | içerikteki alan sırası |
+| Alanın diyagramı | alanın `figure` alanı (§7.3.2; varsayılan `list`) |
+| Program metinleri (ad, unvan, şehir, olgular, kayıtlar, e-posta, lead) | içerik (§7.3); §4.1.2 veri dürüstlüğü |
 | Ana sayfada portre | `features.portraitOnHome` |
 | Yalnız TR ya da TR + EN | `site.locales` (D-11) |
 | Testimonials bölümü | `features.testimonials` |
@@ -3416,19 +3500,18 @@ final.md risk #1 yalnızca hangi değerlerin ölçekleneceğini söyler. Çarpan
 #### 4.17.6 Değişiklik prosedürü
 
 1. `content/site/site.yaml` içindeki `persona`'yı değiştir, ya da bir persona'nın değerlerini `src/experience/profile.ts` içinde ayarla.
-2. `npm run posters` çalıştır (K0/K1/K5 × açık/koyu posterleri yeniden üretilir, §5.16).
-3. `NEXT_PUBLIC_ENABLE_LAB=1 npm run dev` → `/lab/stage` QA ızgarasında tüm keyframe × tema kombinasyonlarını kontrol et (D-40).
-4. `npm run check` → PR → önizleme → deploy.
+2. `npm run dev` ile ana sayfayı ve derin sayfaları iki temada kontrol et. KESİT'in poster üretimi (`npm run posters`) ve `/lab/stage` adımları kaldırıldı.
+3. `npm run check` → PR → önizleme → deploy.
 
 ### 4.18 Kabul kriterleri
 
-Her kimlik (ör. **K-HERO-3**) ilgili alt bölümden referanslanır. Testler aksi belirtilmedikçe 1440×900, varsayılan içerik (N = 4, P = 4, E = 6) ve koyu/açık iki temayla koşulur. Sahne değerleri `?debug` çıktısından okunur (§5.18). Playwright projeleri D-26'dadır, test planı §13.3'tedir.
+Her kimlik (ör. **K-HERO-3**) ilgili alt bölümden referanslanır. Testler aksi belirtilmedikçe 1440×900, varsayılan içerik (N = 4, P = 4, E = 6) ve koyu/açık iki temayla koşulur. Panel değerleri (program anahtarı, adım, çapa dikdörtgeni) `?debug` çıktısından okunur (§5.18). Playwright projeleri D-26'dadır, test planı §13.3'tedir. KOD geçişinde (2026-10-02) KESİT'e özgü maddeler aynı kimliklerle KOD karşılıklarına çevrildi; K-KOD grubu eklendi.
 
 **Genel (K-GEN)**
 - [ ] **K-GEN-1** Ana sayfadaki 6 bölümün (bayrakla 7) `data-chapter` değerleri ve TR/EN `id`'leri §4.5.1 ile birebir aynıdır.
 - [ ] **K-GEN-2** Bölüm yükseklikleri: hero 100, about 140, areas 320, work 330, journey ≥ 280, contact 100 svh (±1). Toplam kaydırma 1170 svh (±2). Değerler varsayılan içerik içindir; §4.5.2 gereği formüller `min-height`'tır, gerçek içerik uzunsa hero ve contact dışındaki bölümler en az bu değerlerdedir (içerik aktarımı, 2026-10-02: sahibin about metni ≈ 194 svh).
 - [ ] **K-GEN-3** `tracks.ts`, `stageTarget` alanları dışında yalnızca §4.3 beyaz listesindeki DOM özelliklerine yazar (birim testi).
-- [ ] **K-GEN-4** Hiçbir reveal animasyonu 700 ms'yi aşmaz. Sona kaydırıp başa dönünce tüm metin ve görsellerin `opacity` değeri 1'dir (yeniden gizlenme yok).
+- [ ] **K-GEN-4** Hiçbir reveal animasyonu 700 ms'yi aşmaz (bildirilmiş work derlemesi hariç, §4.12.3). Sona kaydırıp başa dönünce tüm metin ve görsellerin `opacity` değeri 1'dir (yeniden gizlenme yok).
 - [ ] **K-GEN-5** `no-js` projesinde tüm route'larda `opacity < 1` ya da `visibility: hidden` olan metin/görsel yoktur.
 - [ ] **K-GEN-6** `.motion-ready`, `load` olayından önce `<html>`'de bulunmaz. Eklendiği anda görüntü alanındaki hiçbir metnin opaklığı düşmez.
 - [ ] **K-GEN-7** `/#iletisim` doğrudan açıldığında contact H2'si ve e-posta 100 ms içinde `opacity: 1`'dir.
@@ -3437,133 +3520,143 @@ Her kimlik (ör. **K-HERO-3**) ilgili alt bölümden referanslanır. Testler aks
 - [ ] **K-GEN-10** "İletişim", "Özgeçmiş", "ÇALIŞMA", "Ğ" içeren maskeli başlıklarda aksan kırpılması yoktur (görsel regresyon, §13.4).
 
 **hero (K-HERO)**
-- [ ] **K-HERO-1** Lighthouse mobil (390×844, 360×640) ve masaüstünde LCP öğesi H1'dir. Değilse §9.5.4'teki çözüm sırası uygulanır ve test tekrarlanır.
+- [ ] **K-HERO-1** Lighthouse mobil (390×844, 360×640) ve masaüstünde LCP öğesi H1'dir; statik panelin satırları LCP öğesi değildir. Değilse §4.6.9'daki önlem uygulanır ve test tekrarlanır.
 - [ ] **K-HERO-2** H1'e hiçbir zaman `transform`, `opacity < 1`, `clip-path` ya da `filter` uygulanmaz (t = 0 / 500 / 1500 ms ve kaydırma sonrası computed style).
 - [ ] **K-HERO-3** 1024 / 1280 / 1440 / 1920 px'te H1 tek satırdır ve yatay taşma yoktur. < 64rem'de iki satırdır.
 - [ ] **K-HERO-4** İkincil metin solması JS kapalıyken de oynar; `prefers-reduced-motion: reduce` ve `data-motion="reduce"` ile hiç oynamaz. Yükleme koreografisi toplam ≤ 1400 ms'dir.
 - [ ] **K-HERO-5** CTA'lar `/projeler` ve `/iletisim`'e (EN `/en/projects`, `/en/contact`) gider. Hero'da bu ikisi dışında manyetik öğe yoktur.
-- [ ] **K-HERO-6** `hero-rest` çapası k8–12'dedir ve alt kenarı H1 büyük harf çizgisindedir (±4 px). D = 362 ± 4 px. Posterlerde `alt=""`, `width`/`height`, `loading="lazy"`, `fetchpriority="low"` vardır. Ağ günlüğünde yalnız etkin temanın posteri istenir (⚠️ yedek §5.16).
-- [ ] **K-HERO-7** Poster → canvas crossfade 600 ms'dir ve ilk derlenmiş kareden sonra başlar. Hero'nun CLS katkısı 0'dır.
-- [ ] **K-HERO-8** Işık taraması oturumda bir kez oynar (`sessionStorage['os-sweep'] === '1'`). `scrollY ≥ 0.2 × innerHeight` iken, duraklatılmışken ve azaltılmış harekette oynamaz.
-- [ ] **K-HERO-9** Idle drift son girdiden 20 s (ince işaretçi) / 8 s (kaba işaretçi) sonra durur; medium ve high'da vardır, low'da hiç yoktur. s = 100'de `rotY` 30 ± 1°'dir.
-- [ ] **K-HERO-10** Duraklatma düğmesi ≥ 44×44 px'tir, görünür adı "Animasyonu durdur" ↔ "Animasyonu başlat" arasında değişir, `aria-pressed` taşımaz (§10.2.2). Basılınca idle drift, nabız ve saat güncellemeleri durur; kaydırma scrub'ı sürer.
+- [ ] **K-HERO-6** `hero-rest` çapası k8–12'dedir; alt kenarı eyebrow satırının altıyla hizalıdır (±2 px) ve H1 kutusunun en az 20 px üstündedir. Panel 7 : 6, çapayı doldurur (contain), `Pw ≥ 360` px. Çapadaki `main.dart` statik paneli SSR HTML'indedir, `aria-hidden` taşır ve 24 blok satırdan oluşur.
+- [ ] **K-HERO-7** Statik panel → canvas crossfade 600 ms'dir ve ilk derlenmiş kareden sonra başlar; `ready` anında canlı panel statik panelle ±2 px örtüşür. Hero'nun CLS katkısı 0'dır.
+- [ ] **K-HERO-8** Hot reload oturumda bir kez oynar (`sessionStorage['os-sweep'] === '1'`). `scrollY ≥ 0.2 × innerHeight` iken, duraklatılmışken ve azaltılmış harekette oynamaz.
+- [ ] **K-HERO-9** Panelin kendiliğinden hareketi son girdiden 20 s (ince işaretçi) / 8 s (kaba işaretçi) sonra durur (Stage mount'u girdi sayılır); durunca program son karesini gösterir, imleç görünür kalır, süzülme saati durur ve boşta kare istenmez. Süzülme medium ve high'da vardır, low'da yoktur.
+- [ ] **K-HERO-10** Duraklatma düğmesi ≥ 44×44 px'tir, görünür adı "Animasyonu durdur" ↔ "Animasyonu başlat" arasında değişir, `aria-pressed` taşımaz (§10.2.2). Basılınca panelin kendiliğinden hareketi ve saat güncellemeleri durur; kaydırma köprüleri sürer.
 
 **about (K-ABOUT)**
-- [ ] **K-ABOUT-1** s = 30 / 65 / 100 / 140'ta `cut-line` `scaleX` ile `cutProgress` farkı ≤ 0.02'dir. s = 100'de cut 0.35 ± 0.01; s = 140'ta cut 0 ± 0.01 ve ringContrast 1.0'dır.
-- [ ] **K-ABOUT-2** Lede satırları sırayla açılır; son satır `cutProgress` ≤ 0.66 iken açılmıştır. Her satır 700 ms sürer ve geri kaydırmada kapanmaz.
-- [ ] **K-ABOUT-3** 1440×900'de taş hiçbir kaydırma konumunda about metninin (k1–6) üstüne binmez.
+- [ ] **K-ABOUT-1** about'ta panel `about.dart`'ı gösterir (`?debug` program anahtarı `about`). Dosya tamdır ve yalnız içerikteki olguları içerir (program birim testi, §13.2.2).
+- [ ] **K-ABOUT-2** Lede bölünmez (DOM'da `split-line` yoktur), global blok reveal'ıyla bir kez açılır (≤ 700 ms) ve geri kaydırmada kapanmaz.
+- [ ] **K-ABOUT-3** 1440×900'de panel hiçbir kaydırma konumunda about metninin (k1–6) üstüne binmez.
 - [ ] **K-ABOUT-4** `features.portraitOnHome = false` ise ya da portre yoksa `<figure>` DOM'da yoktur. Varsa klip reveal'ı bir kez oynar ve 700 ms sürer.
-- [ ] **K-ABOUT-5** Mobilde lede'nin üstünde 36 svh bant vardır. Kesim çizgisi tam genişliktedir ve bandın dikey merkezinden geçer (±2 px).
-- [ ] **K-ABOUT-6** Azaltılmış harekette K1 posteri ve statik tam genişlik kesim çizgisi görünür; lede baştan görünürdür.
+- [ ] **K-ABOUT-5** Mobilde lede'nin üstünde 36 svh bant vardır; panel bandı doldurur (contain, ±2 px).
+- [ ] **K-ABOUT-6** Azaltılmış harekette `about.dart` statik paneli görünür; lede baştan görünürdür.
 
 **areas (K-AREAS)**
-- [ ] **K-AREAS-1** Pin yalnızca §4.8.2 koşullarında etkindir. 1440×600, `reduced-motion`, `no-js` ve N = 7 içerikte liste modu + 64 px glifler render edilir.
+- [ ] **K-AREAS-1** Pin yalnızca §4.8.2 koşullarında etkindir. 1440×600, `reduced-motion`, `no-js` ve N = 7 içerikte liste modu render edilir; kartlarda glif yoktur.
 - [ ] **K-AREAS-2** Sitede metin içeren tek `position: sticky` kapsayıcı areas sahnesidir (DOM taraması).
-- [ ] **K-AREAS-3** Açıklama değişimleri s = 307.5 / 357.5 / 407.5 (±2 svh) noktalarındadır. Sayaç ve `aria-current="step"` aynı anda güncellenir.
+- [ ] **K-AREAS-3** Açıklama ve program değişimleri s = 307.5 / 357.5 / 407.5 (±2 svh) noktalarındadır. Sayaç, `aria-current="step"` ve `?debug` program adımı aynı anda güncellenir.
 - [ ] **K-AREAS-4** Hiçbir an iki açıklama aynı anda `opacity > 0` değildir (değişim sırasında 50 ms aralıklı örnekleme).
-- [ ] **K-AREAS-5** İşaretçi hareketsizken, s 250–300, 315–350, 365–400 ve 415–450 dwell'lerinde `rotY` sabittir (±0.5°).
+- [ ] **K-AREAS-5** Her adım alanının `figure` programını gösterir (`?debug`). İşaretçi hareketsizken s 250–300, 315–350, 365–400 ve 415–450 dwell'lerinde program ve adım sabittir ve panelde rastgele glif yoktur.
 - [ ] **K-AREAS-6** Başlık tıklaması 0.8 s içinde `sA(k) + 32.5` svh'ye (±2) kaydırır. Etkin olmayan açıklamaya gelen `focusin` o adıma kaydırır.
 - [ ] **K-AREAS-7** Atlama bağlantısı bölümdeki ilk odaklanabilir öğedir, `#projeler`'e gider ve sahne kesme kuralını uygular.
 - [ ] **K-AREAS-8** Etkin olmayan açıklamalar `aria-hidden` değildir ve DOM'da içerik sırasındadır.
-- [ ] **K-AREAS-9** Başlık hover/odağı kaydırma yapmaz; `uSectorPreview = (k, 1)` 240 ms içinde ayarlanır, bırakınca 400 ms'de söner.
-- [ ] **K-AREAS-10** İğne, etkin başlığın sağ ucundan kadranın sol kenarına (±2 px) uzanır ve adım değişiminde 400 ms `--ease-tick` ile yer değiştirir. Segment tıklama alanları ≥ 24×24 px'tir.
-- [ ] **K-AREAS-11** 390×844'te pin: bölüm 280 svh (±1), kadran bandı 42 svh, metin alanı 58 svh'dir. N = 6 ve 360×640 ile metin taşarsa liste moduna düşülür.
+- [ ] **K-AREAS-9** Başlık hover/odağı kaydırma yapmaz ve paneli değiştirmez.
+- [ ] **K-AREAS-10** İlerleme segmentlerinin tıklama alanları ≥ 24×24 px'tir. (KESİT'in iğnesi kaldırıldı.)
+- [ ] **K-AREAS-11** 390×844'te pin: bölüm 280 svh (±1), panel bandı 42 svh, metin alanı 58 svh'dir. N = 6 ve 360×640 ile metin taşarsa liste moduna düşülür.
 - [ ] **K-AREAS-12** Hareket paketi ağda engellenmişken `/#alanlar` açıldığında doğru açıklama ve sayaç hidrasyondan ≤ 100 ms sonra görünür.
 
 **work (K-WORK)**
 - [ ] **K-WORK-1** work BODY'de, silme süreleri dışında, her kaydırma konumunda tam olarak bir figür tamamen kırpılmamış durumdadır.
 - [ ] **K-WORK-2** Aktivasyonlar s = 535 / 605 / 675 / 745 (±2 svh) noktalarındadır.
 - [ ] **K-WORK-3** Her makalede "Projeyi incele →" / "View project →" bağlantısı `/projeler/[slug]` / `/en/projects/[slug]` adresine gider; mağaza bağlantıları ("App Store ↗", "Google Play ↗", "AppGallery ↗") yalnız projenin `links` listesinde ilgili mağaza kaydı varsa render edilir, video bağlantısı ana sayfada render edilmez. Başlık ve bağlantılar aktivasyondan ≥ 20 svh önce tamamen açılmıştır.
-- [ ] **K-WORK-4** Silme 600 ms sürer. Vurgu çizgisi silme kenarıyla hizalıdır (±2 px) ve son 120 ms'de söner. Yukarı kaydırmada ters (sağdan sola) silme olur. Uzak atlamada silme oynamaz.
-- [ ] **K-WORK-5** `no-js` ve `reduced-motion` projelerinde her figür kendi makalesinin yanında/altında akıştadır ve `clip-path` taşımaz.
-- [ ] **K-WORK-6** Aktivasyon oturduktan sonra etkin dilimin açısı, BODY scroll payı çıkarıldığında, saat 9 yönünden ≤ 1° sapar. `uBand.xy = bandOf(proje k)` ve `sectorFill[area_k] = 0.6`'dır.
-- [ ] **K-WORK-7** 1440×700'de numune görünmez (`tone` 0). Altyazı görüntüleyicinin altındadır ve onunla çakışmaz.
+- [ ] **K-WORK-4** Silme 600 ms sürer. Vurgu çizgisi silme kenarıyla hizalıdır (±2 px) ve son 120 ms'de söner. Yukarı kaydırmada ters (sağdan sola) silme olur. ASCII kaplaması silmeyle aynı karede, gelen figürün içinde başlar ve en geç 1.4 s'de kalkar; sonunda gerçek görsel tam görünür. Çakışmada süren silme sona atlar, süren kaplama kalkar ve yenileri başlar. Uzak atlamada ve geri yüklemede silme ve kaplama oynamaz.
+- [ ] **K-WORK-5** `no-js` ve `reduced-motion` projelerinde her figür kendi makalesinin yanında/altında akıştadır, `clip-path` taşımaz ve üstünde kaplama yoktur.
+- [ ] **K-WORK-6** work BODY boyunca `--scene-opacity` 0'dır ve yeni rig karesi çizilmez (WebGL paneli yok). `work-specimen` çapası DOM'da boş bir kutudur: statik panel taşımaz, panel orada gizlenir.
+- [ ] **K-WORK-7** 1440×700'de altyazı görüntüleyicinin altındadır ve onunla çakışmaz.
 - [ ] **K-WORK-8** 390×844'te sticky yoktur ve her kapak başlığın üstündedir (16:10). work IN p 0.5'te `--scene-opacity` 0'dır ve work BODY boyunca render edilen kare sayısı artmaz.
 - [ ] **K-WORK-9** Makale bağlantısında hover ya da klavye odağı başlığı 8 px kaydırır ve görseli 1.02'ye ölçekler (600 ms).
 - [ ] **K-WORK-10** Görüntüleyici düzeni `desktop-chromium`, WebKit ve Firefox ekran görüntülerinde eşdeğerdir (⚠️ sticky grid örtüşmesi).
 
 **journey (K-JOURNEY)**
 - [ ] **K-JOURNEY-1** Ana sayfada ≤ 6 girdi vardır, en yeniden eskiye sıralıdır. Her yıl `<time datetime>` taşır.
-- [ ] **K-JOURNEY-2** Aktivasyonlar s = 875 / 910 / 945 / 980 / 1015 / 1050 (±2 svh) noktalarındadır. Bant tween'i 500 ms sürer. Aynı anda tek `<time>` vurgu rengindedir.
-- [ ] **K-JOURNEY-3** Aşağı kaydırırken etkin bandın halka indeksi azalır (içe doğru). Açık yay BODY boyunca arcGlow 0.2'dedir.
+- [ ] **K-JOURNEY-2** Aktivasyonlar s = 875 / 910 / 945 / 980 / 1015 / 1050 (±2 svh) noktalarındadır. Paneldeki vurgu aynı anda aynı commit'e geçer. Aynı anda tek `<time>` vurgu rengindedir.
+- [ ] **K-JOURNEY-3** Panel `git log`'u gösterir: kayıtlar en yeniden eskiye, `(HEAD)` süren rolde, eğitim işareti brass. Panel her temada gece paletindedir; `html`/`body` zemini değişmez. Statik panelde etkin vurgu yoktur ve sağ durum etiketi boştur.
 - [ ] **K-JOURNEY-4** Geçilen girdiler yukarı kaydırmada da `opacity: 1`'dir.
 - [ ] **K-JOURNEY-5** PDF bağlantısında `download` ve boyut etiketi vardır. "Tam özgeçmiş →" `/cv`'ye (EN `/en/cv`) gider.
-- [ ] **K-JOURNEY-6** Girdi hover/odağı `uBandPreview`'ı 240 ms'de ayarlar ve etkin bandı değiştirmez.
-- [ ] **K-JOURNEY-7** Mobilde bölüm başında 36 svh bant ve her girdide 24 px `EntryGlyph` vardır. Bant görüntü alanından çıkınca ≤ 300 ms'de `--scene-opacity` 0 olur ve frame loop durur.
+- [ ] **K-JOURNEY-6** Girdi hover/odağı paneli değiştirmez.
+- [ ] **K-JOURNEY-7** Mobilde bölüm başında 36 svh bant vardır; girdilerde glif yoktur. Bant görüntü alanından çıkınca ≤ 300 ms'de `--scene-opacity` 0 olur ve frame loop durur.
 - [ ] **K-JOURNEY-8** `features.testimonials` açıkken testimonials IN sonunda `--scene-opacity` 0.4'tür; contact IN p 0.5'te 1'e döner.
 
 **contact (K-CONTACT)**
 - [ ] **K-CONTACT-1** `mailto:` bağlantısı JS'siz görünürdür. 360 px genişlikte yatay kaydırma yoktur.
-- [ ] **K-CONTACT-2** Kopyala: pano e-posta adresini içerir. Buton 2 s "Kopyalandı" metnini ve ✓ SVG'sini gösterir, `role="status"` toast'u duyurulur, `uWave` 600 ms'de 0 → 1 olur.
-- [ ] **K-CONTACT-3** s = 1170'te sahne K5'tedir: `rotX` 68 ± 1°, arcGlow 1.0, ışık 70/14, cut −0.05, rim 0.35.
+- [ ] **K-CONTACT-2** Kopyala: pano e-posta adresini içerir. Buton 2 s "Kopyalandı" metnini ve ✓ SVG'sini gösterir, `role="status"` toast'u duyurulur.
+- [ ] **K-CONTACT-3** s = 1170'te panel `zsh` programındadır; yazma bitince `$ mail <e-posta>`, `✓` ve istem görünür. Yazılan adres DOM'daki adresle aynıdır.
 - [ ] **K-CONTACT-4** Sayfa boyunca `html` ve `body` arka plan rengi değişmez (20 kaydırma konumunda örnekleme).
 - [ ] **K-CONTACT-5** H2 reveal'ı s ≈ 1125'te (±3), lead/e-posta/bağlantılar s ≈ 1140'ta (±3) başlar.
-- [ ] **K-CONTACT-6** E-posta hover'ı sürdükçe `uArcPulse` 2.4 s periyotla tekrarlar ve bırakınca durur. Dokunmatikte merkez geçişinde tek nabız olur.
+- [ ] **K-CONTACT-6** E-posta hover'ı paneli değiştirmez (KESİT'in yay nabzı kaldırıldı); manyetik kayma ≤ 6 px'tir.
 - [ ] **K-CONTACT-7** Mobilde H2'nin üstünde 40 svh bant vardır; `--scene-opacity` contact IN p 0.3–0.6 arasında 0 → 1 olur.
 - [ ] **K-CONTACT-8** Clipboard API reddedildiğinde adres metni seçilir ve yedek toast görünür.
 
 **Koreografi (K-CHOREO)**
 - [ ] **K-CHOREO-1** `tracks.test.ts`: aynı `prop` için örtüşen iki track yoktur.
-- [ ] **K-CHOREO-2** `tracks.test.ts`: event alanlarının (§4.12.2 #2) sahibi olduğu fazlarda o alanlara track yazmaz.
-- [ ] **K-CHOREO-3** Varsayılan geometriyle her `rotY`/`rotX` track'inin hızı ≤ 90° / 100 svh'dir. Yalnız §4.12.2 #6 beyaz listesi bu sınırı aşar.
-- [ ] **K-CHOREO-4** Her bölümde 3 konum için "kaydırarak gel" ve "o konumda yeniden yükle" dinlenmiş durumları eşittir (açılar ±0.5°, skalerler ±0.01).
+- [ ] **K-CHOREO-2** `tracks.test.ts`: event'lerin sahibi olduğu alanlara (program adımı) track yazmaz; track'ler yalnız `anchorMix` ve `opacityTrack` alanlarına yazar.
+- [ ] **K-CHOREO-3** Köprüler geri alınabilir: köprü içinde aynı `y` aynı kareyi verir (yön ve hızdan bağımsız). Köprü dışında panelde iki programın glifleri birlikte görünmez.
+- [ ] **K-CHOREO-4** Her bölümde 3 konum için "kaydırarak gel" ve "o konumda yeniden yükle" dinlenmiş durumları eşittir (program ve adım birebir; çapa dikdörtgeni ±2 px).
 - [ ] **K-CHOREO-5** Geri/ileri sonrası sahne kesilir (100 ms sönme, 200 ms belirme). Morph zinciri yeniden oynamaz.
-- [ ] **K-CHOREO-6** 1440×900 ve 390×844'te, her bölümde 10 konumda, taşın ekran dairesi hiçbir metin dikdörtgeniyle kesişmez (hero H1 hariç).
-- [ ] **K-CHOREO-7** §4.12.1'in her satırının s aralığında `?debug` keyframe değerleri tablodaki değerlerin ±%2'si içindedir (M6 kabulü).
+- [ ] **K-CHOREO-6** 1440×900 ve 390×844'te, her bölümde 10 konumda, panelin ekran dikdörtgeni hiçbir metin dikdörtgeniyle kesişmez (hero H1 dahil).
+- [ ] **K-CHOREO-7** §4.12.1'in her satırının s aralığında `?debug` çapa ve program anahtarı tablodakiyle aynıdır (KOD geçişi kabulü).
 
 **Derin sayfalar (K-DEEP)**
 - [ ] **K-DEEP-1** Her route'un preset'i §4.13.2 ile aynıdır (`?debug` preset adı).
 - [ ] **K-DEEP-2** `/gizlilik`'e ve 404'e doğrudan gelişte WebGL context'i oluşturulmaz.
-- [ ] **K-DEEP-3** Okuma modu: `page-folio` çapası çıkınca `--scene-opacity` ≤ 300 ms'de 0 olur ve sonraki kaydırmada render edilen kare sayısı 0 kalır (`/cv` ≥ 80rem hariç).
-- [ ] **K-DEEP-4** Proje sayfasında "Sonraki proje" bloğu %30 görünür olunca taş belirir ve 600 ms'de sonraki projenin bandına ve dilimine geçer.
-- [ ] **K-DEEP-5** `/projeler`'de filtre çipi ilgili dilimi 400 ms'de 1.0 yapar. Satır hover'ı bant ve dilim önizlemesi yapar ve yüzen önizleme §4.14.5'e uyar.
-- [ ] **K-DEEP-6** Ana sayfa → proje sayfası geçişinde kapak ve başlık paylaşılan öğe olarak morph eder (≤ 400 ms). Taş iki tarafta görünürse süzülür (≈ 700 ms); değilse kesilir ve 300 ms'de belirir.
+- [ ] **K-DEEP-3** Okuma modu: `page-folio` çapası çıkınca `--scene-opacity` ≤ 300 ms'de 0 olur ve sonraki kaydırmada render edilen kare sayısı 0 kalır.
+- [ ] **K-DEEP-4** Proje sayfasında "Sonraki proje" bloğu %30 görünür olunca panel belirir ve `next: <slug>` satırını ≈ 1.2 s'de çözer.
+- [ ] **K-DEEP-5** `/projeler`'de filtre çipi `ls projects/ --area=<id>` komutunu yazar ve eşleşmeyen satırları 400 ms'de söndürür. Yüzen önizleme §4.14.5'e uyar.
+- [ ] **K-DEEP-6** Ana sayfa → proje sayfası geçişinde kapak ve başlık paylaşılan öğe olarak morph eder (≤ 400 ms). Panel iki tarafta görünürse süzülür (≈ 700 ms); değilse kesilir ve 300 ms'de belirir.
 - [ ] **K-DEEP-7** Header kesim çizgisi gezinmede `scaleX` 0 → 0.7 (300 ms) → 1 olur ve 160 ms'de söner.
 - [ ] **K-DEEP-8** `reduced-motion` projesinde view transition süreleri 0'dır ve kesim çizgisi görünmez.
-- [ ] **K-DEEP-9** 404 `ClockFigure` ibreleri yerel saati ±1 dk doğrulukla gösterir ve dakika sınırında güncellenir. `data-motion="reduce"` iken yükleme anında donar. SSR HTML'de ibre yoktur.
-- [ ] **K-DEEP-10** `/cv` < 80rem'de taş görünmez. Baskı önizlemesinde canvas yoktur, `RingsFigure` vardır.
+- [ ] **K-DEEP-9** 404'te KOD hata çıktısı satır içi bir paneldir (`.kod-panel.kod-inline`): `Error: 404` ve önerilen yollar görünür, panelin içinde bağlantı yoktur, panel `aria-hidden`'dır. Canvas ve kendiliğinden hareket eden öğe yoktur.
+- [ ] **K-DEEP-10** `/cv`'de panel, çapa ve canvas yoktur (preset `none`). Baskı önizlemesinde de figür ya da panel basılmaz.
 
 **Mikro etkileşimler (K-MICRO)**
 - [ ] **K-MICRO-1** Kod tabanında `cursor: none` ve özel imleç bileşeni yoktur (grep + computed style).
 - [ ] **K-MICRO-2** İşaretçi efektleri `pixel-7` ve `iphone-15` projelerinde ve `data-motion="reduce"` iken çalışmaz.
 - [ ] **K-MICRO-3** Her hover efekti `:focus-visible` ile de tetiklenir. Manyetik yer değiştirme klavyede olmaz.
 - [ ] **K-MICRO-4** Manyetik davranış yalnızca 4 öğededir. Tıklama kutusunun `getBoundingClientRect()` değeri hover boyunca değişmez.
-- [ ] **K-MICRO-5** DOM mikro etkileşim süreleri ≤ 600 ms, DOM kayması ≤ 12 px, 3D eğim ≤ 6°'dir; §4.14.1'deki istisnalar (manyetik etiket ≤ 14 px, #1, #2, #6, #8, #11, #16) hariç.
+- [ ] **K-MICRO-5** DOM mikro etkileşim süreleri ≤ 600 ms, DOM kayması ≤ 12 px, panel eğimi ≤ 6°'dir; §4.14.1'deki istisnalar (manyetik etiket ≤ 14 px, #1, #6, #11, #16, panel çözülmeleri, work derlemesi) hariç.
 - [ ] **K-MICRO-6** Halka `aria-hidden`'dır. Yay açısı `360° × ilerleme` ±1°'dir; çentikler ölçülen bölüm başlangıçlarında ±1°'dir.
 - [ ] **K-MICRO-7** Ana sayfada etkin nav öğesi `aria-current="true"`, route sayfalarında `aria-current="page"` taşır. Nokta etkin öğenin altındadır.
 - [ ] **K-MICRO-8** Toast `role="status"` taşır, 4 s görünür kalır ve odaklanmış öğenin üstüne binmez.
-- [ ] **K-MICRO-9** Dokunmatikte taşa kısa dokunuş tek tarama yapar. Bağlantı, buton ya da `[data-no-press]` üzerinde tarama yapmaz.
+- [ ] **K-MICRO-9** Dokunmatikte panel paralaks ya da dokunma tepkisi göstermez (KESİT'in dokunma taraması kaldırıldı).
 - [ ] **K-MICRO-10** Mobil menü açılınca odak ilk bağlantıya gider, Esc menüyü kapatır ve odak düğmeye döner. Açılış 500 ms'dir (azaltılmış harekette anında; CSS tabanı 1 ms, §6.5.7).
 
 **Mobil (K-MOBILE)**
 - [ ] **K-MOBILE-1** 360×640, 390×844 ve 412×915'te hiçbir route'ta yatay kaydırma yoktur.
 - [ ] **K-MOBILE-2** Mobil header aşağı kaydırmada gizlenir ve yukarı kaydırmada döner. Header içinde odak varken gizlenmez.
 - [ ] **K-MOBILE-3** Dokunmatik cihazda Lenis kaydırmayı yumuşatmaz (native kaydırma).
-- [ ] **K-MOBILE-4** Yatay telefonda (844×390) taş yalnızca hero'da görünür; diğer bölümlerde `--scene-opacity` 0'dır.
+- [ ] **K-MOBILE-4** Yatay telefonda (844×390) panel yalnızca hero'da görünür; diğer bölümlerde `--scene-opacity` 0'dır.
 - [ ] **K-MOBILE-5** Canvas katmanı `100lvh`'dir. Ölçülen hiçbir değer `dvh` kullanmaz (CSS taraması; mobil menü hariç).
 - [ ] **K-MOBILE-6** Kod tabanında WebGL üzerindeki hiçbir yüzeyde `backdrop-filter` yoktur.
 - [ ] **K-MOBILE-7** Varsayılan içerikle mobil ana sayfa uzunluğu 1100–1300 svh aralığındadır.
 
 **Varyantlar (K-VAR)**
-- [ ] **K-VAR-1** `reduced-motion`: Stage, GSAP, Lenis ve SplitText paketleri ağda istenmez. Tüm areas açıklamaları görünür ve §4.16.3'teki figürler render edilir.
-- [ ] **K-VAR-2** Duraklatma idle drift'i, nabızları ve saatleri durdurur; kaydırma scrub'ı sürer. Yeniden yüklemede duraklatma sıfırlanır.
-- [ ] **K-VAR-3** `no-js`: sticky düzenler kapalıdır; tüm içerik, posterler ve SVG figürler görünür.
-- [ ] **K-VAR-4** `?tier=static`: Stage paketi istenmez. Areas pin'i çalışır ve `DialFigure` rotY track'iyle döner. Work silmeleri çalışır.
+- [ ] **K-VAR-1** `reduced-motion`: Stage, GSAP, Lenis ve SplitText paketleri ağda istenmez. Tüm areas açıklamaları görünür ve §4.16.3'teki statik paneller render edilir.
+- [ ] **K-VAR-2** Duraklatma panelin kendiliğinden hareketini ve saatleri durdurur; köprüler sürer. Yeniden yüklemede duraklatma sıfırlanır.
+- [ ] **K-VAR-3** `no-js`: sticky düzenler kapalıdır; tüm içerik ve statik paneller görünür.
+- [ ] **K-VAR-4** `?tier=static`: Stage paketi istenmez. Areas pin'i çalışır ve areas statik paneli etkin adımı izler (`data-active`). Statik paneller görünür; work silmeleri ve ASCII derlemesi oynar.
 - [ ] **K-VAR-5** "Hareketi azalt" `os-motion`'ı yazar ve ≤ 1 s'de azaltılmış görünüme geçer. Görüntü alanının üstündeki bölüm değişmez. Geri almak tam hareketi geri getirir.
-- [ ] **K-VAR-6** Baskıda canvas, header ve anahtarlar basılmaz; figürler basılır.
+- [ ] **K-VAR-6** Baskıda canvas, statik paneller, header ve anahtarlar basılmaz. `/cv`'de panel hiç yoktur.
 - [ ] **K-VAR-7** `no-webgl` projesinde statik tier seçilir ve konsolda hata yoktur.
 
 **Persona (K-PERSONA)**
-- [ ] **K-PERSONA-1** `profile.test.ts`: `PROFILES` 6 persona'yı ve tüm alanları içerir; her persona'da `stone.disp ≤ 0.045`'tir.
+- [ ] **K-PERSONA-1** `profile.test.ts`: `PROFILES` 6 persona'yı ve tüm alanları içerir.
 - [ ] **K-PERSONA-2** `neutral` değerleri §4.17.2 ve §4.17.4 (`standard`) tablolarıyla birebir aynıdır.
-- [ ] **K-PERSONA-3** `persona` değiştirildiğinde URL'ler ve çapa id'leri aynı kalır; yalnızca etiketler ve sahne parametreleri değişir (iki persona ile build + DOM karşılaştırması).
+- [ ] **K-PERSONA-3** `persona` değiştirildiğinde URL'ler ve çapa id'leri aynı kalır; yalnızca etiketler, palet, tip ve yoğunluk değişir (iki persona ile build + DOM karşılaştırması).
 - [ ] **K-PERSONA-4** `editoryal` fontları yokken `researcher` ile build başarılı olur ve `hassas` tipi kullanılır.
+
+**KOD (K-KOD)**
+- [ ] **K-KOD-1** Her bölüm ve adım kendi programını gösterir: `?debug` program anahtarı ve adım §4.12.1 ve §4.13.2 ile aynıdır (ana sayfa ve tüm derin sayfalar).
+- [ ] **K-KOD-2** Statik paneller SSR HTML'inde doğru programla vardır (`.kod-panel[data-kod-program]`), `aria-hidden` taşır, satırları blok öğedir (`.kod-row`) ve canlı panelin son karesiyle hücre hücre aynıdır (program birim testi).
+- [ ] **K-KOD-3** `reduced-motion` ve `no-webgl` projelerinde statik paneller görünür ve `<canvas>` yoktur.
+- [ ] **K-KOD-4** Work ASCII kaplaması etkinleşmede silmeyle aynı karede görünür ve gerçek görsele çözülür (≤ 1.4 s); `reduced-motion`'da ve mobilde yoktur.
+- [ ] **K-KOD-5** Programlar yalnız içerikteki olguları yazar: tohum içerikle üretilen tamponlarda içerikte olmayan özel ad, yıl ya da kurum yoktur (program birim testi).
+- [ ] **K-KOD-6** Görsel tabanlar (§13.4.2) KOD geçişinde CI Linux'ta yeniden üretilmiştir.
 
 ---
 
 ## 5. 3D sahne ve hareket motoru
 
-Bu bölüm KESİT deneyiminin **nasıl inşa edildiğini** tanımlar: kalıcı canvas, shader'lar, stage store'u, track/event sistemi, scroll ve reveal motoru, route geçişleri, poster hattı ve QA araçları. Ziyaretçinin gördüğü davranış (ne, ne zaman, ne kadar) §4'tedir; renk değerleri §6.3'te, z-index katmanları §6.4'te, zamanlama bütçeleri §9.2'dedir. Sayılar final.md §2–§3, §6.3, §8.1, §10'dan birebir alınmıştır; sözleşme (D-xx) ile çeliştiği yerde sözleşme uygulanmıştır ve not düşülmüştür.
+Bu bölüm deneyimin (KOD, D-16) **nasıl inşa edildiğini** tanımlar: kalıcı canvas, stage store'u, track/event sistemi, scroll ve reveal motoru, route geçişleri, KOD işleyicisi (§5.20) ve QA araçları.
+
+**KOD notu (2026-10-02, sahip onayı):** Taşa özgü alt bölümler (§5.2–§5.6, §5.7.1, §5.7.6–§5.7.7, §5.8, §5.9.4, §5.9.6, §5.10, §5.14.4, §5.16) başlarındaki notla kaldırılmıştır; ayrıntıları yalnız tarih için durur. Genel motor (director, çapalar, track/event sistemi, kesme kuralı, kademeler, lazy boot, bağlam kaybı, scroll, reveal ve route geçişleri) aynen sürer; KOD işleyicisi §5.20'dedir. Ziyaretçinin gördüğü davranış (ne, ne zaman, ne kadar) §4'tedir; renk değerleri §6.3'te, z-index katmanları §6.4'te, zamanlama bütçeleri §9.2'dedir. Genel motorun sayıları final.md §2–§3, §6.3, §8.1, §10'dan birebir alınmıştır; sözleşme (D-xx) ile çeliştiği yerde sözleşme uygulanmıştır ve not düşülmüştür. KOD'a özgü sayılar §4.12.4 ve §5.20'dedir.
 
 ### 5.1 Mimari genel bakış
 
@@ -3575,11 +3668,13 @@ Bu bölüm KESİT deneyiminin **nasıl inşa edildiğini** tanımlar: kalıcı c
 - **ZORUNLU:** `gsap` ve `gsap/*` yalnızca `src/lib/gsap.ts` içinde statik olarak import edilir. Bu modül ve `lenis` yalnızca dinamik `import()` ile yüklenir: `MotionRoot` içinde `import('@/lib/gsap')`, `LenisProvider` içinde `import('lenis')`. Başka her dosya yalnızca `import type` kullanır. Hareket paketi `load` olayından önce istenmez (D-33).
 - **ZORUNLU:** Kaydırma **hiçbir React render'ına yol açmaz.** Kaydırma → `stageTarget` (düz, değiştirilebilir nesne) → `useFrame` → uniform'lar. React state'i yalnızca nadir değişen alanlar içindir (`phase`, `tier`, `preset`, `paused`, `loop`, `canvasKey`, `quality`).
 - **ZORUNLU:** Sahne durumu **`(preset, scrollY, ölçülmüş layout, içerik verisi)`'nin saf fonksiyonudur** (final.md G2). Zaman tabanlı olan tek şey, iki ardışık saf hedef arasındaki geçiştir (event tween'leri, damping). Uzak sıçrama, geri/ileri ve ilk kare bu geçişi atlar (kesme kuralı, §5.9.7).
-- **ZORUNLU:** Bölüm (`<section data-chapter>`) arka planları **şeffaftır**; sayfa rengi yalnızca `body` üzerindedir. Aksi hâlde Taş bölümün arkasında kalır.
+- **ZORUNLU:** Bölüm (`<section data-chapter>`) arka planları **şeffaftır**; sayfa rengi yalnızca `body` üzerindedir. Aksi hâlde panel bölümün arkasında kalır.
 - **YASAK:** WebGL üzerinde `backdrop-filter`; ikinci bir `<Canvas>`; drei'den `PerformanceMonitor` dışında import (D-14); `ScrollTrigger.normalizeScroll`, GSAP `pin`, ScrollSmoother (D-15, D-16).
-- **YASAK:** Taşın gövde metninin arkasında durması. Sahne yalnızca hero H1'in cap çizgisine temas eder (§4.3). Bunu anchor yerleşimleri garanti eder (§5.7).
+- **YASAK:** Panelin gövde metninin arkasında durması. Panel hiçbir metne temas etmez; hero çapası eyebrow satırının altında biter (§4.3, §4.5.6). Bunu anchor yerleşimleri garanti eder (§5.7).
 
 #### 5.1.2 Veri akışı
+
+> **KOD notu (2026-10-02):** Sol sütun (DOM, director, Lenis) aynen geçerlidir. Sağ sütundaki taş kompozisyonu, uniform'lar ve ışık ofseti yerine program tamponu → glif instance'ları akışı geçer (§5.20.1). `--cut-progress` yoktur.
 
 ```text
 DOM (SSR; SEO ve erişilebilirliğin kaynağı)                 WebGL (yalnız client; lazy stage chunk)
@@ -3600,6 +3695,8 @@ hover/focus/kopyala (DOM) ──► events.ts yardımcıları ──tween──�
 ```
 
 #### 5.1.3 Modül haritası
+
+> **KOD notu (2026-10-02):** `gl/{Stone,Ghost,Shadow,StageRig}.tsx`, `gl/materials.ts`, `gl/shaders/*`, `ScenePoster.tsx`'in poster kısmı, `LabStage.tsx`, `ScenePreviews.tsx`, `preview-attrs` ve `section-geometry.ts`'in sahne kullanımı kaldırılır. Yerine §5.20.1'deki modüller gelir: `src/lib/kod/{screen,syntax,programs,types}.ts`, `src/lib/content/kod.ts`, `src/components/kod/{KodPanel,AsciiCompile}.tsx`, `src/stage/kod-atlas.ts`, `src/stage/kod-compose.ts` ve `src/stage/gl/KodRig.tsx`. `src/stage/fx.ts`'te yalnız `setPlanFilter` kalır. Diğer satırlar geçerlidir.
 
 | Dosya | Görev | İzin verilen importlar | Tür |
 |---|---|---|---|
@@ -3631,6 +3728,8 @@ hover/focus/kopyala (DOM) ──► events.ts yardımcıları ──tween──�
 
 #### 5.1.4 Paket bütçeleri (özet; denetim §9.4)
 
+> **KOD notu (2026-10-02):** Bütçeler değişmez. Stage chunk three + R3F'yi korur ama taş shader'ları, ghost ve gölge geçişleri yoktur; küçülmesi beklenir (§5.20.7). PB-1 değişmez (stage tembeldir).
+
 | Paket | İçerik | Bütçe (gzip) | Ne zaman |
 |---|---|---|---|
 | İlk rota JS | framework + uygulama; `src/stage/*` three-free kod, `MotionRoot`, `LenisProvider` kabuğu | ≤ 175 KB (D-33) | kritik yol |
@@ -3639,6 +3738,8 @@ hover/focus/kopyala (DOM) ──► events.ts yardımcıları ──tween──�
 | detect-gpu | 3.3 KB + 1–2 benchmark JSON (`/detect-gpu/`) | — | yoklama sırasında |
 
 ### 5.2 Sahne grafiği ve draw call'lar
+
+> **KESİT'e özgüydü; KOD ile kaldırıldı (2026-10-02, sahip onayı).** Yerine §5.20.4 geçerlidir (glif ızgarası + plaka, 2 draw call).
 
 ```tsx
 // src/stage/gl/Scene.tsx (iskelet; tam boot akışı §5.12)
@@ -3688,6 +3789,8 @@ Kurallar:
 - R3F olay sistemi kullanılmaz (raycast yok). İşaretçi `window` dinleyicisiyle okunur (§5.6.2); katman `pointer-events: none` olduğu için R3F olayları zaten tetiklenmez.
 
 ### 5.3 Geometri ve vertex shader
+
+> **KESİT'e özgüydü; KOD ile kaldırıldı (2026-10-02, sahip onayı).** Yerine §5.20.4 geçerlidir.
 
 #### 5.3.1 Kafes geometrisi
 
@@ -3784,6 +3887,8 @@ Kısıtlar:
 - Normal, `shapeAt`'in sonlu farklarıyla hesaplanır (vertex başına 3 fbm). Kutuplardaki çakışık vertex'ler için `t1` seçimi `abs(d.y) > 0.99` koşuluyla korunur.
 
 ### 5.4 Materyaller ve fragment shader'lar
+
+> **KESİT'e özgüydü; KOD ile kaldırıldı (2026-10-02, sahip onayı).** Yerine §5.20.4 geçerlidir (taş, kapak, halka, dilim, bant, ghost ve gölge materyalleri yoktur).
 
 #### 5.4.1 `stoneMat`: Taş ve kesit yüzeyi tek draw'da
 
@@ -4113,6 +4218,8 @@ export function disposeMaterials(m: ReturnType<typeof createMaterials>): void
 
 ### 5.5 Uniform referansı
 
+> **KESİT'e özgüydü; KOD ile kaldırıldı (2026-10-02, sahip onayı).** Yerine §5.20.4 (glif ve plaka materyali) ve §4.1.3 (renk rolleri) geçerlidir.
+
 "Güncelleme" sütunu: **kare** = `StageRig` her karede yazar; **değişimde** = kaynak değişince; **boot** = mount'ta bir kez. Stone ve ghost aynı uniform nesnelerini paylaşır.
 
 | Uniform | Tip | Varsayılan / aralık | Sürücü | Güncelleme | Kullanan |
@@ -4157,6 +4264,8 @@ export function disposeMaterials(m: ReturnType<typeof createMaterials>): void
 **Uniform olmayan sahne değerleri** (`stageTarget` alanları, §5.9.2): kamera `camR/camAz/camEl/camFov`; nesne `rotYScroll/rotYEvent/rotX` + rig-yerel idle, wobble ve eğim; anchor `anchorFrom/anchorTo/anchorMix` (boyut anchor'dan türetilir); ışık `lightAz/lightEl` + `sweepAz/sweepEl`; katman opaklığı `opacityTrack × opacityCut × opacityReading` → `#scene-layer` üzerindeki `--scene-opacity`.
 
 ### 5.6 Işıklandırma
+
+> **KESİT'e özgüydü; KOD ile kaldırıldı (2026-10-02, sahip onayı).** Yerine §5.20.4 geçerlidir. KOD'da ışık, gün yayı ve ışık taraması yoktur; işaretçi tepkisi paneldeki paralakstır (§4.14 #1).
 
 #### 5.6.1 Anahtar ışık
 
@@ -4231,6 +4340,8 @@ Ara değerler ve aralıklar §5.9.4 track tablosundadır.
 
 #### 5.7.1 Kamera
 
+> **KESİT'e özgüydü; KOD ile kaldırıldı (2026-10-02, sahip onayı).** Yerine §5.20.4 geçerlidir (sabit kamera; panel çapa dikdörtgenine yerleştirilir).
+
 - `PerspectiveCamera`, hedef daima Taş merkezi **(0, 0, 0)**; hedef hiç hareket etmez.
 - Konum küresel değerlerden: `pos = (r·cos el·sin az, r·sin el, r·cos el·cos az)`, ardından `camera.lookAt(0, 0, 0)`.
 - `near 0.1`, `far 50`. `fov` her karede damped değerden atanır.
@@ -4249,6 +4360,8 @@ camera.setViewOffset(W, H, W / 2 - cx, H / 2 - cy, W, H)   // updateProjectionMa
 - Lab modunda (`/lab/stage`) `camera.clearViewOffset()` kullanılır (§5.16).
 
 #### 5.7.3 Anchor bildirimi
+
+> **KOD notu (2026-10-02):** Çapalar her zaman `aria-hidden` taşır; içlerinde yalnız `aria-hidden` statik panel (`KodPanel`) vardır (§4.16.3). `areas-dial` adım başına bir panel taşır; `work-specimen` boş bir kutudur ve director'ün çapa listesinde kalır. `page-folio` masaüstünde k8–12'dir (kare ya da kompakt, §4.5.6). `/cv`'de çapa yoktur. `data-anchor-size` ve `data-anchor-align` KOD'da yok sayılır.
 
 Anchor'lar dekoratif DOM kutularıdır. Sunucu bileşeni `StageAnchor` (`src/stage/ScenePoster.tsx`) üretir. `aria-hidden="true"` yalnız içinde `role="img"` figür bulunmayan çapalara yazılır; `DialFigure` ya da `RingsFigure` taşıyan çapalar (`areas-dial`, `journey-core`, `cv-core`, `plan-small`'daki `page-folio`) `aria-hidden` taşımaz, böylece figürün adı erişilebilirlik ağacında kalır (§10.4.4):
 
@@ -4320,6 +4433,8 @@ export function anchorScreen(a: MeasuredAnchor, scrollY: number, radiiY: number)
 
 #### 5.7.5 Kare başına ekran dikdörtgeni, boyut ve ölçek
 
+> **KOD notu (2026-10-02):** Ekran üst kenarı ve karışım kuralları geçerlidir. Çap `D`, `align: bottom` taş hesabı ve analitik ölçek yerine panel dikdörtgeni kullanılır (§4.5.6, §5.20.4); `live.stone` yerine `live.panel` yazılır.
+
 Ekran üst kenarı (`y` = mevcut `window.scrollY`):
 - flow: `top = docTop − y`
 - viewport: `top = chapterOffsetTop`
@@ -4348,6 +4463,8 @@ footprintRadius = radii.x · 2^(1/2 − 1/n1)  (n1 ≥ 2; n1 < 2 ise radii.x)   
 
 #### 5.7.6 Object-space dönüşümleri (CPU, kare başına)
 
+> **KESİT'e özgüydü; KOD ile kaldırıldı (2026-10-02, sahip onayı).** Yerine §5.20.4 geçerlidir.
+
 ```ts
 stoneGroup.updateMatrixWorld()
 uCamObj.copy(camera.position); stoneMesh.worldToLocal(uCamObj)       // ölçek ve dönüş dahil
@@ -4362,6 +4479,8 @@ uCapRadius.value = capRadius(uPlane.value.w, profile.radii, profile.shape[1])   
 
 #### 5.7.7 Dilim yönelimi (ψ)
 
+> **KESİT'e özgüydü; KOD ile kaldırıldı (2026-10-02, sahip onayı).** Yerine §4.8.5 geçerlidir (adım = alan diyagramı).
+
 - Dilim *k*, object açılarında `[kΔ, (k+1)Δ) + uSectorOffset` aralığını kaplar; `Δ = 360°/N`, `uSectorOffset = 135° − 180°/N`.
 - Plan görünümde dilim *k*'nın merkezini ekranda **saat 9** yönüne getiren dönüş: **ψₖ = 45° − k·Δ** (N = 4: 45°, −45°, −135°, −225°).
 - İşaret kuralı: yukarıdan bakıldığında `rotation.y` saat yönünün tersine pozitiftir; plan görünümde ekran sağı +X, ekran yukarısı −Z'dir. three'de +Y etrafında pozitif dönüş +X'i −Z'ye götürür; bu da ekranda saat yönünün tersidir.
@@ -4369,6 +4488,8 @@ uCapRadius.value = capRadius(uPlane.value.w, profile.radii, profile.shape[1])   
 - `section-geometry.test.ts`, her N ∈ 3..6 ve her k için `(offset + (k + 0.5)·Δ + ψₖ) mod 360 = 180` eşitliğini doğrular. Görsel doğrulama `?debug` panelindeki dilim numaraları katmanıyla yapılır (§5.18).
 
 ### 5.8 Keyframe tablosu
+
+> **KESİT'e özgüydü; KOD ile kaldırıldı (2026-10-02, sahip onayı).** K0–K5 ve D1–D5 anahtarları yoktur. Yerine §4.12.1 (ana sayfa programları) ve §4.13.2 (derin sayfa programları) geçerlidir.
 
 **Tek kaynak:** `src/stage/keyframes.ts`. Aşağıdaki sayılar final.md §3'ten birebir alınmıştır.
 
@@ -4468,6 +4589,8 @@ export function keyframes(ctx: StageContentCtx): Record<KeyframeKey, Keyframe>
 
 #### 5.9.1 `stageStore` (zustand vanilla; nadir değişen durum)
 
+> **KOD notu (2026-10-02):** Store ve aşama geçişleri geçerlidir; `poster` aşaması statik panelin göründüğü aşamadır (ad korunur). Program verisi sunucuda `getKodData(preset, slug?, locale)` ile üretilir (§5.20.1); `rings`, `sectors`, `ringEdges` ve bant alanları KOD'da kullanılmaz. `/cv` preset'i `none`'dır.
+
 ```ts
 // src/stage/store.ts
 import { createStore } from 'zustand/vanilla'
@@ -4532,6 +4655,8 @@ export const useStage = <T,>(sel: (s: StageState) => T): T => useStore(stageStor
 **ZORUNLU:** Kaydırma sırasında `stageStore.setState` çağrılmaz. İstisna `setLoop`: yalnızca opaklık 0.01 eşiğini geçtiğinde çalışır.
 
 #### 5.9.2 `stageTarget`, `live` ve `directorApi` (değiştirilebilir, React dışı)
+
+> **KOD notu (2026-10-02):** KOD'da `StageTarget`'ın kullanılan alanları çapa alanları (`anchorFrom`, `anchorTo`, `anchorMix`) ve opaklık çarpanlarıdır; program `?debug` ve testler için `live.kod`'a yazılır (§5.20.4). Kamera, nesne, kesit, desen, ışık, önizleme, nabız ve dalga alanları KESİT'e özgüydü. `live.stone` yerine `live.panel` (CSS px, eğimsiz yerleşim dikdörtgeni).
 
 ```ts
 // src/stage/store.ts (devam) — yalnız sayı; kare başına okunur
@@ -4701,6 +4826,8 @@ Böylece track'i olmayan alanlar da her zaman tanımlı ve deterministiktir.
 
 #### 5.9.4 Ana sayfa track tablosu (masaüstü)
 
+> **KESİT'e özgüydü; KOD ile kaldırıldı (2026-10-02, sahip onayı).** Yerine §4.12.1 geçerlidir: KOD'da panel için önemli olan track'ler `anchorMix` (köprü; aralıklar §4.12.4 #24) ve `opacityTrack`'tir. KOD'da masaüstü de mobil gibi söner: work IN 0.2–0.5'te `opacityTrack` 1 → 0, journey IN 0.3–0.6'da 0 → 1; work BODY'de loop `never`. `areas-list` varyantında sönme areas IN 0.2–0.5'tedir ve work'te 0 kalır (aşağıdaki "work IN 0.2–0.5: 0 → 1" KESİT satırı geçersizdir). `shortViewport` varyantı (`tone`) KESİT'e özgüydü.
+
 Değerler final.md §4.2–§4.6 ve §5'ten birebir alınmıştır; kolaylık için K anahtarı adlarıyla yazılmıştır. `ease` belirtilmedikçe `smooth`'tur. Areas BODY'de `S = 50` svh (mobil 40), `L = 20 + S·N` ve `p(x svh) = x / L`'dir. §4.12 ile çelişki olursa §0.1 öncelik kuralı uygulanır: §4 tabloları kabul referansıdır; ajan geçerli değeri uygular ve `SPEC-SAPMA` kaydı düşer (§0.2.3 kural 4).
 
 **about · IN**
@@ -4813,7 +4940,7 @@ N = 4, masaüstü: dönüşler 300–315, 350–365, 400–415 svh; metin deği�
 | Varyant | Koşul | Değişiklik |
 |---|---|---|
 | `testimonials` | `features.testimonials` ve bölüm DOM'da | testimonials IN 0–1: `opacityTrack` 1 → 0.4; contact IN 0–0.5: 0.4 → 1. Taş, journey-core'un journey BODY sonundaki ekran dikdörtgeninde (k8–12, y 12–88 svh) sabit kalır, bölümle birlikte kaymaz (§4.10.9 **[SABİT]**; ör. dikdörtgen `live.virtualAnchor` olarak dondurulur, `anchorFrom = −1`); contact IN karışımı değişmez |
-| `areas-list` (masaüstü) | N ≥ 7, ya da pin koşulu sağlanmıyor (§4.8) | areas BODY track'leri yok; `lastPsi = 45`; areas IN 0.2–0.5: `opacityTrack` 1 → 0; work IN 0.2–0.5: 0 → 1 |
+| `areas-list` (masaüstü) | N ≥ 7, ya da pin koşulu sağlanmıyor (§4.8) | areas BODY track'leri yok; `lastPsi = 45`; areas IN 0.2–0.5: `opacityTrack` 1 → 0; KOD'da work'te 0 kalır, journey IN 0.3–0.6'da 0 → 1 (KESİT'teki work IN 0 → 1 kaldırıldı) |
 | `mobile` (< 64rem) | `layout.mobile` | work IN 0.2–0.5: `opacityTrack` 1 → 0; journey IN 0.3–0.6: 0 → 1; journey BODY `[0.20·vh/len, 0.36·vh/len]` (1'e kırpılır): 1 → 0 (bant görünümden çıkar); contact IN 0.3–0.6: 0 → 1; areas BODY'de `S = 40`; testimonials opaklık track'leri eklenmez |
 | `mobile-list` | mobil ve pin koşulu yok | `mobile` + areas IN 0.2–0.5: 1 → 0; work IN opaklık track'i eklenmez (zaten 0) |
 | `landscape` | mobil ve `innerHeight < 500` | yalnız about IN 0.2–0.5: `opacityTrack` 1 → 0; başka opaklık track'i yok |
@@ -4831,6 +4958,8 @@ N = 4, masaüstü: dönüşler 300–315, 350–365, 400–415 svh; metin deği�
 | `none` | `opacityTrack` sabit 0 | — | — | — |
 
 #### 5.9.5 Event'ler ve sahiplik
+
+> **KOD notu (2026-10-02):** İndeksler ve DOM olayları (`areas:step`, `work:active`, `journey:active`, `folio:next`, `about:cut`, `cut`, `refresh`) kalır; event artık bir program adımı seçer (§5.20.5). `about:cut` KOD'da about.dart bloklarının açılmasını sürer (§4.7.3). `cv:active` KOD'da kullanılmaz (`/cv` sahnesiz). Hedef çözümleyicideki `band`/`rotYEvent`/`fills` ve `previewScene`, `pulseArc`, `pulseArcOnce`, `sendWave`, `tapSweep` yardımcıları kod tabanından silindi; `src/stage/fx.ts`'te yalnız `setPlanFilter` kalır. Plan filtresi `ls … --area` satırını sürer.
 
 **İndeksler** (hepsi `y`'nin saf fonksiyonudur; ScrollTrigger yalnızca refresh'te çizgileri ölçer):
 
@@ -4873,11 +5002,11 @@ N = 4, masaüstü: dönüşler 300–315, 350–365, 400–415 svh; metin deği�
 // src/stage/events.ts
 export type CutReason = 'far-jump' | 'restore' | 'route' | 'instant-scroll'
 export type StageEvent =
-  | { type: 'areas:step'; index: number; prev: number; instant: boolean }       // Areas: metin değişimi, iğne, sayaç
-  | { type: 'work:active'; index: number; prev: number; direction: 1 | -1; instant: boolean }  // SectionWipe, altyazı
+  | { type: 'areas:step'; index: number; prev: number; instant: boolean }       // Areas: metin değişimi, sayaç, program adımı
+  | { type: 'work:active'; index: number; prev: number; direction: 1 | -1; instant: boolean }  // SectionWipe, altyazı, AsciiCompile
   | { type: 'journey:active'; index: number; prev: number; instant: boolean }   // aktif yıl etiketi
   | { type: 'cv:active'; index: number; prev: number; instant: boolean }
-  | { type: 'about:cut'; cutProgress: number }                                  // CutLine + lede (§5.14.4)
+  | { type: 'about:cut'; cutProgress: number }                                  // KOD: about.dart blok açılışı (§4.7.3)
   | { type: 'folio:next'; active: boolean }
   | { type: 'cut'; stage: 'start' | 'snap' | 'end'; reason: CutReason }
   | { type: 'refresh'; chapters: ReadonlyArray<{ id: ChapterId; y: number }> }  // HalkaIndicator tikleri
@@ -4908,11 +5037,13 @@ export function tapSweep(): void
 export function setPlanFilter(area: number | null): void  // plan-small: ?alan= (istemci tarafında okunur)
 ```
 
-`about:cut` her güncellemede `cutProgress = (1.10 − stageTarget.cut) / 1.10` ile yayılır. Damped değer değil, track değeri kullanılır; DOM kesit çizgisi kaydırmayla birebir ilerler.
+`about:cut` her güncellemede `cutProgress = clamp((1.10 − stageTarget.cut) / 1.10, 0, 1)` ile yayılır. Damped değer değil, track değeri kullanılır. KOD'da tek tüketicisi canlı paneldeki `about.dart` blok açılışıdır (§4.7.3); DOM'da bu olaya bağlı öğe yoktur (`CutLine` kaldırıldı).
 
 - SPEC-SAPMA: §5.9.5 (M4, 2026-09-30) — Kaydırma döngüsünde bellek ayrılmaması için: `computeIndices(layout, y, out?)` ve `resolveEvents(preset, ix, data, ctx, out)` yeniden kullanılan nesnelere yazar; `EventIndices` ek olarak `fillWindow` (dolgular o konumda event'lerin mi) taşır; `EventTargets.fills` sabit altılı dizi + `fillsActive` bayrağıdır (`null` yerine). `about:cut` olayı tek bir değiştirilebilir nesneyle yayılır. `applyBase` dolgular event'lere aitken onları ezmez (aksi hâlde her güncelleme event tween'inin sonucunu silerdi). Director ayrıca `directorApi.startCut/endCut` (uzak atlama kesmesi, §5.13.4) ve statik kademe kadranı için `onStageUpdate` bildirimini sağlar. Hover/önizleme yardımcıları (`previewSector`, `pulseArc`, `sendWave` …) sahneyle birlikte M5/M7'dedir.
 
 #### 5.9.6 Kompozisyon ve rig-yerel hareket
+
+> **KESİT'e özgüydü; KOD ile kaldırıldı (2026-10-02, sahip onayı).** Yerine §5.20.4 geçerlidir (süzülme, paralaks ve kendiliğinden hareketin durma kuralı).
 
 ```text
 rotY = rotYScroll + rotYEvent + idleAngle + wobble + tiltY          (derece; hepsi rendered/damped)
@@ -4936,7 +5067,7 @@ final.md G2: uzak sıçramalar ve geri/ileri geri yüklemeleri uzun morf zinciri
 |---|---|---|---|---|
 | Uzak sayfa içi sıçrama (hedef bölüm, mevcut bölümden 1'den fazla uzakta) ve areas "Bu bölümü atla" (§4.5.5) | `scrollToChapter()` (§5.13.4) | 150 ms `power2.in` | Lenis `onComplete` (Lenis yoksa native `scrollend`, §5.13.4) | 250 ms `power2.out` |
 | Geri/ileri (popstate) | `RouteScrollSync` bayrağı | 100 ms | geri yüklenen kaydırmayla ilk refresh | 200 ms |
-| Route: Taş eski sayfada gizliydi veya yeni sayfada görünmeyecek | director'ün ilk refresh'i (§5.15.3) | anlık (zaten gizli) | ilk refresh | 300 ms |
+| Route: panel eski sayfada gizliydi veya yeni sayfada görünmeyecek | director'ün ilk refresh'i (§5.15.3) | anlık (zaten gizli) | ilk refresh | 300 ms |
 | Tek güncellemede `abs(Δy) > 1.5·vh` (Home/End, sayfada bul, dokunmatikte native anchor) ve kesme sürmüyor | `update()` | anlık | aynı güncelleme | 200 ms |
 | İlk kare (boot) | `live.snapNextFrame` | — | ilk kare | poster çapraz geçişi (§5.12) |
 
@@ -4945,6 +5076,8 @@ Oturma adımları (sırayla): `emit({ type: 'cut', stage: 'start' })` → sönme
 - SPEC-SAPMA: §5.9.7 (M6, 2026-10-01) — Kesmede belirme, rig oturtulmuş kareyi çizdikten sonra (`live.snapNextFrame` sıfırlanır) bir sonraki karede başlar (en geç 1500 ms); kesme sürerken `--scene-opacity` 0'a inse de döngü `never`'e geçmez, oturtulmuş kare görünmezken çizilir; kesme bitince döngü yeniden değerlendirilir. Aksi hâlde belirme ekranda kesme öncesi kareyle başlıyordu (yavaş karede 0.5 s'ye kadar, K-CHOREO-5, K-GEN-9). Yavaş cihazda belirme bir kare süresi kadar gecikir. Director sökülünce (preset değişimi) bekleyen belirme zinciri iptal edilir: geç başlayan belirme preset `none` sayfasında döngüyü `demand`'e alıyor, işaretçi görünmez kareler çizdiriyordu (§5.19).
 
 #### 5.9.8 Damping sabitleri
+
+> **KOD notu (2026-10-02):** KOD'da yalnız `anchorMix` (0.21 s) ve işaretçi paralaksı (0.32 s) damping alır; route glide satırı geçerlidir. Diğer satırlar KESİT'e özgüydü.
 
 maath `easing.damp(obj, key, target, smoothTime, dt, maxSpeed = Infinity, easing, eps)` kritik sönümlü bir yaydır ve **`smoothTime`** alır (`omega = 2/smoothTime`; maath 0.10.8 kaynağında doğrulandı). final.md'deki λ değerleri, %95 oturma süresi üstel λ ile eşit olacak şekilde `smoothTime = 1.27/λ` formülüyle çevrilmiştir.
 
@@ -4962,6 +5095,8 @@ maath `easing.damp(obj, key, target, smoothTime, dt, maxSpeed = Infinity, easing
 - **ZORUNLU:** `live.snapNextFrame === true` ise o karede bütün damped alanlar hedefe kopyalanır, maath hız durumu (`obj.__damp`) sıfırlanır ve bayrak indirilir.
 
 #### 5.9.9 Frame loop politikası
+
+> **KOD notu (2026-10-02):** Kare istekleri listesine çözülme, yazma, imleç, akan log ve süzülme eklenir: zaman tabanlı içerik varken boşta ≈ 90 ms'de bir kare istenir. Kendiliğinden hareket durunca (§4.4, `frozen`) boşta kare istenmez; işaretçi paralaksı ve köprüler kare istemeye devam eder. Tarama, nabız, dalga ve idle drift yoktur.
 
 `<Canvas frameloop="demand">`; `LoopPolicy` bileşeni `stageStore.loop` ve `document.hidden` durumuna göre `setFrameloop` çağırır.
 
@@ -4984,6 +5119,8 @@ maath `easing.damp(obj, key, target, smoothTime, dt, maxSpeed = Infinity, easing
 - **ZORUNLU:** `demand` modunda unmount kare istemez (R3F issue #3980, final.md §2.9). Ghost unmount'u, geometri değişimi ve malzeme değişimi temizlikte `invalidate()` çağırır.
 
 #### 5.9.10 Preset kaydı (`src/stage/presets.ts`)
+
+> **KOD notu (2026-10-02):** Taban sütunundaki K/D anahtarları yerine preset'in programları geçer (§4.13.2). Track sütunundaki `rotYScroll` satırları ve bant/dilim olayları kalkar; okuma modu ve `folio` slot 1 kuralları aynen sürer. `cv-core` KOD'da kullanılmaz: `/cv` `none`'dır.
 
 | Preset | Taban | Anchor(lar) | Track | Event | Okuma modu | Koşul |
 |---|---|---|---|---|---|---|
@@ -5009,6 +5146,8 @@ Yukarı dönüşte ters sıra uygulanır.
 `?alan=` yalnızca client'ta okunur (D-06).
 
 ### 5.10 `section-geometry.ts`
+
+> **KESİT'e özgüydü; KOD ile kaldırıldı (2026-10-02, sahip onayı).** Sahnede ve SVG figürlerde kullanılmaz; yerine §5.20.2 geçerlidir. OG görseli (§11.5) kesit motifini çizdiği sürece modül yalnız onun yardımcıları için kalır.
 
 Tek bir three-free, saf modül hem shader uniform'larını hem de bütün SVG figürlerini (azaltılmış hareket, statik kademe, CV glifleri, OG görselleri) besler. 3D ve 2D bu sayede daima eşleşir.
 
@@ -5075,6 +5214,8 @@ export function clockAngles(d: Date): { hourDeg: number; minuteDeg: number }  //
 ### 5.11 Yetenek yoklaması ve kalite seviyeleri (tiers), PerformanceMonitor
 
 #### 5.11.1 Kademe tablosu (`src/stage/quality.ts`)
+
+> **KOD notu (2026-10-02):** Segment, oktav, ghost ve taş üçgen sayıları KESİT'e özgüydü. KOD kademeleri ve step-down sırası §5.20.7'dedir. Atama (§5.11.2–§5.11.3) ve `PerformanceMonitor` boşluk koruması (§5.11.4) aynen geçerlidir.
 
 ```ts
 export type Tier = 'static' | 'low' | 'medium' | 'high'      // store.ts'ten yeniden dışa aktarılır
@@ -5243,6 +5384,8 @@ function onPerf(dir: 'up' | 'down') {
 
 #### 5.12.1 Sıra
 
+> **KOD notu (2026-10-02):** Sıra geçerlidir. Posterler yerine çapalarda statik paneller durur (§5.20.6). 6. adımda `compileAsync`'ten önce glif atlası kurulur (§5.20.3). 8. adımdaki ışık taraması yerine hot reload oynar (§4.6.5).
+
 Zaman bütçeleri ve tam zaman çizelgesi §9.2'dedir. Aşağıdaki sıra bağlayıcıdır:
 
 1. **SSR / ilk boya:** `#scene-layer` boş render edilir (`data-phase="poster"`). Posterler anchor'ların içindedir (§5.16.4). H1 LCP öğesidir; hiç animasyon almaz (D-34). Preloader veya giriş ekranı yoktur (D-45).
@@ -5393,6 +5536,8 @@ function FirstFrame() {
 - SPEC-SAPMA: §5.12.4 (M5, 2026-09-30) — `PrecompileVariants` ayrı bileşen değildir: `FirstFrame` ilk `ready`'den sonra düşük oktav varyantlarını ayrık bir `Group` üzerinde `compileAsync`'e sokar (sahne ağacına eklenmez). `LoopPolicy` `never`'e geçerken R3F'in bekleyen kare sayacını (`internal.frames`) sıfırlar: R3F döngüsü bekleyen kareleri `frameloop`'tan bağımsız çizer ve opaklığı 0 olan sahnede bir kare daha çiziliyordu (§5.19, "2 s boyunca `useFrame` yok").
 
 #### 5.12.5 Katman CSS'i
+
+> **KOD notu (2026-10-02):** Çapraz geçiş statik panel için `:root:has(#scene-layer[data-phase="ready"]) .stage-anchor .kod-panel { opacity: 0; transition: opacity 600ms var(--ease-out) }` kuralıyla yapılır. `ready` dışında (statik tier, fallback, bağlam kaybı) statik panel geçişsiz görünür (§4.16.3). Baskıda `.kod-panel { display: none }`.
 
 ```css
 #scene-layer {
@@ -5656,7 +5801,7 @@ export function ScrollDirector({ children }: { children: ReactNode }) {
 
 - `applyBase` her çağrıda sabit bir nesneden kopyalar; `keyframes(...)` refresh'te bir kez hesaplanıp önbelleğe alınır (iskelette okunabilirlik için satır içi gösterilmiştir). Kaydırma döngüsünde bellek ayırma **YASAK**tır.
 - `writeCssVars` yalnızca değer 0.001'den fazla değişince yazar: `#scene-layer`'a `--scene-opacity = opacityTrack·opacityCut·opacityReading`. Eşik geçişinde `setLoop('never' | 'demand')` çağrılır.
-- **Statik kademe:** director aynen çalışır (DOM koreografisi: Areas SVG kadranı, lede, wipe'lar). `DialFigure`, `onStageEvent('refresh')` ile kaydolur ve her güncellemede `stageTarget.rotYScroll`'u okuyup `transform: rotate(${-rotY}deg)` uygular (§4.16).
+- **Statik kademe:** director aynen çalışır (DOM koreografisi: reveal'lar, areas pini ve adım panelleri, work silmeleri ve ASCII derlemesi; §4.16). KESİT'in `DialFigure` dönüşü ve lede satır açılışı kaldırıldı.
 
 #### 5.13.6 ScrollTrigger kuralları (bu kod tabanı için)
 
@@ -5666,7 +5811,7 @@ export function ScrollDirector({ children }: { children: ReactNode }) {
 4. `ScrollTrigger.refresh()` şu anlarda çağrılır: `document.fonts.ready`, route commit'inden sonra rAF, `orientationchange`, 150 ms debounce'lu `ResizeObserver` (yalnız `scrollHeight` değişince). Otomatik refresh olayları varsayılan kalır.
 5. Bölümlerde `content-visibility: auto` **YASAK**tır (tetikleyici konumlarını bozar).
 6. Kaydırma uzunlukları `svh` iledir; ölçülen hiçbir şey `dvh` kullanmaz. `ignoreMobileResize: true`.
-7. **YASAK:** `pin`, pin-spacer, `normalizeScroll`, ScrollSmoother, `snap`. Metin ve görsel opaklığına `scrub` uygulanmaz (D-16). Tek scrub'lanan DOM öğesi dekoratif kesit çizgisidir; o da director'ün `about:cut` olayıyla sürülür.
+7. **YASAK:** `pin`, pin-spacer, `normalizeScroll`, ScrollSmoother, `snap`. Metin ve görsel opaklığına `scrub` uygulanmaz (D-16). Kaydırmaya bağlı DOM yalnız §4.3'teki beyaz listedir (Halka yayı, `--scene-opacity`); KESİT'in scrub'lanan kesit çizgisi (`CutLine`) kaldırıldı.
 8. Yalnızca `transform`, `opacity`, `clip-path` ve CSS değişkenleri canlandırılır. `top/left/width/height` canlandırmak **YASAK**tır. `will-change` yalnız tween süresince uygulanır.
 9. Pasif dinleyiciler kullanılır; kaydırma işleyicilerinde okuma/yazma karıştırılmaz. DOM yazımları tek güncellemede toplanır.
 
@@ -5696,9 +5841,9 @@ export function Reveal({ kind = 'block', as: Tag = 'div', ...rest }:
 | `lines` | h2/h3 (≤ 12 kelime) | SplitText maskeli satırlar: `yPercent 130 → 0` (`--reveal-line-from`, §6.5.4), 700 ms `expo.out`, satır arası 70 ms, bir kez, sonra `revert()` |
 | `block` | gövde blokları, listeler, meta | opaklık 0 → 1 + `translateY 16px → 0`, 500 ms `--ease-out` (CSS geçişi) |
 | `clip` | portre ve görseller | `clip-path: inset(8% round 6px) → inset(0 round 6px)` + iç görsel `scale 1.08 → 1`, 700 ms `--ease-out` |
-| `lede` | About lede'i | kesit eşikleriyle satır satır açılma (§5.14.4) |
 
 - **YASAK:** H1'de `data-reveal` (D-34). Gövde metnini bölmek (D-46). Reveal süresi 700 ms'yi aşamaz (final.md §1.5).
+- KESİT'teki `lede` türü KOD ile kaldırıldı (`CutLine` yoktur): about lede'i `block` kullanır (§4.7.2).
 
 #### 5.14.2 CSS (gizli durum yalnızca `.motion-ready` altında)
 
@@ -5708,9 +5853,6 @@ html[data-motion="full"].motion-ready [data-reveal][data-armed]:not(.is-revealed
 html[data-motion="full"].motion-ready [data-reveal="block"][data-armed]:not(.is-revealed) { transform: translateY(16px); }
 html[data-motion="full"].motion-ready [data-reveal="clip"][data-armed]:not(.is-revealed) { opacity: 1; clip-path: inset(8% round 6px); }
 html[data-motion="full"].motion-ready [data-reveal="clip"][data-armed]:not(.is-revealed) img { scale: 1.08; }
-html[data-motion="full"].motion-ready [data-reveal="lede"][data-armed]:not(.is-revealed) {
-  opacity: 1; clip-path: inset(0 0 calc(100% - var(--lede-shown, 0) * 1lh) 0);
-}
 [data-reveal="block"] { transition: opacity 500ms var(--ease-out), transform 500ms var(--ease-out); }
 [data-reveal="clip"] { transition: clip-path 700ms var(--ease-out); }
 [data-reveal="clip"] img { transition: scale 700ms var(--ease-out); }
@@ -5719,7 +5861,6 @@ html[data-motion="full"].motion-ready [data-reveal="lede"][data-armed]:not(.is-r
 ```
 
 - SplitText 3.15 kaynağında doğrulandı: maske öğesi, satır sınıfına `-mask` son eki eklenerek adlandırılır ve `overflow: clip` alır. `linesClass: 'split-line'` → `.split-line-mask`.
-- `1lh` birimi Chrome 109+, Safari 16.4+ ve Firefox 120+'da vardır (iOS ≥ 17 hedefiyle uyumludur, §2.5).
 
 #### 5.14.3 Motor: `armReveals` (`MotionRoot.tsx`)
 
@@ -5731,7 +5872,6 @@ export function armReveals(root: HTMLElement, rt: MotionRuntime): () => void {
   const vh = window.innerHeight
   const ctx = gsap.context(() => {
     for (const el of root.querySelectorAll<HTMLElement>('[data-reveal]:not(.is-revealed):not([data-armed])')) {
-      if (el.dataset.reveal === 'lede') { el.dataset.armed = ''; continue }        // CutLine yönetir
       if (el.getBoundingClientRect().top < vh * 0.88) { el.classList.add('is-revealed'); continue }  // zaten görünür → asla gizleme
       el.dataset.armed = ''
       const art = el.closest('[data-chapter="work"] article'), con = el.closest('[data-chapter="contact"]')
@@ -5773,20 +5913,14 @@ function reveal(el: HTMLElement, rt: MotionRuntime, force: boolean) {
 
 #### 5.14.4 Lede ve kesit çizgisi (`CutLine.tsx`)
 
-final.md §4.2, lede'in satır satır açılmasını ister; D-46 ise SplitText'i başlıklarla sınırlar. Uyum için lede **bölünmez**. Satırlar `clip-path` ile, satır yüksekliği (`1lh`) adımlarıyla açılır.
-
-- `CutLine`, `onStageEvent('about:cut')` ve `onStageEvent('refresh')` olaylarına abone olur.
-- Refresh'te satır sayısı ölçülür: `L = round(lede.offsetHeight / parseFloat(getComputedStyle(lede).lineHeight))`.
-- Eşik: satır `k` (0 tabanlı), `cutProgress ≥ 0.05 + 0.60·k / max(1, L−1)` olduğunda bir kez açılır. Son satır 0.65'te açılır (about IN bitmeden).
-- Açılış: `gsap.to(lede, { '--lede-shown': n, duration: 0.7, ease: 'expo.out' })`. `n` asla azalmaz. `n === L` olunca `.is-revealed` eklenir.
-- İlk kurulumda (veya `instant`) o anki `cutProgress`'e kadarki satırlar animasyonsuz açılır.
-- Kesit çizgisi: `.cut-line { transform: scaleX(var(--cut-progress)); transform-origin: left }`. `CutLine` her `about:cut` olayında `--cut-progress` değerini yazar; bu yalnızca dekorasyondur.
-- JS yoksa ve azaltılmış harekette lede tamamen görünür, çizgi tam genişliktedir (§4.16).
+> **KESİT'e özgüydü; KOD ile kaldırıldı (2026-10-02, sahip onayı).** Yerine §4.7.4 geçerlidir: `CutLine.tsx` silindi; `.cut-line`, `--lede-shown` ve `data-reveal="lede"` yoktur. Lede `data-reveal="block"` taşır ve global blok reveal'ıyla bir kez açılır (≤ 700 ms); bölünmez. `armReveals` lede için özel durum içermez. `about:cut` olayı kalır ve KOD'da yalnız about.dart bloklarının açılmasını sürer (§4.7.3). KESİT metni (satır satır `clip-path` açılışı, kesit çizgisi) git geçmişindedir.
 
 #### 5.14.5 Pinlenmiş metin değişimleri ve wipe'lar (olay sözleşmesi)
 
+> **KOD notu (2026-10-02):** Areas'ta iğne yoktur. `work:active` hem `SectionWipe`'ı hem ASCII derlemesini (`AsciiCompile`) aynı karede tetikler (§4.9.4). Journey/CV kuralı aynen geçerlidir.
+
 - **Areas:** `onStageEvent('areas:step')` → aktif açıklama `data-active`, başlık `aria-current="step"`, sayaç ve iğne güncellenir. Geçiş CSS'tedir: çıkış 180 ms, giriş 300 ms, çakışma yok (§4.8, §6.6). `instant: true` iken geçişler devre dışıdır.
-- **Work:** `onStageEvent('work:active')` → `SectionWipe` (600 ms, `direction` yönünde) ve altyazı değişimi (300 ms'de). Davranış §4.9'dadır. `instant` iken son durum doğrudan yazılır.
+- **Work:** `onStageEvent('work:active')` → `SectionWipe` (600 ms, `direction` yönünde), altyazı değişimi (300 ms'de) ve aynı karede `AsciiCompile` (≈ 1.2 s). Davranış §4.9.4'tedir. `instant` iken son durum doğrudan yazılır, kaplama oynamaz.
 - **Journey / CV:** `onStageEvent('journey:active' | 'cv:active')` → aktif `<time>` etiketi `--color-accent` alır.
 
 #### 5.14.6 Güvenlik ve sıçramaya dayanıklılık
@@ -5904,6 +6038,8 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
 
 #### 5.15.3 Sahne katmanı: glide veya kesme
 
+> **KOD notu (2026-10-02):** Karar tablosu geçerlidir; "Taş" yerine panel okunur. Glide'da panel dikdörtgeni süzülür ve program yeni sayfanınkine çözülür (§4.13.3). Work numunesi örneği geçersizdir (work'te panel yoktur).
+
 ```tsx
 // src/stage/StagePreset.tsx
 'use client'
@@ -5937,6 +6073,8 @@ export function StagePreset({ name, data }: { name: PresetName; data: StageData 
 - ⚠️ DOĞRULANMADI: popstate'te Next'in kaydırma geri yüklemesinin director refresh'ine göre zamanlaması. Geri yükleme oturmadan sonra gelirse `abs(Δy) > 1.5·vh` kuralı ikinci bir kesme yapar; sonuç yine doğrudur. Her bölüm için Playwright geri/ileri testiyle doğrulanır (§13.3).
 
 ### 5.16 Poster hattı: `/lab/stage` + `render-posters.ts`
+
+> **KESİT'e özgüydü; KOD ile kaldırıldı (2026-10-02, sahip onayı).** Posterler, `scripts/render-posters.ts`, `npm run posters`, `/lab/stage` ve lab modu yoktur. Yerine statik paneller geçer: §5.20.6 ve §4.16.3.
 
 #### 5.16.1 Üretilen varlıklar
 
@@ -6080,6 +6218,8 @@ export function ScenePoster({ posterKey }: { posterKey: 'k0' | 'k1' | 'k5' }) {
 
 ### 5.17 Context loss ve hata toleransı
 
+> **KOD notu (2026-10-02):** Tablo geçerlidir; posterler yerine statik paneller anında geri gelir. Yeniden mount'ta glif atlası yeniden kurulur. Statik kademede SVG figürler ve GSAP kadranı yerine statik paneller durur (§4.16.3).
+
 ```tsx
 // src/stage/gl/Scene.tsx
 function ContextGuard() {
@@ -6114,6 +6254,8 @@ function ContextGuard() {
 
 #### 5.18.1 `?debug`
 
+> **KOD notu (2026-10-02):** "İçerik" ve "Katman" satırları program anahtarını, adımı, köprü ilerlemesini ve panel dikdörtgenini gösterir; halka, dilim, ψ ve taş dairesi yoktur. "Kalite" satırı §5.20.7 değerlerini gösterir. Eylemlerde "Taramayı yeniden oynat" yerine "hot reload’u oynat" düğmesi vardır (`live.kod.replayHot`). Test kancaları `live.panel` ve `live.kod`'dur (§5.20.4).
+
 - Yalnızca client'ta okunur (D-06); her ortamda çalışır.
 - `src/stage/debug.tsx` dinamik olarak yüklenir, ilk pakete girmez.
 - `store.debug = true`, canvas mount'undan **önce** ayarlanır; canvas `preserveDrawingBuffer: true` ile kurulur (kontrast probu için).
@@ -6135,6 +6277,8 @@ function ContextGuard() {
 
 #### 5.18.2 Kontrast probu
 
+> **KOD notu (2026-10-02):** Prob `live.stone` dairesi yerine `live.panel` dikdörtgenini kullanır. KOD'da panel hiçbir metinle kesişmez, hero dahil (K-CHOREO-6). Prob bu yüzden yalnız bir güvenlik kontrolüdür; X8 buna göre daralır (§15.9).
+
 Amaç: WebGL'in önündeki metnin kontrastını ölçmek (axe canvas'ı örnekleyemez; §10.5, §13.4).
 
 1. Bir kare render edildikten sonra çalışır (`preserveDrawingBuffer`).
@@ -6150,6 +6294,8 @@ Beklenen referans (final.md risk #10): açık temada hero H1, %16 `#0E1530` tema
 - SPEC-SAPMA: §5.18.2 (M5, 2026-09-30) — Prob, ata öğenin opaklığı ya da görünürlüğüyle gizlenen metni atlar (`checkVisibility({ opacityProperty, visibilityProperty })`): crossfade'de gizlenen SVG figür etiketleri denetlenmez. X8 ilk koşusu (M5): `/`'de 394 öğe, gövde metninde başarısızlık yok; yalnız K0'da H1 kutusu (2.5–2.96:1, büyük metin eşiği 3.0; §4.6.3 notu). Derin sayfalar (`/hakkimda`, `/projeler/ornek-proje-1`, `/iletisim`) M7'ye kadar `none` preset'tedir: denetlenecek öğe yoktur.
 
 ### 5.19 Kabul kriterleri
+
+> **KOD notu (2026-10-02):** "Shader ve görüntü" grubu, "Kamera ve anchor" grubundaki Taş merkezi ve ψ maddeleri, "Lazy boot" grubundaki segment/oktav/ghost, ışık taraması ve idle drift maddeleri ve poster maddeleri KESİT'e özgüydü; yerlerine §5.20.8 geçer. Diğer maddeler geçerlidir.
 
 **Mimari ve paketler**
 - [ ] `npx next experimental-analyze` ve `npm run budgets`: ilk rota parçalarında `WebGLRenderer`, `three`, `@react-three/*`, `maath`, `gsap` ve `lenis` yoktur. Stage chunk ≤ 300 KB gzip, motion chunk ≤ 60 KB gzip (D-33).
@@ -6189,7 +6335,7 @@ Beklenen referans (final.md risk #10): açık temada hero H1, %16 `#0E1530` tema
 - [ ] Her reveal (§4.12.3 istisnaları hariç), bloğun üstü viewport'un %75'ini geçmeden tam görünür olur (Playwright: 88% ve 75% noktalarında opaklık ölçümü, ayrıca hızlı kaydırma).
 - [ ] JS kapalıyken ve `reduced-motion` projesinde hiçbir içerik `opacity: 0` değildir; `.motion-ready` yoktur.
 - [ ] `SplitText` reveal'dan sonra `revert()` edilmiştir: başlığın `innerHTML`'i SSR çıktısıyla aynıdır ve `.split-line` kalmamıştır.
-- [ ] Lede'in son satırı `cutProgress` 0.65'te açılır. Lede asla bölünmez (DOM'da `split-line` yoktur).
+- [ ] Lede asla bölünmez (DOM'da `split-line` yoktur) ve global blok reveal'ıyla bir kez açılır (KOD; KESİT'in `cutProgress` satır eşikleri kaldırıldı).
 - [ ] Oturum ortasında hareket değişimi (full ↔ reduce) satır içi stil veya asılı ScrollTrigger bırakmaz (`ScrollTrigger.getAll().length === 0` ve `[style*="translate"]` yok).
 
 **Route geçişleri, bağlam kaybı, araçlar**
@@ -6199,6 +6345,122 @@ Beklenen referans (final.md risk #10): açık temada hero H1, %16 `#0E1530` tema
 - [ ] `loseContext()` → posterler aynı karede görünür; `restoreContext()` → `ready`'ye döner. İkinci kayıp → `data-tier="static"`, canvas yoktur.
 - [ ] `npm run posters -- --check` 36 dosyayı ve `*-1080.avif ≤ 40 KB` bütçesini doğrular. Etkin olmayan tema posteri indirilmez (⚠️ §5.16.4).
 - [ ] `?debug` paneli ve kontrast probu çalışır. Probu K0–K5'te çalıştırınca gövde metninde < 4.5:1 sonuç yoktur.
+
+### 5.20 KOD işleyicisi
+
+Bu alt bölüm KOD panelinin nasıl çizildiğini tanımlar (D-16, 2026-10-02). Ziyaretçinin gördüğü programlar ve zamanlamalar §4'tedir (program tablosu §4.12.1, [SABİT] değerler §4.12.4). Genel motor (director, çapalar, event'ler, kademeler, lazy boot, bağlam kaybı, route geçişleri) değişmez.
+
+#### 5.20.1 Modüller ve veri akışı
+
+| Dosya | Görev | Tür |
+|---|---|---|
+| `src/lib/kod/screen.ts` | Ekran tamponu `Screen` (hücre: glif, ön plan rolü + alfa, zemin rolü + alfa, efekt), glif kümesi (`FONT_SET`, `DRAWN`), `SCRAMBLE`, `RAMP`, `ROLE`, `KOD_COLS` = 56, `KOD_ROWS` = 24 | three-free, React-free |
+| `src/lib/kod/syntax.ts` | Dart sözdizimi renklendiricisi | three-free, React-free |
+| `src/lib/kod/programs.ts` | Tüm programlar **tek dosyada**: `renderProgram(tampon, veri, program, age, reduce)`, `programKey`, pencere çerçevesi (`chrome`) | three-free, React-free |
+| `src/lib/kod/types.ts` | `KodData` (içerikten türeyen veri), `KodProgram` (gösterilecek program ve adım) | three-free |
+| `src/lib/content/kod.ts` | `buildKodData`: içerikten `KodData`. Erişimci `getKodData(preset, slug?, locale)` `src/lib/content/index.ts`'tedir | sunucu |
+| `src/components/kod/KodPanel.tsx` + `kod-panel.css` | Statik panel (§5.20.6) | sunucu |
+| `src/components/kod/AsciiCompile.tsx` | Work ASCII derlemesi (2D canvas, §4.9.4) | client, three-free |
+| `src/stage/kod-atlas.ts` | Glif atlası: çalışma zamanında 2D canvas (§5.20.3) | three-free |
+| `src/stage/kod-compose.ts` | `KodComposer`: `keyChange(key, t, snap)`, `narrative`, `bridge`, `reset`. İki tamponu (giden A, gelen B) instance attribute'larına yazar; kare başına bellek ayırmaz | three-free |
+| `src/stage/gl/KodRig.tsx` | Glif ve plaka materyalleri, yerleşim, eğim/süzülme/paralaks, kare politikası; `live.panel` ve `live.kod`'u yazar. `gl/Scene.tsx` ile birlikte `three` import eden tek dosyadır (D-17) | stage chunk |
+
+```text
+içerik ──getKodData(preset, slug?, locale)──► KodData (sunucu) ──<StagePreset data>──► stageStore (StageData.kod)
+KodPanel: renderProgram(tampon, veri, program, t = ∞) ──► statik panel <pre> (SSR, aria-hidden, data-kod = program JSON)
+director: köprü (anchorMix) + adım event'leri ──► stageTarget, event'ler
+KodRig, her kare: çapa → program (statik panelin data-kod'u) → renderProgram(B, …, age) + önceki kare A
+               ──► KodComposer (köprü / çözülme) ──► instance attribute'ları ──► 2 draw (plaka + glifler)
+```
+
+#### 5.20.2 Programlar
+
+- Programlar `src/lib/kod/programs.ts` içinde **saf fonksiyonlardır**; three.js ya da React import etmez. Bir ekran tamponu yazarlar: 56 sütun × 24 satır, hücre oranı 1 : 2. Hücre; glif, renk rolü, alfa, zemin rolü ve zemin alfası taşır (roller §4.1.3).
+- Pencere çerçevesi ızgaranın parçasıdır: yuvarlatılmış çerçeve, üç nokta, dosya adı ve sol/sağ etiketli durum satırı. Köprülerde çerçeve hücreleri düşmez.
+- Program anahtarları: `hero`, `about` (`reveal`: açık blok oranı), `area` (indeks → `figure`), `journey` (`active`; statik panelde `-1`), `contact`, `folio` (slug), `next` (slug), `list` (filtre), `notfound` (yol). Ana sayfa ve derin sayfa eşlemesi §4.12.1 ve §4.13.2'dedir.
+- Zaman: yazma, akan log, imleç ve hat animasyonu `age`'i (programın başlangıcından beri geçen saniye) okur. `reduce` (azaltılmış hareket, statik panel, `frozen`) son kareyi verir. Sunucu ve istemci aynı fonksiyonu çağırır; statik panel bu yüzden canlı panelin son karesiyle hücre hücre aynıdır (§4.1.5).
+- Veri: `KodData` sunucuda `buildKodData` ile içerikten üretilir ve `StageData.kod` içinde istemciye JSON olarak geçer. Yalnız içerikteki olgular girer (§4.1.2).
+- Dart sözdizimi renklendiricisi (`syntax.ts`): yorum `subtle`, dizge `accent`, `@annotation` `muted`, adlandırılmış parametre `brass`, anahtar sözcük `muted`, noktalama `muted` (0.9), sayı `ink` (tam opak), diğer adlar `ink` (küçük harfle başlayanlar 0.8). Pencere çerçevesi (`chrome`): çerçeve `muted` 0.75, dosya adı `ink` 0.92, durum satırının sol ve sağ etiketleri `muted` 0.85.
+- **ZORUNLU:** Programlar birim testlidir (§13.2.2).
+
+#### 5.20.3 Glif atlası
+
+- Atlas `src/stage/kod-atlas.ts`'te çalışma zamanında bir 2D canvas'a çizilir; `KodRig` onu dokuya çevirir. Font Martian Mono'dur (`next/font/local`, D-21). Atlas `document.fonts.load(…, FONT_SET)` çözülünce kurulur (≤ 3.5 s; aşılırsa yedek monospace).
+- 16 sütun; hücre 40 × 80 px + 6 px pay; atlas ≈ 1024² RGBA ve mipmap'lidir.
+- **Elle çizilenler:** kutu çizgileri (`─│├└┌┐┘┤┬┴┼╭╮╰╯━┃`), oklar (`→←`), `✓`, `●○`, `█░▸`. Canvas yollarıyla çizilir; böylece çerçeve çizgileri hücreler arasında dikişsiz birleşir.
+- Glif kümesi font alt kümesine (Latin-1 + Türkçe, §6.2.3) uyar. Kümede olmayan karakter `?` olarak çizilir.
+
+#### 5.20.4 Sahne: glif ızgarası, plaka, yerleşim
+
+- **Tek `InstancedBufferGeometry`** (birim dörtgen), **2 katman × 56 × 24 = 2,688 instance**: katman A giden, katman B gelen programdır. v1'de ince sanat ızgarası yoktur. Instance başına konum (x, y, z, ölçek), glif indeksi, ön plan RGBA ve zemin RGBA vardır. `DynamicDrawUsage` kullanılır; alfası ≈ 0 olan instance vertex shader'da kırpılır.
+- **Glif materyali:** `ShaderMaterial`, önceden çarpılmış alfa (`CustomBlending`, `One`, `OneMinusSrcAlpha`), `depthTest` ve `depthWrite` kapalı. Fragment, atlas alfası × ön plan alfasını zeminle birleştirir.
+- **Plaka:** gliflerin arkasında yuvarlatılmış dikdörtgen (SDF) ve yumuşak ofset gölge; renk `panel` rolüdür (§4.1.3), harmanlama aynıdır.
+- **Draw call:** plaka + glifler = **2**. Tek doku atlastır. Işık, gölge haritası ve post-processing yoktur.
+- **Renkler:** roller çözülmüş temanın değerlerinden okunur (§6.3.6). Gece paneli her temada koyu değerleri kullanır. Tema değişiminde roller yeniden okunur ve `invalidate()` çağrılır.
+- **Yerleşim:** panelin ekran dikdörtgeni, ölçülen çapalardan (§5.7.4–§5.7.5) `anchorFrom` → `anchorTo` arasında `anchorMix` ile karışır. Dikdörtgen çapayı doldurur ve ortalanır (contain, 7 : 6, §4.5.6). Sabit bir perspektif kamera (z = 10, fov 30) üzerinden dünyaya eşlenir.
+- **Eğim:** tüm programlarda sabit: pitch −2°, yaw −6°.
+- **Süzülme:** dikey ±%1.2 panel yüksekliği, roll ±0.2° (yavaş sinüsler). Yalnız high ve medium'da.
+- **Paralaks:** yaw `±4°·x`, pitch `±2.5°·y`, üstel sönüm (≈ `smoothTime` 0.32 s). Yalnız ince işaretçide, tier ≠ `low`. Kullanıcı girdisi olduğu için duraklatmada da çalışır. Mobilde ve kaba işaretçide yoktur.
+- **Kendiliğinden hareket:** `frozen = paused || son girdiden 20 s (ince işaretçi) / 8 s (kaba işaretçi)`. Stage mount'u girdi sayılır. `frozen` iken program son kareyle çizilir (imleç görünür), süzülme saati durur (devam ederken zıplamaz) ve boşta kare istenmez. Zaman tabanlı içerik varken ve `frozen` değilken boşta ≈ 90 ms'de bir kare istenir.
+- **Test ve `?debug` kancaları:** rig her karede `live.panel = { x, y, w, h, visible }` (CSS px, eğimsiz yerleşim dikdörtgeni) ve `live.kod = { key, mix, frozen, drift, parX, parY, hot, replayHot }` yazar. `?debug` panelindeki "hot reload’u oynat" düğmesi `replayHot`'u kurar; rig sonraki karede `composer.reset()` çağırır ve hot reload yeniden oynar (§5.20.5).
+
+#### 5.20.5 Program değişimi: köprü ve adım
+
+- **Durum:** director her `update(y)`'de köprüyü (`anchorFrom`, `anchorTo`, `anchorMix`) ve adım event'lerini üretir. Rig her çapanın programını o çapadaki statik panelin `data-kod` özniteliğinden okur. Statik paneli olmayan çapa (`work-specimen`) programsızdır. Durum `(preset, y)`'nin saf fonksiyonudur.
+- **Köprü (kaydırmayla scrub):** `from ≠ to` ve `0 < anchorMix < 1` iken. A, önceki çapanın programıdır; B, yeni çapanınkidir. Her hücre için:
+  - A sütun sütun düşer: sütun gecikmesi sözde rastgeledir (`hash`), düşüş mesafesi f² ile büyür; düşen glif karışır, accent'e çalar ve söner;
+  - B yukarıdan aşağı çözülür: satır eşiği `0.32 + 0.5·satır/24 + 0.14·rastgele`; eşikten 0.16 önce karışık glif görünür, eşikte glif accent parlamasıyla oturur;
+  - çerçeve hücreleri A ve B'de aynıysa düşmez;
+  - panel dikdörtgeni ve gece paleti `anchorMix`'in smoothstep'iyle karışır;
+  - programsız uca giden köprüde plaka `1 − 1.6·mix` ile söner, programsız uçtan gelende `1.6·mix` ile belirir;
+  - ilerleme yalnız `anchorMix`'in fonksiyonudur; geri kaydırma ters oynar.
+- **Köprü dışı:** `anchorMix ≥ 0.5` ise hedef çapanın, değilse kaynak çapanın programı gösterilir.
+- **Adım (zaman tabanlı, ≈ 1.2 s):** `areas:step`, `journey:active`, `folio:next`, plan filtresi ve ana sayfa about'unda `about:cut` (açık blok oranı) program anahtarını değiştirir. `KodComposer.keyChange` görünen karenin anlık görüntüsünü alır. Değişen hücre gecikmesine kadar eski glifi tutar, sonra 0.28 s karışık glif gösterir ve accent parlamasıyla (0.3 s) oturur. Gecikme `0.04 + 0.62·satır/24 + 0.12·sütun/56 + 0.22·rastgele` saniyedir. Yalnız rengi değişen hücre 0.35 s'de geçer. `cv:active` KOD'da kullanılmaz.
+- **Çözülmesiz oturma (`snap`):** `instant` event'ler, kesmeler (`opacityCut < 1`) ve ilk kare son kareyi doğrudan yazar.
+- **Hot reload:** ilk snap'siz anahtar değişiminde, §4.6.5 koşullarında (hero, sayfanın tepesi, duraklatılmamış, oturumda bir kez: `os-sweep`) `hero` programı **kendi son karesinden** (statik panelin karesi) yeniden çözülür: anlık görüntü gelen programın kendisidir; her dolu hücre gecikmesine kadar kendi glifini tutar, sonra 0.28 s karışık glif gösterir ve accent parlamasıyla oturur. Boş hücreler değişmez; panel hiçbir an boşalmaz. Gecikmeler ×1.5'tir ve çözülme 0.3 s sonra başlar (≈ 2 s). `?debug`'daki "hot reload’u oynat" düğmesi `composer.reset()` ile composer'ı boş başlangıca döndürür; sonraki anahtar değişimi ilk kare sayılır ve hot reload koşullardan bağımsız yeniden oynar.
+- **Work:** work'te program yoktur. Köprü yalnız yağmurdur; `opacityTrack` paneli söndürür (§4.12.1).
+
+#### 5.20.6 Statik paneller ve work kaplaması
+
+- **Statik panel** (posterlerin yerine): `KodPanel` programın son karesini çapanın içine yazar. Biçim, koşu sınıfları, crossfade, gece ve baskı kuralları §4.16.3'tedir:
+  - `<div class="kod-panel" data-kod-program="<anahtar>" data-kod="<program JSON>" aria-hidden="true"><pre class="kod-pre" translate="no"><span class="kod-row">…</span>…</pre></div>`;
+  - koşular: `k0…k7` ön plan rolü, `kb0…kb6` zemin rolü (`--ba` alfa), `kd` elle çizilen glif koşusu (sabit n × 1ch), `ks` sembol koşusu (tek 1ch hücre, ortalı);
+  - yerleşim: genişlik `min(100cqw, 100cqh · 56/48)`, yazı boyu panel genişliği / 56 / 0.65 (Martian Mono yarı dar ilerlemesi), satır yüksekliği `2ch`;
+  - areas: adım başına bir panel, `data-kod-step="k"`; yalnız `data-active` görünür, `AreasPin` değiştirir;
+  - 404: `.kod-panel.kod-inline` akıştadır, çapada değildir (sütun genişliği; 404 sarmalayıcısı en çok `24rem`, `.kod-inline` en çok `40rem`).
+- **Work kaplaması** (`AsciiCompile`, §4.9.4): gelen figürün içinde mutlak konumlu `canvas.ascii-compile` (`aria-hidden`). `SectionWipe` ile aynı `work:active` olayında başlar; figürün içinde olduğu için silmeyle birlikte kırpılır. Yalnız oynarken vardır; aynı anda tek kaplama olur ve yenisi süreni kaldırır.
+  - `work:active` geldiğinde (`instant` değil, `data-motion="full"`, ≥ 64rem) görselin çözülmüş hâli örneklenir: **96 sütun, satır sayısı kapak oranından** (hücre 1 : 2; 16:10 kapakta ≈ 30). Parlaklık → yoğunluk rampası ` .:-=+*#%@`, renk → piksel rengi.
+  - ASCII karışık gliflerden çözülür (≈ 400 ms). Ardından yukarıdan aşağı derleme taraması kaplamayı satır satır kaldırır (≈ 800 ms). Bitince canvas kaldırılır.
+  - Görsel çözülmemişse (`img.complete === false`) kaplama çizilmez. Görseller aynı kökendendir; `getImageData` güvenlidir.
+
+#### 5.20.7 Kademeler, yedekler, performans
+
+| | high | medium | low | static |
+|---|---|---|---|---|
+| Canlı panel | evet | evet | evet | hayır (statik panel) |
+| `dpr` | `[1, 2]` | `[1, 1.5]` | `1` | — |
+| `antialias` | true | false | false | — |
+| Süzülme | açık | açık | kapalı | — |
+| İşaretçi paralaksı | ince işaretçide | ince işaretçide | kapalı | — |
+| Köprü ve çözülme | açık | açık | açık | — (anında) |
+
+- **Step-down** (`PerformanceMonitor`, §5.11.4'teki boşluk korumasıyla): `dpr −0.25` (1'e kadar) → süzülme ve paralaks kapanır → `toFallback('perf')`. `quality.test.ts` sırayı sınar.
+- **Bağlam kaybı:** statik paneller anında geri gelir (`phase = 'poster'`). Geri yüklemede sahne yeniden mount olur ve atlas yeniden kurulur (§5.17).
+- **Performans:** stage chunk three + R3F'yi korur; taş shader'ları, ghost ve gölge geçişleri yoktur. 2 draw call, 2,688 instance ve ≈ 1024² RGBA atlas vardır. PB-1 değişmez (stage tembeldir); stage chunk'ın küçülmesi beklenir (§9.4).
+- ⚠️ DOĞRULANMADI: Her karede tüm instance attribute'larını yüklemenin orta segment mobilde (A13 / Adreno 6xx) ≤ 4 ms kaldığı. Doğrulama: KOD geçişinde `?debug` kare süresiyle, M8'de gerçek cihazda (§9.6). Başarısızsa: yalnız değişen aralıklar yüklenir (`addUpdateRange`).
+
+#### 5.20.8 Kabul kriterleri
+
+- [ ] Sitede tek `<canvas>` ve tek WebGL bağlamı vardır; route'lar arasında bağlam yeniden oluşturulmaz.
+- [ ] Panel görünürken `renderer.info.render.calls` 2'dir. Stage chunk'ta taş shader'ı, ghost ve gölge kodu yoktur.
+- [ ] Atlas fontlar yüklendikten sonra kurulur; çerçeve çizgileri dikişsiz birleşir (1440×900 ve 390×844 ekran görüntüsü).
+- [ ] Her bölüm ve adım kendi programını gösterir (K-KOD-1). Statik paneller SSR HTML'inde doğru programla ve `aria-hidden` ile vardır (K-KOD-2).
+- [ ] `reduced-motion` ve `no-webgl` projelerinde statik paneller görünür ve canvas yoktur (K-KOD-3).
+- [ ] Work ASCII kaplaması görünür ve gerçek görsele çözülür (K-KOD-4).
+- [ ] Köprüler geri alınabilir (K-CHOREO-3). Aynı `y`'ye farklı yollardan gelindiğinde program, adım ve panel dikdörtgeni aynıdır (K-CHOREO-4).
+- [ ] Statik panel → canvas çapraz geçişi 600 ms'dir; `ready` anında panel statik panelle ±2 px örtüşür (K-HERO-7).
+- [ ] `frozen` iken boşta kare istenmez; paralaks duraklatmada da çalışır (`live.kod.frozen`, `parX`/`parY`).
+- [ ] `loseContext()` → statik paneller aynı karede görünür; `restoreContext()` → `ready`'ye döner. İkinci kayıp → `data-tier="static"`, canvas yoktur.
 
 ---
 
@@ -6214,13 +6476,15 @@ Bu bölüm görsel dilin tek kaynağıdır: ilkeler, tipografi ve font hattı, r
 |---|---|---|---|
 | İ1 | **Önce statik kare.** Her bölüm, hareket kapalıyken ve JS yokken bitmiş görünür. | Gizli ön-reveal durumları yalnız `html[data-motion="full"].motion-ready` altında (D-39); sticky düzenler `html.js` ile kapılı (§4.16). | `reduced-motion` ve `no-js` Playwright projelerinde tam sayfa ekran görüntüsü (§13.3). |
 | İ2 | **İçerik HTML'dir, 3D atmosferdir.** Hiçbir bilgi yalnız canvas'ta bulunmaz. | `#scene-layer` `aria-hidden`; her sahne durumunun DOM'da metin karşılığı var (yıl, alan çipi, sayaç). | Canvas gizliyken içerik eksiksiz; axe (§13.4). |
-| İ3 | **3D kaydırmayla, DOM adım adım.** | Sürekli değerler (kamera, kesit, ışık) scrub edilir; metin ve görsel eşiklerde, zamana bağlı ve bir kez değişir (§4.3). | Kaydırma konumuna bağlı metin/görsel opaklığı yok (D-16); §4.12 değişmezleri. |
+| İ3 | **3D kaydırmayla, DOM adım adım.** | Sürekli değerler (panel çapası ve köprü) scrub edilir; metin ve görsel eşiklerde, zamana bağlı ve bir kez değişir (§4.3). | Kaydırma konumuna bağlı metin/görsel opaklığı yok (D-16); §4.12 değişmezleri. |
 | İ4 | **Tek aksan, tek anlam.** Yakut (`--color-accent`) yalnız "etkin / şimdi / sen" demektir. | İzinli kullanımlar §6.3.4'te sayılıdır; dekoratif aksan **YASAK**. | Kod incelemesi: `accent` kullanan her yer §6.3.4 listesinde. |
-| İ5 | **Cesaret bir kez harcanır.** İmza: Taş + Halka göstergesi. | Tipografi, renk ve düzen disiplinli; aynı ekranda birden fazla "gösteri" anı yok. | Tasarım QA (§6.11). |
+| İ5 | **Cesaret bir kez harcanır.** İmza: KOD paneli + Halka göstergesi. | Tipografi, renk ve düzen disiplinli; aynı ekranda birden fazla "gösteri" anı yok. | Tasarım QA (§6.11). |
 | İ6 | **Azaltılmış hareket tasarlanmış bir yoldur.** | Her hareketli öğenin statik karşılığı var (§4.16); CSS tabanı §6.10. | `reduced-motion` projesi. |
-| İ7 | **Veri dürüstlüğü.** Halka, dilim, bant ve açık yay içerikten hesaplanır. | `src/lib/section-geometry.ts` (§5.10) hem shader'ı hem SVG figürleri besler. | `section-geometry.test.ts`. |
+| İ7 | **Veri dürüstlüğü.** Programlar yalnız içerikteki olguları yazar (§4.1.2). | Programlar `src/lib/kod/` içinde içerikten üretilir; statik ve canlı panel aynı tamponu kullanır (§5.20.2). | Program birim testleri (§13.2.2), K-KOD-5. |
 
 #### 6.1.2 Atmosfer
+
+> **KOD notu (2026-10-02):** Atmosfer ve ton §4.1.3'tedir: "sessiz bir masada açık duran tek bir editör penceresi". Aşağıdaki taş, kesit, ışık ve gün yayı maddeleri KESİT'e özgüydü; zemin ve tema maddeleri geçerlidir.
 
 "Gece kadranında bir mineral numune" (final.md §1.3): editoryal, kesin, sessiz; müze kataloğu ile alet yapımcısı tezgâhının kesişimi.
 - **Malzemeler:** mat, ince taneli taş; kâğıt gibi okunan açık, cilalı kesit yüzü; mürekkep kılçizgi halkalar; **tek** yakut aksan; sıcak pirinç kenar ışığı.
@@ -6235,7 +6499,7 @@ Bu bölüm görsel dilin tek kaynağıdır: ilkeler, tipografi ve font hattı, r
 |---|---|---|
 | Özel imleç, imleç halkası/diski, iz, `cursor: none` | **YASAK** (D-16). Yerel imleç korunur. | OS imleç boyutu/renk ayarları korunur; metin alanlarında I-beam kalır. |
 | Parçacıklar, zemin renk scrub'ı, kaydırmaya bağlı metin veya görsel opaklığı, GSAP `pin`/pin-spacer | **YASAK** (D-16) | Okuma ve kontrast güvenliği. |
-| Preloader, yüzde sayacı, giriş ekranı | **YASAK** (D-45) | LCP. WebGL hazır olana kadar statik poster durur (§6.7.3). |
+| Preloader, yüzde sayacı, giriş ekranı | **YASAK** (D-45) | LCP. WebGL hazır olana kadar statik panel durur (§4.16.3). |
 | `backdrop-filter`, cam paneller | WebGL üstünde **YASAK**; başka yerde de kullanılmaz | Orta segment Android'de kare düşüşü; belirsiz kontrast. |
 | Grain/noise katmanı, bento grid, süs amaçlı bölüm numaraları ("01 / 02 / 03") | **YASAK** | Şablon görünümü. Sayı yalnız veri olduğunda görünür: CV yılları, "02 / 04" adım sayacı, proje indeksi. |
 | Sayaç animasyonlu (count-up) istatistik; yüzde çubuklu yetenek ölçerleri | **YASAK** | Animasyon sırasında okunamaz; yüzde çubuğu anlamsızdır. Statik tablo rakamları kullanılır. |
@@ -6604,7 +6868,7 @@ Bileşenler **yalnız** anlamsal token'ları kullanır (`bg-canvas`, `text-ink-m
 | `--color-accent-hover` | `#8E0A30` | `#FF9AB0` | Bağlantı ve CTA hover'ı | Her zemin |
 | `--color-on-accent` | `#FFFFFF` | `#0B1020` | Aksan dolgusu üstündeki metin | Yalnız `accent` / `accent-hover` |
 | `--color-focus` | `#2340C4` | `#F2C46D` | Odak halkası | Ofset ≥ 2 px (§6.3.4) |
-| `--color-brass` | `#8A6420` | `#C9A66B` | Sahnede kenar ışığı; grafik vurgu | Metin rengi olarak **YASAK** |
+| `--color-brass` | `#8A6420` | `#C9A66B` | KOD panelinde adlandırılmış parametre, `✓` ve eğitim işareti; grafik vurgu | Metin rengi olarak **YASAK**; istisna: `aria-hidden` KOD panelinin glifleri (canlı ve statik, §4.1.3) |
 | `--color-success` | `#11764A` | `#5FD4A0` | Durum metni (v1.1 form, toast) | Yalnız renkle anlatılamaz |
 | `--color-danger` | `#B42318` | `#FF8A7A` | Hata metni (v1.1 form) | Yalnız renkle anlatılamaz |
 | `--color-selection` | `#F6C9D4` | `#5A2238` | `::selection` zemini | – |
@@ -6705,10 +6969,12 @@ Ek hesaplar (aynı betik):
 | Değişim anı | **Anlık.** Tema geçişinde renk animasyonu **YASAK**; yarı temalı karışık kareleri önler. Sahne uniform'ları `tokens.ts`'ten yeniden uygulanır ve `invalidate()` çağrılır (§5.4, §5.5). |
 | Tema başına görsel | `.only-light` / `.only-dark` sınıfları (§6.10): etkin olmayan tema `display: none` olur. JS yoksa `prefers-color-scheme` belirler. Poster yükleme kuralı §5.16'dadır. |
 | `theme-color` meta | `viewport.themeColor`: `(prefers-color-scheme: light)` → `#ECEEF2`, `(prefers-color-scheme: dark)` → `#0B1020` (Mekanizma). Değerler literal yazılmaz; `themeColors(getExperienceProfile(getSite().persona).palette, 'light' \| 'dark').canvas`'tan okunur (§8.4 `viewport` dışa aktarımı, §6.10.3). Elle seçilen tema tarayıcı çubuğunu değiştirmez; kabul edilen sınırlamadır. |
-| Referans tema | Koyu. M1 poster onayı önce koyu temada yapılır; açık tema aynı kontrast ve QA listesinden geçer (§6.11). |
+| Referans tema | Koyu. KOD önizlemesi önce koyu temada gösterilir; açık tema aynı kontrast ve QA listesinden geçer (§6.11). |
 | Eski motorlar | `light-dark()` desteklemeyen motorlar için `@supports not (color: light-dark(#fff, #000))` bloğu düz değerler verir (§6.10). JS yoksa bu motorlarda açık tema uygulanır. ⚠️ DOĞRULANMADI: `light-dark()` desteğinin Safari 17.5 ile başladığı (Baseline 2024). Doğrulama: M2'de MDN uyumluluk tablosu ve iOS 17.4 simülatörü. Destek §2.5'teki alt sınırdan (iOS Safari ≥ 17) önce başlıyorsa yedek blok ve parite testindeki karşılığı silinir. |
 
 #### 6.3.6 Sahne token'ları (final.md §2.7)
+
+> **KOD notu (2026-10-02):** "Tek kaynak `tokens.ts`" kuralı geçerlidir: KOD paneli renk rollerini (§4.1.3) çözülmüş temanın token'larından okur; gece paneli koyu tema değerlerini kullanır. Aşağıdaki uniform tablosu ve `--scene-stone-*` tonları KESİT'e özgüydü; KOD ile kaldırıldı (2026-10-02, sahip onayı). Yerine §4.1.3 ve §5.20.4 geçerlidir.
 
 - **Tek kaynak `src/design/tokens.ts`'tir.** Sahne CSS okumaz (`getComputedStyle` ile `light-dark()` çözümü tarayıcılar arasında doğrulanmamıştır). Değerleri çözülmüş temaya göre `tokens.ts`'ten alır (`document.documentElement.dataset.theme`).
 - `globals.css` aynı değerleri `--scene-*` olarak taşır: parite testi ve gerektiğinde DOM kullanımı içindir.
@@ -6833,15 +7099,15 @@ Emaye'de odak rengi (kırmızı) `danger`'a yakındır. Hata durumları bu yüzd
 | Bölüm | Metin sütunları | Sahne / medya | Not |
 |---|---|---|---|
 | `hero` | 1–6 (eyebrow, lead, CTA); `<h1>` tam genişlik | anchor `hero-rest` 8–12 | `<h1>` tek satır |
-| `about` | 1–6 | anchor `about-cut` 8–12 | `CutLine` 1–8 |
+| `about` | 1–6 | anchor `about-cut` 8–12 | — (KESİT'in `CutLine`'ı kaldırıldı) |
 | `areas` | 1–6 | anchor `areas-dial` 7–12 (sticky) | Tek DOM tutan pin (D-16) |
 | `work` | makaleler 1–5 | görüntüleyici 7–12; numune 10–12; altyazı satırı 7–9 | |
 | `journey` | 1–7 | anchor `journey-core` 8–12 (sticky) | |
 | `contact` | 1–7 | anchor `contact-ring` 8–12 | `type-email` 1–7'ye sığar (§6.2.4) |
-| Derin sayfa, uzun metin | 1–7, `type-body` (52ch) | `page-folio` / `cv-core` (§4.13, §5.8) | |
+| Derin sayfa, uzun metin | 1–7, `type-body` (52ch) | `page-folio` k8–12 (§4.5.6, §4.13); `/cv` sahnesizdir | |
 
 - **Asimetri:** metin sola dayalıdır, sağ kenar serbesttir. Ortalanmış gövde metni **YASAK**; tek istisna 404'teki tek satırlık iletidir.
-- **< 64rem:** metin tam genişliktedir. Taş, metnin arkasında değil, ayrılmış bantlarda yaşar (§4.15).
+- **< 64rem:** metin tam genişliktedir. Panel, metnin arkasında değil, ayrılmış bantlarda yaşar (§4.15).
 
 #### 6.4.3 Kırılım noktaları (mobil öncelikli; Tailwind varsayılanları)
 
@@ -6894,7 +7160,7 @@ Emaye'de odak rengi (kırmızı) `danger`'a yakındır. Hata durumları bu yüzd
 
 | Değişken | Değer | Öğe |
 |---|---|---|
-| `--z-stage` | 0 | `#scene-layer`: sabit canvas katmanı. Posterler bu katmanda değil, içerikteki anchor'lardadır. |
+| `--z-stage` | 0 | `#scene-layer`: sabit canvas katmanı. Statik paneller bu katmanda değil, içerikteki çapalardadır. |
 | `--z-content` | 10 | `<body>`'nin `#scene-layer` dışındaki doğrudan çocukları (`:where()` ile, özgüllük 0) |
 | `--z-header` | 40 | `SiteHeader` (`sticky top-0`) |
 | `--z-menu` | 50 | `MobileMenu` |
@@ -6917,7 +7183,7 @@ Koreografi (ne, ne zaman, hangi değerle) §4'e, uygulama (GSAP, Lenis, SplitTex
 |---|---|---|---|
 | `--ease-standard` | `(0.2, 0, 0, 1)` | — (yalnız CSS) | Arayüz durum değişimi: renk, zemin, kenarlık, anahtar |
 | `--ease-out` | `(0.22, 1, 0.36, 1)` | `power4.out` | Blok reveal, hover yükselmesi, önizleme, toast girişi |
-| `--ease-out-expo` | `(0.16, 1, 0.3, 1)` | `expo.out` | Maskeli satır reveal'i, ışık taraması |
+| `--ease-out-expo` | `(0.16, 1, 0.3, 1)` | `expo.out` | Maskeli satır reveal'i |
 | `--ease-in-out` | `(0.65, 0, 0.35, 1)` | `power2.inOut` | Kamera ve poz geçişi, bölüm silme, menü clip'i, route geçişi |
 | `--ease-in` | `(0.5, 0, 0.75, 0)` | `power3.in` | Çıkışlar (girişten her zaman kısa) |
 | `--ease-tick` | `(0.34, 1.4, 0.64, 1)` | — (yalnız CSS) | **İmza.** Halka tik oturması, etkin gezinme noktası kayışı, Areas iğnesi. Aşım ≈ %5 (t ≈ 0.65'te y ≈ 1.053). Başka hiçbir şey aşım yapmaz. |
@@ -6933,14 +7199,14 @@ Koreografi (ne, ne zaman, hangi değerle) §4'e, uygulama (GSAP, Lenis, SplitTex
 | `--dur-instant` | 90 | Basma geri bildirimi (`scale(0.98)`) |
 | `--dur-fast` | 160 | Hover rengi ve opaklığı; küçük arayüz çıkışları; önizleme girişi ve çıkışı |
 | `--dur-base` | 240 | Alt çizgi çizimi, buton zemini, etiket anahtarı, toast girişi, hover-to-scene |
-| `--dur-medium` | 400 | Halka tiki, gezinme noktası kayışı, iğne, önizleme clip'i |
+| `--dur-medium` | 400 | Halka tiki, gezinme noktası kayışı, önizleme clip'i |
 | `--dur-slow` | 700 | Maskeli satır (satır başına), blok ve görsel reveal üst sınırı |
 | `--dur-slower` | 1000 | Tekil üst sınır (DOM) |
 
 Üst sınırlar:
 - **Kaydırmaya bağlı olmayan DOM animasyonu ≤ 1000 ms.** Reveal'ler ≤ 700 ms'dir (final.md §1.5). İstisnalar final.md'den gelir:
   - hero "Kaydır" kılçizgisi 1200 ms (CSS, dekoratif, bir kez)
-  - Işık taraması 1200 ms (sahne uniform'u, DOM değil; §5.6)
+  - Panel çözülmesi ≈ 1200 ms (sahne, DOM değil; §4.1.4) ve work ASCII derlemesi ≈ 1200 ms (bildirilmiş istisna, §4.9.4)
 - **Yükleme koreografisinin toplamı ≤ 1400 ms.**
 - **Girdi hiçbir zaman engellenmez.** Her şey ilk boyamada etkileşime açıktır.
 - **Çıkış ≈ 0.66 × giriş.** Örnek: 240 → 160, 500 → 330.
@@ -6963,7 +7229,7 @@ Koreografi (ne, ne zaman, hangi değerle) §4'e, uygulama (GSAP, Lenis, SplitTex
 | Kart / liste öğesi reveal | 24 px | `--rise-card` |
 | Maskeli başlık satırı | **`yPercent: 130 → 0`**, 700 ms `expo.out`, stagger 70 ms | `--reveal-line-from`, `motion.distance.revealLineFromYPercent` |
 | Görsel clip reveal | `clip-path: inset(8% round 6px)` → `inset(0 round 6px)`; içteki görsel `scale 1.08 → 1`; 700 ms `--ease-out` | final.md §4.2 |
-| Bölüm silme (`SectionWipe`) | `inset(0 100% 0 0)` → `inset(0)`, 600 ms `--ease-in-out`; 1 px aksan kılçizgisi kenarı izler ve son 120 ms'de söner | final.md §4.4 |
+| Bölüm silme (`SectionWipe`) | `inset(0 100% 0 0)` → `inset(0)`, 600 ms `--ease-in-out`; 1 px aksan kılçizgisi kenarı izler ve son 120 ms'de söner. KOD: ASCII derlemesi aynı karede başlar (§4.9.4) | final.md §4.4 |
 | Hover yükselmesi | 2 px | `--lift-hover` |
 | Başlığın hover kayması (proje satırı, Work makalesi) | 8 px sağa, 240 ms `--ease-out` | final.md §4.4 |
 | Görselin hover ölçeği | 1.02 (Work görüntüleyici), 1.03 (`ProjectCard`); 600 ms `--ease-out`; çerçeve içinde | |
@@ -6982,11 +7248,11 @@ Koreografi (ne, ne zaman, hangi değerle) §4'e, uygulama (GSAP, Lenis, SplitTex
 
 | Tetik | İzinli | Asla |
 |---|---|---|
-| Yükleme (bir kez) | `.hero-in` (CSS); poster → canvas geçişi 600 ms (§5.12); Işık taraması (§5.6) | `<h1>`'i gizlemek, soldurmak, maskelemek (D-34); tam ekran yükleyici |
-| Kaydırma, scrub | Yalnız 3D özellikler; `CutLine` `scaleX` (dekorasyon); Halka ilerlemesi | Kaydırma konumuna bağlı metin veya görsel opaklığı ya da konumu (D-16); zemin rengi; yatay kaydırma kaçırma |
-| Kaydırma, bir kez tetiklenen | Maskeli başlık, blok fade-up, görsel clip reveal, bölüm silme, Areas adım değişimi (çıkış 180 / giriş 300 ms, üst üste binmeden) | Yukarı kaydırmada yeniden gizleme |
-| Hover / odak | Alt çizgiler, manyetik CTA, satır önizlemesi, hover-to-scene (§4.14) | Yalnız hover'la erişilen bilgi |
-| Kendiliğinden (> 5 s) | Taşın boşta dönüşü, yay nabzı, yerel saat | Duraklatma denetimi olmadan çalışmak (WCAG 2.2.2; `PauseButton` + `MotionToggle`) |
+| Yükleme (bir kez) | `.hero-in` (CSS); statik panel → canvas geçişi 600 ms (§5.12); hot reload (§4.6.5) | `<h1>`'i gizlemek, soldurmak, maskelemek (D-34); tam ekran yükleyici |
+| Kaydırma, scrub | Yalnız panelin çapası ve köprüsü (glif yağmuru/çözülme); Halka ilerlemesi | Kaydırma konumuna bağlı metin veya görsel opaklığı ya da konumu (D-16); zemin rengi; yatay kaydırma kaçırma |
+| Kaydırma, bir kez tetiklenen | Maskeli başlık, blok fade-up, görsel clip reveal, bölüm silme + work ASCII derlemesi (§4.9.4), panel adım çözülmesi, Areas adım değişimi (çıkış 180 / giriş 300 ms, üst üste binmeden) | Yukarı kaydırmada yeniden gizleme |
+| Hover / odak | Alt çizgiler, manyetik CTA, satır önizlemesi, panel paralaksı (§4.14) | Yalnız hover'la erişilen bilgi |
+| Kendiliğinden (> 5 s) | Panelin süzülmesi, imleç, akan log, `(HEAD)` nabzı, yerel saat | Duraklatma denetimi olmadan çalışmak (WCAG 2.2.2; `PauseButton` + `MotionToggle`) |
 
 #### 6.5.6 Performans kuralları
 
@@ -6999,7 +7265,7 @@ Koreografi (ne, ne zaman, hangi değerle) §4'e, uygulama (GSAP, Lenis, SplitTex
 
 - **Tetik:** `html[data-motion="reduce"]`, ya da JS yoksa `prefers-reduced-motion: reduce`.
 - **CSS tabanı** (§6.10): tüm CSS animasyon ve geçişleri 1 ms, gecikmeler 0, yineleme 1, `scroll-behavior: auto`. `.hero-in` kapalıdır. View transition süreleri 0'dır (D-32).
-- **`--ease-tick` davranışı:** Halka doğrusal güncellenir (§4.14); gezinme noktası ve iğne anında yer değiştirir.
+- **`--ease-tick` davranışı:** Halka doğrusal güncellenir (§4.14); gezinme noktası anında yer değiştirir.
 - Bileşen bazındaki karşılıklar (statik figürler, pinsiz Areas, satır içi kapaklar) §4.16'dadır.
 
 ### 6.6 Bileşen envanteri ve durumları
@@ -7066,12 +7332,14 @@ Dosya adları §8.1 ağacındadır. Mikro etkileşimlerin davranışı (tetik, e
 | `MotionToggle` | Anahtar görünümlü buton: 36 × 20 iz (`border-line-strong`), 14 px düğme `bg-ink`; açıkken iz `bg-ink`, düğme `bg-canvas`, sağda; `min-h-11` vuruş alanı | kapalı (hareket tam) / açık (azaltılmış); anlık | `<button aria-pressed>`, sabit etiket "Hareketi azalt" / "Reduce motion"; altbilgide ve mobil menüde; `os-motion` (D-38); davranış §4.16 |
 | `PauseButton` | 44 × 44 simge + metin, hero sahne bölgesinin sağ altı; `bg-canvas/92 rounded-pill type-ui text-ink-muted`; simgeler satır içi SVG ❚❚ / ▶ | oynuyor: "Animasyonu durdur" / "Pause animation"; durmuş: "Animasyonu başlat" / "Play animation" | Etiket durumla değiştiği için **`aria-pressed` kullanılmaz** (ARIA APG düğme deseni: durumla etiketi değişen düğmede `aria-pressed` olmaz). Yalnız `data-motion="full"` iken render edilir. Neyi durdurduğu §4.16 (WCAG 2.2.2). |
 | `HalkaIndicator` | SVG `viewBox="0 0 40 40"`; masaüstü başlık çubuğunda 40 px, mobilde menü butonunun içinde 32 px. İz: r = 16, 1 px `stroke: var(--color-line)`. İlerleme yayı: 1.5 px `var(--color-ink)`, saat 12'den saat yönünde, `pathLength="1"` + `stroke-dashoffset`. Bölüm tikleri: bölüm başlangıçlarında 1.5 × 6 px radyal çizgi, geçilmemişse `ink-muted`, geçilmişse `ink`. Uç: 3 px `fill: var(--color-accent)` nokta. | İlerleme; bölüm geçişinde tikin rengi ve 400 ms `--ease-tick` oturması; ana sayfa dışında tik yok, yalnız ilerleme | `aria-hidden="true"`, `focusable="false"`; `forced-colors`'ta çizgiler `CanvasText`, uç `Highlight`; davranış §4.14 (#10). "Kadran" ilerleme kadranı bu bileşendir. |
-| `CutLine` | 1 px `bg-ink` kılçizgi, `origin-left`, `scaleX` = `cutProgress` (scrub edilen dekorasyon; metin veya görsel değildir, D-16'ya uyar) | Azaltılmış / JS yok: tam genişlikte statik çizgi | `aria-hidden` |
-| `SectionWipe` | Figür `clip-path` silmesi + kenarı izleyen 1 px `bg-accent` kılçizgi (§6.5.4) | Aşağı kaydırmada soldan sağa; yukarıda tersine; azaltılmış / JS yok: silme yok, figürler akışta | Figür `alt` metni gerçek; kılçizgi `aria-hidden` |
+| ~~`CutLine`~~ (KOD ile kaldırıldı, §4.7.4) | 1 px `bg-ink` kılçizgi, `origin-left`, `scaleX` = `cutProgress` (scrub edilen dekorasyon; metin veya görsel değildir, D-16'ya uyar) | Azaltılmış / JS yok: tam genişlikte statik çizgi | `aria-hidden` |
+| `SectionWipe` | Figür `clip-path` silmesi + kenarı izleyen 1 px `bg-accent` kılçizgi (§6.5.4); KOD: gelen figürün içindeki ASCII kaplaması (`AsciiCompile`) aynı karede oynar (§4.9.4) | Aşağı kaydırmada soldan sağa; yukarıda tersine; azaltılmış / JS yok: silme yok, figürler akışta | Figür `alt` metni gerçek; kılçizgi ve kaplama `aria-hidden` |
 | `Magnetic` | Sarmalayıcı: dönüşüm **içteki `<span>`**'e uygulanır; `<a>` / `<button>` kutusu yerinde kalır | Yalnız `pointer-fine` + `data-motion="full"`; değerler §4.14 | Klavye odağı öğeyi kaydırmaz; halka statik dış kutuda |
 | `NavCutLine` | Başlık çubuğunun altında 1 px `bg-accent` kılçizgi: `scaleX` 0 → 0.7 (300 ms) → 1, sonra 160 ms'de söner (final.md §6.3) | Azaltılmış harekette gösterilmez | `aria-hidden` |
 
 #### 6.6.5 `components/figures/`
+
+> **KESİT'e özgüydü; KOD ile kaldırıldı (2026-10-02, sahip onayı).** `DialFigure`, `SpecimenGlyph`, `RingsFigure`, `ArcFigure`, `EntryGlyph` ve `ClockFigure` ile denetleyicileri (`DialRotor`, `CutLine`, `JourneyActive`'in bant kısmı) yoktur. Yerine §4.16.3 (statik paneller), §5.20.6 ve §4.13.6 (404) geçerlidir.
 
 Figürler `section-geometry.ts`'ten (§5.10) üretilen satır içi SVG'lerdir. Statik tier, azaltılmış hareket, liste modu ve baskıda Taş'ın yerini tutar; OG görselleri de aynı geometriyi kullanır (§6.8). Renk eşlemesi shader ile aynıdır (§6.3.6).
 
@@ -7118,8 +7386,8 @@ Bölüm içeriği, düzeni ve koreografisi §4.6–§4.11'dedir. Aşağıdaki ta
 | Bileşen | Tipografi / bileşenler |
 |---|---|
 | `Hero` | eyebrow `type-eyebrow .hero-in [--i:0]`; `<h1>` `type-display` (iki `<span>`, §6.2.3); lead `type-lead .hero-in [--i:1]`; CTA'lar primary + secondary `Button` `.hero-in [--i:2]`, `<Magnetic>` içinde; `PauseButton`; `LocalTime`; "Kaydır" `type-meta` + 32 px kılçizgi |
-| `About` | eyebrow; `<h2>` `type-h2` (`RevealHeading`); lede `text-3xl font-medium max-w-[24ch]` (`font-stretch` 100%); `CutLine`; paragraflar `type-body`; olgu satırı `<dl>` `type-meta`; portre 4:5 (`features.portraitOnHome`, §6.7.1) |
-| `Areas` | adım listesi: indeks `type-meta`, başlık `type-h4` (`<button>`, etkin değilken `text-ink-muted`); açıklama `type-lead`; etiketler `Tag` static; sayaç `type-meta nums-tabular`; iğne 1 px `bg-accent`; "Bu bölümü atla ↓" `TextLink`; liste modunda `DialFigure` 64 px glif |
+| `About` | eyebrow; `<h2>` `type-h2` (`RevealHeading`); lede `text-3xl font-medium max-w-[24ch]` (`font-stretch` 100%); paragraflar `type-body`; olgu satırı `<dl>` `type-meta`; portre 4:5 (`features.portraitOnHome`, §6.7.1) |
+| `Areas` | adım listesi: indeks `type-meta`, başlık `type-h4` (`<button>`, etkin değilken `text-ink-muted`); açıklama `type-lead`; etiketler `Tag` static; sayaç `type-meta nums-tabular`; (KESİT'in iğnesi kaldırıldı) 1 px `bg-accent`; "Bu bölümü atla ↓" `TextLink`; liste modunda `DialFigure` 64 px glif |
 | `Work` | indeks `type-meta`; `<h3>` `type-h3` (`RevealHeading`); özet `type-body`; `<dl>` `type-meta`; bağlantılar `TextLink`: "Projeyi incele →" ve İSTEĞE BAĞLI mağaza bağlantıları (**external**, §4.9.3); figür 16:10 `rounded-md` + `SectionWipe`; altyazı satırı `type-meta` |
 | `Journey` | `TimelineEntry` listesi; alt listeler `type-ui`; CTA'lar: CV indirme `Button` + "Tam özgeçmiş →" `TextLink` |
 | `Testimonials` | `Quote` kartları, `bg-surface rounded-md p-6` (`features.testimonials`) |
@@ -7131,7 +7399,7 @@ Bölüm içeriği, düzeni ve koreografisi §4.6–§4.11'dedir. Aşağıdaki ta
 | Bileşen | Neden |
 |---|---|
 | Özel imleç (`Cursor`) | D-16. Yerel imleç korunur. Düğmelerde `cursor: pointer`, devre dışıda `cursor: not-allowed` (taban kuralı). |
-| Preloader | D-45. Yerine poster ve aşamalı 3D. |
+| Preloader | D-45. Yerine statik panel ve aşamalı 3D. |
 | Kart eğimi (tilt), paralaks katmanları | Onaylı konseptte (final.md §7) yok. |
 | Sayaçlı istatistik, yetenek çubuğu | §6.1.3 |
 | Başlık çubuğunda tema anahtarı | final.md §4.0 başlık çubuğu listesinde yok. Anahtar altbilgide ve mobil menüdedir. |
@@ -7146,7 +7414,7 @@ Bölüm içeriği, düzeni ve koreografisi §4.6–§4.11'dedir. Aşağıdaki ta
   - 1:1 vesikalık, JSON-LD `Person.image` için **ÖNERİLİR** (§11.6).
   - Portre yoksa düzen boşluk bırakmadan kapanır.
 - **Ana dosyalar:** çevresel 4:5 (2400 × 3000), vesikalık 1:1 (2000 × 2000). Mesleği gösteren 3:2 bir çalışma karesi (2400 × 1600) **İSTEĞE BAĞLI**dır. Hepsi sRGB'dir ve `public/media/person/` altında durur (şema §7.3).
-- **Işık:** yaklaşık 45° kamera solundan yumuşak ana ışık (≈ 5600 K) ve sahnedeki pirinç kenar ışığını yankılayan hafif sıcak kenar ışığı (≈ 3200 K). Portre ve Taş aynı odada aydınlatılmış gibi durmalıdır.
+- **Işık:** yaklaşık 45° kamera solundan yumuşak ana ışık (≈ 5600 K) ve sahnedeki pirinç kenar ışığını yankılayan hafif sıcak kenar ışığı (≈ 3200 K). Portre sitenin sıcak pirinç aksanıyla uyumlu durmalıdır.
 - **Arka plan:** orta-koyu nötr (≈ `#2A3040`) ya da odak dışı gerçek bir çalışma ortamı. İki temada da oturmalıdır.
 - **Kıyafet:** düz lacivert, gri veya siyah. Logo yok. Saf beyaz koyu temada patladığı için kaçınılır.
 - **Kadraj:** gözler üst üçte birde, %8–12 baş boşluğu. Negatif alan metin sütununa bakan taraftadır; kişi sayfanın içine bakar.
@@ -7169,6 +7437,8 @@ Bölüm içeriği, düzeni ve koreografisi §4.6–§4.11'dedir. Aşağıdaki ta
 - **Konum:** `public/media/projects/<slug>/` (§7.2).
 
 #### 6.7.3 Sahne posterleri ve SVG figürler
+
+> **KESİT'e özgüydü; KOD ile kaldırıldı (2026-10-02, sahip onayı).** Posterler ve SVG figürler yoktur. Yerine statik paneller geçer: §4.16.3 ve §5.20.6.
 
 - **Posterler:** `public/stage/{k0,k1,k5}-{light,dark}-{640,1080,1600}.{avif,webp}`.
   - Kare, **saydam arka planlı**; 1080 px AVIF ≤ 40 KB (final.md §10.1).
@@ -7193,11 +7463,13 @@ Bölüm içeriği, düzeni ve koreografisi §4.6–§4.11'dedir. Aşağıdaki ta
 - Sayfanın dilinde, ≤ 125 karakter. "Görsel", "Resim", "Fotoğraf" veya "Image of" ile başlamaz (C08 uyarısı, §7.9.7).
 - **Portre:** "Orçun Saatçi, {{BAĞLAM}}" (ör. "Orçun Saatçi, çalışma masasında, kameraya bakıyor").
 - **Proje görseli:** görselin iş hakkında gösterdiğini anlatır. Örnek: "{{PROJE_ADI}} ana ekranı: kart tabanlı pano ve filtre çubuğu".
-- **Dekoratif, yani `alt=""`:** yüzen önizleme (satır bağlantısı projeyi adlandırır), sahne posterleri, plaka dokuları, `aria-hidden` glifler. Canvas zaten `aria-hidden`'dır.
+- **Dekoratif, yani `alt=""`:** yüzen önizleme (satır bağlantısı projeyi adlandırır), statik KOD panelleri (`aria-hidden`), plaka dokuları, `aria-hidden` glifler. Canvas zaten `aria-hidden`'dır.
 - **Grafik ve diyagramlar:** kısa alt metin; uzun açıklama bitişik metinde.
 - Alt metinler içerikte zorunlu alandır; şema ve derleme kontrolü §7.3 ve §7.5'tedir.
 
 ### 6.8 OG görsel şablonu (görsel; uygulama §11.5)
+
+> **KOD notu (2026-10-02):** KOD geçişi OG kartlarını ve ikonları değiştirmez; kesit motifi (kadran, halkalar, açık yay) şimdilik kalır ve kodu `section-geometry.ts`'te durur. KOD'a uyarlanıp uyarlanmayacağı sahibe açık sorudur (Q-28, §16.3).
 
 1200 × 630, `next/og` `ImageResponse`, build'de statik üretilir. Arka plan **her zaman koyu temadır** (etkin paletin `dark` değerleri, `tokens.ts`'ten).
 
@@ -7257,10 +7529,10 @@ Bölüm içeriği, düzeni ve koreografisi §4.6–§4.11'dedir. Aşağıdaki ta
 #### 6.9.1 Kompozisyon kuralı (birinci güvence)
 
 1. **Katman düzeni:** `#scene-layer` (`z-(--z-stage)`) tüm DOM'un altındadır, `pointer-events: none` ve `aria-hidden`'dır (D-18).
-2. **Taş hiçbir zaman gövde metninin arkasında durmaz** (final.md §1.5). ≥ 64rem'de metin sütunları ile sahne sütunları ayrıktır (§6.4.2 tablosu).
-3. **Tek istisna:** Taş hero adının büyük harf çizgisine oturur ve temas gölgesi harflerin arkasına düşer. Bu durumda kontrast açık temada 11.07:1, koyu temada 16.67:1'dir (§6.3.3).
-4. **< 64rem:** Taş ayrılmış bantlarda yaşar, metnin altında değil (§4.15).
-5. **Derin sayfalar:** Taş yalnız sayfa başlığının yanında görünür; hero görünüm alanından çıkınca `--scene-opacity` 0 olur (§4.13).
+2. **Panel hiçbir zaman gövde metninin arkasında durmaz** (final.md §1.5). ≥ 64rem'de metin sütunları ile sahne sütunları ayrıktır (§6.4.2 tablosu).
+3. **İstisna yoktur** (KOD): hero çapası eyebrow satırının altında, H1 kutusunun 24 px üstünde biter; panel ve gölgesi H1'e değmez (§4.5.6). KESİT'teki temas gölgesi istisnası kaldırıldı.
+4. **< 64rem:** Panel ayrılmış bantlarda yaşar, metnin altında değil (§4.15).
+5. **Derin sayfalar:** Panel yalnız sayfa başlığının yanında görünür; hero görünüm alanından çıkınca `--scene-opacity` 0 olur (§4.13).
 6. **Başlık çubuğu** kaydırılmışken sahnenin üstünden geçer. `bg-canvas/92` en kötü piksel altında bile ink, muted ve accent metni AA'da tutar (§6.3.3).
 
 #### 6.9.2 Hesaplanmış perdeler (scrim)
@@ -7297,9 +7569,9 @@ Kompozisyon kuralı nedeniyle bu durum beklenmez. Ortaya çıkarsa (yatay telefo
 #### 6.9.5 Animasyon sırasında kontrast
 
 - Kaydırma konumuna bağlı metin veya görsel opaklığı **YASAK** (D-16).
-- Reveal edilen her metin, üst kenarı görünüm alanının %75'ini geçmeden tam opaklığa ulaşır; §4.12.3'teki bildirilmiş istisnalar (about lede, contact) hariç (§4.5 genel reveal kuralları, §4.12 değişmezleri).
+- Reveal edilen her metin, üst kenarı görünüm alanının %75'ini geçmeden tam opaklığa ulaşır; §4.12.3'teki bildirilmiş istisnalar (contact, work ASCII derlemesi) hariç (§4.5 genel reveal kuralları, §4.12 değişmezleri).
 - Pinli bölümde metin ayrık değişir: çıkış 180 ms, giriş 300 ms, üst üste binmez. İki metin hiçbir an yarı saydam birlikte görünmez.
-- Taş, bir metin bloğu okunurken onun altında hareket etmez; bekleme bölgeleri §4.12'dedir.
+- Panel, bir metin bloğu okunurken onun altında hareket etmez; bekleme bölgeleri §4.12'dedir.
 
 #### 6.9.6 Test yöntemi
 
@@ -8243,14 +8515,14 @@ describe('kontrast alt sınırları: tüm paletler × temalar', () => {
 Kodlama ajanı bu listeyi M2 (tasarım sistemi), M4 (hareket), M7 (mikro etkileşim) ve M8 (sertleştirme) sonunda ekran görüntüleriyle yürütür. Otomatik karşılıkları §6.12 ve §13'tedir.
 
 - [ ] Her bölüm `data-motion="reduce"` ile ve JS kapalıyken bitmiş görünüyor. Boş kutu, görünmez metin veya kopuk sticky düzen yok.
-- [ ] Hero `<h1>` ilk karede tam opak ve animasyonsuz. LCP metindir (poster değil).
+- [ ] Hero `<h1>` ilk karede tam opak ve animasyonsuz. LCP H1'dir (statik panel satırları değil).
 - [ ] Türkçe dizgiler iki fontta ve tüm ağırlıklarda doğru: "İ ı Ğ ğ Ş ş Ç ç", "SAATÇİ", "İLETİŞİM", Türkçede bağsız "fikir", "Orçun’un", `2021 – 2024`.
 - [ ] Hiçbir maske aksan kesmiyor: "İletişim", "Özgeçmiş", "ÇALIŞMA", "Ğ". Reveal öncesinde maskenin alt dolgusunda nokta görünmüyor; reveal sonrasında noktalar ve çengeller tam.
 - [ ] `ss01` (hero'daki kare noktalar) ve `ss03` (gövdedeki kuyruklu `l`) gözle görülür biçimde etkin. Bu, Google alt kümesinin kullanılmadığını kanıtlar.
 - [ ] Gövde bağlantılarının altı çizili. Odak halkası sahnenin üstündekiler dahil her etkileşimli öğede ofsetle görünür.
 - [ ] Aksan yalnız §6.3.4'teki yerlerde. `ink-subtle` ve `line-strong` `raised` üstünde değil. Bileşenlerde onaltılık renk literali yok.
-- [ ] Taş 360 / 768 / 1440 px'te ve iki temada hiçbir gövde metninin arkasında değil. Yalnız hero adının temas gölgesi istisnadır.
-- [ ] Koyu ve açık temada poster, sahne ve arayüz aynı dünyada: taş tema başına ters dönüyor, kesit yüzü `surface` renginde.
+- [ ] Panel 360 / 768 / 1440 px'te ve iki temada hiçbir metnin arkasında değil; hero adına da değmiyor.
+- [ ] Koyu ve açık temada statik panel, canlı panel ve arayüz aynı dünyada: sözdizimi renkleri palet rollerinden (§4.1.3), plaka `surface` renginde, journey paneli her temada gece paletinde.
 - [ ] 320 px'te yatay kaydırma yok. En uzun proje başlığı ve e-posta taşmadan kırılıyor. Hero adı ≥ 64rem'de tek satır ve kapsayıcı içinde.
 - [ ] Hedefler ≥ 44 px. Duraklatma düğmesi sahnenin yanında görünür. `MotionToggle` ve `ThemeToggle` seçimi yeniden yüklemede korunuyor.
 - [ ] Yerel imleç hiçbir yerde gizlenmiyor. İmleci izleyen öğe yok; tek istisna `/projeler` önizlemesi ve o da imleç değil, görseldir.
@@ -8281,7 +8553,7 @@ Kodlama ajanı bu listeyi M2 (tasarım sistemi), M4 (hareket), M7 (mikro etkile�
 - [ ] `page.emulateMedia({ media: 'print' })` altında `#scene-layer` hesaplanan `display` değeri `none`.
 - [ ] `rg -n "cursor:\s*none" src` boş. İmleç konumunu izleyen DOM öğesi yok (§6.6.8).
 - [ ] Maske testi: "İletişim Özgeçmiş ÇALIŞMA Ğ" başlığında reveal öncesi (`yPercent: 130`) maskenin içinde mürekkep pikseli yok (ekran görüntüsü piksel karşılaştırması). Reveal sonrası anlık görüntü aksanları eksiksiz gösteriyor.
-- [ ] `PauseButton`'da `aria-pressed` yok ve etiketi durumla değişiyor. `MotionToggle`'da `aria-pressed` var ve etiketi sabit. `DialFigure` `role="img"` ve alan listesini içeren `aria-label` taşıyor.
+- [ ] `PauseButton`'da `aria-pressed` yok ve etiketi durumla değişiyor. `MotionToggle`'da `aria-pressed` var ve etiketi sabit. Statik paneller `aria-hidden` taşıyor (KESİT'in `DialFigure` maddesi kaldırıldı).
 - [ ] Kök ve proje OG görselleri 1200 × 630 üretiliyor. QA dizgisi görsel regresyon anlık görüntüsünde doğru (§13.4).
 
 ---
@@ -8323,7 +8595,7 @@ Bu bölüm, sahibe ait tüm içeriğin (metin, yapısal veri, görsel, CV) nered
 | Fotoğraf, proje görseli (video dosyası yok, D-48) | `public/media/` | Evet | §7.2.2, §7.5.3 |
 | Menü, buton, hata ve erişilebilirlik metinleri | `src/i18n/dictionaries/{tr,en}.ts` | Hayır (geliştirici) | §3.5, §7.9.6 |
 | Eyebrow'lar, bölüm başlığı varsayılanları, deneyim parametreleri | `src/experience/profile.ts` | Hayır | §4.17 |
-| Sahne posterleri | `public/stage/` | Hayır | §5.16 |
+| Sahne posterleri | — (KOD ile kaldırıldı; statik paneller HTML'dir, §4.16.3) | — | §0.6 |
 | Üretilen CV PDF'leri ve JSON Resume | `public/files/` (gitignore) | Hayır (build üretir) | §7.6 |
 
 #### 7.1.2 İçerik katmanı paketleri
@@ -8397,7 +8669,7 @@ content/
 - Yol ve dosya adı kuralı `^/media/(<ascii-kebab>/)*<ascii-kebab>.(jpg|jpeg|png)$` biçimindedir ve şema bunu zorlar. Türkçe karakter, boşluk ve büyük harf **YASAK**tır **[TEST EDİLDİ]**.
 - Raster içerik görselleri **yalnızca JPG veya PNG** olabilir. AVIF ve WebP varyantlarını `next/image` üretir (D-31). `@react-pdf/renderer` yalnızca JPG/PNG gömer, OG hattı (§11.5) için de güvenli ortak payda budur. Fotoğraflar JPG, düz renkli arayüz görüntüleri PNG olur.
 - Site video dosyası barındırmaz (D-48). Proje videosu yalnızca YouTube/Vimeo'ya giden dış bağlantıdır (`links[kind=video]`, §7.3.2). `public/media` altındaki video dosyası C05 hatasıdır.
-- Stage posterleri (`public/stage/`) bu kuralın dışındadır. Önceden kodlanmış AVIF/WebP'dir (D-31, §5.16).
+- KESİT'in stage posterleri (`public/stage/`) KOD ile kaldırıldı (D-31); `public/stage/` boşaltılır.
 - Boyut, oran ve bayt sınırları §7.5.3'tedir.
 
 #### 7.2.3 İçerik katmanı kod dosyaları
@@ -8464,7 +8736,7 @@ Tohum slug'ları (`alan-N`, `ornek-proje-N`) production'da C01 hatası verir (§
 - **Tarih** `PartialDate`: `"2024"`, `"2024-03"` veya `"2024-03-15"`. Bu biçim JSON Resume `iso8601` desenine uyar. `DateRange` içinde `end` ve `start` **aynı hassasiyette** yazılır. Karşılaştırma metin olarak yapıldığı için `start: "2024-03"`, `end: "2024"` hata verir.
 - **Proje tarihleri** (`Project.start`, `Project.end`) `YearMonth` biçimindedir: yalnızca `"2024-03"` (D-48). `end` yoksa proje sürüyordur ("Halen" / "Present").
 - **URL'ler** yalnızca `https` olabilir (`z.url({ protocol: /^https$/ })`). `http://` reddedilir **[TEST EDİLDİ]**.
-- **Görseller** `ImageRef` ile tanımlanır. `alt` her zaman **ZORUNLU**dur ve ≤ 125 karakterdir. Dekoratif görseller (poster, hover önizlemesi) içerik şemasına girmez ve `alt=""` ile çizilir (§6.7).
+- **Görseller** `ImageRef` ile tanımlanır. `alt` her zaman **ZORUNLU**dur ve ≤ 125 karakterdir. Dekoratif görseller (hover önizlemesi) içerik şemasına girmez ve `alt=""` ile çizilir (§6.7).
 - **Yer tutucu yazımı** (D-36):
   - Metin alanlarında `"{{AD}}"` kullanılır ve YAML'da **tırnak ZORUNLU**dur. Tırnaksız `{{AD}}`, YAML'da iç içe eşlem olarak okunur ve `Invalid input: expected string` hatası verir **[TEST EDİLDİ]**.
   - Sayı, tarih, e-posta ve slug alanlarında gerçekçi bir değer yazılır ve satır sonuna `# {{AD}}` yorumu eklenir. C01 ham metni taradığı için yorumlar da yakalanır.
@@ -8695,12 +8967,13 @@ export type HomePage = z.infer<typeof HomePage>;
 
 /** content/areas/<id>.yaml: id dosya adından türetilir. */
 export const Area = z.strictObject({
-  order: z.number().int().min(1).max(99), // benzersiz; artan sıra = dilim (sector) sırası k = 0…N−1
+  order: z.number().int().min(1).max(99), // benzersiz; artan sıra = areas program adım sırası k = 0…N−1 (§4.8.5)
   title: Lmax(30),
-  summary: Lmax(160), // ana sayfa kadran açıklaması (2–3 satır), kartlar
+  summary: Lmax(160), // ana sayfa areas açıklaması (2–3 satır), kartlar
   description: Lmax(700), // /calisma-alanlari (60–100 kelime)
   tags: z.array(Lmax(24)).max(6).default([]), // mono çipler
   capabilities: z.array(Lmax(120)).max(8).default([]), // somut işler (fiyat/paket YOK, D-30)
+  figure: z.enum(['phone', 'tree', 'api', 'pipeline', 'list']).default('list'), // İSTEĞE BAĞLI: KOD alan diyagramı (§4.8.5)
   skills: z.array(Slug).default([]), // → Skill.id
   hasPage: z.boolean().default(false), // true → <id>.tr.mdx ZORUNLU; sayfa yalnız features.areaPages ile üretilir
   seo: SeoFields,
@@ -8810,7 +9083,7 @@ export const Project = z
     role: Lmax(60),
     kind: z.enum(['client', 'personal', 'research', 'oss', 'academic', 'product']).default('client'),
     status: z.enum(['live', 'done', 'archived', 'ongoing', 'concept']).default('done'),
-    areas: z.array(Slug).min(1).max(3), // areas[0] = birincil alan (sahnede dilim)
+    areas: z.array(Slug).min(1).max(3), // areas[0] = birincil alan (`ls projects/` satırında)
     featured: z.boolean().default(false), // ana sayfa work bölümü (P = 3–5)
     order: z.number().int().min(0).max(999).default(100), // küçük = önce
     facts: z.array(z.strictObject({ label: Lmax(24), value: Lmax(40) })).max(4).default([]), // künye: "Platform: iOS · Android"
@@ -8868,8 +9141,8 @@ export const Testimonial = z.strictObject({
 | Sosyal bağlantılar `contact.yaml`'da | Tüm iletişim kanallarının tek kaynağı orasıdır. JSON-LD `sameAs` buradan okur (§11.6). |
 | `Person.languages` → `content/cv/languages.yaml` | §8.1 dosya ağacı |
 | `Person.mediumBio` kaldırıldı; ana sayfa metni `home.about.{lede,paragraphs}` | Ana sayfa about bölümünün lede ve iki paragraf yapısı (§4.7) |
-| `Project.scene`, `Project.accent`, `Chapter.scene/pinned` kaldırıldı | Koreografi koddadır. "Tek vurgu, tek anlam" (§4.4). Proje sahnesi `primaryArea` ve yıllardan türetilir (§5.10). |
-| `Project.areas[0]` = birincil alan | Work bölümü ve D1 folio'da tek bir dilim aydınlanır (§4.9, §4.13) |
+| `Project.scene`, `Project.accent`, `Chapter.scene/pinned` kaldırıldı | Koreografi koddadır. "Tek vurgu, tek anlam" (§4.4). Proje programı (`<slug>.yaml`) içerikten türetilir (§4.13.2). |
+| `Project.areas[0]` = birincil alan | `$ ls projects/` satırında ve benzer projelerde birincil alan budur (§4.13.2, §7.8.6) |
 | Yalın `Project` (D-48): `team`; `client`, `clientUrl`, `industry`, `location`, `confidential`; `stack`, `tags`; `metrics` (`Metric`); `outcome`; `tldr`; `testimonial` ve `ProjectBodyFrontmatter` (proje MDX gövdesi) kaldırıldı | Projeler vaka çalışması değil, yalın proje sayfasıdır. Şirket projelerinde gizli bilgi istenmez (Ek A.5). `tags` yalnızca JSON Resume `keywords` alanını (artık alan başlıkları, §7.6.5), `testimonial` ise vaka sayfasının kaldırılan "Referans" bölümünü besliyordu; referansın projeye bağı `Testimonial.project` ile sürer. |
 | `year` + `period` → `start` / `end` (`YearMonth`); `type` → `kind`; `coverMobile` → `mobileCover`; `thumbnail` → `preview`; `status` değerleri `live \| done \| archived \| ongoing \| concept` | Alan adları ve değerleri sahibin anketindekilerle (Ek A.5) birebir aynıdır. Gösterim yılı `year` artık türetilir (§7.3.3). |
 | `draft` bayrağı `project.yaml`'da | Taslak bilgisi eskiden `tr.mdx` frontmatter'ındaydı; proje MDX'i kalkınca YAML'a taşındı. |
@@ -8877,7 +9150,8 @@ export const Testimonial = z.strictObject({
 | `Link.kind` yalnızca `live \| video` | Kaynak kod, basın, indirme ve canlı web bağlantıları kaldırıldı (D-48). `live` yalnızca App Store, Google Play ve AppGallery sayfalarıdır (C07). |
 | Görseller yalnızca JPG/PNG | §7.2.2 |
 | `Testimonial.consentDate` zorunlu | Üçüncü kişi verisi. İzin kaydı sahipte tutulur (§12.4). |
-| `Area.order` 1–99 ve benzersiz | Artan sıra dilim sırası `k`'yi belirler (§5.10) |
+| `Area.order` 1–99 ve benzersiz | Artan sıra areas program adım sırası `k`'yi belirler (§4.8.5) |
+| `Area.figure` (KOD, 2026-10-02) | İsteğe bağlı alan; alanın KOD diyagramını seçer: `phone`, `tree`, `api`, `pipeline` ya da `list` (varsayılan). Diyagramın etiketleri alanın `tags` ve `capabilities` alanlarından gelir (§4.8.5). |
 
 #### 7.3.3 Build'de türetilen alanlar (yazılmaz, hesaplanır)
 
@@ -8886,15 +9160,15 @@ export const Testimonial = z.strictObject({
 | `width`, `height`, `bytes`, `dominant` (`ImageAsset`) | sharp: `metadata().autoOrient` (EXIF yönü uygulanmış), `stats().dominant` → `#rrggbb` | transform (`imageMeta`, `probeImage`) | `next/image` boyutları, baskın renk zemini (§6.7, §9.3), C05 |
 | `project.slug` | klasör adı | transform | route'lar |
 | `project.locales` | her zaman `'tr'`; `title.en` **ve** `summary.en` doluysa ayrıca `'en'` (D-48) | transform | `availableLocales`, `generateStaticParams` (§3.4) |
-| `project.primaryArea` | `areas[0]` | transform | sahne dilimi, D1/K3 |
+| `project.primaryArea` | `areas[0]` | transform | `$ ls projects/` satırı (§4.13.2), benzer projeler |
 | `project.year` | `end` yılı; `end` yoksa (sürüyor) build yılı | transform | kart, satır ve ana sayfa work meta'sı ("yıl"), OG eyebrow (§11.5), liste sırası (§7.8.1) |
 | `*.media` (MDX gövdeleri: hakkımda, gizlilik, alan sayfası) | MDX içindeki `src="/media/…"` (`<Figure>`) → boyutlar | transform (`mdxMedia`) | MDX bileşenleri (§7.7.2) |
 | `area.id` | dosya adı | transform | route, filtre |
 | `area.pageLocales` | `hasPage` ise taslak olmayan `<id>.{tr,en}.mdx` | transform | `availableLocales('area')` |
-| Dilim sırası `k` | `getAreas()` dizisindeki indeks (`order` artan) | erişimci | §5.10 `sectors`, `psi(k)` |
-| `careerStartYear` | `person.careerStartYear ?? min(experience[].period.start yılı)` | erişimci | §5.10 `rings`, "Deneyim: N yıl" |
-| Proje yıl aralığı | başlangıç = `start` yılı; bitiş = `year` (`end` yılı, sürüyorsa build yılı) | erişimci `projectYears()` | §5.10 `bandOf` |
-| Deneyim ve eğitim yıl aralığı | `period.start` yılı → `period.end` yılı ?? build yılı | erişimci `entryYears()` | §4.10 bant olayları |
+| Adım sırası `k` | `getAreas()` dizisindeki indeks (`order` artan) | erişimci | areas program adımı (§4.8.5) |
+| `careerStartYear` | `person.careerStartYear ?? min(experience[].period.start yılı)` | erişimci | "Deneyim: N yıl"; OG motifi (§11.5) |
+| Proje yıl aralığı | başlangıç = `start` yılı; bitiş = `year` (`end` yılı, sürüyorsa build yılı) | erişimci `projectYears()` | `<slug>.yaml` programı (§4.13.2); OG motifi |
+| Deneyim ve eğitim yıl aralığı | `period.start` yılı → `period.end` yılı ?? build yılı | erişimci `entryYears()` | `git log` programı (§4.10.3) |
 | Güncel kurum (`worksFor`) | web'de görünen, `end` içermeyen ilk deneyim | erişimci | JSON-LD (§11.6), "Şu an" |
 | Önceki / sonraki proje | dile göre liste sırası (§7.8.1), dairesel | erişimci | "Sonraki proje" (§7.7.1) |
 | Benzer projeler | birincil alanı (`primaryArea`) aynı olanlar, liste sırasıyla; en fazla 3; kendisi ve "sonraki proje" hariç | erişimci | §7.7.1, §7.8.6 |
@@ -9147,7 +9421,7 @@ export function getCareerStartYear(): number;                              // §
 export function getWorksFor(): ExperienceDoc | undefined;
 
 // alanlar
-export function getAreas(): AreaDoc[];                                     // order artan; indeks = dilim k
+export function getAreas(): AreaDoc[];                                     // order artan; indeks = program adımı k
 export function getAreaMode(): 'dial' | 'list';                            // 3 ≤ N ≤ 6 → 'dial' (D-37, §4.8)
 export function getAreaPageIds(locale: Locale): string[];                  // features.areaPages && hasPage && pageLocales ∋ locale
 export function getAreaBody(id: string, locale: Locale): AreaBody | undefined;
@@ -9180,6 +9454,7 @@ export function getCvSummary(locale: Locale): {                            // ya
   awards: string[];                                                        // "Ödül — Veren, Yıl"
 };
 export function getStageData(preset: Exclude<PresetName, 'none'>, slug?: string, locale: Locale = 'tr'): StageData; // StagePreset/LabStage verisi (§5.9.1); folio'da slug ZORUNLU; 'none' → data={null}
+export function getKodData(preset: Exclude<PresetName, 'none'>, slug?: string, locale: Locale = 'tr'): KodData;   // KOD program verisi (§5.20.1); gövdesi src/lib/content/kod.ts → buildKodData
 // SPEC-SAPMA: §7.3.6 (M3) — `locale` parametresi eklendi: ana sayfa öne çıkan listesi dile göre değişir (TR P = 4, EN P = 3); OG kök görselleri ve EN ağacı kendi dilinin verisini ister. Varsayılan 'tr'.
 // Dönüş tipleri (SiteDoc, PersonDoc, AreaDoc …) de bu modülden export edilir; §11.2 AreaDoc'u kullanır.
 ```
@@ -9205,6 +9480,7 @@ export function getStageData(preset: Exclude<PresetName, 'none'>, slug?: string,
 | 10 | `Testimonial` `consent: false` | ret |
 | 11 | `Project` (D-48): asgari belge; `links[].kind: 'repo'`; 5 bağlantı; `start: '2024'`; `{ start: '2024-03', end: '2023-12' }`; kaldırılmış alan (`client`, `metrics`, `tldr`) | asgari belge kabul: `kind='client'`, `status='done'`, `featured=false`, `order=100`, `facts=[]`, `links=[]`, `gallery=[]`, `draft=false`, `seo.noindex=false`. Diğerleri ret: `end` için `path: ['end']`, kaldırılmış alan için `unrecognized_keys` |
 | 12 | Tüm üst düzey şemalar için `z.toJSONSchema(s, { io: 'input' })` | atmaz; `additionalProperties === false` |
+| 13 | `Area` `figure` yok; `figure: 'tree'`; `figure: 'chart'` | varsayılan `'list'`; `'tree'` kabul; `'chart'` ret |
 
 İçerik ağacının bütünü birim testte değil, `npm run build` zincirinde (CLI + C01–C12) doğrulanır. Test stratejisi §13.2'dedir.
 
@@ -9367,7 +9643,7 @@ for (const p of C.allProjects) if (/^ornek-proje-\d+$/.test(p.slug)) strictly('C
 /* C02 sayılar (D-37) */
 const N = C.allAreas.length;
 if (N === 0) report('error', 'C02', 'content/areas', 'en az 1 alan gerekli');
-else if (N < 3 || N > 6) report('warn', 'C02', 'content/areas', `N=${N}: Areas liste modunda çizilir (kadran yok)`);
+else if (N < 3 || N > 6) report('warn', 'C02', 'content/areas', `N=${N}: Areas liste modunda çizilir (pin yok)`);
 for (const locale of C.site.locales) {
   const P = C.allProjects.filter((p) => p.featured && p.locales.includes(locale)).length;
   if (P > 5) report('error', 'C02', `projects (${locale})`, `öne çıkan P=${P} > 5`);
@@ -9499,7 +9775,7 @@ export const CV_ANCHORS: Record<Locale, Record<CvSectionKey, string>>;
 
 #### 7.6.2 `/cv` sayfası
 
-Sayfa okumak içindir. Scroll-jacking yoktur. Sahne yalnızca ≥ 80rem'de D3 `cv-core` presetiyle sağ sütunda görünür (§4.13). JSON-LD §11.6'dadır.
+Sayfa okumak içindir. Scroll-jacking yoktur. `/cv` sahnesizdir (`StagePreset name="none"`): panel, çapa ve baskı figürü yoktur; `git log` ana sayfadadır (§4.13.2). JSON-LD §11.6'dadır.
 
 ```text
 [Breadcrumb] Ana sayfa › Özgeçmiş (CV)
@@ -9512,7 +9788,7 @@ Başlık bloğu: Orçun Saatçi · {jobTitle} · {city} [· Uzaktan çalışmaya
 <nav aria-label="Özgeçmiş bölümleri">: bölüm çapalarına bağlantılar [data-print="hide"]
 <section id="deneyim"><h2>Deneyim</h2> <article class="cv-entry">…</article> … </section>
 …
-<figure class="cv-figure">: RingsFigure (§6.6), yalnızca baskıda ve statik katmanda
+(KOD: cv-figure yoktur; KESİT'in RingsFigure'ü kaldırıldı, baskıda figür basılmaz)
 ```
 
 **Kayıt anatomisi:**
@@ -9830,7 +10106,7 @@ publishedAt: "2025-07" # {{PROJE_1_YAYIN_TARİHİ}}
 | Uygulama | Seçimde eşleşmeyen `li` öğelerine `hidden` verilir. URL `window.history.replaceState` ile `?alan=<id>` olur (seçim "Tümü" ise parametre kaldırılır); Next `useSearchParams` ile senkron kalır. Canlı bölge (`role="status"`) "4 proje" / "4 projects" duyurur (§7.9.6). |
 | Geçersiz değer | Bilinmeyen `?alan=` yok sayılır ve "Tümü" uygulanır. |
 | Canonical | Filtreli görünümün canonical'ı `/projeler`'dir (§11.3). |
-| Sahne | Seçim değişince aktif alan stage'e bildirilir (D2 dilimi, §4.13; arayüz §5.9). |
+| Sahne | Seçim değişince aktif alan stage'e bildirilir (`ls projects/ --area=<id>` programı, §4.13.2; arayüz §5.9). |
 | Hareket | Kartların yeniden dizilme animasyonu §4.14'tedir. Azaltılmış harekette anında değişir. |
 
 #### 7.8.3 Kart ve satır verisi
@@ -10008,7 +10284,7 @@ export default tr;
 | `contact.toast` / `copyFailed` | E-posta kopyalandı / Kopyalanamadı. Adresi seçip kopyalayın. | Email copied / Couldn't copy. Select the address and copy it. |
 | `contact.cvPdf` / `localTime` | CV (PDF) / Yerel saat | CV (PDF) / Local time |
 | `availability.open` / `limited` / `closed` | Yeni fırsatlara açığım / Sınırlı müsaitlik / Şu an yeni işlere kapalıyım | Open to new opportunities / Limited availability / Not taking on new work right now |
-| `notFound.title` / `lead` / `body` | Sayfa bulunamadı / Bu kesit boş, ama saat doğru. / Bağlantı eskimiş ya da adres yanlış yazılmış olabilir. | Page not found / This section is empty, but the clock is right. / The link may be outdated or the address mistyped. |
+| `notFound.title` / `lead` / `body` | Sayfa bulunamadı / Bu yol derlemede yok. / Bağlantı eskimiş ya da adres yanlış yazılmış olabilir. | Page not found / This path isn't in the build. / The link may be outdated or the address mistyped. |
 | `footer.backToTop` / `copyright` | Başa dön / © {year} {name} | Back to top / © {year} {name} |
 | `breadcrumb.home` | Ana sayfa | Home |
 
@@ -10020,7 +10296,7 @@ export default tr;
 - Görselin iş hakkında ne gösterdiğini anlatır: "[Proje] ana ekranı: kart tabanlı pano ve filtre çubuğu".
 - Portre kalıbı: "Orçun Saatçi, [bağlam: çalışma masasında, kameraya bakıyor]".
 - Grafik ve diyagram: kısa alt metin yazılır, ayrıntı yanındaki metinde açıklanır.
-- Dekoratif görseller (posterler, hover önizlemesi) içerik alanı değildir, `alt=""` bileşen tarafından verilir (§6.7).
+- Dekoratif görseller (hover önizlemesi) içerik alanı değildir, `alt=""` bileşen tarafından verilir (§6.7).
 
 ### 7.10 Sahibinin içerik düzenleme akışı
 
@@ -10045,11 +10321,11 @@ export default tr;
 3. **CV'yi güncellemek:** `content/cv/experience.yaml` listesine yeni kaydı ekleyin. `id` benzersiz olmalıdır (ör. `kurum-2026`). Sonra `site.yaml` içindeki `cv.updatedAt` alanını güncelleyin. PDF ve JSON bir sonraki build'de kendiliğinden yenilenir.
 4. **Portreyi değiştirmek:** Aynı adla `public/media/person/orcun-saatci-portrait.jpg` dosyasının üzerine yazın (4:5, §7.5.3). Gerekiyorsa `portrait.alt` metnini güncelleyin.
 5. **İngilizce eklemek:** `.en` alanlarını doldurun (projelerde en az `title.en` ve `summary.en`), hakkımda, gizlilik ve alan sayfası gövdeleri için `*.en.mdx` ekleyin, `site.yaml`'da `locales: [tr, en]` yazın. Build günlüğündeki "EN tamlık raporu"ndaki eksikleri kapatın.
-6. **Alan eklemek veya sırasını değiştirmek:** `content/areas/<id>.yaml` ekleyin ya da `order` değerlerini değiştirin. Kadran için 3–6 alan gerekir, 7 ve üzeri liste moduna geçer (D-37).
+6. **Alan eklemek veya sırasını değiştirmek:** `content/areas/<id>.yaml` ekleyin ya da `order` değerlerini değiştirin. Pin için 3–6 alan gerekir, 7 ve üzeri liste moduna geçer (D-37). Alanın diyagramı isteğe bağlı `figure` alanıyla seçilir (`phone`, `tree`, `api`, `pipeline`, `list`; §4.8.5).
 7. **Alan sayfalarını açmak:** İlgili alanlarda `hasPage: true` yapıp `<id>.tr.mdx` (150–400 kelime) yazın, ardından `site.yaml`'da `features.areaPages: true` yapın.
 8. **Referans eklemek:** Kişiden **yazılı izin** alın (şablon Ek A.9) ve izni saklayın. `content/testimonials.yaml` içine `consent: true` ve `consentDate` ile kaydı ekleyin, `features.testimonials: true` yapın.
 9. **Taslak:** Yayında görünmemesi gereken proje için `project.yaml` içine `draft: true` yazın.
-10. **Geliştirici işi gerektirenler:** Persona veya meslek değişikliği (`site.yaml` `persona` + `profile.ts` + posterler, §4.17). `careerStartYear` değişirse halka sayısı değişir; alan sayısı değişirse dilimler değişir. Bu durumda posterlerin yeniden üretilmesi gerekebilir (`npm run posters`, §5.16).
+10. **Geliştirici işi gerektirenler:** Persona veya meslek değişikliği (`site.yaml` `persona` + `profile.ts`, §4.17). Programlar içerikten üretildiği için içerik değişiklikleri (alan sayısı, kariyer yılları, projeler) geliştirici işi gerektirmez; KESİT'in poster yeniden üretimi kaldırıldı.
 
 #### 7.10.3 Hata mesajı → çözüm
 
@@ -10127,6 +10403,8 @@ Bu bölüm kod tabanının iskeletini sabitler: dosya ağacı, modül sınırlar
 
 ### 8.1 Klasör ağacı
 
+> **KOD notu (2026-10-02):** `✗` ile işaretli dosyalar KESİT'e özgüydü ve kaldırılır. Eklenenler (§5.20.1): `src/lib/kod/{screen,syntax,programs,types}.ts`, `src/lib/content/kod.ts`, `src/components/kod/{KodPanel.tsx,kod-panel.css,AsciiCompile.tsx}`, `src/stage/kod-atlas.ts`, `src/stage/kod-compose.ts` ve `src/stage/gl/KodRig.tsx` (`gl/Scene.tsx` ile birlikte `three` import eden tek dosya).
+
 Bu ağaç projenin kanonik dosya ağacıdır. Her dosya ve klasörün yanında tek satırlık görevi yazılıdır. `(+)` ile işaretli satırlar temel ağaca, parantez içinde gösterilen bölümün gereği olarak eklenmiştir.
 
 - **ZORUNLU:** Bu ağaçta olmayan bir kaynak dosya ancak bu alt bölüm aynı PR'da güncellenerek eklenir.
@@ -10170,7 +10448,7 @@ Bu ağaç projenin kanonik dosya ağacıdır. Her dosya ve klasörün yanında t
 │  │  ├─ (+) pages/                           # hakkımda MDX görselleri (§7.2.2)
 │  │  ├─ (+) testimonials/                    # referans avatarları (§7.2.2)
 │  │  └─ (+) placeholder/                     # yalnız geliştirme yer tutucuları (§7.2.2)
-│  ├─ stage/                                  # commit edilen posterler: k0|k1|k5-{light,dark}-{640,1080,1600}.{avif,webp} (§5.16, §9.3)
+│  ├─ stage/                                  # commit edilen posterler: k0|k1|k5-{light,dark}-{640,1080,1600}.{avif,webp} (§5.16, §9.3)  ✗ KOD ile kaldırıldı (§0.6)
 │  ├─ files/                                  # build-cv çıktısı: CV PDF'leri + JSON Resume (gitignore; X-Robots-Tag: noindex)
 │  └─ detect-gpu/                             # detect-gpu benchmark JSON'ları (postinstall kopyası; gitignore)
 ├─ assets/fonts/
@@ -10180,7 +10458,7 @@ Bu ağaç projenin kanonik dosya ağacıdır. Her dosya ve klasörün yanında t
 │  ├─ subset-fonts.sh                         # `npm run fonts`: WOFF2 alt kümeleri + statik TTF'ler (fontTools, §6.2)
 │  ├─ check-content.ts                        # build adımı 2: yer tutucu, sayı, referans ve medya denetimi (D-36, §7.5)
 │  ├─ build-cv.tsx                            # build adımı 3: CV PDF + JSON Resume → public/files (§7.6)
-│  ├─ render-posters.ts                       # `npm run posters`: /lab/stage → Playwright → sharp → public/stage (§5.16)
+│  ├─ render-posters.ts                       # `npm run posters`: /lab/stage → Playwright → sharp → public/stage (§5.16)  ✗ KOD ile kaldırıldı (§0.6)
 │  ├─ check-budgets.mjs                       # `npm run budgets`: ilk JS, chunk ve asset bütçeleri (§9.4)
 │  ├─ copy-detect-gpu.mjs                     # postinstall: detect-gpu benchmark'larını public/detect-gpu'ya kopyalar (§8.7)
 │  ├─ (+) package.json                        # {"type":"module"}: @react-pdf/renderer yalnız ESM (§7.2.3)
@@ -10229,7 +10507,7 @@ Bu ağaç projenin kanonik dosya ağacıdır. Her dosya ve klasörün yanında t
    │  │  ├─ calisma-alanlari/[area]/page.tsx  # /calisma-alanlari/[area] → AreaView (features.areaPages)
    │  │  ├─ iletisim/page.tsx                 # /iletisim → ContactView
    │  │  ├─ gizlilik/page.tsx                 # /gizlilik → PrivacyView (noindex, follow)
-   │  │  └─ lab/stage/page.tsx                # /lab/stage poster laboratuvarı; NEXT_PUBLIC_ENABLE_LAB !== '1' ise notFound() (D-40)
+   │  │  └─ lab/stage/page.tsx                # /lab/stage poster laboratuvarı; NEXT_PUBLIC_ENABLE_LAB !== '1' ise notFound() (D-40)  ✗ KOD ile kaldırıldı (§0.6)
    │  ├─ en/                                  # EN ağacı (/en); kendi kök layout'u, <html lang="en">
    │  │  ├─ layout.tsx                        # EN kök layout (§8.4.4, EN farkları tablosu)
    │  │  ├─ page.tsx                          # /en → HomeView (locale="en")
@@ -10264,7 +10542,7 @@ Bu ağaç projenin kanonik dosya ağacıdır. Her dosya ve klasörün yanında t
    │  ├─ area/AreaView.tsx                    # tek alan sayfası
    │  ├─ contact/ContactView.tsx              # iletişim sayfası (§12.1)
    │  ├─ privacy/PrivacyView.tsx              # gizlilik sayfası
-   │  └─ not-found/NotFoundView.tsx           # ağaç 404 gövdesi (SVG ClockFigure; WebGL yok)
+   │  └─ not-found/NotFoundView.tsx           # ağaç 404 gövdesi (statik hata çıktısı, §4.13.6; WebGL yok)
    ├─ components/
    │  ├─ chapters/
    │  │  ├─ Hero.tsx                          # hero bölümü: H1 (LCP), CTA'lar, hero-rest çapası (§4.6)
@@ -10291,17 +10569,17 @@ Bu ağaç projenin kanonik dosya ağacıdır. Her dosya ve klasörün yanında t
    │  │  ├─ MotionToggle.tsx                  # "Hareketi azalt" anahtarı (client, §4.16.4, §10.2)
    │  │  ├─ PauseButton.tsx                   # "Animasyonu durdur" (client, §10.2)
    │  │  ├─ HalkaIndicator.tsx                # kaydırma ilerleme halkası (client, aria-hidden, §4.14)
-   │  │  ├─ CutLine.tsx                       # about kesit çizgisi + lede açılışı (client, §5.14.4)
-   │  │  ├─ SectionWipe.tsx                   # work silme geçişi (client)
+   │  │  ├─ CutLine.tsx                       # about kesit çizgisi + lede açılışı (client, §5.14.4)  ✗ KOD ile kaldırıldı (§0.6)
+   │  │  ├─ SectionWipe.tsx                   # work silme geçişi (client); KOD'da kalır, ASCII derlemesiyle aynı anda (§4.9.4)
    │  │  ├─ Magnetic.tsx                      # manyetik CTA sarmalayıcısı (client; yalnız ince işaretçi)
    │  │  └─ NavCutLine.tsx                    # header etkin öğe çizgisi (client)
-   │  ├─ figures/                             # section-geometry'den üretilen SVG figürler
-   │  │  ├─ DialFigure.tsx                    # alan kadranı (plan görünümü, N dilim)
-   │  │  ├─ RingsFigure.tsx                   # kariyer halkaları (yıl etiketli)
-   │  │  ├─ ArcFigure.tsx                     # açık dış yay (bugüne kadar; tarih client'ta)
-   │  │  ├─ SpecimenGlyph.tsx                 # proje başına numune glifi (bant + dilim)
-   │  │  ├─ EntryGlyph.tsx                    # journey girdisi başına 24 px halka glifi
-   │  │  └─ ClockFigure.tsx                   # 404 saati (client; dakikada bir, azaltılmışta donar, D-19)
+   │  ├─ figures/                             # section-geometry'den üretilen SVG figürler  ✗ KOD ile kaldırıldı (§0.6)
+   │  │  ├─ DialFigure.tsx                    # alan kadranı (plan görünümü, N dilim)  ✗ KOD ile kaldırıldı (§0.6)
+   │  │  ├─ RingsFigure.tsx                   # kariyer halkaları (yıl etiketli)  ✗ KOD ile kaldırıldı (§0.6)
+   │  │  ├─ ArcFigure.tsx                     # açık dış yay (bugüne kadar; tarih client'ta)  ✗ KOD ile kaldırıldı (§0.6)
+   │  │  ├─ SpecimenGlyph.tsx                 # proje başına numune glifi (bant + dilim)  ✗ KOD ile kaldırıldı (§0.6)
+   │  │  ├─ EntryGlyph.tsx                    # journey girdisi başına 24 px halka glifi  ✗ KOD ile kaldırıldı (§0.6)
+   │  │  └─ ClockFigure.tsx                   # 404 saati (client; dakikada bir, azaltılmışta donar, D-19)  ✗ KOD ile kaldırıldı (§0.6)
    │  ├─ ui/
    │  │  ├─ Button.tsx                        # primary / secondary / text / icon
    │  │  ├─ TextLink.tsx                      # inline / nav / external / download
@@ -10340,7 +10618,7 @@ Bu ağaç projenin kanonik dosya ağacıdır. Her dosya ve klasörün yanında t
    │  ├─ (+) content/image-meta.ts            # build zamanı görsel boyutu/baskın renk (yalnız content-collections.ts)
    │  ├─ (+) content/cv.ts                    # CV seçimi ve JSON Resume eşlemesi (saf, §7.6)
    │  ├─ (+) contact/{schema,token,core,config}.ts # v1.1 form çekirdeği, saf; testleri yanında (§12.2.2)
-   │  ├─ section-geometry.ts                  # three-free: halkalar, bantlar, dilimler, ψ, capRadius, yay (§5.10)
+   │  ├─ section-geometry.ts                  # three-free: KOD'da yalnız OG motifi için kalır (§5.10)
    │  ├─ seo/metadata.ts                      # metadata üreticileri, listPages() (§11.2, §11.4)
    │  ├─ seo/jsonld.ts                        # sayfa başına JSON-LD @graph (§11.6)
    │  ├─ (+) seo/og.tsx                       # OG ortak render yardımcıları (§11.5)
@@ -10351,7 +10629,7 @@ Bu ağaç projenin kanonik dosya ağacıdır. Her dosya ve klasörün yanında t
    ├─ stage/                                  # three-free sahne katmanı (D-17); ilk pakete girebilir
    │  ├─ store.ts                             # stageStore (zustand vanilla) + stageTarget, live, directorApi (§5.9)
    │  ├─ tracks.ts                            # track tipleri ve değerlendirme (§5.9.3)
-   │  ├─ keyframes.ts                         # K0–K5, D1–D5 (§5.8)
+   │  ├─ keyframes.ts                         # K0–K5, D1–D5 (§5.8); KOD'da track altyapısı için kalır, taş değerleri sahnede kullanılmaz
    │  ├─ events.ts                            # event'ler ve sahiplik (§5.9.5)
    │  ├─ anchors.ts                           # anchor kaydı ve ölçümü (§5.7)
    │  ├─ capabilities.ts                      # yetenek yoklaması, assignTier (§5.11.2)
@@ -10360,21 +10638,21 @@ Bu ağaç projenin kanonik dosya ağacıdır. Her dosya ve klasörün yanında t
    │  ├─ ScrollDirector.tsx                   # ölçüm + track + event yönetmeni (client, §5.13.5)
    │  ├─ StageRoot.tsx                        # #scene-layer, lazy boot (client, §5.12.3)
    │  ├─ StagePreset.tsx                      # sayfanın preset'ini ve verisini ilan eder (client yaprak)
-   │  ├─ ScenePoster.tsx                      # StageAnchor + poster işaretlemesi (server-uyumlu, §5.16)
+   │  ├─ ScenePoster.tsx                      # StageAnchor (server-uyumlu); poster işaretlemesi KOD ile kaldırıldı, çapada statik panel (§5.20.6)
    │  ├─ (+) debug.tsx                        # ?debug paneli; yalnız dinamik import (§5.1.3, §5.18)
    │  └─ gl/                                  # three / @react-three/* / maath import edebilen TEK klasör (stage chunk)
    │     ├─ Scene.tsx                         # <Canvas>, döngü politikası, FirstFrame, PerformanceMonitor (§5.2, §5.12.4)
-   │     ├─ StageRig.tsx                      # kamera, damping, anchor → ekran, uniform güncellemesi (§5.7)
-   │     ├─ Stone.tsx                         # draw 1: taş + kesit yüzeyi
-   │     ├─ Ghost.tsx                         # draw 2: hayalet yarı (yalnız high)
-   │     ├─ Shadow.tsx                        # draw 3: temas gölgesi
-   │     ├─ materials.ts                      # uniform'lar, ShaderMaterial fabrikaları, tema uygulama (§5.4.6)
-   │     └─ shaders/
-   │        ├─ noise.glsl.ts                  # SNOISE3 + HASH13 (MIT)
-   │        ├─ stone.vert.ts                  # süperkuadrik vertex shader
-   │        ├─ stone.frag.ts                  # yüzey + kesit kapağı
-   │        ├─ ghost.frag.ts                  # hayalet
-   │        └─ shadow.ts                      # gölge vert + frag
+   │     ├─ StageRig.tsx                      # kamera, damping, anchor → ekran, uniform güncellemesi (§5.7)  ✗ KOD ile kaldırıldı; yerine KodRig.tsx (§5.20.1)
+   │     ├─ Stone.tsx                         # draw 1: taş + kesit yüzeyi  ✗ KOD ile kaldırıldı (§0.6)
+   │     ├─ Ghost.tsx                         # draw 2: hayalet yarı (yalnız high)  ✗ KOD ile kaldırıldı (§0.6)
+   │     ├─ Shadow.tsx                        # draw 3: temas gölgesi  ✗ KOD ile kaldırıldı (§0.6)
+   │     ├─ materials.ts                      # uniform'lar, ShaderMaterial fabrikaları, tema uygulama (§5.4.6)  ✗ KOD ile kaldırıldı (§0.6)
+   │     └─ shaders/  ✗ KOD ile kaldırıldı (§0.6)
+   │        ├─ noise.glsl.ts                  # SNOISE3 + HASH13 (MIT)  ✗ KOD ile kaldırıldı (§0.6)
+   │        ├─ stone.vert.ts                  # süperkuadrik vertex shader  ✗ KOD ile kaldırıldı (§0.6)
+   │        ├─ stone.frag.ts                  # yüzey + kesit kapağı  ✗ KOD ile kaldırıldı (§0.6)
+   │        ├─ ghost.frag.ts                  # hayalet  ✗ KOD ile kaldırıldı (§0.6)
+   │        └─ shadow.ts                      # gölge vert + frag  ✗ KOD ile kaldırıldı (§0.6)
    ├─ actions/contact.ts                      # v1.1 Server Action (§12.2)
    └─ emails/ContactEmail.tsx                 # v1.1 e-posta şablonu (§12.2)
 ```
@@ -10408,7 +10686,7 @@ Birim testleri kaynak dosyanın yanındadır (`*.test.ts(x)`). Sözleşmenin zor
 | SB6 | Sunucu modülleri | `src/lib/content/index.ts` ve `src/i18n/get-dictionary.ts` ilk satırda `import 'server-only'` taşır. `'use client'` dosyaları bunları (doğrudan ya da dolaylı) import etmez. | `server-only` paketi build hatası üretir |
 | SB7 | Node-uyumlu modüller (§7.2.3) | `src/lib/content/{schemas,image-meta,cv}.ts`, `src/i18n/format.ts`, `src/design/tokens.ts`, `content-collections.ts` ve `scripts/**` `@/` takma adını kullanmaz; yalnız göreli import. | ESLint |
 | SB8 | Türkçe büyük/küçük harf (§3.8) | `toUpperCase` / `toLowerCase` uyarı verir; yalnız `src/i18n/format.ts` istisnadır. | ESLint `no-restricted-properties` (warn) |
-| SB9 | Düz `<img>` | `@next/next/no-img-element` yalnız `src/stage/ScenePoster.tsx` içinde kapatılır; posterler optimizer'dan geçmez (D-31). Başka her yerde raster görsel `next/image` ile verilir. | ESLint |
+| SB9 | Düz `<img>` | KOD'da sahne posteri yoktur; `@next/next/no-img-element` istisnası (`ScenePoster.tsx`) kaldırılır (D-31). Başka her yerde raster görsel `next/image` ile verilir. | ESLint |
 | SB10 | Erişilebilirlik lint'i | Pozitif `tabIndex`, DOM öğesinde `autoFocus`, içeriksiz bağlantı ve etkileşimsiz öğede `tabIndex ≥ 0` (`role="region"` kaydırma kutusu hariç) **YASAK** (§10.3.5) | ESLint `jsx-a11y` |
 
 #### 8.2.2 `eslint.config.mjs` (tam dosya)
@@ -10537,7 +10815,7 @@ export default defineConfig([
     rules: { '@typescript-eslint/no-restricted-imports': restrict(THREE, MOTION, MOTION_ENTRY, NO_ALIAS) },
   },
   {
-    name: 'project/poster-img',
+    name: 'project/poster-img', // KOD ile kaldırılır: sahne posteri yoktur (§0.6, D-31)
     files: ['src/stage/ScenePoster.tsx'],
     rules: { '@next/next/no-img-element': 'off' },
   },
@@ -10633,18 +10911,18 @@ Vitest, ESLint Node API'si ile (`new ESLint({ cwd })` → `lintText(code, { file
 | `src/views/**` | server | İçerik ve metadata; client adalarını birleştirir |
 | `components/chapters/*` | server | Tüm metin SSR'dadır (SEO, LCP) |
 | `components/motion/Reveal`, `RevealHeading` | server-uyumlu (direktifsiz) | Yalnız `data-reveal` özniteliği üretir (§5.14.1) |
-| `components/motion/MotionRoot`, `LenisProvider`, `MotionToggle`, `PauseButton`, `HalkaIndicator`, `CutLine`, `SectionWipe`, `Magnetic`, `NavCutLine` | client | Runtime, olaylar, tercih |
+| `components/motion/MotionRoot`, `LenisProvider`, `MotionToggle`, `PauseButton`, `HalkaIndicator`, `SectionWipe`, `Magnetic`, `NavCutLine` (KOD: `CutLine` kaldırıldı); `components/kod/AsciiCompile` | client | Runtime, olaylar, tercih |
 | `components/layout/SiteHeader`, `SiteFooter`, `Breadcrumbs` | server (client adaları içerir) | İçerik okuma sunucuda |
 | `components/layout/MobileMenu`, `SkipLink`, `LanguageSwitcher`, `ThemeToggle`, `SiteAnalytics` | client | Odak, `usePathname`, depolama, `beforeSend` fonksiyonu |
-| `components/figures/DialFigure`, `RingsFigure`, `SpecimenGlyph` | client (SVG SSR'da statik geometriyle render edilir) | Static kademede ve azaltılmış olmayan harekette `onStageEvent` aboneliğiyle dönüş ve etkin sınıf değişimi (§5.13.5, §5.14.5) |
-| `components/figures/EntryGlyph` | server | Statik 24 px glif; olay aboneliği yok |
-| `components/figures/ArcFigure`, `ClockFigure` | client | Güncel tarih/saat yalnız client'ta |
+| ~~`components/figures/DialFigure`, `RingsFigure`, `SpecimenGlyph`~~ (KOD ile kaldırıldı) | client (SVG SSR'da statik geometriyle render edilir) | Static kademede ve azaltılmış olmayan harekette `onStageEvent` aboneliğiyle dönüş ve etkin sınıf değişimi (§5.13.5, §5.14.5) |
+| ~~`components/figures/EntryGlyph`~~ (KOD ile kaldırıldı) | server | Statik 24 px glif; olay aboneliği yok |
+| ~~`components/figures/ArcFigure`, `ClockFigure`~~ (KOD ile kaldırıldı; 404 hata çıktısı server bileşenidir) | client | Güncel tarih/saat yalnız client'ta |
 | `components/ui/CopyEmail`, `Toast`, `LocalTime` | client | Pano, zamanlayıcı, saat |
 | `components/ui/Button`, `TextLink`, `Tag` (statik), `ProjectRow`, `ProjectCard`, `TimelineEntry` | server | Etkileşim yalnız bağlantı ve CSS |
 | `Tag` (filtre anahtarı) | client | `aria-pressed` durumu |
 | `components/mdx/*` | server | MDX statik derlenir |
 | `src/stage/StageRoot`, `ScrollDirector`, `StagePreset` | client | Store, runtime, lazy boot |
-| `src/stage/ScenePoster` | server-uyumlu | SSR poster işaretlemesi |
+| `src/stage/ScenePoster` | server-uyumlu | SSR çapa işaretlemesi; statik panel server bileşenidir (§5.20.6) |
 | `src/stage/gl/**` | client (yalnız stage chunk içinde) | WebGL |
 
 ### 8.4 Kök layout'lar ve head script
@@ -10856,7 +11134,7 @@ Hareket ve sahne durumu React Context ile değil, modül düzeyindeki dış stor
    3. `data-motion === 'full'` ise `onIdle(loadMotion, MOTION_IDLE)` (§9.2.3). `reduce` ise hiçbir şey yüklemez.
 4. **ZORUNLU:** `StageRoot` boot'u `onIdle(boot, STAGE_IDLE)` ile başlatır (§9.2.3); §5.12.3'teki iskelet bu sabiti verir.
 5. `LenisProvider` yalnız şu üç koşul birlikte doğruyken Lenis kurar: runtime hazır, `data-motion="full"`, `matchMedia('(hover: hover) and (pointer: fine)')` (D-15). Dokunmatik cihazlarda Lenis JS'i hiç indirilmez.
-6. `global-not-found.tsx` bu parçaların hiçbirini içermez (§8.4.4). `src/app/(tr)/lab/stage/page.tsx` kendi canvas'ını kurar; `StageRoot` `/lab/` yolunda boot etmez (§5.12.3).
+6. `global-not-found.tsx` bu parçaların hiçbirini içermez (§8.4.4). KESİT'in `/lab/stage` sayfası KOD ile kaldırıldı (D-40).
 7. Tema değişimi React state'i değildir: `ThemeToggle` `<html>` özniteliklerini yazar, CSS `light-dark()` ile anında güncellenir (§6.3.5), sahne `os-theme-change` olayıyla uniform'ları yeniden uygular (§5.6.6).
 
 ### 8.6 Yapılandırma dosyaları
@@ -10905,7 +11183,7 @@ const nextConfig: NextConfig = {
     return [
       { source: '/:path*', headers: securityHeaders }, // §12.5
       { source: '/files/:path*', headers: [{ key: 'X-Robots-Tag', value: 'noindex' }] }, // D-13, §11.4.4
-      { source: '/stage/:file*', headers: [{ key: 'Cache-Control', value: SHORT_CACHE }] }, // posterler (§9.3.2)
+      { source: '/stage/:file*', headers: [{ key: 'Cache-Control', value: SHORT_CACHE }] }, // KESİT posterleri; KOD ile kaldırılır (§0.6)
       { source: '/detect-gpu/:file*', headers: [{ key: 'Cache-Control', value: SHORT_CACHE }] },
     ];
   },
@@ -11020,7 +11298,7 @@ SPEC-SAPMA: §8.6.3 (M3, 2026-09-30) — `content/**/*.mdx` satırı `content/**
     "format": "prettier --write .",
     "test": "vitest run",
     "e2e": "playwright test",
-    "posters": "tsx scripts/render-posters.ts",
+    "posters": "tsx scripts/render-posters.ts",          // KOD ile kaldırılır (§0.6)
     "fonts": "sh scripts/subset-fonts.sh",
     "budgets": "node scripts/check-budgets.mjs",
     "analyze": "next experimental-analyze",
@@ -11040,7 +11318,7 @@ SPEC-SAPMA: §8.6.3 (M3, 2026-09-30) — `content/**/*.mdx` satırı `content/**
 | `format` | elle | CI `npx prettier --check .` çalıştırır (§13.6). |
 | `test` | `check`, CI | Vitest 5, Node ≥ 22.12 ister. |
 | `e2e` | CI, yerel | Önce `npm run build`; Playwright `webServer` `npm run start` kullanır (§13.3). |
-| `posters` | M1 ve profil/palet/shader değişiminde | `NEXT_PUBLIC_ENABLE_LAB=1` ile build + start gerektirir (§5.16). |
+| ~~`posters`~~ | — | KOD ile kaldırıldı (2026-10-02); poster yoktur (§0.6). |
 | `fonts` | M2 ve font değişiminde | Python `fonttools` 4.60.2 + `brotli` (§2.2.8). |
 | `budgets` | `check`, CI | Önce `next build` (§9.4). |
 | `analyze` | M5, M8, bütçe aşımında | Turbopack paket analizörü (§9.4.1). |
@@ -11155,7 +11433,7 @@ console.log(`copy-detect-gpu: ${SRC} → ${DEST}`);
 NEXT_PUBLIC_SITE_URL=https://www.orcunsaatci.com
 # Arama motoru indekslemesi. Yalnız VERCEL_ENV=production VE "true" iken açılır (D-28, §14.6).
 SITE_INDEXABLE=false
-# /lab/stage poster laboratuvarı. Yalnız yerelde poster üretirken "1" (D-40, §5.16).
+# KOD ile kaldırıldı (2026-10-02): /lab/stage ve posterler yok. Değişken silinir (D-40).
 NEXT_PUBLIC_ENABLE_LAB=0
 
 # ── İletişim formu (v1.1, M9) ─────────────────────────────────────────────
@@ -11172,7 +11450,7 @@ CONTACT_SIGNING_SECRET=
 |---|---|---|---|---|---|---|
 | `NEXT_PUBLIC_SITE_URL` | build (client paketine gömülür) | `src/i18n/config.ts`, `next.config.ts` | `https://www.orcunsaatci.com` | aynı (preview'lar da canonical olarak www'yu gösterir) | boş bırakılabilir | hayır |
 | `SITE_INDEXABLE` | build | `robots.ts`, `next.config.ts` `redirects()` | lansmana kadar `false`, sonra `true` (§14.6) | tanımsız | tanımsız | hayır |
-| `NEXT_PUBLIC_ENABLE_LAB` | build | `lab/stage/page.tsx` | tanımsız | tanımsız | `1` yalnız `npm run posters` için | hayır |
+| ~~`NEXT_PUBLIC_ENABLE_LAB`~~ (KOD ile kaldırıldı) | build | `lab/stage/page.tsx` | tanımsız | tanımsız | `1` yalnız `npm run posters` için | hayır |
 | `VERCEL_ENV` | build | `robots.ts`, kök layout'lar (`SiteAnalytics`), `check-content.ts`, `next.config.ts` | `production` (Vercel sistemi) | `preview` | tanımsız | — |
 | `RESEND_API_KEY` | runtime (Server Action) | `src/actions/contact.ts` | v1.1 etkinleştirmesinde (M10 sonrası, §14.5.4) | M9'da | `.env.local` | **evet** |
 | `CONTACT_TO_EMAIL` | runtime | aynı | v1.1 etkinleştirmesinde (M10 sonrası, §14.5.4) | M9'da | `.env.local` | hayır (kişisel veri; yine de depoya yazılmaz) |
@@ -11246,7 +11524,7 @@ Bütün KB değerleri **gzip** boyutudur ve 1 KB = 1,024 bayttır (D-33). "Lab m
 | P13 | Motion chunk | **≤ 60 KB** (gsap + ScrollTrigger + SplitText + lenis); `load`'dan önce **asla** istenmez | lazy | aynı | D-33 |
 | P14 | Tam boot sonrası toplam JS | ≤ 550 KB (ana sayfa, canlı sahneyle) | ana sayfa | `perf-budgets.spec.ts` | kalite araştırması §2.4 |
 | P15 | Fontlar | 2 dosya, toplam ≤ 130 KB (`MonaSans-trim.woff2` ≤ 105 KB, `MartianMono-trim.woff2` ≤ 26 KB) | kritik yol | `budgets` | ölçüm (M2): 98.0 + 23.1 KB (§6.2.3) |
-| P16 | Posterler | her `*-1080.avif` ≤ 40 KB | `public/stage/` | `budgets` | final.md §10.1 |
+| P16 | ~~Posterler~~ | KOD ile kaldırıldı (2026-10-02); statik paneller HTML'dir | — | — | §0.6 |
 | P17 | Sahne kare süresi | kaydırma sırasında p95 ≤ 16.7 ms (60 Hz) atanan kademede; Düşük Güç Modu'nda ≤ 33.3 ms | R1, R3, R6 cihazları (§9.6) | `?debug` paneli | hedef; GPU süreleri §5.11.1 (⚠️ DOĞRULANMADI) |
 | P18 | Sahne hazır süresi | `os:stage-ready − load`: masaüstü referansında ≤ 3,000 ms, orta segment telefonda ≤ 5,000 ms | ana sayfa | User Timing (§9.2.5), §9.6 | hedef; M8 ölçümüyle §16.2'ye yazılır |
 
@@ -11264,7 +11542,7 @@ Notlar:
 | CSS (`globals.css` derlemesi + `next/font` `@font-face`) | `budgets` raporlar | render-blocking | Tek CSS kaynağı; CSS-in-JS ve runtime stil enjeksiyonu **YASAK** |
 | `MonaSans-trim.woff2`, `MartianMono-trim.woff2` | ≤ 130 KB | `preload` (next/font) | `display: 'swap'`, `adjustFontFallback: 'Arial'` (§6.2.3); üçüncü font dosyası **YASAK** |
 | İlk JS chunk'ları | ≤ 175 KB | `async` | Framework tabanı ≈ 130 KB (ölçüldü); uygulama kodu ≤ 40 KB; analitik bileşenleri dahil |
-| Hero posterleri (açık + koyu) | ≤ 40 KB (AVIF 1080) | `loading="lazy"`, `fetchpriority="low"` | LCP adayı olmamalı (§9.5.4); yalnız etkin tema indirilir (§5.16) |
+| Hero statik paneli (KOD; KESİT'te posterler) | HTML içinde | belge | LCP adayı olmamalı: satır başına blok öğe (§4.6.9, §9.5.4) |
 | Proje sayfası hero görseli | `next/image` | `preload` | Yalnız proje sayfalarında, sayfa başına tek (D-31) |
 | Bunların dışında her şey | — | — | `load`'dan sonra (§9.2.4) |
 
@@ -11292,13 +11570,13 @@ Satırlar ana sayfanın canlı sahneli (`tier ≠ static`) yolunu gösterir. "B�
 ```text
 0        ~1.1 s      ~1.9 s         L         L+≤1 s        L+1 s+idle     +≤0.5 s    +≤2 s         +≤0.6 s   +600 ms
 |--HTML--|---FCP-----|---LCP (H1)---|--load---|--motion------|--probe--------|--tier----|--stage JS---|-compile--|-crossfade-|
-  CSS + 2 font preload   ilk JS ≤ 175 KB (async)   gsap+ST+Split   WebGL2+detect-gpu   three+R3F      ilk kare  poster→canvas
+  CSS + 2 font preload   ilk JS ≤ 175 KB (async)   gsap+ST+Split   WebGL2+detect-gpu   three+R3F      ilk kare  panel→canvas
 ◄──────────── bu aralıkta HİÇBİR dinamik import, prefetch veya üçüncü taraf isteği yok ───────────►│
 ```
 
-- Kademe `static` ise T9–T12 yoktur: posterler ve SVG figürler kalır, stage chunk hiç istenmez.
+- Kademe `static` ise T9–T12 yoktur: statik paneller kalır, stage chunk hiç istenmez.
 - `data-motion="reduce"` ise T5–T12 yoktur: ne motion chunk ne stage chunk istenir (D-15, §4.16).
-- Işık taraması T11'den sonra, §4.6.5 koşullarıyla başlar.
+- Hot reload (KESİT'te ışık taraması) T11'den sonra, §4.6.5 koşullarıyla başlar.
 
 #### 9.2.3 Zamanlama sabitleri (`src/lib/on-idle.ts`)
 
@@ -11321,11 +11599,11 @@ export const STAGE_IDLE: IdleOptions = { afterLoadDelayMs: 1000, idleTimeoutMs: 
 
 1. **YASAK:** `window` `load` olayından önce şu modüllerin istenmesi: `@/lib/gsap`, `lenis`, `src/stage/gl/Scene`, `detect-gpu`, `src/stage/debug`, `leva`. Bu modüllere giden her `import()` ve her `next/dynamic` render'ı `onIdle()` kapısının arkasındadır.
 2. **Sıra ZORUNLU:** motion → yoklama → stage. Stage chunk yalnız yoklama `tier ≠ 'static'` döndükten **sonra** istenir. Yoklamayla paralel "ısıtma" amaçlı import **YASAK**tır; düşük uçlu cihazda boşuna ≈ 256 KB indirir.
-3. **YASAK:** Lazy chunk'lar, posterler veya benchmark JSON'ları için `<link rel="preload|prefetch|modulepreload">`.
+3. **YASAK:** Lazy chunk'lar ya da benchmark JSON'ları için `<link rel="preload|prefetch|modulepreload">`.
 4. **YASAK:** İlk kullanıcı girdisinde (`pointerdown`, `keydown`, `wheel`) boot'u erkene çekmek. Boot'un ≈ 250 ms'lik uzun görevi girdinin hemen arkasına düşer ve INP'yi bozar.
 5. **ZORUNLU:** `STAGE_IDLE` kapısı açıldığında `document.visibilityState === 'hidden'` ise stage boot'u `visibilitychange` ile sayfa görünür olana kadar bekletilir. Arka plan sekmesinde WebGL bağlamı kurulmaz.
 6. Save-Data, WebGL2 yokluğu ve düşük bellek **static** kademe verir (§5.11.3); stage chunk istenmez. Azaltılmış harekette motion ve stage chunk'larının ikisi de istenmez.
-7. Hero posterleri `loading="lazy"` + `fetchpriority="low"`'dur ve preload edilmez. Sayfa başına en çok **bir** `preload`'lu görsel vardır (proje hero'su).
+7. Hero'da preload edilen görsel yoktur (statik panel HTML'dir). Sayfa başına en çok **bir** `preload`'lu görsel vardır (proje hero'su).
 8. Üçüncü taraf betik yoktur. Tek istisna yalnız production'da, hidrasyondan sonra enjekte edilen Vercel Analytics ve Speed Insights betikleridir (aynı köken, D-23, D-44).
 9. ⚠️ DOĞRULANMADI: Next `<Link>`'in görünüm alanı prefetch'lerinin (RSC yükleri) LCP'den önce başlayıp başlamadığı. Doğrulama: M8'de LHCI ağ şelalesi. LCP'den önce başlıyorsa footer ve gövde bağlantılarına `prefetch={false}` verilir; header bağlantıları varsayılanda kalır.
 10. İstemci kodunda yüklenme sırasında 50 ms'yi aşan eşzamanlı döngü **YASAK**tır. Boot adımları `await` sınırlarıyla bölünür (dinamik import, `compileAsync`).
@@ -11371,6 +11649,8 @@ Kurallar:
 - **Kota hesabı** (Hobby: ayda 5,000 dönüşüm, 300K önbellek okuma, 100K yazma): ilk ay ≈ görsel sayısı × istenen genişlik sayısı (≈ 4) × 2 biçim. 60 görsel → ≈ 480 dönüşüm. Önbellek 31 gün yaşar; redeploy önbelleği silmez. Görsel sayısı 300'ü geçerse `formats` tek biçime indirilir. Kota aşılırsa yeni görseller 402 döner, önbellekteki görseller çalışmaya devam eder. Kullanım §14.8'deki aylık kontrolde izlenir.
 
 #### 9.3.2 Sahne posterleri (`public/stage/`)
+
+> **KESİT'e özgüydü; KOD ile kaldırıldı (2026-10-02, sahip onayı).** Yerine statik paneller geçer (HTML; §4.16.3, §5.20.6).
 
 Üretim hattı ve işaretleme §5.16'dadır. Teslim kuralları:
 
@@ -11525,7 +11805,7 @@ for (const [group, list] of Object.entries(MARKERS)) {
   else if (size > BUDGET[group]) errors.push(`${group} grubu ${kb(size)} > ${kb(BUDGET[group])}`);
 }
 
-// 6: asset'ler
+// 6: asset'ler (KOD: poster denetimi kaldırılır; public/stage boştur, §0.6)
 const stageDir = join(ROOT, 'public/stage');
 const present = existsSync(stageDir) ? readdirSync(stageDir) : [];
 if (present.length === 0) infos.push('public/stage boş: posterler henüz üretilmedi (M1 öncesi)');
@@ -11609,7 +11889,7 @@ const measure = () => {
 | İlk JS | Analizörde ilk pakette `three`/`gsap`/`lenis` var mı (sınır SB1/SB3 ihlali)? Gereksiz `'use client'` (view/bölüm)? Büyük bir istemci bağımlılığı? | İstemci adasını küçült; ağır işi sunucuya taşı; bağımlılığı çıkar |
 | Stage chunk | drei'den `PerformanceMonitor` dışında import? `maath` kök importu yerine alt yol (`maath/easing`)? | Son çare (final.md risk #7): vanilla three (≈ 133 KB ölçüldü); sahne < 400 satırdır ve birebir taşınır |
 | Motion chunk | `gsap/all` gibi toplu import? Kullanılmayan eklenti kaydı? | Yalnız `gsap`, `ScrollTrigger`, `SplitText`, `lenis` kalır |
-| Poster | AVIF kalite ayarı (§5.16) | Kaliteyi düşür, 1600 genişliği korunur |
+| ~~Poster~~ | KOD ile kaldırıldı | — |
 | Font | Alt küme aralığı genişlemiş mi (§6.2.3)? | Aralığı daralt; eksen aralığını kontrol et |
 
 ### 9.5 Mobil ve iOS özel durumları
@@ -11644,11 +11924,13 @@ const measure = () => {
 | Düşük Güç Modu (iOS) | Safari rAF'ı 30 fps'e düşürür; damping kare hızından bağımsızdır, görüntü doğru kalır; `PerformanceMonitor` gerekirse kademe düşürür | Lenis README; §5.11.4 |
 | DPR | high `[1, 2]`, medium `[1, 1.5]`, low `1` | §5.11.1 |
 | Bellek | Tek WebGL bağlamı; doku yok; unmount'ta renderer ve malzemeler dispose edilir | §5.2, §5.14.7 |
-| Bağlam kaybı | Posterler anında döner; ikinci kayıpta oturum boyunca static kademe | §5.17 |
+| Bağlam kaybı | Statik paneller anında döner; ikinci kayıpta oturum boyunca static kademe | §5.17 |
 | Save-Data | static kademe | §5.11.3 |
 | Yavaş bağlantı | ÖNERİLİR: `navigator.connection.effectiveType` `slow-2g` veya `2g` ise static kademe (Chromium). Sinyal §5.11.3 atama tablosuna eklenirse `capabilities.test.ts`'e satır eklenir. | kalite araştırması §2.3 |
 
 #### 9.5.4 Mobil hero LCP riski
+
+> **KOD notu (2026-10-02):** Risk artık hero statik panelinin metin bloğudur; önlem ve doğrulama §4.6.9'dadır (satır başına blok öğe; gerekirse panel alanı H1 kutusunun %80'iyle sınırlanır). Aşağıdaki poster maddeleri KESİT dönemine aittir.
 
 **Sorun (§4.6.9):** < 64rem'de hero bandındaki poster yaklaşık 290 × 290 px (≈ 84,000 px²) görüntülenir. İki satırlık H1'in metin kutusu bundan küçük olabilir. H1 64rem altında iki blok `<span>` ile kırıldığı için (§6.2.3) her satır ayrı bir LCP adayı da olabilir. Bu durumda poster LCP öğesi olur ve D-34 bozulur.
 
@@ -11687,14 +11969,14 @@ const measure = () => {
 
 | ID | Senaryo | Geçme ölçütü |
 |---|---|---|
-| S1 | Soğuk yükleme (önbellek boş), ana sayfa | LCP öğesi H1'dir (DevTools Performance). Poster→canvas geçişinde "pop" yoktur. `os:stage-ready − load` P18 hedefindedir. |
+| S1 | Soğuk yükleme (önbellek boş), ana sayfa | LCP öğesi H1'dir (DevTools Performance). Statik panel→canvas geçişinde "pop" yoktur. `os:stage-ready − load` P18 hedefindedir. |
 | S2 | Ana sayfanın tamamını parmakla/tekerlekle kaydır, sonra yukarı dön | Görünür takılma yoktur; `?debug` kare süresi P17'dedir. iOS araç çubuğu açılıp kapanınca zıplama yoktur. |
 | S3 | Areas pini: adımlar, başlık düğmeleri, "Bu bölümü atla" | Kaydırma tuzağı yoktur; atlama sonraki bölüme gider. |
 | S4 | Ana sayfa → proje → geri (bağlantı + tarayıcı geri) | Canvas yaşar; kamera kayar; geri dönüşte kaydırma konumu doğrudur. |
 | S5 | Kaydırmanın ortasında "Hareketi azalt" aç, sonra kapat | ≤ 1 s içinde azaltılmış görünüm; görüntü alanındaki bölüm aynı kalır (§4.16.4). |
-| S6 | Tema değiştir (Sistem/Koyu/Açık) ve OS temasını değiştir | Anında, flaşsız; taş yeni temayla render edilir. |
-| S7 | Cihazı döndür (dikey ↔ yatay) | Düzen bozulmaz; yatay telefonda taş yalnız hero'dadır (§4.15.2). |
-| S8 | Sekmeyi 60 s arka planda bırak, geri dön | Canvas ya da poster görünür; boş katman yoktur. |
+| S6 | Tema değiştir (Sistem/Koyu/Açık) ve OS temasını değiştir | Anında, flaşsız; panel yeni temayla render edilir. |
+| S7 | Cihazı döndür (dikey ↔ yatay) | Düzen bozulmaz; yatay telefonda panel yalnız hero'dadır (§4.15.2). |
+| S8 | Sekmeyi 60 s arka planda bırak, geri dön | Canvas ya da statik panel görünür; boş katman yoktur. |
 | S9 | 3 tam kaydırma turu + 5 route geçişi | Sekme çökmez veya yeniden yüklenmez (iOS bellek). |
 | S10 | VoiceOver (iOS/macOS) ve TalkBack ile ana sayfa + bir proje | §10.6 ekran okuyucu betiği geçer. |
 | S11 | Tarayıcı yazı boyutu / yakınlaştırma %200 | İçerik ve işlev kaybı yoktur (§10.5). |
@@ -11712,7 +11994,7 @@ const measure = () => {
 - [ ] §9.2.5'teki 9 işaret production build'de atılır ve sıraları §9.2.2 ile uyumludur (`os:motion-import` ≥ `load`, `os:stage-probe` ≥ `load + 1000`).
 - [ ] Ağ günlüğünde `load`'dan önce üçüncü taraf, `prefetch` veya lazy chunk isteği yoktur.
 - [ ] Her raster `<img>` boyut bilgisi taşır; LHCI `uses-responsive-images` ve `unsized-images` denetimleri geçer; sayfa başına en çok bir `preload`'lu görsel vardır.
-- [ ] `public/stage/`'deki 36 poster vardır; her `*-1080.avif` ≤ 40 KB'tır; iki font dosyası P15 sınırlarındadır.
+- [ ] İki font dosyası P15 sınırlarındadır. (KESİT'in 36 poster maddesi KOD ile kaldırıldı.)
 - [ ] `pixel-7` ve `iphone-15` projelerinde bütün route'larda `document.documentElement.scrollWidth <= innerWidth`'tir.
 - [ ] §9.6'daki zorunlu cihazlarda (R1 veya R2, R3, R6) S1–S11 geçer ve sonuç tablosu M8 PR'ında vardır.
 
@@ -11734,7 +12016,7 @@ Bu bölüm erişilebilirlik hedefinin, kriter bazında uygulama eşlemesinin, ha
 
 | Kriter | Düzey | Nasıl karşılanır | Test | Bölüm |
 |---|---|---|---|---|
-| 1.1.1 Metin dışı içerik | A | Anlamlı görsellerde TR/EN `alt` (şema zorunlu kılar). Dekoratif posterler, `#scene-layer`, Halka ve ikonlar `alt=""` veya `aria-hidden`. Bilgi taşıyan SVG figürler `role="img"` + `aria-label`. | axe `image-alt`, `svg-img-alt`, `role-img-alt`; `check-content` alt denetimi | §6.7, §7.5, §10.4.4 |
+| 1.1.1 Metin dışı içerik | A | Anlamlı görsellerde TR/EN `alt` (şema zorunlu kılar). Statik KOD panelleri, `#scene-layer`, work ASCII kaplaması, Halka ve ikonlar `alt=""` veya `aria-hidden`; bilgileri DOM metnindedir. | axe `image-alt`, `svg-img-alt`, `role-img-alt`; `check-content` alt denetimi | §6.7, §7.5, §10.4.4 |
 | 1.2.1 Yalnız ses / yalnız video | A | Uygulanmaz: sitede ses ya da video barındırılmaz ve gömülmez (D-48). Projelerdeki isteğe bağlı video bağlantısı harici sayfaya gider. | — | §9.3.3 |
 | 1.2.2 Altyazılar (önceden kaydedilmiş) | A | Uygulanmaz: sitede önceden kaydedilmiş medya yok (D-48) | — | §9.3.3 |
 | 1.2.3 Sesli betimleme veya medya alternatifi | A | Uygulanmaz: sitede önceden kaydedilmiş medya yok (D-48) | — | §9.3.3 |
@@ -11747,7 +12029,7 @@ Bu bölüm erişilebilirlik hedefinin, kriter bazında uygulama eşlemesinin, ha
 | 1.3.5 Girdi amacını belirleme | AA | v1.1 formunda `autocomplete="name"`, `autocomplete="email"` | e2e öznitelik kontrolü | §12.2 |
 | 1.4.1 Renk kullanımı | A | Gövde bağlantıları altı çizilidir. Etkin durumlar renge ek olarak şekil taşır (nokta, alt çizgi, dolgu). Hata metin + ikonla verilir. | axe `link-in-text-block`; görsel QA | §6.3.4 |
 | 1.4.2 Ses denetimi | A | Otomatik ses yok; sitede `audio` ve `video` öğesi yoktur (D-48) | inceleme | §9.3.3 |
-| 1.4.3 Kontrast (asgari) | AA | Bütün metin token çiftleri ≥ 4.5:1 (§6.3.3). Taş gövde metninin arkasında durmaz; sahne üstündeki metin plakasında scrim ≥ 0.85 | axe `color-contrast`; `tokens.test.ts`; kontrast probu (§5.18) | §6.3, §6.9 |
+| 1.4.3 Kontrast (asgari) | AA | Bütün metin token çiftleri ≥ 4.5:1 (§6.3.3). Panel gövde metninin arkasında durmaz; sahne üstündeki metin plakasında scrim ≥ 0.85. Statik KOD panelleri `aria-hidden` dekordur (1.4.3 "salt dekorasyon" istisnası); axe koşuları `.kod-panel`'i dışarıda bırakır. | axe `color-contrast`; `tokens.test.ts`; kontrast probu (§5.18) | §6.3, §6.9 |
 | 1.4.4 Metni yeniden boyutlandırma | AA | rem tabanlı akışkan tip; `user-scalable` kapatılmaz; %200'de içerik/işlev kaybı yok | e2e 640 × 400 CSS px; S11 | §10.5.4 |
 | 1.4.5 Metin görüntüleri | AA | Sayfada metin görüntüsü yok; 3D'de metin yok (OG görselleri sayfada gösterilmez) | inceleme | §6.9 |
 | 1.4.10 Yeniden akış | AA | 320 CSS px'te iki boyutlu kaydırma yok; areas pini 360 px altında liste modundadır; veri tabloları ve kod blokları kendi kaydırma kutusundadır | e2e 320 × 640: `scrollWidth ≤ innerWidth` | §10.5.4 |
@@ -11759,7 +12041,7 @@ Bu bölüm erişilebilirlik hedefinin, kriter bazında uygulama eşlemesinin, ha
 | 2.1.4 Karakter kısayolları | A | Tek tuşlu kısayol yok | inceleme | — |
 | 2.2.1 Zamanlama ayarlanabilir | A | Zaman sınırı yok. Toast bilgisi zorunlu değildir, `role="status"` ile duyurulur, hover/odakta süresi durur. v1.1 zaman tuzağı belirteci ≥ 20 saat geçerlidir ya da süresi dolunca girilen veri korunarak yenilenir. | e2e toast; §12.2 testi | §10.2, §12.2 |
 | 2.2.2 Duraklat, durdur, gizle | A | 5 s'yi aşan her otomatik hareket için görünür denetim vardır (envanter §10.2.3). MotionToggle hepsini kapatır. | e2e PauseButton + MotionToggle | §10.2 |
-| 2.3.1 Üç parlama veya eşik altı | A | Saniyede 3'ten fazla parlama yok. Işık taraması tek seferlik ve 1.2 s'dir. | inceleme + ekran kaydı | §4.6.5 |
+| 2.3.1 Üç parlama veya eşik altı | A | Saniyede 3'ten fazla parlama yok. Hot reload tek seferliktir; çözülmelerdeki accent parlaması küçük hücrelerde, dağınık ve 0.3 s'dir. | inceleme + ekran kaydı | §4.6.5 |
 | 2.4.1 Blokları atlama | A | SkipLink ilk Tab durağıdır; landmark'lar; areas'ta "Bu bölümü atla" | e2e ilk Tab | §10.3.1 |
 | 2.4.2 Sayfa başlığı | A | Her sayfada benzersiz `<title>` | SEO e2e | §11.2 |
 | 2.4.3 Odak sırası | A | DOM sırası; route değişiminde odak `main h1`'e; menüde odak yönetimi | klavye e2e | §10.3 |
@@ -11769,7 +12051,7 @@ Bu bölüm erişilebilirlik hedefinin, kriter bazında uygulama eşlemesinin, ha
 | 2.4.7 Görünür odak | AA | `:focus-visible` → 2 px `--color-focus` outline, `outline-offset: 3px` (§6.3.4). `outline: none` yalnız eşdeğer halka varsa. | e2e: her Tab durağında `outlineWidth ≥ 2px` | §10.3.3 |
 | 2.4.11 Odak gizlenmemiş (asgari) | AA | `scroll-padding-top: calc(var(--header-h) + 1rem)`; mobil header içinde odak varken gizlenmez; toast odaklı öğeyi örtmez | e2e `elementFromPoint` betiği (§10.3.3) | §6.4 |
 | 2.5.1 İşaretçi hareketleri | A | Çok noktalı veya yol tabanlı hareket yok | inceleme | — |
-| 2.5.2 İşaretçi iptali | A | Eylemler `click` (bırakma) ile tetiklenir. Taşa dokunma taraması `pointerup`'tadır ve dekoratiftir. | inceleme | §4.14 |
+| 2.5.2 İşaretçi iptali | A | Eylemler `click` (bırakma) ile tetiklenir. KOD'da panelin dokunma tepkisi yoktur (KESİT'in dokunma taraması kaldırıldı). | inceleme | §4.14 |
 | 2.5.3 Addaki etiket | A | Görünür metin erişilebilir adın içindedir ("TR — Türkçe" ⊃ "TR"; "E-postayı kopyala" ⊃ "kopyala") | axe `label-content-name-mismatch` + inceleme | §3.6 |
 | 2.5.4 Hareketle çalıştırma | A | Cihaz hareketi kullanılmaz | — | — |
 | 2.5.7 Sürükleme hareketleri | AA | Sürükleme gerektiren denetim yok; galeriler düğmelidir | inceleme | §7.7 |
@@ -11818,9 +12100,9 @@ Kurallar:
 
 | Öğe | Süre | Kendiliğinden mi | 2.2.2 karşılığı | Azaltılmış harekette |
 |---|---|---|---|---|
-| Taşın idle drift'i (+2°/s) | son girdiden 20 s (kaba işaretçi 8 s) | evet, 5 s'yi aşar | `PauseButton` + `MotionToggle` | yok (sahne yok) |
-| Yerel saat (`LocalTime`), 404 `ClockFigure` | dakikada bir güncellenir | evet (otomatik güncellenen bilgi) | `PauseButton` (hero) ve `MotionToggle` güncellemeyi durdurur | yükleme anındaki saatte donar |
-| Işık taraması | 1.2 s, oturumda bir kez | evet, < 5 s | gerekmez | yok |
+| Panelin süzülmesi, imleç, akan log, hat animasyonu, `(HEAD)` nabzı (KOD) | son girdiden 20 s (kaba işaretçi 8 s) | evet, 5 s'yi aşar | `PauseButton` + `MotionToggle` | yok (statik panel) |
+| Yerel saat (`LocalTime`); 404'te hareket yoktur (KOD, §4.13.6) | dakikada bir güncellenir | evet (otomatik güncellenen bilgi) | `PauseButton` (hero) ve `MotionToggle` güncellemeyi durdurur | yükleme anındaki saatte donar |
+| Hot reload (KESİT'te ışık taraması) | ≈ 2 s, oturumda bir kez | evet, < 5 s | gerekmez | yok |
 | Hero ikincil metin solması, kaydırma ipucu çizgisi | ≤ 760 ms / 1.2 s, bir kez | evet, < 5 s | gerekmez | yok |
 | Reveal'lar, wipe'lar, pin metin değişimleri | ≤ 700 ms | hayır (kaydırmayla tetiklenir) | — | anında görünür |
 | Sahnenin kaydırma scrub'ı, Halka | kaydırma süresince | hayır (kullanıcı kaynaklı) | — | sahne yok; Halka doğrusal |
@@ -11959,11 +12241,8 @@ h2  İletişim                                       (contact)
 | Öğe | İşaretleme | Erişilebilir ad |
 |---|---|---|
 | Stage katmanı `#scene-layer` | `aria-hidden="true"` | — |
-| Sahne posterleri | `<img alt="">` | — (dekoratif) |
-| `DialFigure` (bilgi taşır: alan listesi) | `<svg role="img" aria-label="…">` | "Çalışma alanları: {{ALAN_1}}, {{ALAN_2}}, …" (EN: "Areas: …") |
-| `RingsFigure` (bilgi taşır: kariyer aralığı) | `<svg role="img" aria-label="…">` | "Kariyer halkaları: {{KARİYER_BAŞLANGIÇ_YILI}} – {{YIL}}" (ek kullanılmaz, §3.8 kural 8) |
-| `SpecimenGlyph`, `EntryGlyph`, `ArcFigure`, `HalkaIndicator` | `aria-hidden="true"`, `focusable="false"` | — (bilgi yanındaki metinde vardır) |
-| `ClockFigure` (404) | `<svg role="img" aria-label="…">` | "Yerel saat 14:32" / "Local time 14:32"; dakikada bir güncellenir, canlı bölge değildir |
+| Statik KOD paneli, 404 hata çıktısı, work ASCII kaplaması | `aria-hidden="true"` | — (dekoratif; bilgi DOM metnindedir) |
+| `HalkaIndicator` (KESİT'in SVG figürleri KOD ile kaldırıldı) | `aria-hidden="true"`, `focusable="false"` | — (bilgi yanındaki metinde vardır) |
 | İçerik görselleri | `next/image` + `alt` (TR/EN) | §6.7 alt metin kuralları |
 | İkonlar | `aria-hidden="true"` | Düğme adı metinden ya da `aria-label`'dan gelir |
 
@@ -11992,7 +12271,7 @@ h2  İletişim                                       (contact)
 **Betik** (her birleşimde, ana sayfa + bir proje sayfası + `/cv` + `/iletisim`, TR ve EN):
 1. Sayfa açılışında başlık ve dil doğru okunur; ilk Tab "İçeriğe geç"tir.
 2. Başlık listesi (rotor/elements list) §10.4.2 ağacını gösterir; landmark listesi §10.4.1 ile eşleşir.
-3. Ana sayfa baştan sona okunur: canvas, poster ve dekoratif SVG'ler duyurulmaz; areas açıklamalarının hepsi okunur; reveal öncesi hiçbir metin atlanmaz.
+3. Ana sayfa baştan sona okunur: canvas, statik paneller ve dekoratif SVG'ler duyurulmaz; areas açıklamalarının hepsi okunur; reveal öncesi hiçbir metin atlanmaz.
 4. Header çapasıyla "İletişim"e gidilir: odak ve okuma bölüm başlığından devam eder.
 5. Projeye geçilir: yeni sayfanın başlığı duyurulur ve odak `h1`'dedir.
 6. "Kopyala" etkinleştirilir: toast "E-posta kopyalandı" duyurulur (`contact.toast`).
@@ -12004,7 +12283,7 @@ h2  İletişim                                       (contact)
 #### 10.5.1 Kontrast
 
 - Metin ve kontrol renkleri yalnız §6.3.2 token'larından gelir; bütün çiftler §6.3.3 tablosunda ≥ AA'dır ve `tokens.test.ts` oranları yeniden hesaplar.
-- Taş gövde metninin arkasında durmaz (§5.1.1). Sahne üstünde metin gereken yerde `--color-scrim` ≥ 0.85 plaka kullanılır (§6.9); `backdrop-filter` **YASAK**.
+- Panel gövde metninin arkasında durmaz (§5.1.1). Sahne üstünde metin gereken yerde `--color-scrim` ≥ 0.85 plaka kullanılır (§6.9); `backdrop-filter` **YASAK**.
 - Geliştirme kontrast probu (§5.18): 10 kaydırma konumu × 2 tema × 3 görüntü alanında (360, 768, 1440) metin dikdörtgenlerinin altındaki canvas pikselleri okunur; 4.5:1 altı konsola yazılır. M8'de probun raporu boştur.
 
 #### 10.5.2 `prefers-contrast: more`
@@ -12023,7 +12302,7 @@ h2  İletişim                                       (contact)
 |---|---|---|
 | 1.4.4 (%200) | Font boyutları rem tabanlı `clamp()`'tir (§6.2.4); gövde metni tarayıcı yakınlaştırmasıyla ölçeklenir. `maximum-scale`, `user-scalable=no` yok. | 640 × 400 CSS px görüntü alanı (1280 × 800'ün %200'ü): yatay taşma yok, metin üst üste binmez, bütün Tab durakları erişilebilir |
 | 1.4.10 (320 CSS px) | Tek sütun; areas pini 360 px altında liste modunda (§4.15.2); hero H1 `nowrap` yalnız ≥ 64rem; uzun kelimeler `overflow-wrap: anywhere` (başlıklar ve proje adları); veri tabloları ve kod blokları `role="region"` + `aria-label` + `tabIndex={0}` kaydırma kabında | 320 × 640: bütün route'larda `document.documentElement.scrollWidth ≤ innerWidth` |
-| 1.4.12 (metin aralığı) | Satır maskeleri `em` dolgulu (§6.2.6); metin kaplarında sabit `height` yok, `min-height` serbest | Aşağıdaki CSS enjekte edilir; `overflow` değeri `hidden`/`clip` olan ve metin içeren hiçbir öğede `scrollHeight > clientHeight + 1` yoktur |
+| 1.4.12 (metin aralığı) | Satır maskeleri `em` dolgulu (§6.2.6); metin kaplarında sabit `height` yok, `min-height` serbest | Aşağıdaki CSS enjekte edilir; `overflow` değeri `hidden`/`clip` olan ve metin içeren hiçbir öğede `scrollHeight > clientHeight + 1` yoktur. `[aria-hidden="true"]` alt ağaçları (statik KOD panelleri) denetimden atlanır |
 | 1.3.4 (yön) | Yön kilidi yok | 844 × 390 yatay görüntü alanında bütün route'lar render edilir |
 
 ```css
@@ -12068,7 +12347,7 @@ Test altyapısı, Playwright projeleri ve CI iş akışları §13.3–§13.6'dad
 - [ ] §10.2.3 envanterindeki 5 s'yi aşan her kendiliğinden hareket duraklatılabilir; azaltılmış harekette canvas, Lenis ve `.motion-ready` yoktur ve bütün `[data-reveal]` öğeleri opaktır.
 - [ ] 320 × 640, 640 × 400 ve 844 × 390 görüntü alanlarında bütün route'larda yatay taşma yoktur; metin aralığı enjeksiyonunda kırpılan metin yoktur.
 - [ ] `forcedColors: 'active'` ve `contrast: 'more'` emülasyonlarında axe 0 ihlal verir ve odak halkası görünür.
-- [ ] `DialFigure`, `RingsFigure` ve `ClockFigure` `role="img"` + anlamlı `aria-label` taşır; diğer SVG glifleri, posterler ve `#scene-layer` erişilebilirlik ağacında yoktur.
+- [ ] Statik KOD panelleri, 404 hata çıktısı, work ASCII kaplaması ve `#scene-layer` erişilebilirlik ağacında yoktur (`aria-hidden`); panelin gösterdiği her bilgi DOM metninde vardır (KESİT'in `role="img"` figürleri kaldırıldı).
 - [ ] Toast, filtre sonucu ve form başarısı `role="status"` ile duyurulur; `role="alert"` yalnız form gönderim hatasında vardır.
 - [ ] §10.4.7 ekran okuyucu betiği 4 birleşimde geçer; lansmanda açık Ö1/Ö2 bulgusu yoktur.
 
@@ -13026,7 +13305,7 @@ Kurallar:
   - ana sayfa H1'i;
   - header markası ve footer.
   ASCII varyant "Orcun Saatci" yalnız JSON-LD `alternateName` alanındadır.
-- Görsel dosya adları ASCII kebab-case ve anlamlıdır (`/media/projects/<slug>/cover.jpg`, `/media/person/orcun-saatci-headshot.jpg`). Alt metin kuralları §6.7'dedir. Dekoratif görseller (poster, stage) `alt=""` taşır.
+- Görsel dosya adları ASCII kebab-case ve anlamlıdır (`/media/projects/<slug>/cover.jpg`, `/media/person/orcun-saatci-headshot.jpg`). Alt metin kuralları §6.7'dedir. Dekoratif görseller (hover önizlemesi) `alt=""` taşır.
 - **ÖNERİLİR:** Slug'lar yayından sonra değiştirilmez. Değişirse eski URL için `next.config.ts` `redirects()`'a kalıcı (308) yönlendirme eklenir (§8.6) ve `config.test.ts` yeni slug ile geçer.
 - EN sayfalarda TR metin yalnız `lang="tr"` işaretli geri dönüş olarak görünür (§3.8 #2, §7.4).
 - Ticari olmayan dil kuralı (D-30) tüm SEO metinlerine uygulanır (§11.1 #7). Yazım rehberi §7.9'dadır.
@@ -13972,7 +14251,7 @@ default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-
 | | `'unsafe-eval'` (yalnız `next dev`) | React geliştirme araçları. **YASAK:** production'da. |
 | | `https://vercel.live` (yalnız Preview) | Vercel Toolbar |
 | `style-src` | `'self' 'unsafe-inline'` | SSR'da yazılan `style=""` nitelikleri: React `style` prop'ları, `next/image fill`, anchor CSS değişkenleri (`--anchor-size`), `--scene-opacity` |
-| `img-src` | `'self'` | `/_next/image`, `public/stage` posterleri, medya, OG görselleri |
+| `img-src` | `'self'` | `/_next/image`, medya, OG görselleri (KESİT'in `public/stage` posterleri kaldırıldı) |
 | | `data:` | `next/image` bulanık yer tutucusu (`blurDataURL`, statik importlarda otomatik) |
 | | (`blob:` yok) | Doku ve GLTF yoktur (D-14). Ölçülen dizedeki `blob:` bilerek çıkarıldı. İhtiyaç çıkarsa e2e konsol denetimi yakalar. |
 | `font-src` | `'self'` | `next/font/local` ile kendi alan adından sunulan WOFF2 dosyaları (D-21) |
@@ -14146,12 +14425,13 @@ Bu bölüm test altyapısının, CI iş akışlarının, bağımlılık politika
 | Milestone | Zorunlu hâle gelenler |
 |---|---|
 | M0 | 1, 3, 4, 5. `ci.yml` iskeleti yeşil; `lighthouse.yml` kurulur ve çalışır ama M3'e kadar kapı değildir (§15.0.4, §16.1.1 U-09). `playwright.config.ts` altı projeyle kurulu; `headers.spec.ts` geçer. |
-| M2 | `theme.spec.ts`, `mobile.spec.ts`, `a11y-reflow.spec.ts`, `a11y-focus.spec.ts`, `visual.spec.ts` tabanları. `mobile.spec.ts`'in header gizleme maddesi (K-MOBILE-2) M4'ten, yatay modda taş maddesi (K-MOBILE-4) M6'dan itibaren koşar (§15.5.3, §15.7.3) |
+| M2 | `theme.spec.ts`, `mobile.spec.ts`, `a11y-reflow.spec.ts`, `a11y-focus.spec.ts`, `visual.spec.ts` tabanları. `mobile.spec.ts`'in header gizleme maddesi (K-MOBILE-2) M4'ten, yatay modda panel maddesi (K-MOBILE-4) M6'dan itibaren koşar (§15.5.3, §15.7.3) |
 | M3 | `content-visibility`, `seo`, `i18n`, `not-found`, `contact` (v1 ulaşılabilirlik), `privacy`, `cv`, `a11y` ve `a11y-keyboard` (tüm route'lar; `a11y-keyboard`'un areas atlama ve adım düğmeleri maddesi pin'le birlikte M4'ten itibaren koşar) |
 | M4 | `motion-preferences`, `perf-budgets` PB-2/PB-5; `no-js` kapsamı genişler |
-| M5 | `stage`, `no-webgl`, `posters`, `perf-smoke`, `perf-budgets` (tümü), `contrast` (elle tetiklenir) |
+| M5 | `stage`, `no-webgl`, `posters` (KOD ile kaldırıldı), `perf-smoke`, `perf-budgets` (tümü), `contrast` (elle tetiklenir) |
 | M6 | `choreography` (I1–I3 ve §13.3.4'te bu spec'e bağlı kimlikler; bir kimliğin hangi milestone'da kapı olduğu §15'tedir) |
 | M7 | `navigation`, `transitions` |
+| KOD | Ayrı KOD spec'i yoktur; kapsam mevcut spec'lerdedir: `stage.spec.ts`, `content-visibility.spec.ts`, `no-webgl.spec.ts`, `motion-preferences.spec.ts`, `not-found.spec.ts`, `work-viewer.spec.ts`, `cv.spec.ts` KOD tanımlarıyla; `choreography.spec.ts` KOD için güncelleniyor; `posters.spec.ts` silindi; görsel tabanlar CI Linux'ta yeniden üretilir (§15.8a) |
 | M8 | Tüm katmanlar eksiksiz; LHCI eşikleri (M3'ten beri kapı) üç ardışık `main` koşusunda geçer (§13.10); görsel tabanlar son hâlinde |
 | M9 | `contact.spec.ts` v1.1 grubu, analitik/GPC testleri |
 | M10 | Production duman testi (`BASE_URL`, §14.7) |
@@ -14221,9 +14501,10 @@ Kurallar:
 
 | Dosya | Sahip § | Asgari doğrulamalar |
 |---|---|---|
-| `src/stage/tracks.test.ts` | §5.9 | K-CHOREO-1 (aynı `prop` için örtüşen iki track yok), K-CHOREO-2, K-CHOREO-3, K-GEN-3 |
+| `src/stage/tracks.test.ts` | §5.9 | K-CHOREO-1 (aynı `prop` için örtüşen iki track yok), K-CHOREO-2, K-GEN-3; KOD'da track'ler yalnız `anchorMix` ve `opacityTrack`'e yazar |
 | `src/design/tokens.test.ts` | §6.10 | `tokens.ts` ↔ `globals.css` değer eşliği (iki tema) |
-| `src/lib/section-geometry.test.ts` | §5.10 | Halka, bant, dilim, `psi`, `capRadius`, yay; sınır durumları (1–2 ve 7+ alan, çok kısa ve çok uzun kariyer) |
+| `src/lib/section-geometry.test.ts` | §5.10 | KESİT'e özgüydü; KOD ile sahne kısmı kaldırılır. Modül OG motifi için kalırsa yalnız OG'nin kullandığı yardımcılar test edilir. |
+| `src/lib/kod/{screen,syntax,programs}.test.ts`, `src/lib/content/kod.test.ts`, `src/stage/kod-compose.test.ts` (KOD) | §5.20.2, §5.20.5 | Ekran tamponu ve glif kümesi; Dart renklendiricisi; programlar tohum içerikle beklenen satırları üretir (her program ve her `figure`), ızgara sınırını aşmaz, son kare `age`'den bağımsızdır, içerikte olmayan özel ad, yıl ya da kurum yazılmaz (K-KOD-5); `buildKodData`; köprü ve çözülme kompozisyonu `anchorMix`'in ve zamanın saf fonksiyonudur (K-CHOREO-3). `src/stage/quality.test.ts` kademe tablosunu ve step-down sırasını sınar (§5.20.7). KESİT'in figür (`figures.test.tsx`) ve materyal (`materials.test.ts`) testleri silindi. |
 | `src/i18n/config.test.ts` | §3.5.1 | Route haritası bütünlüğü |
 | `src/i18n/format.test.ts` | §3.8 | `toLocaleUpperCase('tr-TR')`, `Intl` biçimleri |
 | `src/lib/content/schemas.test.ts` | §7.3.7 | Şemalar |
@@ -14332,7 +14613,7 @@ Proje notları:
 | `iphone-15` | WebKit 26.6 | iOS Safari düzen ve kaydırma farkları. WebGL2 Playwright WebKit'te macOS'ta çalıştı. ⚠️ **DOĞRULANMADI:** Linux WebKit'te WebGL2. Bu yüzden testler bu projede `ready` ya da `fallback` fazını kabul eder. |
 | `reduced-motion` | Chromium | `reducedMotion: 'reduce'` ile canvas, Lenis, GSAP ve SplitText yoktur. İçerik tamamen görünürdür. |
 | `no-js` | Chromium | `javaScriptEnabled: false` ile SSR içeriği, bağlantılar, `mailto:` ve (v1.1) form `POST`'u test edilir. |
-| `no-webgl` | Chromium | `--disable-webgl` ile `getContext('webgl'/'webgl2')` `null` döner (ölçüldü). `--disable-3d-apis` eşdeğer bir alternatiftir. Statik tier ve poster geri dönüşü test edilir. |
+| `no-webgl` | Chromium | `--disable-webgl` ile `getContext('webgl'/'webgl2')` `null` döner (ölçüldü). `--disable-3d-apis` eşdeğer bir alternatiftir. Statik tier ve statik panel geri dönüşü test edilir. |
 
 #### 13.3.2 Fikstürler, yardımcılar ve etiketler
 
@@ -14394,7 +14675,7 @@ Yardımcılar (`tests/e2e/helpers/`):
 
 ```ts
 test.describe('contact reachability', { tag: ['@all'] }, () => { /* … */ });
-test('K-HERO-7 poster crossfades after first frame', { tag: ['@desktop-chromium'] }, async ({ page }) => { /* … */ });
+test('K-HERO-7 static panel crossfades after first frame', { tag: ['@desktop-chromium'] }, async ({ page }) => { /* … */ });
 ```
 
 Kurallar:
@@ -14405,7 +14686,7 @@ Kurallar:
 
 | Kanca | Değer | Tanımlayan § |
 |---|---|---|
-| `#scene-layer[data-phase]` | `poster \| probing \| loading \| ready \| fallback` | §5.12 |
+| `#scene-layer[data-phase]` | `poster \| probing \| loading \| ready \| fallback` | §5.12 (KOD: `poster` = statik panel aşaması) |
 | `#scene-layer[data-tier]` | `static \| low \| medium \| high` | §5.11 |
 | `?tier=<tier>` | QA geçersiz kılması. Yazılım render'ında da (SwiftShader) Stage'i açar; yalnız WebGL2'nin varlığını ister (aşağıdaki not). | §5.11, §5.18 |
 | `?debug` | Her ortamda çalışır (yalnız istemcide okunur, D-06). `window.__stage` ve `probeContrast()` sağlar. | §5.18 |
@@ -14413,7 +14694,8 @@ Kurallar:
 | `[data-chapter]`, `[data-stage-anchor]` | §4.5.1 (bölüm kimlikleri) ve §5.7.3 (anchor id'leri) adları | §4.5, §5.7 |
 | `[data-404="tree" \| "global"]` | 404 kökü | §3.7 |
 | `form[data-contact-form]` | v1.1 formu | §12.2 |
-| `[data-live-time]` | `LocalTime` ve `ClockFigure` kökü (görsel testte maskelenir) | §6.6 |
+| `[data-live-time]` | `LocalTime` kökü (görsel testte maskelenir) | §6.6 |
+| `.kod-panel[data-kod-program]`, `[data-kod-step][data-active]`, `live.panel`, `live.kod` (KOD) | Statik panelin program anahtarı ve areas adımı (§4.16.3); `?debug` ve testler için panel dikdörtgeni ve rig durumu (`key`, `mix`, `frozen`, `drift`, `parX`, `parY`, `hot`, `replayHot`) | §5.20 |
 | `<html>` nitelikleri | D-39 | §8.4 |
 
 ⚠️ **DOĞRULANMADI:** Yetenek yoklaması `webgl2` bağlamını `failIfMajorPerformanceCaveat: true` ile ister (final.md §8.1). SwiftShader yazılım render'ı olduğu için Chrome bu bayrakla bağlam vermeyebilir. O durumda CI'da doğal yol her zaman `static` tier'a düşer. Doğrulama: M5'te `desktop-chromium` ile `/` açılır ve `data-tier` okunur (§5.11.3 bu davranışı bekler). Bu nedenle Stage'in "mutlu yol" testleri **her zaman** `?tier=high` (masaüstü) ya da `?tier=medium` (mobil) ile koşar. Doğal yol testleri `ready` ya da `fallback` fazını kabul eder.
@@ -14422,43 +14704,44 @@ Kurallar:
 
 | Dosya | Etiketler (projeler) | Doğrulananlar | Bağlar |
 |---|---|---|---|
-| `content-visibility.spec.ts` | `@no-js`, `@reduced-motion` | Sitemap'teki her URL ve `NOINDEX_PATHS` için:<br>(a) `main` içindeki metin taşıyan her öğede ve her `img`'de computed `opacity` = 1, `visibility` = `visible`, `clip-path` = `none`.<br>(b) Ham HTML (`request.get`) şunları içerir: H1 "Orçun Saatçi"; ana sayfada 6 `data-chapter`; her alan başlığı; her öne çıkan proje başlığı; `mailto:`.<br>(c) `[data-chapter]` içinde `position: sticky` öğe yoktur.<br>(d) Tüm alan açıklamaları görünürdür (liste modu).<br>(e) Hero, about ve contact posterleri ya da SVG figürleri görünürdür. | K-GEN-5, K-VAR-1, K-VAR-3, K-AREAS-1, K-WORK-5 |
-| `stage.spec.ts` | `@desktop-chromium`, `@pixel-7`, `@iphone-15` | - Yükleme sırası ve chunk boyutları `perf-budgets.spec.ts`'tedir (PB-2, PB-3); burada tekrarlanmaz.<br>- `/?tier=high` (masaüstü): 20 s içinde faz `ready` olur (PB-3 ile aynı süre); tam olarak bir `canvas` vardır; `#scene-layer` `aria-hidden="true"` ve `pointer-events: none` taşır; crossfade sonrası hero posterinin opaklığı 0'dır.<br>- Sayfa sona kadar kaydırılıp başa dönülür: faz `ready` kalır ve `canvas` aynı DOM öğesidir (tek context).<br>- Doğal `/`: faz `ready` ya da `fallback`.<br>- Mobil projeler `?tier=medium` ile 30 s içinde `ready` ya da `fallback`'e ulaşır; tier `high` değildir.<br>- `/gizlilik`'e doğrudan gelişte 5 s sonra `canvas` sayısı 0'dır. | K-HERO-7, K-DEEP-2 |
-| `no-webgl.spec.ts` | `@no-webgl` | `/` ve `/?tier=high`: faz `fallback`, tier `static`, `canvas` yok. Posterler görünür. Areas pin'i `DialFigure` ile çalışır: areas üstü `T` ölçülür, s = T + 60 ile s = T + 80 arasında SVG `transform`'u değişir (varsayılan içerikte 300 → 320). Work silmeleri oynar (`clip-path` değişir). | K-VAR-4, K-VAR-7 |
-| `motion-preferences.spec.ts` | `@reduced-motion`, `@desktop-chromium` | - §10.2.4'teki testlerin tamamı (canvas yok, Lenis sınıfı yok, `.motion-ready` yok, `[data-reveal]` opak; MotionToggle; PauseButton; oturum ortasında OS tercihi değişimi). Ağ tarafı PB-5'tedir (§9.4.3).<br>- `reduced-motion`: `html[data-motion="reduce"]`; `DialFigure` `role="img"` taşır ve `aria-label` tüm alan başlıklarını içerir; gezinmede `document.getAnimations()` içinde süresi > 0 olan view-transition animasyonu yoktur.<br>- MotionToggle sonrası `scrollY` en çok ±2 px değişir; görüntü alanının üstündeki bölüm değişmez (K-VAR-5). | K-VAR-1, K-VAR-2, K-VAR-5, K-DEEP-8, D-32 |
-| `choreography.spec.ts` | `@desktop-chromium` (yavaş; test başına 180 s) | `/?debug&tier=high`. Beklenen s değerleri DOM sayımlarından hesaplanır.<br>- §13.3.5'teki üç değişmez (I1–I3).<br>- K-GEN-2, K-ABOUT-1, K-AREAS-3/4/5/6, K-WORK-1/2/3, K-JOURNEY-2/3, K-CONTACT-3/5, K-CHOREO-4/6/7. | final.md §5, §4.12 |
+| `content-visibility.spec.ts` | `@no-js`, `@reduced-motion` | Sitemap'teki her URL ve `NOINDEX_PATHS` için:<br>(a) `main` içindeki metin taşıyan her öğede ve her `img`'de computed `opacity` = 1, `visibility` = `visible`, `clip-path` = `none`.<br>(b) Ham HTML (`request.get`) şunları içerir: H1 "Orçun Saatçi"; ana sayfada 6 `data-chapter`; her alan başlığı; her öne çıkan proje başlığı; `mailto:`.<br>(c) `[data-chapter]` içinde `position: sticky` öğe yoktur.<br>(d) Tüm alan açıklamaları görünürdür (liste modu).<br>(e) Her çapada statik panel görünürdür ve `aria-hidden` taşır; work'te panel yoktur (K-KOD-3). | K-GEN-5, K-VAR-1, K-VAR-3, K-AREAS-1, K-WORK-5 |
+| `stage.spec.ts` | `@desktop-chromium`, `@pixel-7`, `@iphone-15` | - Yükleme sırası ve chunk boyutları `perf-budgets.spec.ts`'tedir (PB-2, PB-3); burada tekrarlanmaz.<br>- `/?tier=high` (masaüstü): 20 s içinde faz `ready` olur (PB-3 ile aynı süre); tam olarak bir `canvas` vardır; `#scene-layer` `aria-hidden="true"` ve `pointer-events: none` taşır; crossfade sonrası hero statik panelinin opaklığı 0'dır.<br>- Sayfa sona kadar kaydırılıp başa dönülür: faz `ready` kalır ve `canvas` aynı DOM öğesidir (tek context).<br>- Doğal `/`: faz `ready` ya da `fallback`.<br>- Mobil projeler `?tier=medium` ile 30 s içinde `ready` ya da `fallback`'e ulaşır; tier `high` değildir.<br>- `/gizlilik`'e doğrudan gelişte 5 s sonra `canvas` sayısı 0'dır.<br>- KOD: hero çapası ve paneli (K-HERO-6), crossfade (K-HERO-7), hot reload (K-HERO-8), kendiliğinden hareketin durması ve `frozen` (K-HERO-9), duraklatma (K-HERO-10), program anahtarları (K-KOD-1) ve statik paneller (K-KOD-2), bağlam kaybı (§5.17), kademe tablosu, paralaks, kare politikası, tema ΔE, "§4.5.6 panel okunabilirliği" (1024×768 ve 1440×900'de `Pw ≥ 360`, 390×844'te ≥ 280 px), V-41/V-43. | K-HERO-6…10, K-KOD-1/2, K-DEEP-2 |
+| `no-webgl.spec.ts` | `@no-webgl` | `/` ve `/?tier=high`: faz `fallback`, tier `static`, `canvas` yok. Statik paneller görünür (K-VAR-7, K-KOD-3). Areas pin'i çalışır: areas üstü `T` ölçülür, s = T + 60 ile s = T + 80 arasında etkin açıklama değişir (varsayılan içerikte 300 → 320) ve areas statik paneli adımı izler. Work silmeleri oynar (`clip-path` değişir) (K-VAR-4). | K-VAR-4, K-VAR-7 |
+| `motion-preferences.spec.ts` | `@reduced-motion`, `@desktop-chromium` | - §10.2.4'teki testlerin tamamı (canvas yok, Lenis sınıfı yok, `.motion-ready` yok, `[data-reveal]` opak; MotionToggle; PauseButton; oturum ortasında OS tercihi değişimi). Ağ tarafı PB-5'tedir (§9.4.3).<br>- `reduced-motion`: `html[data-motion="reduce"]`; statik paneller görünür (K-VAR-1); gezinmede `document.getAnimations()` içinde süresi > 0 olan view-transition animasyonu yoktur.<br>- MotionToggle sonrası `scrollY` en çok ±2 px değişir; görüntü alanının üstündeki bölüm değişmez (K-VAR-5). | K-VAR-1, K-VAR-2, K-VAR-5, K-DEEP-8, D-32 |
+| `choreography.spec.ts` | `@desktop-chromium` (yavaş; test başına 180 s) | KOD için güncelleniyor. `/?debug&tier=high`. Beklenen s değerleri DOM sayımlarından hesaplanır.<br>- §13.3.5'teki üç değişmez (I1–I3).<br>- K-GEN-2, K-ABOUT-1, K-AREAS-3/4/5/6, K-WORK-1/2/3/4, K-JOURNEY-2/3, K-CONTACT-3/5, K-CHOREO-3/4/6/7 — KOD tanımlarıyla (§4.18): taş değerleri (kamera, `cut`, `rotY`, bant, taş dairesi) yerine `?debug` program anahtarı, adım, köprü ilerlemesi ve panel dikdörtgeni okunur. | final.md §5, §4.12 |
 | `navigation.spec.ts` | `@desktop-chromium`, `@iphone-15` | - Odak davranışı (atlama bağlantısı, route sonrası `h1`, çapa sonrası `h2`) `a11y-keyboard.spec.ts`'tedir; burada tekrarlanmaz.<br>- Ana sayfa header çapası (ör. `#yolculuk`) bölümü görüntü alanına getirir; derin sayfalarda header bağlantıları gerçek URL'lere gider (D-41).<br>- Uzak atlamada kesme kuralı uygulanır (K-GEN-9, yalnız masaüstü, `?debug&tier=high`).<br>- **Geri/ileri:** ana sayfa `work` bölümündeki 2. makaleye kaydırılır → proje sayfası → `goBack()`. Sonuç: `scrollY` ±2 svh içinde geri gelir; `--scene-opacity` ≤ 100 ms'de 0'a iner ve 200 ms içinde döner; `project-cover-*` morph'u yeniden oynamaz. `goForward()` proje sayfasını en üstte açar.<br>- Aynı geri dönüş her bölüm çapası (`/#ben` … `/#iletisim`) için tekrarlanır. Dönüşte aynı `data-chapter` görüntü alanı merkezindedir. | K-CHOREO-5, D-41, final.md §13 #7 |
 | `transitions.spec.ts` | `@desktop-chromium`, `@iphone-15` | Header kesim çizgisi 0 → 0.7 → 1 olur ve söner (K-DEEP-7). Paylaşılan öğe morph'u ≤ 400 ms'dir (K-DEEP-6). WebKit'te 5 kez "ana sayfa → proje → ana sayfa" gezinmesinden sonra faz `ready` kalır ve konsol hatası yoktur. | K-DEEP-6, K-DEEP-7, final.md §13 #1 (kısmi) |
-| `posters.spec.ts` | `@desktop-chromium`, `@iphone-15`, `@no-webgl`, `@desktop-firefox` (yalnız `PW_CROSS=1`) | Açık ve koyu `colorScheme` ile her görünür poster için **yalnız etkin temanın** dosyası istenir (`k0-light-*` ya da `k0-dark-*`). Tema değişince diğer tema en çok bir kez istenir. Hiçbir poster isteği `/_next/image`'dan geçmez. | D-31, B34, K-HERO-6, final.md §13 #3 |
+| ~~`posters.spec.ts`~~ — **KOD ile silindi (2026-10-02)**; kapsamı `stage.spec.ts` ve `content-visibility.spec.ts`'e geçti. Eski satır: | `@desktop-chromium`, `@iphone-15`, `@no-webgl`, `@desktop-firefox` (yalnız `PW_CROSS=1`) | Açık ve koyu `colorScheme` ile her görünür poster için **yalnız etkin temanın** dosyası istenir (`k0-light-*` ya da `k0-dark-*`). Tema değişince diğer tema en çok bir kez istenir. Hiçbir poster isteği `/_next/image`'dan geçmez. | D-31, B34, K-HERO-6, final.md §13 #3 |
 | `seo.spec.ts` | `@desktop-chromium`, `@no-js` | İçerik §11.8.1'dedir: canonical, hreflang, OG, JSON-LD, robots, sitemap. | §11.9 |
-| `i18n.spec.ts` | `@desktop-chromium` | İçerik §3.10'dadır. | §3.10 |
-| `not-found.spec.ts` | `@desktop-chromium`, `@no-js` | Her `NOT_FOUND_PATHS` için:<br>- `response.status() === 404`;<br>- `meta[name="robots"]` `noindex` içerir;<br>- `[data-404]` ve H1 "Sayfa bulunamadı" vardır;<br>- ana sayfa, projeler, iletişim bağlantıları ve `mailto:` vardır;<br>- 3 s sonra `canvas` yoktur.<br>`no-js`: SSR HTML'inde saat ibresi yoktur. `desktop-chromium`: `page.clock.install({ time: new Date('2026-01-01T14:32:00+03:00') })` ile ibre açıları 14:32'yi gösterir (±6°). `allowConsole('404')` kullanılır. | D-19, K-DEEP-2, K-DEEP-9, §3.7 |
+| `i18n.spec.ts` | `@desktop-chromium` | İçerik §3.10'dadır. "SAATCİ yalnız `lang="tr"` içinde" denetimi `[aria-hidden="true"]` alt ağaçlarını (statik KOD panelleri) atlar. | §3.10 |
+| `not-found.spec.ts` | `@desktop-chromium`, `@no-js` | Her `NOT_FOUND_PATHS` için:<br>- `response.status() === 404`;<br>- `meta[name="robots"]` `noindex` içerir;<br>- `[data-404]` ve H1 "Sayfa bulunamadı" vardır;<br>- ana sayfa, projeler, iletişim bağlantıları ve `mailto:` vardır;<br>- 3 s sonra `canvas` yoktur.<br>KOD hata çıktısı satır içi bir paneldir (`.kod-panel.kod-inline`): `Error: 404` ve önerilen yollar görünür; panelin içinde bağlantı yoktur (K-DEEP-9). `allowConsole('404')` kullanılır. | D-19, K-DEEP-2, K-DEEP-9, §3.7 |
 | `contact.spec.ts` | Ulaşılabilirlik grubu: `@all`. Kopyala: `@desktop-chromium`. v1.1 grubu: `@desktop-chromium`, `@no-js` | **Ulaşılabilirlik** (sitemap + `NOINDEX_PATHS` + `NOT_FOUND_PATHS`):<br>- iletişim bağlantısı (header'da; `[data-404="global"]`'da gövdede) `/iletisim`, `/en/contact`, `#iletisim` ya da `#contact` hedefine gider;<br>- sayfada en az bir görünür `a[href^="mailto:"]` vardır (§12.1.2).<br>**İletişim sayfası:** tüm `mailto:` adresleri aynıdır; §12.1.5 regex'i eşleşmez.<br>**Kopyala:** `context.grantPermissions(['clipboard-read', 'clipboard-write'])` → pano içeriği e-postaya eşittir; `role="status"` toast'u görünür. `addInitScript` ile `navigator.clipboard` kaldırılınca seçili metin e-postaya eşittir ve yedek toast görünür. `no-js`: düğme görünmez.<br>**v1.1** (sayfada `form[data-contact-form]` yoksa `test.skip`):<br>- TR/EN hata mesajları; `aria-invalid` ve `aria-describedby`; hata özeti odağı;<br>- geçersiz gönderimde değerler korunur;<br>- honeypot doluyken başarı paneli görünür;<br>- başarı paneli `role="status"` taşır ve odak alır;<br>- akış yalnız klavyeyle tamamlanır;<br>- `no-js`'de geçerli ve geçersiz `POST` doğru sunucu HTML'ini döndürür;<br>- `notice` bağlantısı `/gizlilik`'e gider; `input[type=checkbox]` yoktur.<br>Başarı yolunda ilk odaktan sonra 3.2 s beklenir (zaman tuzağı). | B24, K-CONTACT-1/2/8, §12.6 |
-| `a11y.spec.ts` | `@desktop-chromium`, `@reduced-motion`, `@pixel-7` | axe 0 ihlal; kapsam matrisi §13.4.1 (§10.6 ile aynı). | §10.6, §10.7, G7 |
+| `a11y.spec.ts` | `@desktop-chromium`, `@reduced-motion`, `@pixel-7` | axe 0 ihlal; kapsam matrisi §13.4.1 (§10.6 ile aynı). axe `.kod-panel`'i dışarıda bırakır (dekoratif, `aria-hidden`; WCAG 1.4.3 "salt dekorasyon"). | §10.6, §10.7, G7 |
 | `a11y-keyboard.spec.ts` | `@desktop-chromium`, `@pixel-7`, `@iphone-15` | İçerik §10.6'dadır: ilk Tab SkipLink; route sonrası odak `h1`; çapa sonrası odak bölüm `h2`'si; menü tuzağı + Esc + odak dönüşü; areas atlama ve adım düğmeleri; filtre `aria-pressed` + durum metni. Ek olarak: ana sayfada 200 Tab boyunca odak görünmez bir öğeye (sıfır boyut, `visibility: hidden`, `opacity: 0`) düşmez ve döngü atlama bağlantısına ya da `body`'ye döner (tuzak yok). | §10.3, §10.6 |
 | `a11y-focus.spec.ts` | `@desktop-chromium`, `@pixel-7` | İçerik §10.3.3'tedir: her Tab durağında ≥ 2 px görünür halka; öğe sabit bir katmanca örtülmez. | §10.3.3 |
-| `a11y-reflow.spec.ts` | `@desktop-chromium` | 320 × 640, 640 × 400 ve 844 × 390 görüntü alanlarında (`setViewportSize`) her route'ta yatay taşma yoktur. §10.5'teki metin aralığı enjeksiyonunda kırpılan metin yoktur. | §10.5, §10.6 |
+| `a11y-reflow.spec.ts` | `@desktop-chromium` | 320 × 640, 640 × 400 ve 844 × 390 görüntü alanlarında (`setViewportSize`) her route'ta yatay taşma yoktur. §10.5'teki metin aralığı enjeksiyonunda kırpılan metin yoktur; `[aria-hidden="true"]` alt ağaçları atlanır. | §10.5, §10.6 |
 | `contrast.spec.ts` | `@desktop-chromium`; yalnız `RUN_CONTRAST=1` iken koşar (M5, M8, M10'da elle) | `/?debug&tier=high` ve 3 derin sayfa. Her bölümde 10 kaydırma konumu × 2 tema × 3 genişlik (360, 768, 1440) için `window.__stage.probeContrast()` çağrılır. Gövde metninde oran < 4.5, büyük metinde < 3.0 başarısızlıktır. | §5.18.2, §10.5 |
-| `mobile.spec.ts` | `@pixel-7`, `@iphone-15` | - Her URL'de `scrollWidth ≤ innerWidth`.<br>- Header aşağı kaydırmada gizlenir, yukarı kaydırmada döner.<br>- `html.lenis-smooth` yoktur.<br>- Dokunma hedefleri §10.3 eşiklerini sağlar.<br>- Çapa gezinmesinden sonra hedef başlığın üstü header'ın altındadır.<br>- Yatay mod (844×390) için `setViewportSize` kullanılır: taş yalnız hero'dadır. | K-MOBILE-1/2/3/4 |
+| `mobile.spec.ts` | `@pixel-7`, `@iphone-15` | - Her URL'de `scrollWidth ≤ innerWidth`.<br>- Header aşağı kaydırmada gizlenir, yukarı kaydırmada döner.<br>- `html.lenis-smooth` yoktur.<br>- Dokunma hedefleri §10.3 eşiklerini sağlar.<br>- Çapa gezinmesinden sonra hedef başlığın üstü header'ın altındadır.<br>- Yatay mod (844×390) için `setViewportSize` kullanılır: panel yalnız hero'dadır. | K-MOBILE-1/2/3/4 |
 | `perf-smoke.spec.ts` | `@desktop-chromium` | - `/` ve `/?tier=medium`: 5 svh / 100 ms ile en üstten en alta ve geri kaydırılır. Bu sırada `hadRecentInput === false` olan `layout-shift` girdilerinin toplamı ≤ 0.05'tir (P5).<br>- `/` sayfasında son `largest-contentful-paint` girdisinin öğesi `H1`'dir (P3).<br>- `load` öncesi `<html>`'de `.motion-ready` yoktur (K-GEN-6).<br>- P8: menü aç/kapa, Kopyala, tema, filtre ve MotionToggle için `PerformanceObserver({ type: 'event', durationThreshold: 16 })` girdilerinin `duration` değeri ≤ 100 ms'dir (CDP ile 4× CPU kısıtı).<br>- Production'a karşı da koşulur (`BASE_URL`, §14.7). | D-33, D-34, K-GEN-6, K-HERO-1 (masaüstü), §9.1 P3/P5/P8 |
 | `perf-budgets.spec.ts` | §9.4.3'teki projeler | PB-1…PB-7: ilk JS, hareket ve Stage chunk'larının yükleme sırası ve boyutu, tam boot toplamı, azaltılmış hareket, statik tier, WebGL yok. İçerik §9.4.3'tedir. | D-33, D-44 |
 | `headers.spec.ts` | `@desktop-chromium` | §12.5.7 | D-25 |
 | `privacy.spec.ts` | `@desktop-chromium`, `@no-js` | - Tüm URL'ler gezildikten sonra `context.cookies()` → `[]` ve `document.cookie === ''`.<br>- `/gizlilik`'te iki `h2` doğru sırada ve "Son güncelleme" vardır.<br>- Her sayfanın footer'ı gizlilik bağlantısı içerir.<br>- İletişim sayfasında `input[type=checkbox]` yoktur.<br>- Yerel build'de hiçbir istek `/_vercel/` yoluna ya da `vercel-scripts.com`'a gitmez (analitik kapalı).<br>- Yalnız `BASE_URL` production iken: GPC yokken en az bir analitik isteği gider; `addInitScript(() => Object.defineProperty(navigator, 'globalPrivacyControl', { value: true }))` ile hiç gitmez. Analitik istekleri Network'te Vercel'in projeye özgü yolundan tanınır (§12.3.3); desen M9'da ilk production deploy'unda belirlenip spec'e yazılır. | §12.3, §12.4, §12.6 |
 | `theme.spec.ts` | `@desktop-chromium`, `@no-js` | - Head script `<head>` içinde satır içidir ve `async`/`defer` taşımaz. `DOMContentLoaded` anında D-39 nitelikleri vardır (§8.9'daki "no-flash" kabul kriteri).<br>- Tema "Koyu" seçilince `os-theme=dark` ve `data-theme=dark` olur; yeniden yüklemede kalır. "Sistem" seçiliyken `emulateMedia({ colorScheme })` izlenir.<br>- `Storage.prototype.getItem` hata fırlatırken sayfa hatasız render edilir (D-38).<br>- `no-js`: `html` `js` sınıfını taşımaz. | D-20, D-38, D-39 |
-| `cv.spec.ts` | `@desktop-chromium`, `@no-js` | - PDF bağlantıları `download` taşır.<br>- PDF yanıtı 200, `content-type: application/pdf`, `x-robots-tag: noindex`.<br>- JSON Resume `JSON.parse` ile okunur.<br>- `emulateMedia({ media: 'print' })`: `#scene-layer` ve header `display: none`; `RingsFigure` görünür.<br>- ≥ 80rem'de taş anchor'ı vardır; < 80rem'de taş görünmez. | D-13, K-VAR-6, K-DEEP-10 |
+| `cv.spec.ts` | `@desktop-chromium`, `@no-js` | - PDF bağlantıları `download` taşır.<br>- PDF yanıtı 200, `content-type: application/pdf`, `x-robots-tag: noindex`.<br>- JSON Resume `JSON.parse` ile okunur.<br>- `emulateMedia({ media: 'print' })`: `/cv`'de panel yoktur (preset `none`); `/`'de statik paneller, `#scene-layer` ve header baskıda gizlidir. | D-13, K-VAR-6, K-DEEP-10 |
 | `visual.spec.ts` | `@reduced-motion`, `@pixel-7` (dosyada `test.use({ reducedMotion: 'reduce' })`), `@desktop-chromium` (yalnız başlık kırpıntıları) | §13.4.2 | K-GEN-10 |
-| `work-viewer.spec.ts` | `@desktop-chromium`, `@desktop-webkit`, `@desktop-firefox` (son ikisi yalnız `PW_CROSS=1`) | Work görüntüleyicisinin figür sütununun ekran görüntüsü ve tüm figürlerin kutu geometrisi. Tarayıcılar arası fark ≤ 2 px. | K-WORK-10, final.md §13 #8 |
+| `work-viewer.spec.ts` | `@desktop-chromium`, `@desktop-webkit`, `@desktop-firefox` (son ikisi yalnız `PW_CROSS=1`) | Work görüntüleyicisinin figür sütununun ekran görüntüsü ve tüm figürlerin kutu geometrisi; görüntüden önce silmenin bitmesi (satır içi `clip-path` temizlenir) ve `canvas.ascii-compile`'ın kalkması beklenir (K-KOD-4). Tarayıcılar arası fark ≤ 2 px. | K-WORK-10, final.md §13 #8 |
 
 - SPEC-SAPMA: §13.3.4 (M5, 2026-09-30) — `perf-smoke.spec.ts` P8 etkileşimleri `/?tier=static`'te ölçer (SwiftShader'ın CPU'da çizdiği WebGL karesi GPU maliyetini temsil etmez; CI doğal yolu V-41'e bağlıdır). Yalnız `interactionId > 0` olan event girdileri sayılır; her etkileşim 5–6 kez ölçülür ve medyan bütçeyle karşılaştırılır. "4× CPU kısıtı" referans geliştirme makinesine (M-serisi Mac; kalibrasyon iş yükü medyanı 46 ms) göredir: kısıt her ölçüm grubundan önce aynı iş yüküyle yeniden kalibre edilir (`4 × 46 / ölçülen`, 1–4×). CI koşucusu 4× sabit kısıtta tema değişimini 128–256 ms ölçüyordu; etkin cihaz hızı böylece makineden ve paralel işçilerin yükünden bağımsız kalır. `stage.spec.ts` K-HERO-7'deki "hero'nun CLS katkısı 0" ölçümü sahne boot'undan (`os:stage-probe`) sonraki kaymaları kapsar; ilk boyamadaki font değişimi (CI'da soğuk önbellekte 0.0116) sayfanın tamamıyla P5'te ve LHCI'da ölçülür. `posters.spec.ts` Firefox'ta temayı `localStorage['os-theme']` ile verir: Playwright Firefox'ta `colorScheme` öykünmesi head betiğinin `matchMedia`'sına yansımıyor (ölçüldü).
 - SPEC-SAPMA: §13.3.4 (M6, 2026-10-01) — `choreography.spec.ts`'te yalnız `stageTarget`, DOM olayları ve reveal'ları okuyan testler (K-GEN-2, K-CHOREO-4/7, K-CONTACT-3/5, I2, I3, K-ABOUT-1, K-AREAS-3/4/6, K-WORK-1/2/3, K-JOURNEY-2/3) `/?debug&tier=static` ile koşar: director kademeden bağımsızdır, canvas gerekmez. Taş dairesi, kesme, piksel, V-48 ve K-JOURNEY-7 testleri canlı sahnede kalır (`tier=high`, mobil `medium`). Gerekçe: CI'da SwiftShader ≈ 2 fps; canlı sahnede her kaydırma adımı ≈ 0.5 s sürüyor, dosya `quality` işinin 40 dk'sına sığmıyor, 500 ms'lik tween ve reveal zamanlamaları kare aralığının altında ölçülemiyordu. Ayrıca `settle()` süreye ek olarak en az 3 değişimsiz kare bekler (yavaş karede süren tween iki kare arasında durgun görünüyordu) ve kesmede geri gelme süresi varıştan sonra çizilen ilk rig karesinden ölçülür (§5.9.7 M6 notu: belirme oturtulmuş kare çizildikten sonra başlar).
+> **KOD notu (2026-10-02):** KOD ile canlı panelin durumu (`?debug` `live.kod` anahtarı, `live.panel` dikdörtgeni) testlerin konusu olduğundan şu testler `tier=high` ile koşar: K-CHOREO-3/4/6/7, I3 (K-AREAS-5), K-ABOUT-1/3, K-AREAS-3 (panel), K-JOURNEY-2/3, K-CONTACT-3, K-GEN-9, K-CHOREO-5 ve V-48 (mobil `medium`). Yalnız DOM olaylarını ve reveal'ları okuyanlar (K-GEN-2, I2, K-AREAS-3/4/6 DOM zamanlaması, K-WORK-1/2/3, K-CONTACT-5, K-ABOUT-2) `tier=static`'te kalır. Okumalar kaydırmayla eşzamanlıysa adım beklenmez (tier=high işi CI'da 180 s'ye sığsın diye); her okuma taze bir rig karesini bekler ve loop `never` iken "panel yok" sayılır. §5.19'un piksel düzeyinde yol bağımsızlığı testleri kaldırıldı: zaman tabanlı glif içeriğinde piksel karşılaştırması anlamlı değildir; yerine K-CHOREO-4 program anahtarını ve panel dikdörtgenini karşılaştırır.
 
 #### 13.3.5 final.md §5 değişmezlerinin testleri
 
 | # | Değişmez | Test | Yöntem ve eşik |
 |---|---|---|---|
 | I1 | Aynı özellik için iki track örtüşmez | `src/stage/tracks.test.ts` | Birim: her `prop` için `[start, end]` aralıkları sıralanır; komşu aralıklar kesişmez (K-CHOREO-1). |
-| I2 | Her metin reveal'ı, bloğun üstü görüntü alanının %75'ini geçmeden tamamlanır (§4.12.3 istisnaları hariç) | `choreography.spec.ts` › `I2 reveals complete before 75%` | `readingScroll()` ile 0 → sayfa sonu (10 svh/s). Hedefler §5.14'teki reveal seçicisidir (`revealTargets()` yardımcısı). Her hedefin üst kenarı `0.75 × innerHeight`'ın altına **ilk** indiği örnekte computed `opacity` = 1 ve `transform` = `none` ya da birim matris olmalıdır. Pin içindeki ayrık değişimler (§4.5 kural 4) bu testin dışındadır; K-AREAS-4 onları ayrıca test eder. §4.12.3'teki bildirilmiş istisnalar (about lede satırları, contact H2 ve metni) da dışarıda bırakılır; onları K-ABOUT-2 ve K-CONTACT-5 test eder. |
-| I3 | Dwell pencerelerinde yalnız işaretçi ışığı hareket eder; work ve journey'deki yavaş dönüş ≤ 33.4°/100 svh | `choreography.spec.ts` › `I3 dwell stillness` | İşaretçi pencere dışına taşınır (`page.mouse.move(-1, -1)`). Her dwell penceresinde 5 eşit aralıklı noktada `scrollToSvh` + `readStage` alınır. Areas dwell'lerinde `rotYScroll + rotYEvent` sabittir (±0.5°, K-AREAS-5; alan adları `StageTarget`, §5.9.2). Work makale dwell'lerinde ve journey girdi dwell'lerinde `rotYScroll` değişim hızı ≤ 33.4°/100 svh'dir (+1° tolerans). Kamera değerleri (`camR`, `camAz`, `camEl`, `camFov`) ±0.01 içinde sabittir. |
+| I2 | Her metin reveal'ı, bloğun üstü görüntü alanının %75'ini geçmeden tamamlanır (§4.12.3 istisnaları hariç) | `choreography.spec.ts` › `I2 reveals complete before 75%` | `readingScroll()` ile 0 → sayfa sonu (10 svh/s). Hedefler §5.14'teki reveal seçicisidir (`revealTargets()` yardımcısı). Her hedefin üst kenarı `0.75 × innerHeight`'ın altına **ilk** indiği örnekte computed `opacity` = 1 ve `transform` = `none` ya da birim matris olmalıdır. Pin içindeki ayrık değişimler (§4.5 kural 4) bu testin dışındadır; K-AREAS-4 onları ayrıca test eder. §4.12.3'teki bildirilmiş istisnalar (contact H2 ve metni, work ASCII derlemesi) da dışarıda bırakılır; onları K-CONTACT-5 ve K-WORK-4 test eder. |
+| I3 | Dwell pencerelerinde panelde kaydırma kaynaklı değişim yoktur (KOD; KESİT'te: yalnız işaretçi ışığı ve ≤ 33.4°/100 svh dönüş) | `choreography.spec.ts` › `I3 dwell stillness` | İşaretçi pencere dışına taşınır (`page.mouse.move(-1, -1)`). Her dwell penceresinde 5 eşit aralıklı noktada `scrollToSvh` + `readStage` alınır. Program anahtarı, adım, `anchorMix` ve `opacityTrack` sabittir; panel dikdörtgeni ±1 px içinde kalır. |
 
 #### 13.3.6 final.md §13 doğrulanmamış maddeleri → test
 
@@ -14466,10 +14749,10 @@ Kurallar:
 |---|---|---|---|
 | 1 | Safari'de canlı canvas'ın `::view-transition-new(scene)` içinde güncellenmeye devam etmesi | `transitions.spec.ts` (`@iphone-15`): gezinme sonrası faz `ready`, hata yok. Görsel canlılığı ölçmez. | Gerçek iPhone ve masaüstü Safari'de ekran kaydıyla (§9.6). Başarısızsa final.md'deki yedek uygulanır: süzülme `transition.finished`'ta başlar (§5.15). |
 | 2 | GPU kare süresi tahminleri | — (CI'da FPS doğrulanmaz) | iPhone 12 sınıfı, orta sınıf Android, Intel iGPU dizüstü (§9.6) |
-| 3 | Tembel ve `display: none` tema posterlerinin hiçbir motorda indirilmemesi | `posters.spec.ts` (Chromium ve WebKit ağ günlüğü) | Firefox: `PW_CROSS=1 npx playwright test tests/e2e/posters.spec.ts`. Başarısızsa `<picture>` + `prefers-color-scheme` yedeği uygulanır (§5.16). |
+| 3 | ~~Tembel ve `display: none` tema posterlerinin hiçbir motorda indirilmemesi~~ — KOD ile geçersiz (poster yok) | `posters.spec.ts` (Chromium ve WebKit ağ günlüğü) | Firefox: `PW_CROSS=1 npx playwright test tests/e2e/posters.spec.ts`. Başarısızsa `<picture>` + `prefers-color-scheme` yedeği uygulanır (§5.16). |
 | 4 | `getComputedStyle`'ın `light-dark()`'ı çözmesi | Tasarımla kaçınıldı: `tokens.test.ts` eşlik testi | — |
 | 5 | iOS doğal momentum altında `ScrollTrigger.getVelocity()` kalitesi | — | Gerçek iPhone'da wobble gözlemi (§9.6) |
-| 6 | Poster render'ı için headless WebGL bayrakları | `npm run posters` M1'de SwiftShader bayraklarıyla koşar. CI'da `check-budgets` 36 poster dosyasının varlığını ve boyutunu denetler (§9.4.2). | M1 kapısında sahibin poster onayı |
+| 6 | ~~Poster render'ı için headless WebGL bayrakları~~ — KOD ile geçersiz (poster yok) | `npm run posters` M1'de SwiftShader bayraklarıyla koşar. CI'da `check-budgets` 36 poster dosyasının varlığını ve boyutunu denetler (§9.4.2). | M1 kapısında sahibin poster onayı |
 | 7 | Lenis `anchors` + Next `<Link>` hash + geri dönüş etkileşimi | `navigation.spec.ts` geri/ileri ve bölüm çapaları grubu | — |
 | 8 | Aynı grid alanında örtüşen sticky öğelerin Safari, Chrome ve Firefox'ta aynı davranması | `work-viewer.spec.ts` (`PW_CROSS=1`) | Gerçek Safari ve Firefox (§9.6) |
 
@@ -14490,6 +14773,8 @@ BASE_URL=https://<preview-url> VERCEL_AUTOMATION_BYPASS_SECRET=<gizli> \
 ### 13.4 Erişilebilirlik ve görsel regresyon
 
 #### 13.4.1 axe koşumu
+
+> **KOD notu (2026-10-02):** axe koşuları statik KOD panellerini (`.kod-panel`) dışarıda bırakır: paneller `aria-hidden` dekordur ve bilgileri DOM metnindedir (WCAG 1.4.3 "salt dekorasyon").
 
 ```ts
 // tests/e2e/helpers/axe.ts
@@ -14533,6 +14818,8 @@ Kurallar:
 | Taban dosyaları | `tests/e2e/__screenshots__/<proje>/linux/…` (§13.3.1 `snapshotPathTemplate`) |
 
 - SPEC-SAPMA: §13.4.2 (M5, 2026-09-30) — Maske `#scene-layer` yerine `#scene-layer canvas`'tır: katman §5.12.5 ile tam ekran fixed kutudur (`100lvh`) ve tamamı maskelenince tam sayfa görüntülerinin ilk ekranı magenta kutuyla kapanıyordu (M5 ilk taban koşusunda ölçüldü). Azaltılmış harekette canvas yoktur; posterler karşılaştırmaya girer. M4 tabanları footer'daki "Hareketi azalt" anahtarı eklenmeden önce üretilmişti (fark %0.35 < `maxDiffPixelRatio` 0.01); M5'te yeniden üretildi.
+
+- KOD notu (2026-10-02): Azaltılmış harekette karşılaştırmaya posterler yerine statik paneller girer. Tüm tabanlar KOD geçişinde CI Linux'ta yeniden üretilir (`workflow_dispatch` + `update_snapshots: true`; K-KOD-6, §15.8a).
 
 Taban kuralları:
 - Tabanlar **yalnız CI'da, Linux'ta** üretilir: `ci.yml`, `workflow_dispatch` + `update_snapshots: true` (§13.6.1). Oluşan artefakt indirilir ve commit edilir.
@@ -14793,7 +15080,7 @@ Adım notları:
 - **Tip üretimi.** Temiz bir klonda `tsc --noEmit` için content-collections çıktısı ve Next'in typed route tipleri (`Route`, §3.5) gerekir. `npm run typecheck` bunları `pretypecheck` betiğiyle üretir (§8.7). ✅ DOĞRULANDI (2026-09-29, §8.7.1): `next typegen` Next 16.3.7'de bulunur.
 - **ƒ denetimi.** `tee` stdout'u pipe yaptığı için Next renk kodu basmaz. Route satırları `┌`, `├` ya da `└` ile başlar; açıklama satırları bu karakterlerle başlamaz. Yerelde doğrulandı (2026-09-29, `next build | tee build.log` ve §15.1.1 görev 18 öz-testi). ✅ DOĞRULANDI (2026-09-30, PR #1 `quality` günlüğü): CI'da da route satırları `┌`, `├`, `└` ile başlar.
 - **`CONTENT_STRICT`.** Bir depo değişkenidir (Settings → Secrets and variables → Actions → Variables). Lansman hazırlığında `true` yapılır. `true` iken yer tutucu kalan her PR kırmızı olur (D-36, §7.5).
-- **Poster eksiksizliği** ayrı bir adım değildir: `check-budgets.mjs` `public/stage/` doluysa 36 dosyanın (3 anahtar × 2 tema × 3 genişlik × 2 biçim) varlığını ve boyutunu denetler (§9.4.2).
+- **Poster eksiksizliği** KOD ile kaldırıldı (2026-10-02): poster yoktur; `check-budgets.mjs`'in poster denetimi silinir (§9.4.2).
 - **Bütçe raporu** `.next/budgets.json` her koşuda artefakt olarak saklanır (§9.4.2).
 - **PDF metin adımı** İSTEĞE BAĞLI bir araca dayanır (§7.6). Araç yoksa adım atlanır, başarısız olmaz.
 - **E2E ortamı.** `VERCEL_ENV`, `RESEND_API_KEY` ve `CONTACT_*` tanımsızdır. Sonuç: analitik yüklenmez, form kuru çalışır, hız sınırı atlanır, `robots.txt` `Disallow: /` döner.
@@ -14893,7 +15180,7 @@ Notlar:
 | ESLint yapılandırması | create-next-app'in flat config'i (`eslint-config-next/core-web-vitals` + `/typescript`), D-17 `no-restricted-imports` kuralı ve en sonda `eslint-config-prettier`. Tam dosya §8.2'dedir. |
 | Yasak importlar (lint ile) | - D-17: `three`, `@react-three/*`, `maath` yalnız `src/stage/gl/**` altında.<br>- D-15: `motion`, `framer-motion`, `r3f-perf`, `@react-three/postprocessing`.<br>- D-08: `next-intl`.<br>- §12.3.3: `@vercel/analytics` içinden `track`. |
 | `react-hooks/set-state-in-effect` | eslint-config-next 16.3.6 ile gelen `eslint-plugin-react-hooks` v7'de **hata**dır (ölçüldü). Prop'u effect içinde state'e kopyalamak yerine türetilmiş değer ya da olay işleyicisi kullanılır (örnek: §12.2.6'daki token isteği). |
-| `@next/next/no-img-element` | Düz `<img>`/`<picture>` yalnız `src/stage/ScenePoster.tsx`'te serbesttir (D-31, §8.2 SB9). İzin dosya bazlı yapılandırmayla verilir; satır içi `eslint-disable` **YASAK**tır. |
+| `@next/next/no-img-element` | KOD'da düz `<img>`/`<picture>` istisnası yoktur; KESİT'te `src/stage/ScenePoster.tsx`'te serbestti (D-31, §8.2 SB9). İzin dosya bazlı yapılandırmayla verilir; satır içi `eslint-disable` **YASAK**tır. |
 | `@next/next/no-html-link-for-pages` | İç bağlantılar `<Link>` ile yazılır (`global-not-found` dâhil, §3.7). |
 | TypeScript yorumları | `@ts-ignore` **YASAK**. `@ts-expect-error` yalnız açıklamalı kullanılır. `any` yerine `unknown` ve daraltma kullanılır. Bu kurallar `eslint-config-next/typescript` içindeki typescript-eslint önerilen kümesinden gelir (`@typescript-eslint/ban-ts-comment`, `@typescript-eslint/no-explicit-any`). ✅ DOĞRULANDI (2026-09-29, `npx eslint --print-config src/lib/security-headers.ts`): ikisi de `error` düzeyindedir. |
 | Uyarılar | CI'da lint 0 **hata** ister. ÖNERİLİR: `lint` betiğine `--max-warnings=0` eklenir (§8.7). Eklenmezse her uyarı PR açıklamasında gerekçelendirilir. |
@@ -14995,7 +15282,7 @@ Politika:
 - [ ] Üç varyant çalışır:
   - **JS kapalı:** içerik, gezinme ve `mailto:` (v1.1'de form `POST`'u);
   - **azaltılmış hareket:** canvas yok, Lenis yok, tüm içerik görünür;
-  - **WebGL yok:** poster ve statik tier.
+  - **WebGL yok:** statik panel ve statik tier.
 - [ ] Production build'inde konsol hatası yoktur (CSP ve hidrasyon dâhil). Yeni konsol uyarıları PR'da açıklanmıştır.
 - [ ] TR ve EN metinleri tamdır ve `lang` doğrudur. Türkçe glifler (ğ Ğ İ ı ş Ş) seçili fontlarla render edilir (D-21).
 - [ ] Görseller kurala uyar (D-31): statik import; TR/EN `alt`; `sizes`; boyutlar. Sayfa başına en çok bir `preload`.
@@ -15122,7 +15409,7 @@ Adlar ve kapsamları §8.8.2'de, `.env.example` §8.8.1'dedir.
 |---|---|---|---|---|
 | `NEXT_PUBLIC_SITE_URL` | `https://www.orcunsaatci.com` | `https://www.orcunsaatci.com` | — | Kanonik köken baştan sabittir (D-09). Build anında gömülür; değişirse yeniden deploy gerekir. |
 | `SITE_INDEXABLE` | Lansmana kadar `false`; §14.6'da `true` yapılır (§8.8 ile aynı). | **Asla tanımlanmaz** | — | `robots.ts` ve `vercel.app` yönlendirmesi okur. Build anında okunur. |
-| `NEXT_PUBLIC_ENABLE_LAB` | Tanımsız | Tanımsız | — | `/lab/stage` yalnız yerelde açılır (D-40). |
+| ~~`NEXT_PUBLIC_ENABLE_LAB`~~ | — | — | — | KOD ile kaldırıldı (D-40); `/lab/stage` yoktur. |
 | `RESEND_API_KEY` (v1.1) | Resend "Sending access" anahtarı, yalnız `send.orcunsaatci.com` alanına kısıtlı | İSTEĞE BAĞLI; ayrı bir test anahtarı | — | §14.5.4 |
 | `CONTACT_TO_EMAIL` (v1.1) | Sahibin kişisel posta kutusu | Resend hesap sahibinin e-postası | — | Resend test göndericisi yalnız hesap sahibine gönderir. |
 | `CONTACT_FROM_EMAIL` (v1.1) | `orcunsaatci.com <iletisim@send.orcunsaatci.com>` | `onboarding@resend.dev` | — | §12.2.9 |
@@ -15473,7 +15760,7 @@ Okuma kuralları:
 #### 15.0.1 Bağımlılık grafiği
 
 ```text
-M0 ──► M1 ──► M2 ──► M3 ──► M4 ──┬──► M5 ──► M6 ──► M7 ──► M8 ──► M9 ──► M10
+M0 ──► M1 ──► M2 ──► M3 ──► M4 ──┬──► M5 ──► M6 ──► M7 ──► KOD ──► M8 ──► M9 ──► M10
         │                         │
         └──► ◆ KAPI: sahip K0–K5 ─┘   Onay beklenirken M2–M4 sürer; M5 onaysız başlamaz (G14).
 
@@ -15482,7 +15769,7 @@ M1  Görsel spike + posterler           M7  Derin sayfa presetleri, geçişler, 
 M2  Tasarım sistemi, kabuk, i18n       M8  Sertleştirme ve gerçek cihazlar
 M3  İçerik + SEO (3D'siz site)         M9  Form v1.1 (kapalı), analitik, gizlilik
 M4  Hareket + three-free motor         M10 Alan adı ve lansman
-M5  Stage (WebGL) entegrasyonu
+M5  Stage (WebGL) entegrasyonu          KOD KESİT → KOD geçişi (2026-10-02 kararı; M7 ve içerik aktarımından sonra)
 
 Milestone içi özel bağımlılıklar:
   M1 tokens.ts, profile.ts, section-geometry.ts ──► M2 (tokenlar, ikonlar, 404 saati)
@@ -15514,7 +15801,8 @@ Sahip bağımlılıkları:
 | **M4** Hareket sistemi | Reveal'lar, Lenis, sticky düzenler, SVG figürler, varyantlar; three-free motor | — | Hareketli, 3D'siz tam deneyim (statik tier) | Evet, 3D'siz |
 | **M5** Stage entegrasyonu | Lazy boot, tier'lar, anchor'lar, crossfade, bağlam kaybı, debug | M1 onayı alınmış olmalı | Canlı Taş; koreografi ayarlanmamış | Hayır (ara durum) |
 | **M6** Ana sayfa koreografisi | K0–K5 canlı 3D koreografisi tablolara uyar | [SABİT] değer onayları (Q-22) | Tam ana sayfa deneyimi | Hayır (derin sayfa presetleri eksik) |
-| **M7** Derin sayfa presetleri, route geçişleri ve mikro etkileşimler | D1–D5, `<ViewTransition>`, §4.14 kataloğu | — | v1 deneyiminin tamamı | Aday (sertleştirme öncesi) |
+| **M7** Derin sayfa presetleri, route geçişleri ve mikro etkileşimler | D1–D5, `<ViewTransition>`, §4.14 kataloğu | — | v1 deneyiminin tamamı (KESİT) | Aday (sertleştirme öncesi) |
+| **KOD** KOD geçişi (M7 ile M8 arası) | Taş yerine KOD paneli: programlar, köprüler, statik paneller, work ASCII derlemesi, 404 hata çıktısı | **Kapı:** sahibin canlı önizleme onayı (§15.8a) | v1 deneyimi KOD olarak | Aday (sertleştirme öncesi) |
 | **M8** Sertleştirme | Bütçeler, WCAG 2.2 AA, SEO, gerçek cihaz geçişi | Gerçek cihaz erişimi (Q-24) | Lansman adayı | Evet (M10 adımlarıyla) |
 | **M9** İletişim formu (v1.1), analitik ve gizlilik | Analitik ve GPC, nihai gizlilik metni; form bayrak arkasında hazır | Avukat incelemesi (Q-11); Resend hesabı (yalnız Q-20 "evet" ise) | Form kapalı; analitik yalnız production'da | Evet |
 | **M10** Alan adı ve lansman | Alan adı, DNS, e-posta, indeksleme, lansman kontrol listesi | Alan adı satın alma, DNS, Search Console | Production: `https://www.orcunsaatci.com` | **Lansman** |
@@ -15522,6 +15810,8 @@ Sahip bağımlılıkları:
 Gerçek `check-content` M3'te geldiği andan itibaren, içerikte `{{…}}` kaldıkça production deploy'ları bilinçli olarak başarısız olur (D-36, §7.5.1, §14.2.1 madde 6). M0–M2'de production iskeleti deploy olur ama Deployment Protection arkasındadır ve geçici `robots.ts` `Disallow: /` döner (§15.0.6). Her milestone'un "Preview'da görülen" sütunu bu yüzden Preview deploy'unu anlatır.
 
 #### 15.0.3 M1 onay kapısı
+
+> **KOD notu (2026-10-02):** Bu kapı KESİT içindi ve M1'de onaylandı. Sahip KESİT'i 2026-10-02'de canlıda görüp reddetti; D-16 KOD olarak güncellendi. KOD'un kapısı §15.8a'dadır; poster kapısı yoktur.
 
 | Konu | Kural |
 |---|---|
@@ -15552,13 +15842,13 @@ Aşağıdakiler her milestone'un kabul kriterlerine **dâhildir**; milestone alt
 | # | Görev | Ne zaman | Ayrıntı |
 |---|---|---|---|
 | X1 | `next` ve `eslint-config-next`'i en yüksek 16.3.x yamasına (≥ 16.3.7) yükseltmek | 2026-09-30'dan sonraki ilk oturum; en geç M1 kapanışı | Ayrı PR: `npm view "next@~16.3" version` → `npm i -E next@$V` + `npm i -D -E eslint-config-next@$V` → `npm run check` (§2.2.3, D-01). 2026-09-29 itibarıyla `latest` 16.3.6'dır (Ek B.2). |
-| X2 | Sahip içeriğini almak | M0'da Ek A gönderilir; içerik geldikçe | `content/**` PR'ları (§7.10.2). `careerStartYear`, alan sayısı N, persona ya da palet değişirse aynı PR'da `npm run posters` çalıştırılır (§5.16.3). |
+| X2 | Sahip içeriğini almak | M0'da Ek A gönderilir; içerik geldikçe | `content/**` PR'ları (§7.10.2). KOD'da programlar içerikten üretildiği için ek adım gerekmez (KESİT'in `npm run posters` adımı kaldırıldı). |
 | X3 | Bağımlılık PR'ları | Haftalık (Renovate, M0'dan itibaren) | §13.8. Güvenlik PR'ları 48 saat içinde birleştirilir (§14.8.1). |
 | X4 | §16.2 güncellemesi | Her milestone sonunda | Doğrulanan maddeler işaretlenir, yeni ⚠️ maddeleri eklenir. |
-| X5 | [SABİT] değer onayları | M1 kapısı ve M6 sonu | §4.12.4 tablosu; Q-22. |
+| X5 | [SABİT] değer onayları | M1 kapısı, M6 sonu ve KOD geçişi | §4.12.4 tablosu (KOD satırları 23–29); Q-22. |
 | X6 | Tasarım QA listesi | M2, M4, M7, M8 sonunda | §6.11; ekran görüntüleri PR'a eklenir. |
 | X7 | Ekran okuyucu betiği | M4, M5, M8, M10 | §10.4.7, §10.6 |
-| X8 | Kontrast probu | M5, M8, M10 (`RUN_CONTRAST=1`) | §5.18.2, §13.3.4 `contrast.spec.ts` |
+| X8 | Kontrast probu | M5, M8, M10 (`RUN_CONTRAST=1`) | §5.18.2, §13.3.4 `contrast.spec.ts`. KOD'da panel hiçbir metinle kesişmez (hero dahil); prob yalnız güvenlik kontrolüdür, panel–metin ayrımını K-CHOREO-6 sınar. |
 | X9 | `SPEC-SAPMA` kaydı | Her sapmada | §0.2.3 kural 4; §16.1.1 tablosundaki uzlaştırmalar da bu kuralla kaydedilir. |
 
 #### 15.0.6 Geçici iskeletler ve kaldırılma zamanı
@@ -15584,9 +15874,9 @@ Bazı dosyalar build zincirinin (§8.7.1) ilk günden çalışması için geçic
 | E2E: `SHELL_PATHS` listesi; `not-found.spec.ts` ve `i18n.spec.ts` yalnız M2 kapsamında | M2 | M3 (`sitemapPaths`, §13.3.4'teki tam kapsam) | §13.3.2, §13.3.4 |
 | `headers.spec.ts` yalnız `/` ve `/yok` ile | M0 | M3 (beş yol) | §12.5.7 |
 | `lhci` bilgi amaçlı | M0–M2 | M3'ten itibaren kapı | §13.5, §16.1.1 U-09 |
-| Lab sayfasında sabit `StageData` | M1 | M3 (`getStageData('home')`) | §5.16.2 |
+| Lab sayfasında sabit `StageData` | M1 | M3 (`getStageData('home')`); lab KOD ile kaldırıldı | §5.16.2 |
 | Tohum içerik ve `/media/placeholder/` | M3 | Sahip içeriği (X2); strict build'de C01 hatası | §7.2.5, §7.5.2 |
-| Tohum verisiyle üretilmiş posterler | M1 | Gerçek içerikle yeniden üretim (M10 görev 5) | §5.16.3 |
+| Tohum verisiyle üretilmiş posterler | M1 | KOD geçişinde silinir (`public/stage/`); poster yoktur | §0.6 |
 | `ANALYTICS_RESERVE = 5 KB` | M0 | M9 ya da M10 (production ölçümü) | §9.4.2 |
 | `CSP_REPORT_ONLY_ON_PREVIEW = true` | M0 | M10 (`false`) | §12.5.5 |
 | `SITE_INDEXABLE=false`, Deployment Protection "All Deployments" | M0 | M10 | §14.2.2, §14.6 |
@@ -15613,10 +15903,10 @@ Her D-xx kararı en az bir milestone kabul kriterinde ya da §13 testinde doğru
 | D-12, D-13 | M3 | §7.11; `cv.spec.ts` |
 | D-14 | M1, M5 | shader modülleri; drei yalnız `PerformanceMonitor` (§2.6, §5.19) |
 | D-15 | M4, M5 | §5.19 "Scroll ve reveal"; ağ günlüğü |
-| D-16 | M4, M7 | K-AREAS-2; K-MICRO-1 |
+| D-16 | M4, M7, KOD | K-AREAS-2; K-MICRO-1; K-KOD-1…6 |
 | D-17 | M0, M5 | `boundaries.test.ts`; §8.9 grep'leri |
 | D-18 | M5 | `stage.spec.ts` tek canvas |
-| D-19 | M2, M3 | `not-found.spec.ts`; K-DEEP-2, K-DEEP-9 |
+| D-19 | M2, M3, KOD | `not-found.spec.ts`; K-DEEP-2, K-DEEP-9 |
 | D-20, D-21 | M2 | `theme.spec.ts`; §6.12 |
 | D-22 | M3 (v1), M9 (v1.1 bayrak arkasında) | §12.6 |
 | D-23, D-44 | M9 | `SiteAnalytics.test.tsx`; `privacy.spec.ts`; PB-1 |
@@ -15627,7 +15917,7 @@ Her D-xx kararı en az bir milestone kabul kriterinde ya da §13 testinde doğru
 | D-28 | M0, M3, M10 | Vercel ayarları; `robots.test.ts`; §14.6 |
 | D-29 | M10 | §14.9 |
 | D-30 | M3, M10 | §1.8 grep; C09; §14.7 A |
-| D-31 | M3, M5 | §9.7; `posters.spec.ts` |
+| D-31 | M3, M5, KOD | §9.7; `stage.spec.ts`, `content-visibility.spec.ts` (statik paneller; KESİT'te `posters.spec.ts`) |
 | D-32 | M7 | `transitions.spec.ts`; K-DEEP-8 |
 | D-33 | M0 (betik), M4, M5, M8 | `npm run budgets`; PB-1…PB-7; LHCI |
 | D-34 | M3, M4, M8 | K-HERO-1, K-HERO-2 |
@@ -15635,9 +15925,9 @@ Her D-xx kararı en az bir milestone kabul kriterinde ya da §13 testinde doğru
 | D-36 | M3, M10 | §7.11 (`--strict`); `CONTENT_STRICT` |
 | D-37 | M3, M4 | C02; K-AREAS-1 |
 | D-38, D-39 | M2, M4, M5 | `head-script.test.ts`; `theme.spec.ts`; K-GEN-6 |
-| D-40 | M1, M3 | lab route; `robots.test.ts` |
+| D-40 | M1, M3, KOD (kaldırıldı) | `robots.test.ts` |
 | D-41 | M2, M3 | §3.10 header ve CTA maddeleri |
-| D-42 | M1, M7 | `keyframes.ts` anahtarları; K-DEEP-1 |
+| D-42 | M1, M7, KOD | preset ve program anahtarları (§5.20.2); K-DEEP-1, K-KOD-1 |
 | D-43 | M3, M4 | K-GEN-1 |
 | D-45 | M3 | §1.8 (preloader yok) |
 | D-46 | M4 | §5.19 (SplitText `revert()`, lede bölünmez) |
@@ -15993,10 +16283,10 @@ Her D-xx kararı en az bir milestone kabul kriterinde ya da §13 testinde doğru
    - `src/stage/tracks.ts` (§5.9.3–§5.9.4): masaüstü ana sayfa track tablosu. Mobil geçersiz kılmalar M6'dadır.
    - `src/stage/tracks.test.ts`: §5.9.3'teki 7 değişmez; K-CHOREO-1…3, K-GEN-3.
    - `src/stage/events.ts` (§5.9.5): indeksler, `resolveEvents`, olay yayıcı (`onStageEvent`), sahiplik pencereleri.
-   - `src/stage/ScrollDirector.tsx` (§5.13.5): ölçüm, track değerlendirme, `--scene-opacity`, `--cut-progress`, DOM olayları (`about:cut`, `areas:step`, `work:active`, `journey:active`) ve kesme kuralı (§5.9.7). `invalidate` ve anchor ölçümü M5'te bağlanır.
+   - `src/stage/ScrollDirector.tsx` (§5.13.5): ölçüm, track değerlendirme, `--scene-opacity`, `--cut-progress` (KOD'da yok), DOM olayları (`about:cut`, `areas:step`, `work:active`, `journey:active`) ve kesme kuralı (§5.9.7). `invalidate` ve anchor ölçümü M5'te bağlanır.
    - Areas adım durumu GSAP'ten bağımsız, hafif bir kaydırma dinleyicisiyle de doğrudur (§4.8.2, K-AREAS-12).
 6. **Bölümlerin hareketli düzenleri** (`html.js[data-motion="full"]` ile kapılı; §4.5.2 yükseklikleri):
-   - About: `CutLine` + lede `clip-path` açılışı (§5.14.4, §4.7.4).
+   - About: `CutLine` + lede `clip-path` açılışı (§5.14.4, §4.7.4). KOD ile kaldırıldı: lede global blok reveal'ı kullanır.
    - Areas: sticky sahne, adım butonları, sayaç, `aria-current="step"`, iğne, "Bu bölümü atla ↓", liste modu kapısı (§4.8.2–§4.8.8; D-37).
    - Work: sticky görüntüleyici, `SectionWipe` (600 ms), altyazı değişimi, `innerHeight < 760` kuralları (§4.9.2–§4.9.4, [SABİT] #7, #9).
    - Journey: sticky sahne sütunu, etkin `<time>` vurgusu (§4.10.2–§4.10.4).
@@ -16019,7 +16309,7 @@ Her D-xx kararı en az bir milestone kabul kriterinde ya da §13 testinde doğru
 
 | Çıktı | Konum |
 |---|---|
-| Motion runtime ve reveal motoru | `src/lib/{gsap,on-idle}.ts`, `src/components/motion/{MotionRoot,LenisProvider,RevealHeading,Reveal,CutLine,SectionWipe,MotionToggle,PauseButton}.tsx` |
+| Motion runtime ve reveal motoru | `src/lib/{gsap,on-idle}.ts`, `src/components/motion/{MotionRoot,LenisProvider,RevealHeading,Reveal,CutLine,SectionWipe,MotionToggle,PauseButton}.tsx` (`CutLine.tsx` KOD ile silindi) |
 | Three-free koreografi motoru | `src/stage/{store,presets,tracks,events}.ts`, `ScrollDirector.tsx`, `StagePreset.tsx` (+ `tracks.test.ts`) |
 | SVG figürler | `src/components/figures/*` |
 | Hareketli bölüm düzenleri | `src/components/chapters/*` (sticky ve reveal işaretlemesi) |
@@ -16223,11 +16513,54 @@ Her D-xx kararı en az bir milestone kabul kriterinde ya da §13 testinde doğru
 
 - SPEC-SAPMA: §15.8.3, §13.1.3 (M7, 2026-10-01; sahibin kararı) — M7 yalın doğrulamayla kapanır: `navigation.spec.ts` minimal kapsamdadır (her ana sayfa bölüm çapası için geri/ileri konumu); `transitions.spec.ts`, mikro etkileşim E2E'leri (K-MICRO), WebKit 5 tur testi, Chrome + Safari geçiş kaydı (V-49) ve a11y-keyboard'un geçişli yeniden koşusu M8'e (sertleştirme) taşındı. `npm run check` ve mevcut E2E paketi her PR'da koşar. Gerekçe: M6'da test kodu ürün kodunun 3.4 katıydı; sahip süreyi kısaltmayı seçti.
 
+### 15.8a KOD geçişi (M7 ile M8 arası)
+
+**Hedef.** KESİT'in taşını KOD paneliyle değiştirmek (D-16, sahip onayı 2026-10-02). Ana sayfa ve derin sayfalar §4'teki programları gösterir. Statik paneller posterlerin, statik hata çıktısı `ClockFigure`'ün yerini alır. Genel motor (director, çapalar, event'ler, kademeler, lazy boot, bağlam kaybı, route geçişleri) korunur. Bu iş (`KOD`) bir milestone gibi yürütülür: ayrı dal, ayrı PR, kendi kapısı.
+
+**Önkoşullar.** M7 kapanmıştır. İçerik aktarımı (X2, PR #14) birleşmiştir.
+
+#### 15.8a.1 Görevler
+
+1. **Kaldırma** (§0.6): `gl/{Stone,Ghost,Shadow,StageRig}.tsx`, `gl/materials.ts`, `gl/shaders/*` ve taş kamera koreografisi; `public/stage/*`, `scripts/render-posters.ts`, `npm run posters`, `/lab/stage`, `LabStage` ve lab modu (`NEXT_PUBLIC_ENABLE_LAB`); `components/figures/*` ve denetleyicileri (`DialRotor`, `CutLine`, `JourneyActive`'in bant kısmı); `ScenePreviews`, `preview-attrs`, `previewScene`, `pulseArc`, `sendWave`, `tapSweep` (`src/stage/fx.ts`'te yalnız `setPlanFilter` kalır); `figures` sözlük anahtarları; KESİT eyebrow'ları; ilgili testler (`posters.spec.ts`, figür ve materyal birim testleri, `choreography.spec.ts`'in taş maddeleri). `keyframes.ts` track altyapısı için kalır; taş değerleri sahnede kullanılmaz.
+2. **Programlar** (`src/lib/kod/{screen,syntax,programs,types}.ts`, §5.20.2): ekran tamponu, Dart renklendiricisi ve tek dosyada (`programs.ts`) `hero`, `about`, alan diyagramları (`phone`, `tree`, `api`, `pipeline`, `list`), `journey`, `contact`, `folio`, `next`, `list` (`ls projects/`), `notfound`. Veri: `src/lib/content/kod.ts` (`buildKodData`) ve `getKodData(preset, slug?, locale)`; `StageData.kod` ile taşıma.
+3. **İçerik:** `Area.figure` alanı şemaya ve JSON şemasına eklenir (§7.3.2, varsayılan `list`). Sahibin alanlarına uygun `figure` değerleri içerik PR'ında yazılır; seçim sahibe gösterilir.
+4. **Statik paneller** (`src/components/kod/KodPanel.tsx` + `kod-panel.css`, §4.16.3, §5.20.6): her çapada SSR `.kod-panel`, 24 blok satır (`.kod-row`), koşu sınıfları (`k0…k7`, `kb0…kb6`, `kd`, `ks`), areas için adım başına panel (`data-kod-step`), gece (`data-night`), crossfade ve bağlam kaybı kuralları; 404'te satır içi `.kod-panel.kod-inline` (§4.13.6).
+5. **WebGL işleyicisi** (`src/stage/gl/KodRig.tsx`, `src/stage/kod-atlas.ts`, `src/stage/kod-compose.ts`; §5.20.3–§5.20.5): glif atlası, 2 katman × 56 × 24 instance, plaka, yerleşim (contain), sabit eğim, süzülme, paralaks, `frozen` durumu, köprüler (`anchorMix`) ve adım çözülmesi, hot reload, gece paneli; `live.panel` ve `live.kod`.
+6. **Director ve presetler:** köprü olarak mevcut `anchorMix` track'leri kullanılır (§4.12.4 #24); `opacityTrack` masaüstünde de work IN'de söner, journey IN'de belirir; event'ler program adımı seçer; `work-specimen` boş kutu olarak kalır; `page-folio` (folio, plan-small, alan sayfası kompakt; about-page, contact-page, `/calisma-alanlari` kare) k8–12'dir, başlık bloğu k1–7 (§4.5.6); `/cv` `none` preset'ine geçer (§4.13.2).
+7. **Work ASCII derlemesi** (§4.9.4): gelen figürün içinde 2D canvas kaplaması; `SectionWipe` kalır ve kaplama onunla aynı `work:active` olayında başlar (silmeyle kırpılır); çakışma ve `instant` kuralları.
+8. **Etiketler ve metinler:** eyebrow'lar Kaynak / Modüller / Derleme / Sürüm geçmişi / Terminal (TR ve EN, §4.17.2); 404 alt satırı (§4.13.6); `labels.contactLead` yedeği.
+9. **Testler** (§13.1.3 KOD satırı): ayrı KOD spec'i yoktur. E2E kapsamı `stage.spec.ts`, `content-visibility.spec.ts`, `no-webgl.spec.ts`, `motion-preferences.spec.ts`, `not-found.spec.ts`, `work-viewer.spec.ts` ve `cv.spec.ts`'tedir; `choreography.spec.ts` KOD için güncellenir. Birim testleri: `src/lib/kod/{screen,syntax,programs}.test.ts`, `src/lib/content/kod.test.ts`, `src/stage/kod-compose.test.ts`, `src/stage/quality.test.ts` (§13.2.2).
+10. **Önizleme ve kapı:** sahibe Preview'da iki temada ve iki genişlikte (1440, 390) canlı tur gösterilir; §4.12.4 satır 23–29 onaya sunulur (X5).
+
+#### 15.8a.2 Çıktılar
+
+| Çıktı | Konum |
+|---|---|
+| Programlar ve ekran tamponu | `src/lib/kod/{screen,syntax,programs,types}.ts`, `src/lib/content/kod.ts` |
+| WebGL işleyicisi | `src/stage/gl/KodRig.tsx`, `src/stage/kod-atlas.ts`, `src/stage/kod-compose.ts` |
+| Statik panel, 404 hata çıktısı, work kaplaması | `src/components/kod/{KodPanel.tsx,kod-panel.css,AsciiCompile.tsx}` |
+| Şema alanı | `src/lib/content/schemas.ts` (`Area.figure`), `.schemas/area.json` |
+| Testler ve tabanlar | §13.1.3 KOD satırındaki spec'ler, §13.2.2'deki birim testleri, `tests/e2e/__screenshots__/*/linux/` |
+
+#### 15.8a.3 Kabul kriterleri
+
+- [ ] `npm run check` yerelde yeşildir (lint → typecheck → test → build → budgets). CI `quality` ve `lhci` işleri yeşildir.
+- [ ] K-KOD-1…K-KOD-6; K-HERO-1/6/7/8/9; K-ABOUT-1/2/5/6; K-AREAS-1/3/5/9/10/11; K-WORK-1/4/5/6/8; K-JOURNEY-2/3/7; K-CONTACT-2/3/6; K-CHOREO-1…7; K-DEEP-1/4/5/6/9/10; K-VAR-1/3/4/6; K-PERSONA-1/3.
+- [ ] §5.20.8'in tamamı. PB-1 değişmez. Stage chunk ≤ 300 KB'tır; küçülmesi beklenir, ölçüm PR'a yazılır.
+- [ ] Görsel tabanlar CI Linux'ta yeniden üretilmiş ve commit edilmiştir (`workflow_dispatch` + `update_snapshots: true`, §13.4.2). macOS'ta üretilen taban yoktur.
+- [ ] Kaldırılan dosya ve script'ler kod tabanında yoktur: `src` ve `scripts` içinde `Stone`, `ScenePoster` (poster kısmı), `render-posters`, `ClockFigure`, `DialFigure`, `RingsFigure` aramaları boş döner. OG'nin `section-geometry` kullanımı istisnadır (§6.8).
+- [ ] Sahip canlı önizlemeyi onaylamıştır; onay ve [SABİT] değerleri §4.12.4'e tarihle işlenmiştir.
+- [ ] PR açıklaması §15.0.4'teki üç başlığı içerir. Konsept değişikliği D-16 güncellemesidir, `SPEC-SAPMA` değildir. Uygulama bu belgeden saparsa her sapma `SPEC-SAPMA:` satırıyla kaydedilir.
+
+**İlgili bölümler:** §0.6, §4, §5.7, §5.9, §5.12, §5.17, §5.20, §7.3.2, §13.3.4, §16.1.
+
 ### 15.9 M8 Sertleştirme: performans, erişilebilirlik, SEO, gerçek cihaz testleri
 
 **Hedef.** Tüm bütçeler, WCAG 2.2 AA, SEO ve gerçek cihaz ölçütleri kanıtlanır. Açık ⚠️ maddelerinin cihaz gerektirenleri kapatılır. Site lansman adayıdır.
 
-**Önkoşullar.** M7 kapanmıştır. Sahip §9.6'daki zorunlu cihazlara (R1 ya da R2, R3, R6) erişim sağlamıştır (Q-24).
+**Önkoşullar.** M7 ve KOD geçişi (§15.8a) kapanmıştır. Sahip §9.6'daki zorunlu cihazlara (R1 ya da R2, R3, R6) erişim sağlamıştır (Q-24).
+
+**KOD notu (2026-10-02):** KESİT'e özgü M8 maddeleri geçersizdir ya da değiştirildi: posterler (P16, 36 poster, `posters.spec.ts` ve Firefox poster kontrolü) yoktur; taş kontrast probu yalnız hero H1'de koşar (X8); ghost, oktav ve segment step-down ölçümleri yerine §5.20.7 kademeleri ölçülür; ışık taraması ve idle drift yerine hot reload ve kendiliğinden hareket ölçülür; iOS wobble doğrulaması (V-47) geçersizdir, dokunmatikte panel tepkisi yoktur. KESİT'in K-kimliklerinin yerini §4.18'deki KOD tanımları alır.
 
 #### 15.9.1 Görevler
 
@@ -16236,13 +16569,13 @@ Her D-xx kararı en az bir milestone kabul kriterinde ya da §13 testinde doğru
    - görsel tabanlar son hâlinde, CI `snapshots` işiyle yeniden üretilmiş;
    - `lighthouserc.json` §13.5.1 ile birebir, üç ardışık `main` koşusunda geçer.
 2. **Performans** (§9):
-   - D-33 bütçelerinin tamamı (P1–P16);
+   - D-33 bütçelerinin tamamı (P1–P15; P16 posterleri KOD ile kaldırıldı);
    - betikli tam kaydırmada CLS ≤ 0.05 (ana sayfa ve `/cv`);
-   - LCP öğesi (§9.5.4, V-39'un kapanışı);
+   - LCP öğesi (§9.5.4, V-39'un kapanışı; hero statik panelinin satırları LCP adayı olmamalı, §4.6.9);
    - `<Link>` prefetch şelalesi (V-59);
    - font değişimi CLS'i (V-60);
    - Best Practices ve kaynak haritası kararı (V-33).
-3. **Gerçek cihaz matrisi** (§9.6): zorunlu cihazlarda S1–S11. Sonuç tablosu PR'a yazılır: cihaz, işletim sistemi, tarayıcı, atanan kademe, `os:stage-ready − load`, kaydırma p95, sorunlar. Ölçümler V-54…V-57, V-47 ve V-38'i kapatır. Gerekirse `quality.ts` tier tablosu ve `assignTier` kuralları güncellenir (SPEC-SAPMA).
+3. **Gerçek cihaz matrisi** (§9.6): zorunlu cihazlarda S1–S11. Sonuç tablosu PR'a yazılır: cihaz, işletim sistemi, tarayıcı, atanan kademe, `os:stage-ready − load`, kaydırma p95, sorunlar. Ölçümler V-54…V-57 ve V-38'i kapatır; KOD işleyicisinin kare süresi (§5.20.7 ⚠️) ölçülür. Gerekirse `quality.ts` tier tablosu ve `assignTier` kuralları güncellenir (SPEC-SAPMA).
 4. **Erişilebilirlik** (§10):
    - axe matrisinin tamamı: menü açık, filtre etkin, areas orta adım, 404'ler, `forcedColors`, `contrast: more` (§10.6);
    - ekran okuyucu betiği (§10.4.7) 4 birleşimde (X7);
@@ -16250,10 +16583,10 @@ Her D-xx kararı en az bir milestone kabul kriterinde ya da §13 testinde doğru
    - bulgu düzeyleri Ö1 ve Ö2 sıfır (§10.6).
 5. **SEO** (§11.8.1): otomatik katmanın tamamı yeşil. Elle olanlar (§11.8.2) M10'dadır.
 6. **Türkçe dizgi.** CSS büyük harf `i→İ` üç motorda (V-58); maske ve OG glif kontrolleri (§6.11).
-7. **Kontrast probu** (X8): her bölümde 10 konum × 2 tema × 3 genişlik.
+7. **Kontrast probu** (X8, KOD'da daraltıldı): KOD'da panel hiçbir metinle kesişmez; prob 2 tema × 3 genişlikte güvenlik kontrolü olarak koşar, panel–metin ayrımını K-CHOREO-6 sınar; KESİT'in taş kontrast probu geçersizdir.
 8. **Kullanılabilirlik testi.** 5 kişiyle Areas pini (G14, R-03): "takıldı mı?" sorusu gelirse adım uzunluğu 50 → 40 svh yapılır ve §4.8 ile §5.9.4 güncellenir. Katılımcılar Q-25'e göre bulunur.
 9. **Persona sağlamlığı.** K-PERSONA-3: iki persona ile build ve DOM karşılaştırması.
-10. **Kontroller:** tasarım QA (X6), çapraz tarayıcı `PW_CROSS=1` (`work-viewer`, `posters` Firefox).
+10. **Kontroller:** tasarım QA (X6), çapraz tarayıcı `PW_CROSS=1` (`work-viewer`; KESİT'in `posters` Firefox kontrolü geçersiz).
 
 #### 15.9.2 Çıktılar
 
@@ -16269,7 +16602,7 @@ Her D-xx kararı en az bir milestone kabul kriterinde ya da §13 testinde doğru
 - [ ] §10.7'nin tamamı. Açık Ö1/Ö2 bulgusu yoktur.
 - [ ] §11.9'un otomatik doğrulanabilen maddelerinin tamamı.
 - [ ] §13.10'un tamamı: altı proje, `fixtures.ts`, tüm spec'ler, birim testleri ve kapsam eşikleri (satır 85, fonksiyon 85, dal 75), I1–I3, final.md §13'ün 8 maddesinin bağları, `lighthouserc.json`, görsel tabanlar, Renovate, `.prettierignore`/`.gitignore`.
-- [ ] §4.18'in bütün K-kimlikleri yeşildir ya da ilgili milestone'da kapanmıştır. §5.19 ve §6.12'nin tamamı.
+- [ ] §4.18'in bütün K-kimlikleri yeşildir ya da ilgili milestone'da kapanmıştır. §5.19 (KESİT'e özgü maddeleri yerine §5.20.8) ve §6.12'nin tamamı.
 - [ ] §1.2'deki G1–G13 ölçülmüş ve PR'da raporlanmıştır (§1.8). G14'ün 5 kişilik testi yapılmıştır.
 - [ ] §2.6'nın üç ⚠️ maddesi (`svh`/`lvh`, `light-dark()`, `scrollend`) kapatılmıştır.
 - [ ] §16.2'de "M8" ya da "→ M8" ile işaretli bütün maddeler kapatılmıştır.
@@ -16353,7 +16686,7 @@ Her D-xx kararı en az bir milestone kabul kriterinde ya da §13 testinde doğru
 4. **E-posta** (sahip, §14.5): Cloudflare Email Routing ile `iletisim@` ve `dmarc@`, DMARC; dışarıdan test postası (§12.1.3).
 5. **İçerik son kontrolü:**
    - `CONTENT_STRICT=true` depo değişkeni;
-   - gerçek `careerStartYear`, N ve persona ile `npm run posters` yeniden çalıştırılır ve commit edilir (§5.16.3, §15.0.6);
+   - programlar sahibin son içeriğiyle Preview'da gözden geçirilir (KOD'da poster yeniden üretimi yoktur; §0.6);
    - sahip son okumayı yapar.
 6. **CSP zorunlu kılma** (§12.5.5 aşama 2): gerçek cihazlarda güncel Preview'da 0 `[Report Only]` ihlali → `CSP_REPORT_ONLY_ON_PREVIEW = false` PR'ı → başlık adı `Content-Security-Policy` olarak doğrulanır.
 7. **Sürüm kontrolü.** `next` ve `eslint-config-next` ≥ 16.3.7 (D-01, §14.7 A).
@@ -16407,6 +16740,8 @@ Kaynaklar: final.md §11 (19 risk), içerik araştırması §10 (R1–R14), diğ
 
 **Ölçek:** "Olasılık / Etki" sütununda D = düşük, O = orta, Y = yüksek. **Sahip:** riski izleyen ve azaltmayı uygulayan taraf. **Milestone:** azaltmanın uygulandığı ya da riskin kapandığı yer.
 
+**KOD notu (2026-10-02):** Taşa, shader'a ve posterlere bağlı riskler (R-02, R-05, R-32, R-44; R-01 ve R-09'un taş kısmı) KOD ile kapandı ya da biçim değiştirdi. R-01'in KOD'daki azaltması imza anları (§4.2), `intensity` ve canlı önizleme onayıdır (§15.8a); R-32'nin yerini R-51 alır. KOD'a özgü riskler R-50…R-53'tür.
+
 | ID | Risk | Olasılık / Etki | Azaltma | Sahip | Milestone | Kaynak |
 |---|---|---|---|---|---|---|
 | R-01 | Deneyim "fazla sessiz" bulunur; sahip ya da ziyaretçi etkilenmez. | O / Y | 7 imza anı (§4.2); senaryolu gün yayı; dolly-zoom; `intensity` (§4.17.4); K0–K5'in koreografiden önce poster olarak onaylatılması (§15.0.3). | Ajan + sahip | M1, M6 | final #1 |
@@ -16458,6 +16793,10 @@ Kaynaklar: final.md §11 (19 risk), içerik araştırması §10 (R1–R14), diğ
 | R-47 | `detect-gpu` benchmark'ları kopyalanmaz (`--ignore-scripts`, postinstall hatası); yoklama başarısız olur. | D / O | `postinstall` kuralı; `--ignore-scripts` YASAK (§8.7.1); §8.9 temiz klon maddesi; yoklama hatasında `static` (§5.17). | Ajan | M0, M5 | §8.7 |
 | R-48 | Tek kodlama ajanı ve uzun şartname: gereksinim atlanır. | O / O | Milestone okuma tabloları (§0.2.2); kimlikli kabul kriterleri; test başlıklarında kimlik (§13.1.1 #5). | Ajan | Tümü | C8 |
 | R-49 | M1 onayı gecikir; M5–M7 kilitli kalır. | O / O | Onay beklenirken M2–M4; gerekirse sahibin yazılı onayıyla M9'un 3D'siz işleri öne alınır (§15.0.1). | Sahip | M1–M5 | §15.0.3 |
+| R-50 | KOD paneli küçük ekranda okunmaz; sahibin BÜTÜN için verdiği "hiçbir şey anlaşılmıyor" geri bildirimi tekrarlanır. | O / Y | Okunabilirlik kuralı (§4.1.5): dinlenmede rastgele glif yok, masaüstünde `Pw ≥ 360` px, 390×844'te ≥ 280 px (`stage.spec.ts` "§4.5.6 panel okunabilirliği"); bilgi her zaman DOM'da; sahibin canlı önizleme onayı (§15.8a). | Ajan + sahip | KOD, M8 | KOD kararı (2026-10-02) |
+| R-51 | Statik panelin `<pre>` metni LCP öğesi olur (D-34). | O / O | Satır başına blok öğe; gerekirse mobil hero panel alanı H1 kutusunun %80'iyle sınırlanır (§4.6.9); K-HERO-1 (`perf-smoke.spec.ts`, LHCI), `stage.spec.ts` (statik panelin 24 blok satırı). | Ajan | KOD, M8 | KOD kararı |
+| R-52 | Atlas fontu geç yüklenir ya da glif alt kümede eksiktir; çerçeve çizgileri dikişli görünür. | D / O | `document.fonts.load` sonrası kurulum, 3.5 s zaman aşımı; kutu çizgileri elle çizilir; eksik glif `?` (§5.20.3). | Ajan | KOD | KOD kararı |
+| R-53 | Kare başına instance yüklemesi orta segment mobilde kare bütçesini aşar. | O / O | Değişen aralıkları yükleme, dinlenmede kare istememe, step-down (§5.20.7 ⚠️); gerçek cihaz ölçümü (§9.6). | Ajan | KOD, M8 | KOD kararı |
 
 #### 16.1.1 Şartname içi uzlaştırma kaydı
 
@@ -16484,6 +16823,8 @@ Bölüm taslakları arasında bulunan çelişkiler aşağıdadır. "Geçerli de�
 Belgedeki her `⚠️ DOĞRULANMADI` maddesi, araştırma notlarındaki UNVERIFIED maddeleri ve final.md §13'ün 8 maddesi tek listede toplanmıştır. Aynı iddiayı anlatan maddeler birleştirilmiştir. Yaşam döngüsü §0.4.2'dedir. Madde, "Milestone" sütunundaki milestone'da doğrulanır; "→ M8" işareti ilk ölçümün erken yapıldığını, kapanışın M8'de olduğunu gösterir. Sonuç hem kaynak bölüme hem bu tabloya işlenir (`✅ DOĞRULANDI (tarih, yöntem)` ya da uygulanan yedek).
 
 #### 16.2.1 Milestone'a göre doğrulama listesi
+
+> **KOD notu (2026-10-02):** Posterlere, taş shader'ına, ghost/oktav ölçümlerine, ışık taramasına, iOS wobble'a (V-47) ve `ClockFigure`'e bağlı maddeler KOD ile geçersizdir. KOD'un yeni ⚠️ maddeleri: statik panel LCP'si (§4.6.9) ve kare başına instance yüklemesinin süresi (§5.20.7); ikisi KOD geçişinde ve M8'de doğrulanır.
 
 | ID | İddia | § | Doğrulama | Başarısızsa | Milestone |
 |---|---|---|---|---|---|
@@ -16603,13 +16944,13 @@ Cevaplanmayan her soru için "Varsayılan" sütunundaki değer kullanılır. Var
 | # | Soru | Neyi etkiler | Varsayılan (cevap gelene dek) | Yayına engel mi? | En geç | Ek A |
 |---|---|---|---|---|---|---|
 | Q-01 | Mesleğiniz ve unvanınız nedir? | Persona (§4.17): etiketler, sahne parametreleri, JSON-LD türü; `person.jobTitle` | **Cevaplandı (2026-09-29):** Bilgisayar Mühendisi ve Mobil Uygulama Geliştiricisi → `persona: engineer`; `jobTitle` TR "Bilgisayar Mühendisi ve Mobil Uygulama Geliştiricisi", EN "Computer Engineer and Mobile App Developer" | Hayır | — (cevaplandı) | A.1 #1, A.2 |
-| Q-02 | Kariyerinize hangi yıl başladınız? | Halka sayısı, bantlar, posterler (§5.10, §5.16.3) | Tohum 2014 (yalnız geliştirme; YAML yorumundaki `{{KARİYER_BAŞLANGIÇ_YILI}}`) | Evet (C01) | M6 | A.1 #3 |
-| Q-03 | Halkalar neyi temsil etsin: yıllar, yayın sayısı, ekip büyüklüğü? | `ringsSource` (§4.17), R-19 | Yıllar | Hayır | M6 | A.1 #4 |
-| Q-04 | Hangi 3–6 alanda çalışıyorsunuz? | Areas kadranı ve dilimleri, `/calisma-alanlari` | Tohum `alan-1…4` | Evet (C01) | M6 (N), M10 (metin) | A.4 |
+| Q-02 | Kariyerinize hangi yıl başladınız? | "Deneyim: N yıl", `about.dart` ve `git log` (§4.7.3, §4.10.3) | Tohum 2014 (yalnız geliştirme; YAML yorumundaki `{{KARİYER_BAŞLANGIÇ_YILI}}`) | Evet (C01) | M6 | A.1 #3 |
+| Q-03 | ~~Halkalar neyi temsil etsin: yıllar, yayın sayısı, ekip büyüklüğü?~~ KESİT'e özgüydü; KOD ile geçersiz (2026-10-02). | — | — | Hayır | — | A.1 #4 |
+| Q-04 | Hangi 3–6 alanda çalışıyorsunuz? | Areas adımları ve diyagramları, `/calisma-alanlari` | Tohum `alan-1…4` | Evet (C01) | M6 (N), M10 (metin) | A.4 |
 | Q-05 | Hangi 3–5 proje öne çıksın? (İzin sorusu v1.2'de kalktı: şirket projelerinde yalnız yalın proje alanları istenir; D-48.) | Work, `/projeler`, OG, JSON-LD | Tohum `ornek-proje-1…6` | Evet (C01) | M10 | A.5 |
 | Q-06 | Ana sayfada portreniz görünsün mü? | `features.portraitOnHome`, About | Fotoğraf gelirse evet, gelmezse hayır | Hayır | M10 | A.1 #5, A.3 |
 | Q-07 | Varsayılan tema | D-20 bunu "Sistem" olarak sabitler. "Koyu önce" sözleşme değişikliğidir. | Sistem | Hayır | — (yalnız onay) | A.1 #6 |
-| Q-08 | Renk paleti: Mekanizma, Atölye ya da Emaye? | `profile.ts` palet, posterler, `themeColor` (§6.3.7) | `mekanizma` | Hayır | M2 (tercihen M1 kapısında) | A.1 #16 |
+| Q-08 | Renk paleti: Mekanizma, Atölye ya da Emaye? | `profile.ts` palet, panel renkleri, `themeColor` (§6.3.7) | `mekanizma` | Hayır | M2 (tercihen M1 kapısında) | A.1 #16 |
 | Q-09 | Site hangi dillerle açılsın: yalnız Türkçe mi, Türkçe + İngilizce mi? | `site.locales`, EN route'ları, hreflang, EN PDF (D-11) | Lansmanda `['tr']`; geliştirmede iki dil | Hayır | M10 | A.1 #2 |
 | Q-10 | Sitede ücretli hizmet satışı ya da reklamı olacak mı? | Vercel Hobby ticari yasağı (D-30); "evet" ise Pro ($20/ay/kullanıcı) | Hayır; portfolyo dili | Evet, "evet" cevabında plan kararı gerekir | M10 | A.1 #11 |
 | Q-11 | Gizlilik metnini bir avukata inceletir misiniz? Başvuru adresi (posta/KEP) gerekli mi? VERBİS muafiyeti teyidi. | `/gizlilik`, `/en/privacy`, `{{BAŞVURU_ADRESİ}}`, V-70, V-72 | Metin §12.4.6'ya göre hazırlanır; "inceleme bekliyor" | **Evet** (§14.6 ön koşulu; D-36) | M9 | A.8 |
@@ -16623,12 +16964,13 @@ Cevaplanmayan her soru için "Varsayılan" sütunundaki değer kullanılır. Var
 | Q-19 | Yayınlarınız ve konuşmalarınız CV'de üstte mi görünsün? | `features.publicationsPage` (v1'de CV sırası) | Hayır | Hayır | M10 | A.1 #14 |
 | Q-20 | İletişim formu (v1.1) olsun mu? | M9 formu, Resend hesabı, avukat metni, M10 görev 11 | Hayır; yalnız e-posta + "Kopyala" | Hayır | M9 | A.1 #15 |
 | Q-21 | Depo lansmanda herkese açık olsun mu? | Actions dakikaları, branch koruması (§14.1) | Özel | Hayır | M10 | — |
-| Q-22 | [SABİT] değerleri onaylıyor musunuz? | §4.12.4 tablosu | Belgedeki değerler | Hayır | M1 kapısı ve M6 sonu | — |
-| Q-23 | (Yalnız §9.5.4 adım 1–2 reddedilirse) Mobil hero'da posteri küçültmek yerine hangi çözüm? | D-34, LCP | §9.5.4 adım 2 (poster alanı sınırı) | Hayır | M8 | — |
+| Q-22 | [SABİT] değerleri onaylıyor musunuz? | §4.12.4 tablosu (KOD satırları 23–29 dahil) | Belgedeki değerler | Hayır | M1 kapısı, M6 sonu ve KOD geçişi | — |
+| Q-23 | (Yalnız §4.6.9'daki önlemler yetmezse) Mobil hero'da statik paneli küçültmek yerine hangi çözüm? | D-34, LCP | §4.6.9 (panel alanı sınırı) | Hayır | M8 | — |
 | Q-24 | M8 gerçek cihaz testleri için R1 ya da R2 (iPhone), R3 (orta segment Android) ve R6 (Intel iGPU dizüstü) cihazlarına erişim sağlayabilir misiniz? | §9.6 zorunlu matris | — (cihazsız M8 kapanmaz) | Evet | M8 | — |
 | Q-25 | Areas pini için 5 kişilik kısa testi kiminle yapalım? | G14, R-03 | Sahibin çevresinden 5 kişi, Preview bağlantısıyla | Hayır | M8 | — |
 | Q-26 | `.tr` / `.com.tr` koruma kaydı yapılsın mı? | §14.3.2 #6 | Hayır | Hayır | M10 | — |
 | Q-27 | Şehir, saat dilimi ve ekli konum ifadesi ("İstanbul'dan") nedir? | `LocalTime`, hero konum satırı, JSON-LD | `{{ŞEHİR}}`, `Europe/Istanbul` | Evet (`{{ŞEHİR}}`) | M10 | A.2 |
+| Q-28 | OG kartları ve uygulama ikonu KESİT'in kesit motifinden (kadran, halkalar, açık yay) KOD'a uyarlansın mı? | §6.8, §11.5, `section-geometry.ts` | Hayır; motif v1'de kalır | Hayır | M10 | — |
 
 #### 16.3.2 Sözleşme düzeyinde açık teknik kararlar
 
@@ -16664,8 +17006,8 @@ Sayın Orçun Saatçi, bu anket sitenin yayına çıkması için sizden gereken 
 |---|---|---|---|
 | 1 | Mesleğiniz / alanınız ve unvanınız nedir? | Serbest metin. Site görünümü şu profillerden birine uyarlanır: nötr · yazılım/mühendislik · tasarım · mimarlık · araştırma/akademi · yönetim | **Cevaplandı (2026-09-29):** Bilgisayar Mühendisi ve Mobil Uygulama Geliştiricisi → yazılım/mühendislik (`engineer`) |
 | 2 | Site hangi dillerle açılsın? | Türkçe + İngilizce · yalnızca Türkçe (İngilizce sonra eklenir) | Yalnızca Türkçe |
-| 3 | Kariyerinize hangi yıl başladınız? | Yıl (ör. 2014). Sitedeki taşın kesitindeki halkalar her yıl için bir halka çizer. | En eski iş deneyiminizin yılı |
-| 4 | Halkalar neyi temsil etsin? | Yıllar · yayın sayısı · yönettiğiniz ekip büyüklüğü | Yıllar |
+| 3 | Kariyerinize hangi yıl başladınız? | Yıl (ör. 2014). Sitedeki deneyim süresi ve sürüm geçmişi bu yıldan hesaplanır. | En eski iş deneyiminizin yılı |
+| 4 | ~~Halkalar neyi temsil etsin?~~ (KESİT'e özgüydü; KOD ile soru kalktı) | — | — |
 | 5 | Ana sayfada portreniz görünsün mü? | Evet · hayır | Fotoğraf gönderirseniz evet |
 | 6 | Varsayılan tema | Sistem ayarını izle (kararlaştırıldı). Ziyaretçi Sistem / Koyu / Açık arasında seçebilir. | Sistem |
 | 7 | Herkese açık e-posta adresi | `iletisim@orcunsaatci.com` (alan adı alınıp yönlendirme kurulunca çalışır) · kişisel adresiniz | `iletisim@orcunsaatci.com` |
@@ -16728,7 +17070,7 @@ Orijinal dosyaları gönderin: kamera JPG'si, telefondan HEIC veya RAW'dan dış
 
 ### A.4 Çalışma alanları (3–6 alan, P0)
 
-3–6 alan ana sayfada döner bir kadran olarak gösterilir. 1–2 veya 7 ve üzeri alan liste olarak gösterilir. Sıra, kadrandaki dilim sırasını belirler. Her alan için:
+3–6 alan ana sayfada adım adım, her biri kendi kod diyagramıyla gösterilir (KOD, §4.8). 1–2 veya 7 ve üzeri alan liste olarak gösterilir. Sıra, adım sırasını belirler. Her alan için:
 
 ```text
 Alan adı (TR / EN, ≤ 30 karakter):
@@ -16739,6 +17081,7 @@ Bu alanda somut olarak yaptığınız işler (3–6 madde; fiyat veya paket yazm
 İlgili yetkinlikler ve araçlar:
 Bu alanı gösteren projeler:
 Sıra (1 = ilk):
+Diyagram (isteğe bağlı): telefon · klasör ağacı · API · CI hattı · liste (varsayılan liste; §4.8.5):
 (A.1 #13 "evet" ise) Alan sayfası metni (150–400 kelime):
 ```
 

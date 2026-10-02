@@ -1,16 +1,17 @@
 // src/components/chapters/Hero.tsx — giriş bölümü (§4.6, §6.6.7, §7.9.2). Server; ilk boyamada görünür.
 // H1 LCP öğesidir: asla animasyon, maske, opaklık ya da clip yok (D-34). CTA'lar gerçek URL (D-41).
-// İki CTA'nın etiketi Magnetic (§4.14.3); hero-rest çapasında statik K0 posteri (D-45, §5.16.4). Duraklatma düğmesi sahne
+// İki CTA'nın etiketi Magnetic (§4.14.3); hero-rest çapasında main.dart statik paneli (D-45, §4.16.3). Duraklatma düğmesi sahne
 // bölgesinin sağ altında ama aria-hidden çapanın DIŞINDA ve DOM'da sonda (odak sırası = görsel okuma sırası).
 import { PauseButton } from '@/components/motion/PauseButton';
 import { Button } from '@/components/ui/Button';
 import { LocalTime } from '@/components/ui/LocalTime';
+import { KodPanel } from '@/components/kod/KodPanel';
 import { Txt } from '@/components/ui/Txt';
 import { chapterAnchors, localeMeta, type Locale } from '@/i18n/config';
 import { getDictionary } from '@/i18n/get-dictionary';
-import { getHome, getPerson, t, termLang } from '@/lib/content';
+import { getHome, getKodData, getPerson, t, termLang } from '@/lib/content';
 import { pageLink } from '@/lib/seo/metadata';
-import { StageAnchor } from '@/stage/ScenePoster';
+import { StageAnchor } from '@/stage/StageAnchor';
 import { Magnetic } from '@/components/motion/Magnetic';
 
 export function Hero({ locale }: { locale: Locale }) {
@@ -35,7 +36,9 @@ export function Hero({ locale }: { locale: Locale }) {
       className="container-page grid-page content-center gap-y-6"
     >
       <div className="hero-stage relative col-span-4 row-start-1 h-[40svh] md:col-span-8 lg:col-span-5 lg:col-start-8">
-        <StageAnchor id="hero-rest" poster="k0" className="size-full" />
+        <StageAnchor id="hero-rest" className="size-full">
+          <KodPanel data={getKodData('home', undefined, locale)} program={{ kind: 'hero' }} />
+        </StageAnchor>
       </div>
       <p className="hero-in col-span-4 type-eyebrow [--i:0] md:col-span-8 lg:col-span-6 lg:row-start-1 lg:self-end">
         {eyebrow ? (
@@ -78,7 +81,7 @@ export function Hero({ locale }: { locale: Locale }) {
           </Magnetic>
         </Button>
       </div>
-      {/* ≥ 64rem k1–7: Taş'ın about'a iniş yolu (k8–12) boş kalır (§4.12.2 #7). CTA'lar ve ipucu satırı açıkça
+      {/* ≥ 64rem k1–7: panelin about'a köprü yolu (k8–12) boş kalır (§4.12.2 #7). CTA'lar ve ipucu satırı açıkça
           yerleşir: hidrasyonda gelen duraklatma düğmesi (4. satır, k1–7) otomatik yerleşimi itmesin (CLS) */}
       <div className="col-span-4 flex items-center justify-between gap-4 md:col-span-8 lg:col-span-7 lg:col-start-1 lg:row-start-5">
         <p aria-hidden="true" className="inline-flex items-center gap-3 type-meta">

@@ -8,6 +8,20 @@ export interface AnchorRect {
   D: number;
 }
 
+/** Çapa kutusunun görüntü alanındaki üst kenarı (px): flow, sticky ve viewport türleri (§5.7.5) */
+export function anchorTop(a: MeasuredAnchor, y: number): number {
+  if (a.kind === 'viewport') return a.chapterOffsetTop ?? 0;
+  if (a.kind === 'sticky' && a.sticky) {
+    const s = a.sticky;
+    const sTop = Math.min(
+      Math.max(s.naturalDocTop - y, s.top),
+      s.containerDocBottom - y - s.height,
+    );
+    return sTop + (a.docTop - s.naturalDocTop);
+  }
+  return a.docTop - y;
+}
+
 /**
  * §5.7.5 kare başına ekran dikdörtgeni (saf). y = window.scrollY; stoneRy = radii.y / R0 (bottom hizalama).
  * `out` verilirse ona yazar (useFrame içinde bellek ayırma YASAK).
@@ -18,16 +32,7 @@ export function anchorScreen(
   stoneRy: number,
   out: AnchorRect = { cx: 0, cy: 0, D: 0 },
 ): AnchorRect {
-  let top: number;
-  if (a.kind === 'viewport') top = a.chapterOffsetTop ?? 0;
-  else if (a.kind === 'sticky' && a.sticky) {
-    const s = a.sticky;
-    const sTop = Math.min(
-      Math.max(s.naturalDocTop - y, s.top),
-      s.containerDocBottom - y - s.height,
-    );
-    top = sTop + (a.docTop - s.naturalDocTop);
-  } else top = a.docTop - y;
+  const top = anchorTop(a, y);
   const D =
     a.rule === 'hero'
       ? Math.min(0.68 * a.width, a.height - 24)

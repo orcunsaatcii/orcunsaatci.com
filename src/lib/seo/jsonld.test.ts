@@ -107,13 +107,12 @@ describe('6: proje grafiği (D-48)', () => {
     });
   });
 
-  it('researcher personası → ScholarlyArticle; bilinmeyen proje/alan ve lab → null', () => {
+  it('researcher personası → ScholarlyArticle; bilinmeyen proje/alan → null', () => {
     F.site.persona = 'researcher';
     const graph = graphOf({ key: 'project', param: 'ikinci' }, 'tr');
     expect(graph.find((n) => n['@id'] === ids.work('ikinci'))?.['@type']).toBe('ScholarlyArticle');
     expect(jsonLdFor({ key: 'project', param: 'yalniz-tr' }, 'en')).toBeNull();
     expect(jsonLdFor({ key: 'area', param: 'yok' }, 'tr')).toBeNull();
-    expect(jsonLdFor({ key: 'lab' }, 'tr')).toBeNull();
   });
 });
 

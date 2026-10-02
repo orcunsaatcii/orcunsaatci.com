@@ -22,6 +22,8 @@ export async function expectNoAxeViolations(page: Page, label: string): Promise<
   const { violations } = await new AxeBuilder({ page })
     .withTags(WCAG_TAGS)
     .exclude('#scene-layer')
+    // KOD statik panelleri sahnenin poster karşılığıdır: dekoratif (aria-hidden), asıl metin sayfadadır (§4 KOD)
+    .exclude('.kod-panel')
     .analyze();
   if (violations.length > 0) {
     await test.info().attach(`axe-${label}.json`, {

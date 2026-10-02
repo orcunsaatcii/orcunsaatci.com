@@ -113,7 +113,9 @@ export function runDirector(
 
     const writeCssVars = () => {
       const o = currentSceneOpacity();
-      if (Math.abs(o - writtenOpacity) <= OPACITY_EPS) return;
+      // uç değerler (0, 1) her zaman tam yazılır: 0.999'da takılı kalmaz
+      const edge = (o === 0 || o === 1) && o !== writtenOpacity;
+      if (!edge && Math.abs(o - writtenOpacity) <= OPACITY_EPS) return;
       const crossed = writtenOpacity < 0 || o < LOOP_EPS !== writtenOpacity < LOOP_EPS;
       writtenOpacity = o;
       document.getElementById('scene-layer')?.style.setProperty('--scene-opacity', o.toFixed(3));
@@ -297,7 +299,7 @@ export function runDirector(
       update(window.scrollY, { instant: true });
     };
 
-    /** §5.15.3: eski karede Taş görünürdü ve yeni hedef ilk görünümde görünür olacak (opaklık ve çapa ekranda) */
+    /** §5.15.3: eski karede panel görünürdü ve yeni hedef ilk görünümde görünür olacak (opaklık ve çapa ekranda) */
     const canGlide = (): boolean => {
       const s = nav.snapshot;
       if (!layout || !base || !s.visible || s.opacity <= LOOP_EPS) return false;
@@ -315,9 +317,9 @@ export function runDirector(
     };
     const startGlide = () => {
       const s = nav.snapshot;
-      live.virtualAnchor.cx = s.cx;
-      live.virtualAnchor.cy = s.cy;
-      live.virtualAnchor.D = 2 * s.r;
+      live.virtualAnchor.cx = s.x + s.w / 2;
+      live.virtualAnchor.cy = s.y + s.h / 2;
+      live.virtualAnchor.D = s.w; // KOD: panel genişliği (yükseklik oranla)
       stopGlide();
       const g = { mix: 0 };
       glide = g;

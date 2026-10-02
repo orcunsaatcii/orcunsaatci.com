@@ -309,7 +309,7 @@ function expectedOpacity(v: TrackVariant, key: KeyframeKey): number | null {
   if (v.layout === 'landscape') return key === 'hero' ? 1 : key === 'about-lift' ? null : 0;
   if (v.layout === 'mobile' && key === 'about-lift') return null; // el değiştirmenin belirme ortası (p 0.26–0.42)
   if (key === 'areas-plan') return v.areasList ? 0 : 1;
-  if (key === 'work-specimen') return v.layout === 'mobile' ? 0 : 1;
+  if (key === 'work-specimen') return 0; // KOD: work'te panel yok, sahne söner (§4.12.1 #10)
   return 1;
 }
 
@@ -571,10 +571,11 @@ describe('§5.9.4 varyantlar: opaklık ve ton track’leri', () => {
   const opacityTracks = (b: Built) =>
     b.tracks.filter((t) => t.prop === 'opacityTrack').map((t) => `${t.chapter}·${t.phase}`);
 
-  it('areas-list (masaüstü, N = 7): areas IN p 0.2–0.5 1 → 0; work IN p 0.2–0.5 0 → 1; BODY dönüşü yok', () => {
+  it('areas-list (masaüstü, N = 7): areas IN p 0.2–0.5 1 → 0; work boyunca 0 (KOD: work’te panel yok); journey IN p 0.3–0.6 0 → 1; BODY dönüşü yok', () => {
     const b = build({ variant: 'desktop', N: 7, P: 4, E: 6 });
     expect([0.2, 0.5].map((p) => val(b, 'opacityTrack', 'areas', 'in', p))).toEqual([1, 0]);
-    expect([0.2, 0.5].map((p) => val(b, 'opacityTrack', 'work', 'in', p))).toEqual([0, 1]);
+    expect([0.2, 0.5].map((p) => val(b, 'opacityTrack', 'work', 'in', p))).toEqual([0, 0]);
+    expect([0.3, 0.6].map((p) => val(b, 'opacityTrack', 'journey', 'in', p))).toEqual([0, 1]);
     expect(
       b.tracks.some((t) => t.prop === 'rotYScroll' && t.chapter === 'areas' && t.phase === 'body'),
     ).toBe(false);
@@ -586,7 +587,16 @@ describe('§5.9.4 varyantlar: opaklık ve ton track’leri', () => {
     expect(val(b, 'opacityTrack', 'testimonials', 'in', 1)).toBeCloseTo(0.4, 9);
     expect(val(b, 'opacityTrack', 'testimonials', 'body', 1)).toBeCloseTo(0.4, 9);
     expect(val(b, 'opacityTrack', 'contact', 'in', 0.5)).toBeCloseTo(1, 9);
-    expect(opacityTracks(b)).toEqual(['testimonials·in', 'contact·in']);
+    expect(opacityTracks(b)).toEqual(['work·in', 'journey·in', 'testimonials·in', 'contact·in']);
+  });
+
+  it('KOD masaüstü: work IN p 0.2–0.5 1 → 0, work BODY 0, journey IN p 0.3–0.6 0 → 1 (§4.12.1 #10–12, K-WORK-6)', () => {
+    const b = build({ variant: 'desktop', N: 4, P: 4, E: 6 });
+    expect([0.2, 0.5].map((p) => val(b, 'opacityTrack', 'work', 'in', p))).toEqual([1, 0]);
+    expect(val(b, 'opacityTrack', 'work', 'body', 0.5)).toBe(0);
+    expect([0.3, 0.6].map((p) => val(b, 'opacityTrack', 'journey', 'in', p))).toEqual([0, 1]);
+    expect(val(b, 'opacityTrack', 'journey', 'body', 0.5)).toBe(1);
+    expect(opacityTracks(b)).toEqual(['work·in', 'journey·in']);
   });
 
   it('mobile: work IN p 0.2–0.5 1 → 0 (K-WORK-8); journey IN p 0.3–0.6 0 → 1; bant çıkarken BODY [0.20, 0.36]·vh; contact IN p 0.3–0.6 (K-CONTACT-7)', () => {

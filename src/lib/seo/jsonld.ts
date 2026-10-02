@@ -139,7 +139,6 @@ function breadcrumb(r: PageRef, locale: Locale, title?: string): BreadcrumbList 
   const name = (x: PageRef): string => {
     if (x.key === 'home') return dict.breadcrumb.home;
     if (x.key === 'project' || x.key === 'area') return title ?? x.param;
-    if (x.key === 'lab') return 'lab';
     return dict.meta[x.key];
   };
   return {
@@ -201,9 +200,8 @@ function graph(nodes: (Thing | undefined)[]): Graph {
   };
 }
 
-/** View'lar bunu çağırır: <JsonLd graph={jsonLdFor(ref, locale)} />. 404/lab için null. */
+/** View'lar bunu çağırır: <JsonLd graph={jsonLdFor(ref, locale)} />. */
 export function jsonLdFor(r: PageRef, locale: Locale): Graph | null {
-  if (r.key === 'lab') return null;
   const url = pageUrl(r, locale);
   const dict = getDictionary(locale);
   const site = getSite();

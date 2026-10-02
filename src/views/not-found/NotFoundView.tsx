@@ -1,13 +1,13 @@
-// src/views/not-found/NotFoundView.tsx — ağaç 404 gövdesi (§3.7, §4.13.6). SVG ClockFigure; WebGL yok (D-19).
+// src/views/not-found/NotFoundView.tsx — ağaç 404 gövdesi (§3.7, §4.13.6). Statik KOD hata çıktısı; WebGL yok (D-19).
 // Başlık, alt satır, gövde, üç iç bağlantı, e-posta ve "Son projeler" (3). StagePreset none M5'te.
 import Link from 'next/link';
-import { ClockFigure } from '@/components/figures/ClockFigure';
+import { KodPanel } from '@/components/kod/KodPanel';
 import { EmailLink } from '@/components/ui/EmailLink';
 import { Txt } from '@/components/ui/Txt';
 import { staticRoutes, type Locale } from '@/i18n/config';
 import { getDictionary } from '@/i18n/get-dictionary';
 import { pathOf } from '@/i18n/config';
-import { getContact, getProjects, t } from '@/lib/content';
+import { getContact, getKodData, getProjects, t } from '@/lib/content';
 
 export function NotFoundView({ locale }: { locale: Locale }) {
   const dict = getDictionary(locale);
@@ -65,7 +65,12 @@ export function NotFoundView({ locale }: { locale: Locale }) {
         ) : null}
       </div>
       <div className="col-span-4 mx-auto w-full max-w-sm md:col-span-6 md:col-start-2 lg:col-span-5 lg:col-start-8">
-        <ClockFigure label={t_.clock} />
+        <KodPanel
+          className="kod-inline"
+          data={getKodData('about-page', undefined, locale)}
+          program={{ kind: 'notfound', path: staticRoutes.home[locale] === '/' ? '/…' : '/en/…' }}
+          extra={{ links: links.map((l) => [l.href, l.label] as const) }}
+        />
       </div>
     </div>
   );

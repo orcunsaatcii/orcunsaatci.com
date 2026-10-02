@@ -12,15 +12,9 @@ const BUDGET = {
   initialJs: 175 * KB - ANALYTICS_RESERVE,
   stage: 300 * KB,
   motion: 60 * KB,
-  posterAvif1080: 40 * KB,
   fonts: { 'MonaSans-trim.woff2': 105 * KB, 'MartianMono-trim.woff2': 26 * KB },
 };
 const MARKERS = { stage: ['WebGLRenderer'], motion: ['gsapVersions', 'lenis-smooth'] };
-const POSTERS = ['k0', 'k1', 'k5'].flatMap((k) =>
-  ['light', 'dark'].flatMap((t) =>
-    [640, 1080, 1600].flatMap((w) => ['avif', 'webp'].map((e) => `${k}-${t}-${w}.${e}`)),
-  ),
-);
 
 const errors = [];
 const infos = [];
@@ -116,18 +110,7 @@ for (const [group, list] of Object.entries(MARKERS)) {
   else if (size > BUDGET[group]) errors.push(`${group} grubu ${kb(size)} > ${kb(BUDGET[group])}`);
 }
 
-// 6: asset'ler
-const stageDir = join(ROOT, 'public/stage');
-const present = existsSync(stageDir) ? readdirSync(stageDir) : [];
-if (present.length === 0) infos.push('public/stage boş: posterler henüz üretilmedi (M1 öncesi)');
-else {
-  for (const f of POSTERS) if (!present.includes(f)) errors.push(`eksik poster: public/stage/${f}`);
-  for (const f of POSTERS.filter((p) => p.endsWith('-1080.avif') && present.includes(p))) {
-    const size = statSync(join(stageDir, f)).size;
-    if (size > BUDGET.posterAvif1080)
-      errors.push(`poster ${f}: ${kb(size)} > ${kb(BUDGET.posterAvif1080)}`);
-  }
-}
+// 6: asset'ler (KOD ile poster yok: statik paneller HTML'dir, §4 KOD)
 for (const [name, max] of Object.entries(BUDGET.fonts)) {
   const p = join(ROOT, 'src/fonts', name);
   if (!existsSync(p)) {

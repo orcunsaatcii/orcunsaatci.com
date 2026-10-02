@@ -11,28 +11,19 @@
 }
 @media (max-width: 63.99rem) {
   .about-band {
-    height: 36svh; /* lede'nin üstünde bant; kesit çizgisi bandın dikey merkezinden tam genişlikte geçer */
+    height: 36svh; /* lede'nin üstünde bant (K-ABOUT-5) */
   }
   .about-band > .stage-anchor {
     position: absolute;
     inset: 0;
   }
-  .about-band > .cut-line {
-    position: absolute;
-    inset-inline: 0;
-    top: 50%;
-  }
 }
 @media (min-width: 64rem) {
-  /* 1 px'lik satır: çizgi k1–8, çapa k8–12 ve dikey merkezi çizgide (aynı grid satırı) */
+  /* 1 px'lik satır: çapa k8–12 ve dikey merkezi bu satırda */
   .about-band {
     display: grid;
     grid-template-columns: subgrid;
     height: 1px;
-  }
-  .about-band > .cut-line {
-    grid-column: 1 / 9;
-    grid-row: 1;
   }
   .about-band > .stage-anchor {
     position: absolute;
@@ -56,16 +47,8 @@
 }
 .area-item {
   display: grid;
-  grid-template-columns: 4rem minmax(0, 1fr);
-  column-gap: var(--spacing-gutter);
+  grid-template-columns: minmax(0, 1fr);
   align-items: start;
-}
-.area-item > .area-glyph {
-  grid-row: 1 / span 2;
-}
-.area-item > .area-title,
-.area-item > .area-desc {
-  grid-column: 2;
 }
 .areas-dial {
   aspect-ratio: 1;
@@ -203,9 +186,6 @@
     & .area-item > * {
       pointer-events: auto;
     }
-    & .area-glyph {
-      display: none;
-    }
     & .area-title {
       grid-column: 1;
       grid-row: var(--row); /* satır k + 1, satır içi --row */
@@ -295,14 +275,6 @@
 .work-specimen {
   display: none; /* yalnız görüntüleyici düzeninde */
 }
-.work-glyph {
-  display: none;
-}
-@media (min-width: 64rem) {
-  .work-glyph {
-    display: block; /* JS yok / azaltılmış: proje başına statik numune glifi (§4.9.9) */
-  }
-}
 @media (max-width: 63.99rem) {
   .work-pair > figure {
     order: -1; /* mobil: kapak başlığın üstünde, satır içi 16:10 (§4.9.8) */
@@ -348,9 +320,6 @@
   :root.js[data-motion='full'] [data-work-viewer] .work-pair > figure[data-active] {
     clip-path: inset(0);
   }
-  :root.js[data-motion='full'] [data-work-viewer] .work-glyph {
-    display: none;
-  }
   :root.js[data-motion='full'] [data-work-viewer] .work-caption {
     display: block;
     grid-column: 7 / 10;
@@ -390,9 +359,6 @@
 }
 
 /* ── journey (§4.10.2, §4.10.7) ─────────────────────────────────────────────── */
-.journey-glyph {
-  display: block;
-}
 .journey-layout {
   display: flex;
   flex-direction: column;
@@ -451,12 +417,9 @@
     aspect-ratio: auto;
     margin-top: 12svh;
   }
-  :root.js[data-motion='full'] [data-chapter='journey'] .journey-glyph {
-    display: none;
-  }
 }
-/* Etkin girdi: yıl etiketi vurgu rengi (aynı anda tek yıl, §4.10.3) */
-[data-journey-entry][data-active] time {
+/* Etkin girdi: başlangıç yılı vurgu rengi (aynı anda tek yıl, git log tarihiyle aynı; §4.10.3, K-JOURNEY-2) */
+[data-journey-entry][data-active] time:first-of-type {
   color: var(--color-accent);
 }
 
@@ -479,21 +442,6 @@
 @media (max-width: 63.99rem) {
   .contact-ring {
     height: 40svh; /* H2'nin üstünde 40 svh bant */
-  }
-}
-/* ArcFigure: K5 posterinin üstünde, poster kutusuyla aynı ölçü (R_FIGURE 80 → disk = D) */
-.contact-ring > .arc-overlay {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  translate: -50% -50%;
-  aspect-ratio: 1;
-  width: calc(var(--anchor-size) * min(100cqw, 100cqh) / 0.8);
-  pointer-events: none;
-}
-@media (max-width: 63.99rem) {
-  .contact-ring > .arc-overlay {
-    width: calc(0.86 * min(100cqw, 100cqh) / 0.8);
   }
 }
 
@@ -528,11 +476,9 @@
     grid-row: 1;
     height: auto;
     align-self: stretch;
-    /* K-HERO-6 (±4 px): satır aralığı (gap-y-6) + H1 kutusunun üstünden büyük harf çizgisine uzaklık kadar aşağı
-       uzanır; satır izleri değişmez. Mona Sans, line-height 0.92: 0.111 × font-size (1024–1920 px, üç motorda ölçüldü) */
-    margin-bottom: calc(-1 * (1.5rem + 0.111 * var(--text-display-fit)));
+    /* KOD paneli (§4 KOD) satırın içinde kalır: H1'e binmez */
   }
-  /* Taş'ın gölgesi "Saatçi"nin arkasında kalır: konumlu H1, DOM'da önce gelen sahneden sonra boyanır */
+  /* Konumlu H1, DOM'da önce gelen sahneden sonra boyanır */
   [data-chapter='hero'] > h1 {
     position: relative;
   }
@@ -572,8 +518,7 @@
 }
 
 /* Duraklatma düğmesi: 64rem altında sahne bandıyla aynı grid alanında, sağ altta (satır yüksekliğini sahne
-   belirler: CLS yok). 12 px aşağıda: Taş'ın ekran dairesi (D = 0.86·bant) metnin satır kutusuna değmesin
-   (§4.12.2 #7, K-CHOREO-6) */
+   belirler: CLS yok). 12 px aşağıda: panelin durum satırını daha az örter (§4.12.2 #7, K-CHOREO-6) */
 [data-chapter='hero'] > .hero-pause {
   grid-row: 1;
   grid-column: 1 / -1;
@@ -583,8 +528,8 @@
   z-index: 1;
 }
 @media (min-width: 64rem) {
-  /* Masaüstünde CTA satırında, metin bölgesinin (k1–7) sağında: Taş hero'dan about'a geçerken (s 0–60) k8–12
-     sütununda iner; o sütundaki metin taşın arkasında kalırdı (§4.15.2 ızgara, §4.12.2 #7, K-CHOREO-6). Satırı
+  /* Masaüstünde CTA satırında, metin bölgesinin (k1–7) sağında: panel hero'dan about'a geçerken (s 0–60) k8–12
+     sütununda iner; o sütundaki metin panelin arkasında kalırdı (§4.15.2 ızgara, §4.12.2 #7, K-CHOREO-6). Satırı
      CTA'lar (48 px) belirler; 44 px düğme CLS yapmaz. CTA kutusu k1–8'i kaplar: düğme üstte (z-index 1). */
   [data-chapter='hero'] > .hero-pause {
     grid-row: 4;

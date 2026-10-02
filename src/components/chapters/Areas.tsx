@@ -1,11 +1,11 @@
 // src/components/chapters/Areas.tsx — çalışma alanları; DOM'u tutan tek pin (§4.8, §7.8.5). Server.
 // Pin kapısı CSS'tedir (home.css): html.js + tam hareket + medya + 3 ≤ N ≤ 6. Kapı yoksa liste modu: tüm
-// açıklamalar alt alta, kartlarda 64 px dilim glifi ve satır içi DialFigure (role="img"). Pin modunda açıklamalar
+// açıklamalar alt alta. Sağ sütunda KOD paneli etkin alanın diyagramını gösterir (§4 KOD). Pin modunda açıklamalar
 // tek ortak yuvada üst üste durur; hiçbiri aria-hidden değildir (K-AREAS-8). İstemci parçaları AreasPin.tsx'te.
 import Link from 'next/link';
 import type { CSSProperties } from 'react';
 import type { Route } from 'next';
-import { DialFigure } from '@/components/figures/DialFigure';
+import { KodPanel } from '@/components/kod/KodPanel';
 import { RevealHeading } from '@/components/motion/RevealHeading';
 import { Tag } from '@/components/ui/Tag';
 import { Txt } from '@/components/ui/Txt';
@@ -13,12 +13,10 @@ import { getExperienceProfile } from '@/experience/profile';
 import { chapterAnchors, type Locale } from '@/i18n/config';
 import { getDictionary } from '@/i18n/get-dictionary';
 import { fill } from '@/i18n/text';
-import { getAreaMode, getAreas, getHome, getSite, getStageData, t } from '@/lib/content';
-import { previewAttrs } from '@/stage/preview-attrs';
+import { getAreaMode, getAreas, getHome, getKodData, getSite, t } from '@/lib/content';
 import { pageLink } from '@/lib/seo/metadata';
-import { StageAnchor } from '@/stage/ScenePoster';
+import { StageAnchor } from '@/stage/StageAnchor';
 import { AreaStepButton, AreasPin, AreasProgress } from './AreasPin';
-import { DialRotor } from './DialRotor';
 
 export function Areas({ locale }: { locale: Locale }) {
   const dict = getDictionary(locale);
@@ -27,13 +25,12 @@ export function Areas({ locale }: { locale: Locale }) {
   const areas = getAreas();
   const N = areas.length;
   const mode = getAreaMode(); // 'dial' (3–6) | 'list' (N ≥ 7)
-  const { rings } = getStageData('home', undefined, locale);
   const projects = pageLink({ key: 'projects' }, locale);
   const all = pageLink({ key: 'expertise' }, locale);
   const heading = home.areas.heading ? t(home.areas.heading, locale) : null;
   const titles = areas.map((a) => t(a.title, locale));
   const sectionId = chapterAnchors.areas[locale];
-  const dialLabel = fill(dict.figures.dial, { list: titles.map((x) => x.text).join(', ') });
+  const kod = getKodData('home', undefined, locale);
 
   return (
     <section
@@ -72,19 +69,7 @@ export function Areas({ locale }: { locale: Locale }) {
                 className="area-item"
                 data-area-index={k}
                 style={{ '--row': k + 1 } as CSSProperties}
-                {...(mode === 'dial' ? previewAttrs({ sector: k }) : {})}
               >
-                {mode === 'dial' ? (
-                  <DialFigure
-                    variant="glyph"
-                    n={N}
-                    active={k}
-                    ariaLabel=""
-                    className="area-glyph"
-                  />
-                ) : (
-                  <span aria-hidden="true" className="area-glyph" />
-                )}
                 <h3 className="area-title text-2xl font-semibold">
                   <AreaStepButton index={k}>
                     <span className="type-meta nums-tabular">{String(k + 1).padStart(2, '0')}</span>{' '}
@@ -149,8 +134,17 @@ export function Areas({ locale }: { locale: Locale }) {
           </p>
         </div>
         {mode === 'dial' ? (
-          <StageAnchor id="areas-dial" labelled className="areas-dial">
-            <DialFigure n={N} rings={rings} ariaLabel={dialLabel} className="anchor-figure" />
+          <StageAnchor id="areas-dial" className="areas-dial">
+            {/* adım kareleri: sahne yokken (statik kademe, açılış öncesi) panel etkin adımı izler (AreasPin) */}
+            {areas.map((a, k) => (
+              <KodPanel
+                key={a.id}
+                data={kod}
+                program={{ kind: 'area', index: k }}
+                step={k}
+                active={k === 0}
+              />
+            ))}
           </StageAnchor>
         ) : null}
         <span aria-hidden="true" data-areas-needle="" className="areas-needle" />
@@ -158,7 +152,6 @@ export function Areas({ locale }: { locale: Locale }) {
       {mode === 'dial' ? (
         <>
           <AreasPin sectionId={sectionId} n={N} />
-          <DialRotor sectionId={sectionId} />
         </>
       ) : null}
     </section>

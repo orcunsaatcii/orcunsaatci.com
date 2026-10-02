@@ -1,11 +1,9 @@
 'use client';
 // src/stage/StageRoot.tsx — kalıcı sahne katmanı #scene-layer, lazy boot, kademe ve hata sınırı (§5.12.1, §5.12.3).
-// İki kök layout'ta bir kez mount olur, client navigasyonunda unmount olmaz (D-18). /lab/ altında ve preset 'none' iken
+// İki kök layout'ta bir kez mount olur, client navigasyonunda unmount olmaz (D-18). Preset 'none' iken
 // boot etmez (K-DEEP-2); gizli sekmede bekler (§9.2.4 kural 5). Stage chunk (three + R3F) yalnız yoklama tier ≠ static
 // döndükten sonra istenir; motion runtime'ı ve director gövdesi de beklenir (sıra: motion → yoklama → stage).
-// LabStage (§5.16.2) LabStage.tsx'tedir (yalnız lab sayfası; ilk pakete girmez).
 import dynamic from 'next/dynamic';
-import { usePathname } from 'next/navigation';
 import { Component, useEffect, type ReactNode } from 'react';
 import { useMotionPref, whenMotion } from '@/components/motion/MotionRoot';
 import type { Persona } from '@/experience/profile';
@@ -46,11 +44,10 @@ export function StageRoot({ persona }: { persona: Persona }) {
   const contextLost = useStage((s) => s.contextLost);
   const preset = useStage((s) => s.preset);
   const motion = useMotionPref(); // html[data-motion] + 'os-motion-change'
-  const lab = usePathname().startsWith('/lab/'); // lab kendi canvas'ını kurar (§5.16)
   const bootable = preset !== 'none'; // D-19, §4.13.1: 'none' preset'te yoklama ve boot yok
 
   useEffect(() => {
-    if (lab || !bootable) return; // ilk görünür preset'e kadar WebGL bağlamı açılmaz (K-DEEP-2)
+    if (!bootable) return; // ilk görünür preset'e kadar WebGL bağlamı açılmaz (K-DEEP-2)
     const st = stageStore.getState();
     if (motion === 'reduce') {
       // canvas unmount; posterler ve figürler geri gelir (§5.14.7). Önceki kalıcı fallback nedeni (context-loss, perf,
@@ -107,7 +104,7 @@ export function StageRoot({ persona }: { persona: Persona }) {
       cancelled = true;
       cancel();
     };
-  }, [motion, lab, bootable]);
+  }, [motion, bootable]);
 
   useEffect(() => {
     // loading'de takılma koruması
@@ -129,7 +126,6 @@ export function StageRoot({ persona }: { persona: Persona }) {
   }, [bootable]);
 
   const mountCanvas =
-    !lab &&
     motion === 'full' &&
     tier !== 'static' &&
     (phase === 'loading' || phase === 'ready' || (phase === 'poster' && contextLost));

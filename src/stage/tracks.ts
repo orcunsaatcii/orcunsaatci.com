@@ -460,11 +460,12 @@ export function buildTracks(
       ...rows('contact', 'in', [['opacityTrack', 0.3, 0.6, 0, 1]]),
     );
   } else {
-    if (v.areasList)
-      out.push(
-        ...rows('areas', 'in', [['opacityTrack', 0.2, 0.5, 1, 0]]),
-        ...rows('work', 'in', [['opacityTrack', 0.2, 0.5, 0, 1]]),
-      );
+    // KOD (§4.12.1 #10, #12): work'te panel yoktur; sahne work IN'de (areas liste modunda areas IN'de) söner, loop
+    // 'never'e geçer ve journey IN'de geri gelir (K-WORK-6)
+    out.push(
+      ...rows(v.areasList ? 'areas' : 'work', 'in', [['opacityTrack', 0.2, 0.5, 1, 0]]),
+      ...rows('journey', 'in', [['opacityTrack', 0.3, 0.6, 0, 1]]),
+    );
     if (v.testimonials)
       out.push(
         ...rows('testimonials', 'in', [['opacityTrack', 0, 1, 1, 0.4]]),

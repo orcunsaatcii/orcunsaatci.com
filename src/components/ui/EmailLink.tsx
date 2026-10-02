@@ -1,6 +1,6 @@
 // src/components/ui/EmailLink.tsx — görünür mailto: bağlantısı (§12.1.1). Metin adresin kendisidir; gizleme YASAK.
 // size="display": iletişim bölümündeki büyük e-posta (type-email §6.2.4); yerel kısım ile @ arasında <wbr />.
-// display'de data-arc-pulse: hover/odakta açık yay nabzı (§4.14 #8, ScenePreviews) ve manyetik etiket (≤ 6 px).
+// display'de manyetik etiket (≤ 6 px, §4.14.3).
 import { Magnetic } from '@/components/motion/Magnetic';
 
 export function EmailLink({
@@ -32,7 +32,6 @@ export function EmailLink({
       id={id}
       href={`mailto:${email}`}
       translate="no"
-      data-arc-pulse={size === 'display' ? '' : undefined}
       className={[size === 'display' ? `${display} link-inline` : 'link-inline', className]
         .filter(Boolean)
         .join(' ')}

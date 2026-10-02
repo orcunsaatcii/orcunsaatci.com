@@ -57,9 +57,11 @@ describe('trackInput (§4.6.4, §5.6.2)', () => {
     stop();
   });
 
-  it('kaba işaretçi: konum izlenmez; pointerdown ve kaydırma idle drift’i yeniden başlatır', () => {
+  it('kaba işaretçi: konum izlenmez; açılış, pointerdown ve kaydırma kendiliğinden hareketi yeniden başlatır', () => {
     media(false);
     const stop = trackInput();
+    expect(live.lastInput, 'sahne açılışı girdi sayılır').toBeGreaterThan(0);
+    live.lastInput = 0;
     window.dispatchEvent(
       pointer('pointermove', { clientX: 10, clientY: 10, pointerType: 'mouse' }),
     );

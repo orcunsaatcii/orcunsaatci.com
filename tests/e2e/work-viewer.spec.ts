@@ -78,6 +78,8 @@ test.describe(
       }
       if (browserName === 'chromium') {
         await scrollToArticle(page, 1);
+        // KOD derleme efekti (AsciiCompile) bitince canvas kalkar: görüntü gerçek kapaktır
+        await expect(page.locator('canvas.ascii-compile')).toHaveCount(0, { timeout: 5000 });
         const viewer = page.locator('[data-work-figure]').nth(1);
         await expect(viewer).toHaveScreenshot('work-viewer.png');
       }

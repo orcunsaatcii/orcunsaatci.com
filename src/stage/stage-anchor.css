@@ -1,0 +1,6 @@
+/* src/stage/stage-anchor.css — sahne çapası kutusu (§5.7.3). KOD statik paneli (kod-panel.css) bu kutuya container
+   query ile sığar; canlı WebGL paneli aynı dikdörtgene yerleşir (§4.5.6, §5.20.4). */
+.stage-anchor {
+  position: relative;
+  container-type: size;
+}

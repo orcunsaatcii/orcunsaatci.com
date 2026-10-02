@@ -25,15 +25,11 @@ export function SectionWipe({ scopeId }: { scopeId: string }) {
     const { gsap } = rt;
     const figures = [...scope.querySelectorAll<HTMLElement>('[data-work-figure]')];
     const captions = [...scope.querySelectorAll<HTMLElement>('[data-work-caption]')];
-    const glyphs = [...scope.querySelectorAll<HTMLElement>('[data-work-specimen-glyph]')];
     const viewerOn = () =>
       figures[0] !== undefined && getComputedStyle(figures[0]).position === 'sticky';
 
     const setCaption = (k: number) => {
       captions.forEach((c, i) => (c.hidden = i !== k));
-    };
-    const setGlyph = (k: number) => {
-      glyphs.forEach((g, i) => (g.hidden = i !== k));
     };
     const settle = (k: number) => {
       figures.forEach((f, i) => {
@@ -44,7 +40,6 @@ export function SectionWipe({ scopeId }: { scopeId: string }) {
         .querySelectorAll<HTMLElement>('.work-wipe-line')
         .forEach((l) => gsap.set(l, { clearProps: 'all' }));
       setCaption(k);
-      setGlyph(k);
     };
 
     const off = onStageEvent('work:active', (e) => {
@@ -65,7 +60,6 @@ export function SectionWipe({ scopeId }: { scopeId: string }) {
       const width = top.getBoundingClientRect().width;
       under.setAttribute('data-active', '');
       top.setAttribute('data-active', '');
-      setGlyph(k); // numune event'iyle aynı başlangıç (§4.9.4 #2)
       const t = gsap.timeline({ onComplete: () => settle(k) });
       const open = 'inset(0% 0% 0% 0%)';
       const shut = 'inset(0% 100% 0% 0%)';

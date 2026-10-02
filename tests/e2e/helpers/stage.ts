@@ -13,17 +13,27 @@ export type StageReading = {
   scrollY: number;
 };
 
-/** Per-frame rig output and runtime state (window.__stage.live / rendered / store, §5.18.1). */
+/** Per-frame rig output and runtime state (window.__stage.live / store, §5.18.1, §5.20.4). */
 export type StageLive = {
-  stone: { cx: number; cy: number; r: number; visible: boolean };
+  /** panel rect in CSS px (untilted layout rect, same box as the static panel) */
+  panel: { x: number; y: number; w: number; h: number; visible: boolean };
+  /**
+   * shown program key ("A>B" while bridging), bridge progress, frozen (paused/idle), drift clock (s, advances only while
+   * float runs), damped parallax (−1…1), hot reload played
+   */
+  kod: {
+    key: string;
+    mix: number;
+    frozen: boolean;
+    drift: number;
+    parX: number;
+    parY: number;
+    hot: boolean;
+  };
   frames: number;
-  idleAngle: number;
   lastInput: number;
   scrollY: number;
-  /** rendered rotation in degrees: rotYScroll + rotYEvent + idle (§5.9.6) */
-  rotY: number;
-  rotYScroll: number;
-  quality: { dpr: number; ghost: boolean; octaves: number; segments: string } | null;
+  quality: { dpr: number; motion: boolean } | null;
   canvasKey: number;
   contextLosses: number;
   paused: boolean;
@@ -75,34 +85,35 @@ export async function readStage(page: Page): Promise<StageReading> {
   });
 }
 
-/** Reads the rig's per-frame output (window.__stage.live, .rendered) and runtime state (?debug only). */
+/** Reads the rig's per-frame output (window.__stage.live) and runtime state (?debug only). */
 export async function readLive(page: Page): Promise<StageLive> {
   return page.evaluate(() => {
     type Live = {
-      stone: StageLive['stone'];
+      panel: StageLive['panel'];
+      kod: StageLive['kod'];
       frames: number;
-      idleAngle: number;
       lastInput: number;
       scrollY: number;
     };
-    type DebugStage = {
-      store: { getState(): Record<string, unknown> };
-      rendered: Record<string, number>;
-      live: Live;
-    };
+    type DebugStage = { store: { getState(): Record<string, unknown> }; live: Live };
     const stage = (window as unknown as { __stage?: DebugStage }).__stage;
     if (!stage) throw new Error('window.__stage is missing: open the page with ?debug');
     const s = stage.store.getState();
-    const r = stage.rendered;
     const l = stage.live;
     return {
-      stone: { ...l.stone },
+      panel: { ...l.panel },
+      kod: {
+        key: l.kod.key,
+        mix: l.kod.mix,
+        frozen: l.kod.frozen,
+        drift: l.kod.drift,
+        parX: l.kod.parX,
+        parY: l.kod.parY,
+        hot: l.kod.hot,
+      },
       frames: l.frames,
-      idleAngle: l.idleAngle,
       lastInput: l.lastInput,
       scrollY: l.scrollY,
-      rotY: (r.rotYScroll ?? 0) + (r.rotYEvent ?? 0) + l.idleAngle,
-      rotYScroll: r.rotYScroll ?? 0,
       quality: (s.quality as StageLive['quality']) ?? null,
       canvasKey: Number(s.canvasKey),
       contextLosses: Number(s.contextLosses),
@@ -111,14 +122,19 @@ export async function readLive(page: Page): Promise<StageLive> {
   });
 }
 
-/** Waits until the rendered stone circle (live.stone) stops changing for quietMs (damping has settled). */
-export async function waitForStoneStill(page: Page, quietMs = 400): Promise<void> {
+/**
+ * Waits until the live panel (rect + program key) stops changing for quietMs: damping, bridges and step decodes have
+ * settled (a step decode lasts ≈ 1.2–2.1 s, so quietMs covers only the rect/key, not glyph timing).
+ */
+export async function waitForPanelStill(page: Page, quietMs = 400): Promise<void> {
   await page.waitForFunction(
     (quiet) =>
       new Promise<boolean>((resolve) => {
-        type DebugStage = { live: { stone: unknown } };
-        const read = () =>
-          JSON.stringify((window as unknown as { __stage: DebugStage }).__stage.live.stone);
+        type DebugStage = { live: { panel: unknown; kod: { key: string } } };
+        const read = () => {
+          const l = (window as unknown as { __stage: DebugStage }).__stage.live;
+          return JSON.stringify([l.panel, l.kod.key]);
+        };
         let last = read();
         let since = performance.now();
         const tick = () => {

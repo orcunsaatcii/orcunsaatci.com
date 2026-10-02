@@ -16,3 +16,4 @@ capabilities:
   - { tr: "Kod yapısını Clean Code prensipleriyle düzenliyorum.", en: "I organize code according to Clean Code principles." }
   - { tr: "Kod incelemeleri ve mentörlükle ekip standartlarına katkı sağlıyorum.", en: "I contribute to team standards through code reviews and mentoring." }
 skills: [kod-incelemesi-mentorluk]
+figure: tree # KOD diyagramı: phone | tree | api | pipeline | list

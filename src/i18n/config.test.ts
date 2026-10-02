@@ -94,7 +94,6 @@ describe('§3.5.1 route haritası', () => {
       canonical: absoluteUrl('/hakkimda'),
     });
     expect(() => alternates({ key: 'about' }, 'en', ['tr'])).toThrow();
-    expect(() => alternates({ key: 'lab' }, 'en', ['tr', 'en'])).toThrow();
   });
 
   it('6: equivalentPath()', () => {

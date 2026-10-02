@@ -119,13 +119,6 @@ describe('availableLocales (§7.4.3 tablosu)', () => {
     expect(availableLocales('area', 'mobil')).toEqual([]);
   });
 
-  it('lab yalnız bayrakla ve yalnız TR', () => {
-    vi.stubEnv('NEXT_PUBLIC_ENABLE_LAB', '');
-    expect(availableLocales('lab')).toEqual([]);
-    vi.stubEnv('NEXT_PUBLIC_ENABLE_LAB', '1');
-    expect(availableLocales('lab')).toEqual(['tr']);
-  });
-
   it('site.locales: ["tr"] → her sayfa yalnız TR, EN kapalı', () => {
     F.site.locales = ['tr'];
     expect(isLocaleEnabled('en')).toBe(false);

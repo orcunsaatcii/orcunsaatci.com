@@ -148,14 +148,15 @@ export function AreasPin({ sectionId, n }: { sectionId: string; n: number }) {
     const positionNeedle = (k: number) => {
       const sr = stage.getBoundingClientRect();
       const dr = dial.getBoundingClientRect();
+      // statik panel canlı panelle aynı dikdörtgendedir (sahne açıkken de DOM'da, opacity 0)
+      const pr = dial.querySelector('.kod-panel')?.getBoundingClientRect() ?? dr;
       const mobile = !window.matchMedia('(min-width: 64rem)').matches;
-      const D = (mobile ? 0.86 : 0.8) * Math.min(dr.width, dr.height);
-      const dialLeft = dr.left + dr.width / 2 - D / 2;
+      const dialLeft = pr.left;
       let x0: number;
       let y: number;
       if (mobile) {
-        x0 = dr.left - sr.left; // mobil: kadranın saat 9 yönüne kısa iğne
-        y = dr.top + dr.height / 2 - sr.top;
+        x0 = dr.left - sr.left; // mobil: panelin sol kenarına kısa iğne
+        y = pr.top + pr.height / 2 - sr.top;
       } else {
         const name = section.querySelector<HTMLElement>(`[data-area-index="${k}"] .area-name`);
         if (!name) return;
@@ -177,6 +178,7 @@ export function AreasPin({ sectionId, n }: { sectionId: string; n: number }) {
         needle.classList.add('is-instant');
       }
       all('[data-area-desc]').forEach((d, i) => d.toggleAttribute('data-active', i === k));
+      all('.kod-panel[data-kod-step]').forEach((p, i) => p.toggleAttribute('data-active', i === k));
       all('[data-area-step]').forEach((b, i) =>
         i === k ? b.setAttribute('aria-current', 'step') : b.removeAttribute('aria-current'),
       );
@@ -187,9 +189,6 @@ export function AreasPin({ sectionId, n }: { sectionId: string; n: number }) {
       });
       const counter = section.querySelector('[data-areas-counter]');
       if (counter) counter.textContent = `${pad(k + 1)} / ${pad(n)}`;
-      all('[data-dial-figure] [data-sector]').forEach((p, i) =>
-        p.toggleAttribute('data-active', i === k),
-      );
       positionNeedle(k);
       if (instant)
         requestAnimationFrame(() => {
@@ -222,7 +221,7 @@ export function AreasPin({ sectionId, n }: { sectionId: string; n: number }) {
     /** Pin CSS kapısı + sığma (scrollHeight > clientHeight, fontlardan sonra) → liste modu (§4.8.8) */
     const pin = (on: boolean) => {
       setPinned(on);
-      section.toggleAttribute('data-areas-pinned', on); // canlı Taş kadranı devralır (poster/figür geçişi)
+      section.toggleAttribute('data-areas-pinned', on);
     };
     const check = () => {
       if (disposed) return;

@@ -270,6 +270,8 @@ export const Area = z.strictObject({
   capabilities: z.array(Lmax(120)).max(8).default([]), // somut işler (fiyat/paket YOK, D-30)
   skills: z.array(Slug).default([]), // → Skill.id
   hasPage: z.boolean().default(false), // true → <id>.tr.mdx ZORUNLU; sayfa yalnız features.areaPages ile üretilir
+  /** KOD diyagramı (§4 KOD): telefon, klasör ağacı, APP↔API, yayın hattı ya da yetkinlik listesi */
+  figure: z.enum(['phone', 'tree', 'api', 'pipeline', 'list']).default('list'),
   seo: SeoFields,
 });
 

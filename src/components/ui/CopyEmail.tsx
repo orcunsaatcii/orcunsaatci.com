@@ -5,7 +5,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Button } from './Button';
 import { Toast } from './Toast';
-import { sendWave } from '@/stage/fx';
 import { Magnetic } from '@/components/motion/Magnetic';
 
 export const COPIED_MS = 2000;
@@ -43,7 +42,6 @@ export function CopyEmail({ email, targetId, labels, size = 'sm' }: CopyEmailPro
       await navigator.clipboard.writeText(email);
       setCopied(true);
       setMessage(labels.toast);
-      sendWave(); // halka dalgası (§4.14 #9); sahne yoksa no-op
     } catch {
       const el = document.getElementById(targetId);
       const selection = window.getSelection();

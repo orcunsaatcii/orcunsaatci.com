@@ -22,7 +22,7 @@ const hiddenReveals = (page: Page) =>
   );
 
 test.describe('§10.2.4 azaltılmış hareket', { tag: ['@reduced-motion'] }, () => {
-  test('K-VAR-1 data-motion=reduce: Lenis, .motion-ready ve canvas yok; reveal’lar opak; kadran etiketli', async ({
+  test('K-VAR-1 data-motion=reduce: Lenis, .motion-ready ve canvas yok; reveal’lar opak; statik paneller', async ({
     page,
   }) => {
     await page.goto('/', { waitUntil: 'networkidle' });
@@ -35,13 +35,17 @@ test.describe('§10.2.4 azaltılmış hareket', { tag: ['@reduced-motion'] }, ()
     expect(
       await page.evaluate(() => performance.getEntriesByName('os:motion-import', 'mark').length),
     ).toBe(0);
-    // DialFigure role="img" ve aria-label tüm alan başlıklarını içerir (§4.8.9)
-    const dial = page.locator('[data-chapter="areas"] svg[role="img"]');
-    await expect(dial).toHaveCount(1);
-    const label = (await dial.getAttribute('aria-label')) ?? '';
+    // §4.16.3: statik KOD panelleri görünür ve dekoratiftir; alan başlıklarının tamamı metinde okunur
+    const panels = page.locator('[data-stage-anchor] .kod-panel').locator('visible=true');
+    expect(await panels.count()).toBeGreaterThanOrEqual(4);
+    for (const el of await panels.all())
+      await expect.soft(el).toHaveAttribute('aria-hidden', 'true');
     const titles = await page.locator('[data-chapter="areas"] .area-name').allTextContents();
     expect(titles.length).toBeGreaterThanOrEqual(3);
-    for (const title of titles) expect.soft(label).toContain(title.trim());
+    for (const title of titles)
+      await expect
+        .soft(page.locator('[data-chapter="areas"] .area-name', { hasText: title.trim() }))
+        .toBeVisible();
   });
 });
 

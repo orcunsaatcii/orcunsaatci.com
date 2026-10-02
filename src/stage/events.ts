@@ -1,5 +1,5 @@
 // src/stage/events.ts — olay yayıcı ve areas adım indeksi (§5.9.5). Three-free. İlk pakettedir: bölüm bileşenleri
-// (AreasPin, DialRotor, SectionWipe, CutLine …) dinler. İndeksler, sahiplik pencereleri, hedef çözümleyici ve uygulama
+// (AreasPin, SectionWipe, JourneyActive, KOD paneli …) dinler. İndeksler, sahiplik pencereleri, hedef çözümleyici ve uygulama
 // event-targets.ts'tedir: onu yalnız director (director.ts) kullanır, motion runtime ile gelir (PB-1).
 // Kaydırma döngüsünde bellek ayırma YASAK (§5.13.5): sık olaylar yeniden kullanılan nesnelere yazılır.
 // Hover/önizleme yardımcıları (previewSector, pulseArc, sendWave …) M5/M7'de sahne bağlanınca eklenir.
@@ -12,7 +12,7 @@ export type StageEvent =
   | { type: 'work:active'; index: number; prev: number; direction: 1 | -1; instant: boolean } // SectionWipe, altyazı
   | { type: 'journey:active'; index: number; prev: number; instant: boolean } // aktif yıl etiketi
   | { type: 'cv:active'; index: number; prev: number; instant: boolean }
-  | { type: 'about:cut'; cutProgress: number } // CutLine + lede (§5.14.4)
+  | { type: 'about:cut'; cutProgress: number } // KOD about.dart blok açılışı (§5.20.5)
   | { type: 'folio:next'; active: boolean }
   | { type: 'cut'; stage: 'start' | 'snap' | 'end'; reason: CutReason }
   | { type: 'refresh'; chapters: ReadonlyArray<{ id: ChapterId; y: number }> }; // HalkaIndicator tikleri
@@ -48,7 +48,7 @@ export function lastStageEvent<T extends StageEvent['type']>(type: T): EventOf<T
 }
 
 const updateListeners = new Set<() => void>();
-/** Director'ün her güncellemesinden sonra çağrılır (statik kademe DialFigure dönüşü, §5.13.5). */
+/** Director'ün her güncellemesinden sonra çağrılır (§5.13.5). */
 export function onStageUpdate(cb: () => void): () => void {
   updateListeners.add(cb);
   return () => {

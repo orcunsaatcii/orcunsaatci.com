@@ -31,7 +31,7 @@ const tr = {
   },
   notFound: {
     title: 'Sayfa bulunamadı',
-    lead: 'Bu kesit boş, ama saat doğru.',
+    lead: 'Bu yol derlemede yok.',
     body: 'Bağlantı eskimiş ya da adres yanlış yazılmış olabilir.',
     home: 'Ana sayfaya dön',
     projects: 'Projeler',
@@ -67,7 +67,6 @@ const tr = {
   },
   theme: { label: 'Tema', system: 'Sistem', dark: 'Koyu', light: 'Açık' },
   motion: { reduce: 'Hareketi azalt', pause: 'Animasyonu durdur', play: 'Animasyonu başlat' },
-  figures: { dial: 'Çalışma alanları: {list}', rings: 'Kariyer halkaları: {start} – {end}' },
   hero: { ctaPrimary: 'Projeleri incele', ctaSecondary: 'İletişime geç', scrollCue: 'Kaydır' },
   home: {
     aboutMore: 'Tüm hikâye',
