@@ -15103,7 +15103,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Regenerate visual baselines
-        run: npx playwright test tests/e2e/visual.spec.ts --update-snapshots
+        run: npx playwright test tests/e2e/visual.spec.ts --update-snapshots=all
 
       - name: Upload baselines
         uses: actions/upload-artifact@v7
@@ -15112,6 +15112,7 @@ jobs:
           path: tests/e2e/__screenshots__
           retention-days: 7
 ```
+- SPEC-SAPMA: §13.6.1 (M8, 2026-10-02) — taban işi `--update-snapshots=all` koşar (bloktaki `work-viewer.spec.ts` M4'ten beri komutta): varsayılan kip yalnız eşleşmeyenleri yazar; %1 `maxDiffPixelRatio` altındaki kasıtlı değişiklikler (M8 statik panel hizası) tabana hiç girmiyordu.
 
 Adım notları:
 - **`quality`** GitHub branch korumasında ve (varsa) Vercel Deployment Checks'te seçilen zorunlu denetimin adıdır (§14.1, §14.2).
