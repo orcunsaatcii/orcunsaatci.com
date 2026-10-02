@@ -6,7 +6,7 @@
 // iken listenin altında 5 px vurgu noktası etkin öğeye translateX ile kayar (400 ms --ease-tick; globals.css).
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import {
   chapterAnchors,
   headerItems,
@@ -16,6 +16,22 @@ import {
   trail,
   type Locale,
 } from '@/i18n/config';
+
+/**
+ * §9.7 / V-59 (M8): header bağlantıları `load`'dan önce prefetch etmez (görsel ağırlıklı sayfada hidrasyon `load`'dan
+ * önce biter ve görünüm alanı prefetch'i LCP görseliyle yarışır). `load` sonrası Link varsayılanına döner; prop
+ * değişince Link görünüm alanı gözlemini yeniden kurar. İstemci gezintisinde belge zaten `complete`'tir.
+ */
+const subscribeLoad = (onChange: () => void) => {
+  window.addEventListener('load', onChange);
+  return () => window.removeEventListener('load', onChange);
+};
+const useLoaded = () =>
+  useSyncExternalStore(
+    subscribeLoad,
+    () => document.readyState === 'complete',
+    () => false,
+  );
 
 export interface NavLabels {
   about: string;
@@ -62,6 +78,7 @@ export function NavLinks({
   const chain = match ? trail(match.ref).map((r) => r.key) : [];
   const [spy, setSpy] = useState<string | null>(null);
   const list = useRef<HTMLUListElement>(null);
+  const loaded = useLoaded();
 
   // Ana sayfa scroll-spy: görünüm ortasındaki bölüm
   useEffect(() => {
@@ -120,6 +137,7 @@ export function NavLinks({
         return (
           <li key={chapter}>
             <Link
+              prefetch={loaded ? undefined : false}
               href={href}
               hrefLang={hrefLang}
               transitionTypes={['nav-forward']}
@@ -148,6 +166,7 @@ export function BrandLink({
   className?: string;
 }) {
   const isHome = matchRoute(usePathname())?.ref.key === 'home';
+  const loaded = useLoaded();
   const content = locale === 'en' ? <span lang="tr">{name}</span> : name;
   if (isHome) {
     return (
@@ -157,7 +176,12 @@ export function BrandLink({
     );
   }
   return (
-    <Link href={staticRoutes.home[locale]} transitionTypes={['nav-back']} className={className}>
+    <Link
+      prefetch={loaded ? undefined : false}
+      href={staticRoutes.home[locale]}
+      transitionTypes={['nav-back']}
+      className={className}
+    >
       {content}
     </Link>
   );

@@ -12,3 +12,6 @@ content/**
 product.md
 src/app/globals.css
 coverage/
+
+# scripts/subset-fonts.sh çıktısı (üretilen kapsam listesi; check-content C13)
+src/fonts/coverage.json
