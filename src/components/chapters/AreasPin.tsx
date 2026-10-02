@@ -249,7 +249,17 @@ export function AreasPin({ sectionId, n }: { sectionId: string; n: number }) {
       });
     };
 
+    let lastWidth = window.innerWidth;
     const onResize = () => {
+      if (window.innerWidth !== lastWidth) {
+        // genişlik değişti (döndürme, pencere daraltma): eski düzenin iğne koordinatları check()'e dek dar görüntü
+        // alanında yatay taşma yaratıyordu (1920 → 360 px'te scrollWidth 732, §6.12). Yalnız yükseklik değişiminde
+        // (mobil araç çubuğu) iğne yerinde kalır.
+        lastWidth = window.innerWidth;
+        needle.classList.add('is-instant');
+        needle.style.setProperty('--needle-x', '0px');
+        needle.style.setProperty('--needle-w', '0');
+      }
       window.clearTimeout(resizeTimer);
       resizeTimer = window.setTimeout(check, 150);
     };

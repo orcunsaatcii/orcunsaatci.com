@@ -29,6 +29,17 @@ const cssRgb = (c: string): Rgb => {
   const m = c.match(/[\d.]+/g)?.map(Number) ?? [0, 0, 0];
   return [m[0] ?? 0, m[1] ?? 0, m[2] ?? 0];
 };
+/** Herhangi bir CSS rengi (color-mix / oklab dâhil) → sRGB + alfa; 1×1 2D canvas ile normalize edilir */
+let swatch: CanvasRenderingContext2D | null = null;
+const cssRgba = (c: string): readonly [Rgb, number] => {
+  swatch ??= document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+  if (!swatch) return [[0, 0, 0], 0];
+  swatch.clearRect(0, 0, 1, 1);
+  swatch.fillStyle = c;
+  swatch.fillRect(0, 0, 1, 1);
+  const [r = 0, g = 0, b = 0, a = 0] = swatch.getImageData(0, 0, 1, 1).data;
+  return [[r, g, b], a / 255];
+};
 const lum = ([r, g, b]: Rgb) => {
   const f = (v: number) => {
     const s = v / 255;
@@ -48,7 +59,8 @@ const selectorOf = (el: Element) => {
 
 /**
  * §5.18.2: KOD panelinin dikdörtgeniyle kesişen metin öğelerinin arkasındaki canvas pikselleri okunur (tek readPixels,
- * 8×4 örnek), --scene-opacity ile çarpılıp sayfa rengine bindirilir, metin rengiyle WCAG oranı hesaplanır.
+ * 8×4 örnek), --scene-opacity ile çarpılıp sayfa rengine bindirilir; metnin kendisinin ve atalarının (#main'e dek) zemin
+ * plakaları üstüne biner (M8: plakasız ölçüm 92 % plakalı PauseButton'ı 1.9:1 sanıyordu), metin rengiyle WCAG oranı.
  */
 export async function probeContrast(persona: Persona = 'engineer'): Promise<ContrastReport> {
   const theme: ThemeName = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
@@ -90,6 +102,12 @@ export async function probeContrast(persona: Persona = 'engineer'): Promise<Cont
     const yGl = canvas.height - Math.round(y1 * dpr);
     gl.readPixels(Math.round(x0 * dpr), yGl, w, h, gl.RGBA, gl.UNSIGNED_BYTE, px);
     const text = cssRgb(cs.color);
+    // metnin kendi plakaları (ör. PauseButton bg-canvas/92, §6.9 scrim) sahne pikselinin üstüne biner: dıştan içe
+    const plates: (readonly [Rgb, number])[] = [];
+    for (let p: HTMLElement | null = el; p && p !== main; p = p.parentElement) {
+      const plate = cssRgba(getComputedStyle(p).backgroundColor);
+      if (plate[1] > 0) plates.unshift(plate);
+    }
     const size = Number.parseFloat(cs.fontSize);
     const bold = Number.parseInt(cs.fontWeight, 10) >= 700;
     const threshold = size >= 24 || (size >= 18.66 && bold) ? 3 : 4.5;
@@ -101,9 +119,11 @@ export async function probeContrast(persona: Persona = 'engineer'): Promise<Cont
         const k = (sy * w + sx) * 4;
         const a = ((px[k + 3] ?? 0) / 255) * sceneOpacity;
         // önceden çarpılmış RGBA: c = src·opaklık + sayfa·(1 − a)
-        const c: Rgb = [0, 1, 2].map(
+        let c: Rgb = [0, 1, 2].map(
           (ch) => (px[k + ch] ?? 0) * sceneOpacity + (page[ch] ?? 0) * (1 - a),
         ) as unknown as Rgb;
+        for (const [rgb, pa] of plates)
+          c = c.map((v, ch) => (rgb[ch] ?? 0) * pa + v * (1 - pa)) as unknown as Rgb;
         worst = Math.min(worst, ratio(text, c));
       }
     }
@@ -137,11 +157,13 @@ export function mountDebug(persona: Persona = 'engineer'): void {
     live,
     probeContrast: () => probeContrast(persona),
   };
+  const ui = themeColors(PROFILES[persona].palette, 'dark'); // renk literali yok (§6.12)
   const panel = document.createElement('div');
   panel.setAttribute('data-stage-debug', '');
   panel.setAttribute('aria-hidden', 'true');
   panel.style.cssText =
-    'position:fixed;left:8px;bottom:8px;z-index:9999;max-height:60vh;overflow:auto;padding:8px;font:11px/1.35 ui-monospace,monospace;background:rgb(0 0 0/.78);color:#e8ebf2;border-radius:6px;pointer-events:auto;max-width:340px';
+    'position:fixed;left:8px;bottom:8px;z-index:9999;max-height:60vh;overflow:auto;padding:8px;font:11px/1.35 ui-monospace,monospace;background:rgb(0 0 0/.78);border-radius:6px;pointer-events:auto;max-width:340px';
+  panel.style.color = ui.ink;
   const out = document.createElement('pre');
   out.style.margin = '0';
   const actions = document.createElement('div');
@@ -150,8 +172,8 @@ export function mountDebug(persona: Persona = 'engineer'): void {
     const b = document.createElement('button');
     b.type = 'button';
     b.textContent = label;
-    b.style.cssText =
-      'font:inherit;padding:2px 6px;background:#252e52;color:inherit;border:0;border-radius:4px';
+    b.style.cssText = 'font:inherit;padding:2px 6px;color:inherit;border:0;border-radius:4px';
+    b.style.background = ui.line;
     b.addEventListener('click', fn);
     actions.append(b);
   };

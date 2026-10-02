@@ -27,8 +27,10 @@ export function Tag(props: StaticTagProps | FilterTagProps) {
         onClick={onClick}
         className={[
           'inline-flex min-h-11 items-center rounded-pill border px-4 type-ui transition-colors duration-(--dur-fast) ease-standard',
+          // forced-colors: dolgu düşer ve basılı çip ötekilerden ayırt edilemiyordu (axe color-contrast) →
+          // ThemeToggle'daki gibi sistem vurgu çifti (§10.5.3)
           pressed
-            ? 'border-ink bg-ink text-canvas'
+            ? 'border-ink bg-ink text-canvas forced-colors:border-[Highlight] forced-colors:bg-[Highlight] forced-colors:text-[HighlightText] forced-colors:forced-color-adjust-none'
             : 'border-line-strong text-ink-muted hover:text-ink',
         ].join(' ')}
       >
