@@ -3,6 +3,7 @@
 // (BASE_URL, §14.7). Bekleme sayfa içinde yapılır (waitForTimeout YASAK).
 import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
+import { sitemapPaths } from './helpers/urls';
 
 const CLS_BUDGET = 0.05; // P5
 const EVENT_BUDGET_MS = 100; // P8
@@ -101,7 +102,8 @@ const fullScroll = (page: Page) =>
   });
 
 test.describe('§9.1 performans duman testleri', { tag: ['@desktop-chromium'] }, () => {
-  for (const url of ['/', '/?tier=medium']) {
+  // §9.7: betikli tam kaydırmada CLS ana sayfada ve /cv'de
+  for (const url of ['/', '/?tier=medium', '/cv']) {
     test(`P5 ${url}: betikli tam kaydırma dahil CLS ≤ 0.05`, async ({ page }) => {
       test.setTimeout(150_000);
       await observe(page);
@@ -210,5 +212,121 @@ test.describe('§9.1 performans duman testleri', { tag: ['@desktop-chromium'] },
     console.log(
       `::notice title=P8 CPU kısıtı::${rates.join(' · ')} (referans ${REFERENCE_CALIBRATION_MS} ms)`,
     );
+  });
+});
+
+/**
+ * LCP ölçümleri `no-webgl` projesinde koşar: sayfa doğal yolda statik kademededir (CI'ın doğal yolu da yazılım
+ * renderer'ı nedeniyle statiktir, V-41; canvas LCP adayı değildir). SwiftShader bayraklı başsız Chromium macOS'ta
+ * tarayıcının ilk sayfasında kare sunumunu bazen hiç bildirmiyor (boya ve LCP girdisi yok; M8'de ölçüldü).
+ */
+test.describe('§9.1 LCP ölçümleri', { tag: ['@no-webgl'] }, () => {
+  // §9.5.4 / K-HERO-1 / V-39: mobil hero'da LCP öğesi H1'dir, statik panelin satırları (.kod-row) değildir.
+  for (const viewport of [
+    { width: 360, height: 640 },
+    { width: 390, height: 844 },
+    { width: 412, height: 915 },
+  ]) {
+    test(`P3 / ${viewport.width}×${viewport.height}: son LCP öğesi H1`, async ({ page }) => {
+      await page.setViewportSize(viewport);
+      await observe(page);
+      await page.goto('/', { waitUntil: 'networkidle' });
+      expect(await probe(page, '__lcp')).toBe('H1');
+    });
+  }
+
+  /**
+   * P1 gerçek ölçüm (M8, sahip kararı 2026-10-02; SPEC-SAPMA §13.5.1): Lighthouse mobil "devtools" kısıtının
+   * karşılığı — 412×823 @1.75, istek başına 562.5 ms gecikme, 1474.56 kbps indirme / 675 kbps yükleme (150 ms RTT ve
+   * 1.6 Mbps simülasyonunun uygulanan eşdeğeri), CPU referans makineye göre 4×. Soğuk önbellek, URL başına 3 koşunun
+   * medyanı ≤ 2.5 s ve öğe P3'e uyar. Lantern simülasyonu boyamayla karenin sunulması arasında çalışan async chunk'ları
+   * da LCP'nin önkoşulu saydığı için simüle LCP LHCI'da `warn` kalır.
+   */
+  test("P1 LHCI URL'leri: kısıtlı mobil yüklemede LCP ≤ 2.5 s (3 koşu medyanı)", async ({
+    browser,
+    request,
+    baseURL,
+  }) => {
+    test.setTimeout(240_000);
+    const paths = await sitemapPaths(request);
+    const project = paths.find((p) => /^\/projeler\/[^/]+$/.test(p));
+    const targets: [string, RegExp][] = [
+      ['/', /^H1#hero-title$/],
+      ['/projeler', /^H1/],
+      ...(project ? [[project, /^IMG/] as [string, RegExp]] : []),
+      // /cv'nin en büyük metin bloğu profil paragrafıdır (P3 "sayfanın H1'i" yerine metin öğesi; SPEC-SAPMA §9.1 P3)
+      ['/cv', /^(H1|P)/],
+      ...(paths.includes('/en') ? [['/en', /^H1#hero-title$/] as [string, RegExp]] : []),
+    ];
+    const LIGHTHOUSE_MOBILE = {
+      baseURL,
+      viewport: { width: 412, height: 823 },
+      deviceScaleFactor: 1.75,
+      isMobile: true,
+      hasTouch: true,
+    };
+    const calibration = await browser.newContext({ baseURL });
+    const calPage = await calibration.newPage();
+    await calPage.goto('/gizlilik', { waitUntil: 'networkidle' });
+    const rate = Math.min(
+      4,
+      Math.max(1, (4 * REFERENCE_CALIBRATION_MS) / (await calibrate(calPage))),
+    );
+    await calibration.close();
+
+    const report: string[] = [];
+    for (const [path, element] of targets) {
+      const runs: { ms: number; el: string }[] = [];
+      for (let i = 0; i < 3; i++) {
+        const context = await browser.newContext(LIGHTHOUSE_MOBILE); // yeni bağlam = soğuk HTTP önbelleği
+        const page = await context.newPage();
+        await page.addInitScript(() => {
+          const w = window as unknown as { __lcpAt: { ms: number; el: string } | null };
+          w.__lcpAt = null;
+          new PerformanceObserver((list) => {
+            const e = list.getEntries().at(-1) as
+              (PerformanceEntry & { element?: Element }) | undefined;
+            const el = e?.element;
+            if (e && el)
+              w.__lcpAt = { ms: e.startTime, el: `${el.tagName}${el.id ? `#${el.id}` : ''}` };
+          }).observe({ type: 'largest-contentful-paint', buffered: true });
+        });
+        const cdp = await context.newCDPSession(page);
+        await cdp.send('Network.enable');
+        await cdp.send('Network.emulateNetworkConditions', {
+          offline: false,
+          latency: 562.5,
+          downloadThroughput: (1474.56 * 1024) / 8,
+          uploadThroughput: (675 * 1024) / 8,
+        });
+        await cdp.send('Emulation.setCPUThrottlingRate', { rate });
+        await page.goto(path, { waitUntil: 'load', timeout: 60_000 });
+        // girdiler etkileşimsiz okunur; geç görsel adayları için load sonrası iki boşta geri çağrısı
+        await page.evaluate(
+          () =>
+            new Promise<void>((resolve) => {
+              const idle = (n: number) =>
+                requestIdleCallback(() => (n > 1 ? resolve() : idle(n + 1)), { timeout: 3000 });
+              idle(0);
+            }),
+        );
+        const lcp = await page.evaluate(
+          () => (window as unknown as { __lcpAt: { ms: number; el: string } | null }).__lcpAt,
+        );
+        await context.close();
+        expect(lcp, `${path}: LCP girdisi yok`).not.toBeNull();
+        runs.push(lcp!);
+      }
+      const sorted = [...runs].sort((a, b) => a.ms - b.ms);
+      const mid = sorted[1]!;
+      report.push(
+        `${path} ${mid.ms.toFixed(0)} ms (${runs.map((r) => r.ms.toFixed(0)).join('/')}) ${mid.el}`,
+      );
+      expect
+        .soft(mid.ms, `${path}: ${runs.map((r) => `${r.ms.toFixed(0)} ${r.el}`).join(', ')}`)
+        .toBeLessThanOrEqual(2500);
+      expect.soft(mid.el, `${path}: LCP öğesi`).toMatch(element);
+    }
+    console.log(`::notice title=P1 kısıtlı LCP::${report.join(' · ')} · CPU ${rate.toFixed(2)}×`);
   });
 });

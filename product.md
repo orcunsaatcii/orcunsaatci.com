@@ -2424,7 +2424,7 @@ about IN köprüsü (§4.12.1): `main.dart` glif yağmuruyla düşer, `about.dar
 - Duraklatma düğmesi bandın sağ altındadır.
 - İşaretçi paralaksı yoktur.
 - **Yatay telefon** (`height < 500px`): bant genişliğin %50'si kadardır ve sağda durur; metin solda. Panel **yalnızca** hero'da görünür (§4.15).
-- ⚠️ **DOĞRULANMADI: LCP.**
+- ✅ **DOĞRULANDI (M8, 2026-10-02, V-39): LCP.** CI LHCI mobilde ve `perf-smoke`'ta 360×640 / 390×844 / 412×915'te LCP öğesi H1'dir; satır başına blok öğe önlemi yeterlidir.
   - Sorun: statik panel tek bir metin bloğu olsaydı (mobilde ≈ 348 × 298 px) iki satırlık H1'den büyük olur ve LCP adayı olurdu (D-34).
   - Önlem: statik panel 24 satırın her birini ayrı bir blok öğe (`.kod-row`) olarak üretir; her satır ayrı ve küçük bir LCP adayıdır.
   - Doğrulama: KOD geçişinde (§15.8a) ve M8'de Lighthouse mobil (390×844 ve 360×640) ve masaüstüyle LCP öğesi kontrol edilir.
@@ -6545,14 +6545,15 @@ Doğrulanmış olgular (fontTools 4.60.2 + HarfBuzz, 2026-09-28; design-directio
 
 | Dosya | Eksen / örnek | Boyut | Tüketici |
 |---|---|---|---|
-| `MonaSans-trim.woff2` | wdth 100–125, wght 350–800 | ≈ 98.0 KB | Tüm sayfalar (preload) |
-| `MartianMono-trim.woff2` | wdth 87.5–100, wght 400–500 | ≈ 23.1 KB | Tüm sayfalar (preload) |
+| `MonaSans-trim.woff2` | wdth 100–125, wght 380–760 | ≈ 68.9 KB (M8) | Tüm sayfalar (preload) |
+| `MartianMono-trim.woff2` | wdth 87.5–100, wght 400–500 | ≈ 16.3 KB (M8) | Tüm sayfalar (preload) |
 | `MonaSans-WideBold.ttf` | wdth 125, wght 760 | 42.2 KB | OG başlığı, PDF'te ad |
 | `MonaSans-Text.ttf` | wdth 100, wght 450 | 42.2 KB | OG alt başlığı ve alt satırı, PDF gövdesi |
 | `MonaSans-TextSemibold.ttf` | wdth 100, wght 620 | 42.2 KB | PDF bölüm başlıkları ve rol satırları |
 | `MartianMono-Regular.ttf` | wdth 100, wght 400 | 17.5 KB | OG eyebrow ve URL, PDF tarihleri |
 
-- Web font toplamı ≈ 121 KB, iki dosya ve iki preload.
+- Web font toplamı ≈ 85 KB (M8; M2'de ≈ 121 KB), iki dosya ve iki preload.
+- M8 kırpması (2026-10-02, LCP işi, §13.5.1): Mona ağırlık ekseni kullanılan 380–760 aralığına daraltıldı; OpenType özellikleri sitenin kullandıklarıyla sınırlandı (Mona `kern, mark, locl, ccmp, case, ss01, ss03, tnum, liga`; Martian `mark, locl, ccmp, case, rvrn`); web kümesi ASCII + Türkçe + Batı dillerinin yaygın aksanlı harfleri + sitenin kullandığı noktalama ve simgelerdir. Kerning korunur (betik denetler). 100,392 → 68,916 B ve 23,692 → 16,268 B. Betik `src/fonts/coverage.json`'ı yazar; içerikte kümede olmayan karakter `check-content` C13 uyarısıdır (§7.5.2). KOD panellerindeki kutu çizgi karakterleri (U+2500–257F) Martian Mono kaynağında yoktur; yedek monospace fontla çizilir.
 - `U_TTF`, U+20AC (€) içerir (§16.1.1 U-06); küme, §7.6.4'teki PDF karakter korumasıyla birebir aynı tutulur. Tablodaki boyutlar M2'de (2026-09-30, fontTools 4.60.2, `google/fonts` `main`) € eklenmiş kümeyle yeniden ölçüldü: 100,392 / 23,692 / 43,212 / 43,252 / 43,232 / 17,968 bayt. fontTools her kayıtta `head.modified` zaman damgasını yenilediği için WOFF2 baytları çalıştırmadan çalıştırmaya birkaç on bayt oynar; TTF boyutları sabittir. Mona'nın 2026-09-28 ölçümünden (≈ 100.9 KB) küçük olması kaynak TTF'in güncel sürümündendir.
 - Bu, quality-perf araştırmasındaki "dosya başına ≤ 50 KB" genel önerisini Mona için aşar. Ödünleşim bilinçlidir: tek değişken dosya hem display hem metin rolünü taşır, ayrıca Google'ın `latin` + `latin-ext` çifti (131 KB) daha büyüktür. Bütçe kontrolü §9.3 ve §9.4'tedir.
 
@@ -6574,15 +6575,20 @@ mkdir -p "$OUT_WEB" "$OUT_TTF"
 TMP=$(mktemp -d)
 trap 'rm -rf "${TMP:?}"' EXIT INT TERM
 
-# Latin-1 + Türkçe + noktalama/oklar/₺ (web);  OG/PDF için daha dar küme
-U_WEB="U+0000-00FF,U+0130-0131,U+011E-011F,U+015E-015F,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0300-0308,U+0327,U+2000-206F,U+20AC,U+20BA,U+2122,U+2190-2199,U+2212,U+2215,U+FEFF,U+FFFD"
+# Web kümesi (M8): ASCII + Türkçe + Batı dillerinin yaygın aksanlı harfleri + sitenin kullandığı noktalama, ok ve
+# simgeler. Latin-1'in kullanılmayan simgeleri ve U+2000-206F bloğunun geri kalanı çıkarıldı (kerning sınıfları küçülür).
+# İçerikte kümede olmayan karakter `check-content` uyarısıyla bildirilir (src/fonts/coverage.json).
+U_WEB="U+0020-007E,U+00A0,U+00A7,U+00A9,U+00AB,U+00AD,U+00B7,U+00BB,U+00D7,U+00DF,U+00C0-00C2,U+00C4,U+00C7-00CF,U+00D1-00D4,U+00D6,U+00D9-00DC,U+00E0-00E2,U+00E4,U+00E7-00EF,U+00F1-00F4,U+00F6,U+00F9-00FC,U+011E-011F,U+0130-0131,U+015E-015F,U+0307,U+2013-2014,U+2018-201E,U+2022,U+2026,U+2039-203A,U+2060,U+20AC,U+20BA,U+2122,U+2190-2199,U+2212,U+2248,U+2260,U+2264-2265,U+2713,U+FEFF,U+FFFD"
+# OpenType özellikleri (M8): yalnız sitenin kullandıkları. kern korunur (§6.2.3); ss02, ss04–08, frac, sups, aalt… çıkar.
+F_MONA='kern,mark,locl,ccmp,case,ss01,ss03,tnum,liga'
+F_MARTIAN='mark,locl,ccmp,case,rvrn'
 U_TTF="U+0020-007E,U+00A0-00FF,U+0130-0131,U+011E-011F,U+015E-015F,U+2013-2014,U+2018-201D,U+2022,U+2026,U+2192,U+20AC,U+20BA"
 
-# 1) Web WOFF2: eksenleri kullanılan aralığa kırp (min:default:max), TÜM OpenType özelliklerini koru
-"$PYTHON" -m fontTools.varLib.instancer "$SRC/MonaSans[wdth,wght].ttf"    wght=350:400:800 wdth=100:100:125 -q -o "$TMP/MonaSans-trim.ttf"
+# 1) Web WOFF2: eksenleri kullanılan aralığa kırp (min:default:max; Mona ağırlığı koyu temadaki 380 ile --font-weight-heavy 760 arası)
+"$PYTHON" -m fontTools.varLib.instancer "$SRC/MonaSans[wdth,wght].ttf"    wght=380:400:760 wdth=100:100:125 -q -o "$TMP/MonaSans-trim.ttf"
 "$PYTHON" -m fontTools.varLib.instancer "$SRC/MartianMono[wdth,wght].ttf" wght=400:400:500 wdth=87.5:100:100 -q -o "$TMP/MartianMono-trim.ttf"
-"$PYTHON" -m fontTools.subset "$TMP/MonaSans-trim.ttf"    --unicodes="$U_WEB" --layout-features='*' --flavor=woff2 --output-file="$OUT_WEB/MonaSans-trim.woff2"
-"$PYTHON" -m fontTools.subset "$TMP/MartianMono-trim.ttf" --unicodes="$U_WEB" --layout-features='*' --flavor=woff2 --output-file="$OUT_WEB/MartianMono-trim.woff2"
+"$PYTHON" -m fontTools.subset "$TMP/MonaSans-trim.ttf"    --unicodes="$U_WEB" --layout-features="$F_MONA"    --flavor=woff2 --output-file="$OUT_WEB/MonaSans-trim.woff2"
+"$PYTHON" -m fontTools.subset "$TMP/MartianMono-trim.ttf" --unicodes="$U_WEB" --layout-features="$F_MARTIAN" --flavor=woff2 --output-file="$OUT_WEB/MartianMono-trim.woff2"
 
 # 2) Statik TTF (OG görselleri + CV PDF): tüm eksenler sabit, liga YOK
 "$PYTHON" -m fontTools.varLib.instancer "$SRC/MonaSans[wdth,wght].ttf"    wdth=125 wght=760 -q -o "$TMP/MonaSans-WideBold.ttf"
@@ -6594,7 +6600,7 @@ for f in MonaSans-WideBold MonaSans-Text MonaSans-TextSemibold; do
 done
 "$PYTHON" -m fontTools.subset "$TMP/MartianMono-Regular.ttf" --unicodes="$U_TTF" --layout-features='kern,locl' --output-file="$OUT_TTF/MartianMono-Regular.ttf"
 
-# 3) Doğrulama: Türkçe glifler, korunan özellikler, locl TRK, eksen aralıkları, statik TTF'te liga yok
+# 3) Doğrulama: Türkçe glifler, korunan özellikler (Mona'da kern), locl TRK, eksen aralıkları, statik TTF'te liga yok
 "$PYTHON" - <<'PY'
 import sys
 from fontTools.ttLib import TTFont
@@ -6604,7 +6610,7 @@ def feats(f):
 def langs(f):
     return {l.LangSysTag.strip() for s in f["GSUB"].table.ScriptList.ScriptRecord for l in s.Script.LangSysRecord}
 checks = [
-    ("src/fonts/MonaSans-trim.woff2",    {"ss01", "ss03", "case", "locl", "tnum"}, {"wdth": (100, 125), "wght": (350, 800)}),
+    ("src/fonts/MonaSans-trim.woff2",    {"ss01", "ss03", "case", "locl", "tnum"}, {"wdth": (100, 125), "wght": (380, 760)}),
     ("src/fonts/MartianMono-trim.woff2", {"case", "locl"},                         {"wdth": (87.5, 100), "wght": (400, 500)}),
     ("assets/fonts/ttf/MonaSans-WideBold.ttf",     {"locl"}, None),
     ("assets/fonts/ttf/MonaSans-Text.ttf",         {"locl"}, None),
@@ -6624,8 +6630,16 @@ for path, need, axes in checks:
     else:
         got = {a.axisTag: (a.minValue, a.maxValue) for a in f["fvar"].axes}
         if got != axes: errors.append(f"{path}: eksen aralığı {got} != {axes}")
+mona = TTFont("src/fonts/MonaSans-trim.woff2")
+if "GPOS" not in mona or "kern" not in {r.FeatureTag for r in mona["GPOS"].table.FeatureList.FeatureRecord}:
+    errors.append("src/fonts/MonaSans-trim.woff2: kern yok (§6.2.3 kerning korunur)")
 if errors:
     print("\n".join(errors), file=sys.stderr); sys.exit(1)
+# 4) Kapsam listesi: check-content içerikte web fontlarında olmayan karakteri bununla bildirir
+import json
+cov = {k: sorted(TTFont(f"src/fonts/{n}-trim.woff2").getBestCmap()) for k, n in (("mona", "MonaSans"), ("martian", "MartianMono"))}
+with open("src/fonts/coverage.json", "w") as out:
+    json.dump(cov, out, separators=(",", ":")); out.write("\n")
 print("fontlar OK")
 PY
 ls -l "$OUT_WEB"/*.woff2 "$OUT_TTF"/*.ttf
@@ -6640,7 +6654,7 @@ import localFont from 'next/font/local';
 export const mona = localFont({
   src: './MonaSans-trim.woff2',
   variable: '--font-mona',
-  weight: '350 800',
+  weight: '380 760',
   style: 'normal',
   display: 'swap',
   preload: true,
@@ -6679,7 +6693,7 @@ Kurallar:
   - 64rem altında iki satır, üstünde tek satır olur (`white-space: nowrap`, §6.2.4).
   - Aradaki `{' '}` erişilebilir adın ve kopyalanan metnin "Orçun Saatçi" olmasını sağlar.
   - EN sayfalarında `<h1 lang="tr">` kullanılır (§3.8).
-- ⚠️ DOĞRULANMADI: yedek fonttan Mona Sans'a geçişin, ekrandaki başlıklarda satır sayısını değiştirip CLS üretmediği. Doğrulama: M8'de mobil Lighthouse ve `layout-shift` PerformanceObserver kaydı ile CLS ≤ 0.05 (D-33). Aşılırsa önce etkilenen başlığın satır kırılımını sabitle, sonra `display: 'optional'` dene.
+- ✅ DOĞRULANDI (2026-10-02, M8, V-60: LHCI CI koşularında beş kapı URL'sinde CLS 0; `perf-smoke` P5 tam kaydırmada ana sayfa, `/?tier=medium` ve `/cv` CLS ≤ 0.05): yedek fonttan Mona Sans'a geçişin, ekrandaki başlıklarda satır sayısını değiştirip CLS üretmediği. Doğrulama: M8'de mobil Lighthouse ve `layout-shift` PerformanceObserver kaydı ile CLS ≤ 0.05 (D-33). Aşılırsa önce etkilenen başlığın satır kırılımını sabitle, sonra `display: 'optional'` dene.
 
 #### 6.2.4 Akışkan tip ölçeği
 
@@ -9599,6 +9613,7 @@ Persona (`site.persona`, D-35) **şemayı değiştirmez**. Etiketleri, eyebrow'l
 | **C10** | **Tarih mantığı**: `publishedAt`, proje `start` değeri ve her `period.start` build tarihinden ileri olamaz (hata); süresi geçmiş sertifika (`expires` < bugün) bilgi | hata / bilgi | hata / bilgi |
 | **C11** | **JSON Schema üretimi**: her üst düzey şema için `z.toJSONSchema(schema, { io: 'input' })` → `.schemas/<ad>.json` (`site`, `person`, `contact`, `home`, `area`, `project`, `experience`, `education`, `certifications`, `awards`, `publications`, `skills`, `languages`, `testimonials`) | her zaman | her zaman |
 | **C12** | **MDX kuralları** (§7.7.3): `import`/`export` satırı; `# ` (H1); Markdown görseli `![`; izin listesinde olmayan büyük harfli JSX etiketi; `script\|iframe\|style\|object\|embed\|form\|input` etiketleri; `<Quote>` içinde `testimonial` ve `source` ikisi birden eksik | hata | hata |
+| **C13** | **Font kapsamı** (M8): `content/**` ve sözlüklerde (yorum satırları hariç) `src/fonts/coverage.json`'daki web font kümelerinde olmayan karakter (yedek fontla çizilir; küme `scripts/subset-fonts.sh` `U_WEB`, §6.2.3) | uyarı | uyarı |
 
 İskelet. C01, C02 ve C11 uygulanmış hâliyle çalıştırıldı: dev modunda exit 0 ve uyarılar, `--strict` ile exit 1 **[TEST EDİLDİ]**. Diğer kontroller aynı `report()` / `strictly()` kalıbıyla eklenir.
 
@@ -11523,7 +11538,7 @@ Bütün KB değerleri **gzip** boyutudur ve 1 KB = 1,024 bayttır (D-33). "Lab m
 | P12 | Stage chunk | **≤ 300 KB** (three + R3F + drei `PerformanceMonitor` + maath + `gl/**`) | lazy | `perf-budgets.spec.ts` (kesin), `budgets` (alt sınır) | D-33; tahmin ≈ 256 KB (§5.1.4) |
 | P13 | Motion chunk | **≤ 60 KB** (gsap + ScrollTrigger + SplitText + lenis); `load`'dan önce **asla** istenmez | lazy | aynı | D-33 |
 | P14 | Tam boot sonrası toplam JS | ≤ 550 KB (ana sayfa, canlı sahneyle) | ana sayfa | `perf-budgets.spec.ts` | kalite araştırması §2.4 |
-| P15 | Fontlar | 2 dosya, toplam ≤ 130 KB (`MonaSans-trim.woff2` ≤ 105 KB, `MartianMono-trim.woff2` ≤ 26 KB) | kritik yol | `budgets` | ölçüm (M2): 98.0 + 23.1 KB (§6.2.3) |
+| P15 | Fontlar | 2 dosya, toplam ≤ 130 KB (`MonaSans-trim.woff2` ≤ 105 KB, `MartianMono-trim.woff2` ≤ 26 KB) | kritik yol | `budgets` | ölçüm (M8): 68.9 + 16.3 KB (§6.2.3; M2: 98.0 + 23.1) |
 | P16 | ~~Posterler~~ | KOD ile kaldırıldı (2026-10-02); statik paneller HTML'dir | — | — | §0.6 |
 | P17 | Sahne kare süresi | kaydırma sırasında p95 ≤ 16.7 ms (60 Hz) atanan kademede; Düşük Güç Modu'nda ≤ 33.3 ms | R1, R3, R6 cihazları (§9.6) | `?debug` paneli | hedef; GPU süreleri §5.11.1 (⚠️ DOĞRULANMADI) |
 | P18 | Sahne hazır süresi | `os:stage-ready − load`: masaüstü referansında ≤ 3,000 ms, orta segment telefonda ≤ 5,000 ms | ana sayfa | User Timing (§9.2.5), §9.6 | hedef; M8 ölçümüyle §16.2'ye yazılır |
@@ -11531,6 +11546,8 @@ Bütün KB değerleri **gzip** boyutudur ve 1 KB = 1,024 bayttır (D-33). "Lab m
 Notlar:
 - **LHCI statik kademeyi ölçer.** CI Chromium'u SwiftShader ile çalışır ve `failIfMajorPerformanceCaveat: true` yoklaması `null` döner (§5.11.3). Bu yüzden LHCI kapısı sahnesiz deneyimi (LCP, CLS, TBT) ölçer. Sahne boot maliyeti üç yerden izlenir: (1) `perf-budgets.spec.ts` (`?tier=medium`, boyut ve sıra), (2) §13.5'teki yalnız-uyarı LHCI koşusu `/?tier=medium`, (3) §9.6 gerçek cihazlar.
 - Saha verisi: yeni bir kişisel sitede CrUX verisi oluşmayabilir. Hobby'de Speed Insights yalnız RES puanını gösterir. Birincil kapı bu yüzden lab ölçümüdür.
+- **P1 kapısı (M8, 2026-10-02, sahip kararı):** lab mobil LCP'nin kapısı `perf-smoke.spec.ts` › "P1 LHCI URL'leri" gerçek kısıtlı ölçümüdür; LHCI'ın simüle LCP'si uyarıdır (SPEC-SAPMA §13.5.1).
+- SPEC-SAPMA: §9.1 P3 (M8, 2026-10-02) — `/cv`'nin LCP öğesi H1 değil, profil özetinin paragrafıdır (sayfanın en büyük metin bloğu; LHCI ve P1'de ölçüldü). P3 metin sayfalarında "sayfanın H1'i ya da `main` içindeki bir metin bloğu" diye okunur; LCP süresi aynı kapıdadır.
 
 ### 9.2 Kritik yol ve yükleme sırası
 
@@ -11605,7 +11622,7 @@ export const STAGE_IDLE: IdleOptions = { afterLoadDelayMs: 1000, idleTimeoutMs: 
 6. Save-Data, WebGL2 yokluğu ve düşük bellek **static** kademe verir (§5.11.3); stage chunk istenmez. Azaltılmış harekette motion ve stage chunk'larının ikisi de istenmez.
 7. Hero'da preload edilen görsel yoktur (statik panel HTML'dir). Sayfa başına en çok **bir** `preload`'lu görsel vardır (proje hero'su).
 8. Üçüncü taraf betik yoktur. Tek istisna yalnız production'da, hidrasyondan sonra enjekte edilen Vercel Analytics ve Speed Insights betikleridir (aynı köken, D-23, D-44).
-9. ⚠️ DOĞRULANMADI: Next `<Link>`'in görünüm alanı prefetch'lerinin (RSC yükleri) LCP'den önce başlayıp başlamadığı. Doğrulama: M8'de LHCI ağ şelalesi. LCP'den önce başlıyorsa footer ve gövde bağlantılarına `prefetch={false}` verilir; header bağlantıları varsayılanda kalır.
+9. ❌ İddia tutmadı, yedek uygulandı (M8, 2026-10-02, V-59: CI LHCI ağ kayıtları, 15 koşu): prefetch'ler 14 koşuda `load`'dan sonra başladı; kapağı geç gelen bir proje sayfası koşusunda 5 RSC prefetch'i LCP'den (793 ms) önce, 430 ms'de başladı. Footer ve gövde bağlantıları `prefetch={false}` taşır (`TextLink`, `Button`, `ProjectCard`, `ProjectRow`, bölümler, görünümler, hata sayfaları); header (`NavLinks`) varsayılandadır, `LanguageSwitcher` zaten `false`'tur. İddia: Next `<Link>`'in görünüm alanı prefetch'lerinin (RSC yükleri) LCP'den önce başlayıp başlamadığı. Doğrulama: M8'de LHCI ağ şelalesi. LCP'den önce başlıyorsa footer ve gövde bağlantılarına `prefetch={false}` verilir; header bağlantıları varsayılanda kalır.
 10. İstemci kodunda yüklenme sırasında 50 ms'yi aşan eşzamanlı döngü **YASAK**tır. Boot adımları `await` sınırlarıyla bölünür (dinamik import, `compileAsync`).
 
 #### 9.2.5 Performans işaretleri (User Timing)
@@ -11670,7 +11687,7 @@ Kurallar:
 
 #### 9.3.4 Fontlar
 
-- Tam iki WOFF2 dosyası kritik yoldadır. İkisi de `next/font/local` ile preload edilir (§6.2.3). Ölçülen boyutlar (M2): `MonaSans-trim.woff2` 98.0 KB, `MartianMono-trim.woff2` 23.1 KB.
+- Tam iki WOFF2 dosyası kritik yoldadır. İkisi de `next/font/local` ile preload edilir (§6.2.3). Ölçülen boyutlar (M8): `MonaSans-trim.woff2` 68.9 KB, `MartianMono-trim.woff2` 16.3 KB (M2: 98.0 + 23.1 KB).
 - `display: 'swap'` + `adjustFontFallback: 'Arial'`: ilk boya yedek fontla olur; LCP geciktirilmez. Hero H1 iki `<span>` ile yazıldığı için satır kırılımı fonttan bağımsızdır (§6.2.3, CLS önlemi).
 - **YASAK:** üçüncü bir font dosyası, `next/font/google` (D-21), kaydırmaya bağlı `font-variation-settings` animasyonu.
 - `assets/fonts/ttf/` altındaki statik TTF'ler yalnız build'de okunur (OG, PDF); tarayıcıya gönderilmez.
@@ -14722,7 +14739,7 @@ Kurallar:
 | `a11y-reflow.spec.ts` | `@desktop-chromium` | 320 × 640, 640 × 400 ve 844 × 390 görüntü alanlarında (`setViewportSize`) her route'ta yatay taşma yoktur. §10.5'teki metin aralığı enjeksiyonunda kırpılan metin yoktur; `[aria-hidden="true"]` alt ağaçları atlanır. | §10.5, §10.6 |
 | `contrast.spec.ts` | `@desktop-chromium`; yalnız `RUN_CONTRAST=1` iken koşar (M5, M8, M10'da elle) | `/?debug&tier=high` ve 3 derin sayfa. Her bölümde 10 kaydırma konumu × 2 tema × 3 genişlik (360, 768, 1440) için `window.__stage.probeContrast()` çağrılır. Gövde metninde oran < 4.5, büyük metinde < 3.0 başarısızlıktır. | §5.18.2, §10.5 |
 | `mobile.spec.ts` | `@pixel-7`, `@iphone-15` | - Her URL'de `scrollWidth ≤ innerWidth`.<br>- Header aşağı kaydırmada gizlenir, yukarı kaydırmada döner.<br>- `html.lenis-smooth` yoktur.<br>- Dokunma hedefleri §10.3 eşiklerini sağlar.<br>- Çapa gezinmesinden sonra hedef başlığın üstü header'ın altındadır.<br>- Yatay mod (844×390) için `setViewportSize` kullanılır: panel yalnız hero'dadır. | K-MOBILE-1/2/3/4 |
-| `perf-smoke.spec.ts` | `@desktop-chromium` | - `/` ve `/?tier=medium`: 5 svh / 100 ms ile en üstten en alta ve geri kaydırılır. Bu sırada `hadRecentInput === false` olan `layout-shift` girdilerinin toplamı ≤ 0.05'tir (P5).<br>- `/` sayfasında son `largest-contentful-paint` girdisinin öğesi `H1`'dir (P3).<br>- `load` öncesi `<html>`'de `.motion-ready` yoktur (K-GEN-6).<br>- P8: menü aç/kapa, Kopyala, tema, filtre ve MotionToggle için `PerformanceObserver({ type: 'event', durationThreshold: 16 })` girdilerinin `duration` değeri ≤ 100 ms'dir (CDP ile 4× CPU kısıtı).<br>- Production'a karşı da koşulur (`BASE_URL`, §14.7). | D-33, D-34, K-GEN-6, K-HERO-1 (masaüstü), §9.1 P3/P5/P8 |
+| `perf-smoke.spec.ts` | `@desktop-chromium`; LCP ölçümleri `@no-webgl` (M8) | - `/`, `/?tier=medium` ve `/cv` (M8): 5 svh / 100 ms ile en üstten en alta ve geri kaydırılır. Bu sırada `hadRecentInput === false` olan `layout-shift` girdilerinin toplamı ≤ 0.05'tir (P5).<br>- `/` sayfasında son `largest-contentful-paint` girdisinin öğesi `H1`'dir (P3); M8: 360×640, 390×844 ve 412×915'te de (§9.5.4, `no-webgl`).<br>- M8, P1 gerçek ölçümü (`no-webgl`): LHCI URL'leri Lighthouse mobil devtools kısıtının karşılığıyla, soğuk önbellek, 3 koşu medyanı LCP ≤ 2.5 s ve P3 öğesi (SPEC-SAPMA §13.5.1).<br>- `load` öncesi `<html>`'de `.motion-ready` yoktur (K-GEN-6).<br>- P8: menü aç/kapa, Kopyala, tema, filtre ve MotionToggle için `PerformanceObserver({ type: 'event', durationThreshold: 16 })` girdilerinin `duration` değeri ≤ 100 ms'dir (CDP ile 4× CPU kısıtı).<br>- Production'a karşı da koşulur (`BASE_URL`, §14.7). | D-33, D-34, K-GEN-6, K-HERO-1 (masaüstü), §9.1 P3/P5/P8 |
 | `perf-budgets.spec.ts` | §9.4.3'teki projeler | PB-1…PB-7: ilk JS, hareket ve Stage chunk'larının yükleme sırası ve boyutu, tam boot toplamı, azaltılmış hareket, statik tier, WebGL yok. İçerik §9.4.3'tedir. | D-33, D-44 |
 | `headers.spec.ts` | `@desktop-chromium` | §12.5.7 | D-25 |
 | `privacy.spec.ts` | `@desktop-chromium`, `@no-js` | - Tüm URL'ler gezildikten sonra `context.cookies()` → `[]` ve `document.cookie === ''`.<br>- `/gizlilik`'te iki `h2` doğru sırada ve "Son güncelleme" vardır.<br>- Her sayfanın footer'ı gizlilik bağlantısı içerir.<br>- İletişim sayfasında `input[type=checkbox]` yoktur.<br>- Yerel build'de hiçbir istek `/_vercel/` yoluna ya da `vercel-scripts.com`'a gitmez (analitik kapalı).<br>- Yalnız `BASE_URL` production iken: GPC yokken en az bir analitik isteği gider; `addInitScript(() => Object.defineProperty(navigator, 'globalPrivacyControl', { value: true }))` ile hiç gitmez. Analitik istekleri Network'te Vercel'in projeye özgü yolundan tanınır (§12.3.3); desen M9'da ilk production deploy'unda belirlenip spec'e yazılır. | §12.3, §12.4, §12.6 |
@@ -14905,6 +14922,7 @@ Ortam kararları:
 - SPEC-SAPMA: §13.5.1 (M3, 2026-09-30) — kapı URL'leri **SwiftShader bayrakları olmadan** (varsayılan başsız Chrome) ölçülür; `?tier=medium` uyarı koşusu ayrı yapılandırmadadır (`lighthouserc.tier.json`, SwiftShader'lı; `lighthouse.yml`'de ikinci adım). SwiftShader'lı koşuda GPU başlatması ilk boyamayı ~1 s geciktiriyor, Lantern bu sürede değerlendirilen bütün JS'i LCP'nin kritik yoluna katıyordu (her URL'de LCP ≈ 3.3 s). Kapı URL'leri zaten sahnesiz deneyimi ölçtüğü için (static tier) ölçülen şey değişmez.
 - M3 ölçümü (2026-09-30, yerel, kapı ayarı): Perf 0.92–0.98, A11y 1.0, BP 1.0, SEO 1.0, CLS 0, TBT ≤ 200 ms; **LCP 2.3–3.3 s**. Lantern, gözlenen ilk boyamadan önce biten font (122 KB) ve JS (~150 KB) isteklerini yavaş 4G'de yeniden oynatır; kerning'siz fontlarla (61 KB) metin-LCP'li sayfalar ~2.0–2.3 s'ye iner. Görsel-LCP'li sayfalar (ana sayfa posteri, `/projeler` küçük görseli, `/hakkimda` şekli) 2.9–3.3 s'dir. LCP kapısı için karar sahibe sunuldu (M3 PR #7).
 - SPEC-SAPMA: §13.5.1 / §15.4.3 (M3, 2026-09-30, sahip kararı) — `largest-contentful-paint` kapı URL'lerinde **M8'e kadar `warn`**'dur; Perf ≥ 0.85, A11y 1.0, BP ≥ 0.95, SEO 1.0, CLS ≤ 0.05, TBT ve `errors-in-console` kapı olarak kalır. Seçenekler: (A) kerning'siz font (122 → 61 KB) + mobil hero posteri ~210 px + üst görsellere öncelik, (B) M8'e erteleme; sahip B'yi seçti (kerning ve hero tasarımı korunur). M8'de font stratejisi (kerning korunarak alt küme / eksen daraltma), V-39 mobil hero kararı ve görsel-LCP sayfalarının önceliğiyle ele alınır; M8 kabulünde `error`'a döner (§13.10). CI medyanları (M3): LCP 2.94–3.17 s, Perf 0.93–0.95, TBT ~50 ms, CLS 0.
+- SPEC-SAPMA: §13.5.1, §9.1 P1 (M8, 2026-10-02, sahip kararı) — `largest-contentful-paint` LHCI'da **`warn` kalır**; P1'in kapısı gerçek ölçümdür: `perf-smoke.spec.ts` › "P1 LHCI URL'leri" (`no-webgl` projesi, sayfa doğal yolda statik kademede) LHCI URL'lerini Lighthouse mobil devtools kısıtının karşılığıyla (412×823 @1.75; istek gecikmesi 562.5 ms, 1474.56 / 675 kbps; CPU referans makineye göre 4×) soğuk önbellekle üçer kez yükler; medyan LCP ≤ 2.5 s ve öğe P3'e uygun olmalıdır. Gerekçe (M8 ölçümü): H1 CSS'ten hemen sonra boyanır (gözlenen LCP = FCP, CI'da 160–290 ms); Lantern ise boyama görevi ile karenin sunulması arasında değerlendirilen async chunk'ları (≈ 175 KB) da LCP'nin önkoşulu sayar ve simüle LCP'yi 2.9–3.3 s verir (fontlar tamamen engellendiğinde bile 2.78 s). Gerçek kısıtlı yüklemede (Lighthouse `--throttling-method=devtools`) LCP = FCP = 1.5–1.9 s. Font kırpması (§6.2.3, 124 → 85 KB) simüle ana sayfa LCP'sini yerelde 3.31 → 2.99 s'ye indirdi. P1 ölçümü (yerel, medyan): `/` 1.88 s (H1), `/projeler` 1.52 s (H1), proje sayfası 1.91 s (kapak IMG), `/cv` 1.50 s (P), `/en` 1.90 s (H1).
 - Raporlar `uploadArtifacts: true` ile GitHub artefaktı olarak saklanır. **YASAK:** `temporaryPublicStorage: true`; raporlar herkese açık bir kovaya yüklenir ve taslak içerik sızar.
 
 #### 13.5.2 Bütçeler
@@ -15884,7 +15902,7 @@ Bazı dosyalar build zincirinin (§8.7.1) ilk günden çalışması için geçic
 | `HydrationMark` (`data-hydrated` yazan yaprak, iki kök layout) | M3 | M4 (`MotionRoot` ilk effect'i) — ✅ M4'te kaldırıldı | §8.4.2 |
 | `a11y-keyboard.spec.ts`'te çapa sonrası `h2` odağı yerine sıralı odak başlangıç noktası | M3 | M4 (`scrollToChapter`, §5.13.4) — ✅ M4 | §10.3.2 |
 | `cv.spec.ts`'te baskıda `RingsFigure` ve ≥ 80rem taş çapası maddeleri yok | M3 | M4 (SVG figürler) — ✅ M4 baskı; ≥ 80rem çapa M5/M7 | §13.3.4 |
-| `lighthouserc.json`'da `largest-contentful-paint` `warn` (sahip kararı) | M3 | M8 (`error`) | §13.5.1, §9.1 |
+| `lighthouserc.json`'da `largest-contentful-paint` `warn` (sahip kararı) | M3 | M8: `warn` kalır; kapı `perf-smoke` P1 gerçek kısıtlı ölçümü (sahip kararı 2026-10-02, SPEC-SAPMA §13.5.1) | §13.5.1, §9.1 |
 
 #### 15.0.7 Karar → milestone eşlemesi
 
@@ -16866,7 +16884,7 @@ Belgedeki her `⚠️ DOĞRULANMADI` maddesi, araştırma notlarındaki UNVERIFI
 | V-36 | Safari/iOS `scrollend` olayını destekler. | §2.5.3, §5.13.4, §5.14.6, §9.5.5 | `iphone-15`: `'onscrollend' in window` | 150 ms debounce'lu `scroll` + 1,200 ms üst sınır. | M4 — ✅ (2026-09-30): Playwright WebKit (`iphone-15`, `desktop-webkit`) ve Firefox'ta `onscrollend` var. Eski Safari için yedek (150 ms sessizlik + 1,200 ms üst sınır) `LenisProvider`/`MotionRoot`'ta özellik algılamayla uygulanır; gerçek iOS 17 cihaz M8'de. |
 | V-37 | `gsapVersions` ve `lenis-smooth` işaretçileri yalnız lazy chunk'ta ve kütüphane kodunda geçer. | §9.4.2 | `grep -l <işaretçi> .next/static/chunks/**/*.js` | Daha özgül bir dize seçilir, tablo güncellenir. | M4 — ✅ (2026-09-30): iki işaretçi yalnız iki lazy chunk'ta (gsap + ScrollTrigger + SplitText; lenis); ilk paketlerde yok. `npm run budgets`: motion grubu 50.9 KB ≤ 60 KB. |
 | V-38 | Aynı grid alanında örtüşen sticky öğeler Safari, Chrome ve Firefox'ta aynı davranır. | §4.9.3, final §13 #8 | `PW_CROSS=1 work-viewer.spec.ts`; gerçek Safari/Firefox (§9.6) | Yedek tanımlı değil; farklılık Ö1/Ö2 ise düzen akışa döner ve karar §16.3.2'ye taşınır. | M4 → M8 — M4 ✅ (2026-09-30): `PW_CROSS=1 work-viewer.spec.ts` Chromium, WebKit (Playwright 1.63) ve Firefox 155'te geçer: her makalede figür kutuları formülle ±2 px, tam olarak bir figür açık. Gerçek Safari/Firefox M8'de (§9.6). |
-| V-39 | Mobil hero'da LCP öğesi poster değil H1'dir. | §4.6.9, §9.5.4, 3D araştırması §11 | `pixel-7`, `iphone-15`, 360 × 640, 390 × 844; LHCI denetimi | §9.5.4 çözüm sırası (U-10). | M4 → M8 — M4 ilk ölçüm ❌ (2026-09-30, Lighthouse 12.6.1 mobil, yerel): 390 × 844, 360 × 640 ve 412 × 915'te LCP öğesi hero posteri (`picture.stage-poster > img`), LCP 3.5 s (simülasyon), Perf 0.91, CLS 0. Masaüstünde H1, 0.7 s, Perf 1.0. H1 kutuları: 320 × 141 (360 × 640), 348 × 147 (390 × 844); poster `<img>` kutusu D/0.8 olduğundan (POSTER_STONE_FRAC) §9.5.4 adım 2 sınırı `D ≤ 0.8·⌊√(0.8·A_h1)⌋ ≈ 151 px` olur. Sahip kararı (M3): LCP işi M8'de (font kırpma + poster boyutu); K-HERO-1 mobil M8'de kapanır. |
+| V-39 | Mobil hero'da LCP öğesi poster değil H1'dir. | §4.6.9, §9.5.4, 3D araştırması §11 | `pixel-7`, `iphone-15`, 360 × 640, 390 × 844; LHCI denetimi | §9.5.4 çözüm sırası (U-10). | M4 → M8 — M4 ilk ölçüm ❌ (2026-09-30, Lighthouse 12.6.1 mobil, yerel): 390 × 844, 360 × 640 ve 412 × 915'te LCP öğesi hero posteri (`picture.stage-poster > img`), LCP 3.5 s (simülasyon), Perf 0.91, CLS 0. Masaüstünde H1, 0.7 s, Perf 1.0. H1 kutuları: 320 × 141 (360 × 640), 348 × 147 (390 × 844); poster `<img>` kutusu D/0.8 olduğundan (POSTER_STONE_FRAC) §9.5.4 adım 2 sınırı `D ≤ 0.8·⌊√(0.8·A_h1)⌋ ≈ 151 px` olur. Sahip kararı (M3): LCP işi M8'de (font kırpma + poster boyutu); K-HERO-1 mobil M8'de kapanır. — ✅ M8 (2026-10-02, KOD): poster yok; LCP öğesi mobilde ve masaüstünde H1'dir, statik panel satırları (`.kod-row`) aday olmaz. CI LHCI mobil (412×823) 15 koşuda `h1#hero-title`; `perf-smoke` 360×640, 390×844, 412×915'te H1 (§4.6.9 önlemi yeterli, panel alanı sınırına gerek yok). Q-23 açılmadı |
 | V-40 | `svh`/`lvh` A sınıfı tarayıcıların tamamında desteklenir. | §2.5.3 | caniuse "viewport-unit-variants"; `iphone-15`'te ölçülen yükseklik | Önce `vh` yedek bildirimi yazılır. | M4 → M8 — M4 ✅ (2026-09-30): Chromium, WebKit ve Firefox (Playwright) `svh`/`lvh`, `1lh`, `subgrid` ve `:has()` destekler; gerçek iOS M8'de. |
 | V-41 | `failIfMajorPerformanceCaveat: true` SwiftShader'da bağlam vermez; CI'da doğal yol `static`'e düşer. | §13.3.3, §9.1 | `desktop-chromium` ile `/` açılır, `data-tier` okunur | Beklenen davranıştır; mutlu yol testleri `?tier=high`/`medium` ile. | M5 — ❌ iddia tutmadı, düzeltmeyle (2026-09-30): SwiftShader bayraklı Chromium (yerel macOS ve Linux CI) `failIfMajorPerformanceCaveat` ile bağlam **verir**; detect-gpu ANGLE adını kara listeyle eşleştirmez (FALLBACK → çekirdek kuralı). CI'da sahne doğal yolda boot ediyor, LHCI `/` TBT 4.8 s, performans 0.61 oluyordu. Düzeltme: yazılım renderer'ı `static` (§5.11.3 SPEC-SAPMA). Sonuç: CI doğal yol `fallback`/`static` (`stage.spec.ts` V-41 bildirimi), LHCI yeşil |
 | V-42 | Linux CI'da SwiftShader bayraklı Chromium `/?tier=high`'da `ready`'ye ulaşır. | §13.3.1, kalite §14 #2 | `stage.spec.ts` CI koşusu | Bayraklar zorunludur; ulaşmazsa `stage.spec.ts` beklentisi `fallback`'i kabul eder ve 3D yol yalnız gerçek cihazda doğrulanır. | M5 — ✅ (2026-09-30): Linux CI'da SwiftShader bayraklı Chromium `?tier=high`'da `ready`'ye ulaşır (`stage.spec.ts` masaüstü testleri yeşil; yazılım render'ı ≈ 2 fps) |
@@ -16886,8 +16904,8 @@ Belgedeki her `⚠️ DOĞRULANMADI` maddesi, araştırma notlarındaki UNVERIFI
 | V-56 | iOS doğal momentumunda `ScrollTrigger.getVelocity()` kaydırma sallanması için yeterince kalitelidir. | §4.14 #1, §5.9.6, final §13 #5 | Gerçek iPhone'da gözlem | Sallanma kapatılır. | M8 |
 | V-57 | iOS 26 Safari'nin yüzen araç çubuğu `100lvh` sabit katmanla sorun çıkarmaz. | §9.5.5, 3D araştırması §11 | R2'de S2 senaryosu | Yedek tanımlı değil; bulgu Ö1/Ö2 ise §9.5'e çözüm yazılır. | M8 |
 | V-58 | `lang="tr"` altında CSS `text-transform: uppercase` `i`'yi `İ`'ye çevirir (Chrome, Safari, Firefox). | §3.8 #3, içerik §11 #4 | Üç motorda görsel QA | Eyebrow'lar JS'te `upper(s, 'tr')` ile büyütülür. | M8 — M2 ön ölçümü (2026-09-30): Chromium ve WebKit'te `type-eyebrow` "İLETİŞİM · ÖZGEÇMİŞ · ÇALIŞMA ALANLARI · KESİT" ve EN içinde `lang="tr"` "SAATÇİ" doğru. Firefox M8'de. |
-| V-59 | Next `<Link>` görünüm alanı prefetch'leri LCP'den önce başlamaz. | §9.2.4 #9 | LHCI ağ şelalesi | Footer ve gövde bağlantılarına `prefetch={false}`. | M8 |
-| V-60 | Yedek fonttan Mona Sans'a geçiş başlıklarda satır sayısını değiştirip CLS üretmez. | §6.2.3 | Mobil Lighthouse + `layout-shift` kaydı (CLS ≤ 0.05) | Başlık kırılımı sabitlenir; sonra `display: 'optional'` denenir. | M8 |
+| V-59 | Next `<Link>` görünüm alanı prefetch'leri LCP'den önce başlamaz. | §9.2.4 #9 | LHCI ağ şelalesi | Footer ve gövde bağlantılarına `prefetch={false}`. | M8 — ❌ → yedek (M8, 2026-10-02): 15 LHCI koşusunun birinde (proje sayfası) prefetch LCP'den önce başladı; footer ve gövde bağlantılarına `prefetch={false}` (§9.2.4 #9) |
+| V-60 | Yedek fonttan Mona Sans'a geçiş başlıklarda satır sayısını değiştirip CLS üretmez. | §6.2.3 | Mobil Lighthouse + `layout-shift` kaydı (CLS ≤ 0.05) | Başlık kırılımı sabitlenir; sonra `display: 'optional'` denenir. | M8 — ✅ M8 (2026-10-02): LHCI CLS 0 (beş URL × 3); `perf-smoke` P5 tam kaydırma `/`, `/?tier=medium`, `/cv` ≤ 0.05 |
 | V-61 | Form içeren `/iletisim` build'de ○ kalır. | §12.2.1 | `npm run build` çıktısı (CI) | Karar T-02; form açılmaz. | M9 |
 | V-62 | Server Action içinde `headers()`, kök layout'lardaki `dynamic = 'error'` altında hata vermez. | §12.2.8 | `contact.spec.ts` (JS'li ve `no-js`) | Karar T-02 (Route Handler `POST /api/contact` ƒ olur; D-06 ile çelişir). | M9 |
 | V-63 | Vercel WAF hız sınırı panosundaki alan adları §12.2.8 ile aynıdır. | §12.2.8 | Vercel "Rate limiting SDK" dokümanı | §12.2.8 düzeltilir. | M9 |

@@ -49,6 +49,7 @@ export function ProjectRow({
         <div className="transition-transform duration-(--dur-base) ease-out motion-on:group-hover:translate-x-2 motion-on:group-has-[a:focus-visible]:translate-x-2">
           <h2 className="type-h4">
             <Link
+              prefetch={false}
               transitionTypes={['nav-forward']}
               href={pathOf({ key: 'project', param: project.slug }, locale)}
               className="after:absolute after:inset-0 focus-visible:outline-none"

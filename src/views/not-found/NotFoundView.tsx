@@ -31,6 +31,7 @@ export function NotFoundView({ locale }: { locale: Locale }) {
           {links.map((l) => (
             <li key={l.href}>
               <Link
+                prefetch={false}
                 transitionTypes={['nav-forward']}
                 href={l.href}
                 className="inline-flex min-h-11 items-center link-inline type-ui"
@@ -52,6 +53,7 @@ export function NotFoundView({ locale }: { locale: Locale }) {
               {latest.map((p) => (
                 <li key={p.slug}>
                   <Link
+                    prefetch={false}
                     transitionTypes={['nav-forward']}
                     href={pathOf({ key: 'project', param: p.slug }, locale)}
                     className="link-inline type-ui"

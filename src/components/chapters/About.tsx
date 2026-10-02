@@ -133,6 +133,7 @@ export function About({ locale }: { locale: Locale }) {
         ) : null}
         <p className="mt-stack" data-reveal="block">
           <Link
+            prefetch={false}
             transitionTypes={['nav-forward']}
             href={more.href}
             hrefLang={more.hrefLang}

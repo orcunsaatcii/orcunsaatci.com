@@ -35,6 +35,7 @@ function Links({ locale, email }: { locale: Locale; email?: string }) {
       {links.map((l) => (
         <li key={l.href}>
           <Link
+            prefetch={false}
             transitionTypes={['nav-forward']}
             href={l.href}
             className="inline-flex min-h-11 items-center link-inline type-ui"

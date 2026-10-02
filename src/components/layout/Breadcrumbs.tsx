@@ -46,6 +46,7 @@ export function Breadcrumbs({ pageRef, locale, title }: BreadcrumbsProps) {
                 </span>
               ) : (
                 <Link
+                  prefetch={false}
                   transitionTypes={['nav-back']}
                   href={href}
                   className={`${HIT_AREA_FLUSH} text-ink-muted hover:text-ink`}

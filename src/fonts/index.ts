@@ -4,7 +4,7 @@ import localFont from 'next/font/local';
 export const mona = localFont({
   src: './MonaSans-trim.woff2',
   variable: '--font-mona',
-  weight: '350 800',
+  weight: '380 760',
   style: 'normal',
   display: 'swap',
   preload: true,

@@ -99,6 +99,7 @@ export function Areas({ locale }: { locale: Locale }) {
                   ) : null}
                   <p className="mt-4">
                     <Link
+                      prefetch={false}
                       transitionTypes={['nav-forward']}
                       href={`${projects.href}?alan=${a.id}` as Route}
                       hrefLang={projects.hrefLang}
@@ -123,6 +124,7 @@ export function Areas({ locale }: { locale: Locale }) {
           ) : null}
           <p className="areas-all mt-block">
             <Link
+              prefetch={false}
               transitionTypes={['nav-forward']}
               href={all.href}
               hrefLang={all.hrefLang}
