@@ -36,7 +36,17 @@ export function LenisProvider() {
       off = undefined;
       rt.gsap.ticker.remove(tick);
       rt.gsap.ticker.lagSmoothing(500, 33); // GSAP varsayılanı
-      lenis?.destroy();
+      if (lenis) {
+        // lenis 1.3 destroy() yerel kaydırmanın 400 ms'lik _resetVelocityTimeout'unu temizlemez; zamanlayıcı söküm sonrası
+        // isScrolling = false yazıp updateClassName ile html'e `lenis` sınıfını geri ekliyordu (K-VAR-5, PR #15 CI)
+        const internal = lenis as unknown as {
+          _resetVelocityTimeout?: ReturnType<typeof setTimeout> | null;
+          updateClassName: () => void;
+        };
+        if (internal._resetVelocityTimeout) clearTimeout(internal._resetVelocityTimeout);
+        lenis.destroy();
+        internal.updateClassName = () => {};
+      }
       lenis = null;
     };
     // K-VAR-5: azaltılmış harekete geçişte Lenis tercih olayıyla AYNI görevde sökülür. React'in effect temizliği yavaş

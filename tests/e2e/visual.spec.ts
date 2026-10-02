@@ -68,11 +68,15 @@ test.describe('K-GEN-10 görsel regresyon', { tag: ['@reduced-motion', '@pixel-7
         await page.evaluate(() => document.fonts.ready);
         // Tam sayfa görüntüsünde tembel (lazy) görseller koşudan koşuya farklı anda yüklenir (gerçek proje galerisi):
         // hepsi yüklenip çözülene kadar beklenir
-        await page.evaluate(async () => {
+        const pending = await page.evaluate(async () => {
           const imgs = [...document.images];
           for (const img of imgs) img.loading = 'eager';
-          await Promise.all(imgs.map((img) => img.decode().catch(() => undefined)));
+          const all = Promise.all(imgs.map((img) => img.decode().catch(() => undefined)));
+          // takılan istek (ör. sunucu tarafında kilitlenmiş /_next/image) adıyla raporlansın; sonsuz beklenmez
+          await Promise.race([all, new Promise((resolve) => setTimeout(resolve, 45_000))]);
+          return imgs.filter((img) => !img.complete).map((img) => img.currentSrc || img.src);
         });
+        expect(pending, `${path}: çözülmeyen görseller`).toEqual([]);
         // SPEC-SAPMA §13.4.2 (M5): #scene-layer §5.12.5'ten beri tam ekran fixed kutudur; tamamı maskelenirse tam sayfa
         // görüntüsünün ilk ekranı kapanır. Yalnız canvas maskelenir (azaltılmış harekette canvas yoktur, statik KOD
         // panelleri dahil)
