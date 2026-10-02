@@ -8547,6 +8547,14 @@ Kodlama ajanı bu listeyi M2 (tasarım sistemi), M4 (hareket), M7 (mikro etkile�
 - [ ] Baskı önizlemesi açık temada. Sahne, başlık çubuğu ve anahtarlar yok.
 - [ ] OG görselleri (kök ve proje, TR ve EN) QA dizgisini (§6.8) doğru çiziyor. Başlıklar taşmıyor.
 
+- M8 tasarım QA (2026-10-02; 1440 / 390 / 320 / 844×390, iki tema, `forced-colors`, statik kademe ekran görüntüleri) bulguları ve düzeltmeleri:
+  - Statik panellerde vurgulu satırlar (imleç satırı, areas ağaç vurguları, terminal istemi) kayıyordu: `.kb0…kb6` `display: inline-flex` idi ve flex kapsayıcı yalnız boşluktan oluşan koşuları çizmiyordu (girinti, sözcük arası ve sağ çerçeve boşlukları sıfırlanıyordu; hero'da "13child:Text('OrçunSAATCİ')"). `inline-block` yapıldı. KOD geçişinden beri vardı; görsel tabanlar M8'de yeniden üretilir.
+  - ✓ içeren satırlarda sağ çerçeve 1.5–3 px kayıyordu: `.ks` genişliği kendi 0.86em font boyutunun `1ch`'siyle çözülüyordu → `calc(1ch / 0.86)`.
+  - 404 satır içi paneli boştu (metin ≈ 0.4 px): `.kod-inline` `--kod-w: min(100%, 40rem)` font boyutunda da kullanıldığından yüzde ebeveynin font boyutuna çözülüyordu. Sarmalayıcı `@container`, `--kod-w: min(100cqw, 40rem)` (K-DEEP-9 E2E metni bulduğu için geçiyordu).
+  - SPEC-SAPMA: §6.2.4 (M8) — hero adı < 64rem'de `--text-display-fit-sm` = `min(--text-display, (100vw − 2·margin) / 4.15)` ("SAATCİ" 3.95 em, ≈ %95 doluluk): 360 px ve üstünde 4.8rem değişmez; 320 px'te ve %200 yakınlaştırmada ad kelime ortasından bölünmez ("SAAT / Cİ" görülmüştü). Yatay telefon böleni eski ada göreydi (3.6) → 4.35.
+  - `forced-colors`'ta H1'in metin plakası (backplate) 0.92 satır kutusundan taşıp eyebrow satırını ve hero panelinin alt satırını örtüyordu: H1'de `forced-color-adjust: none` + `CanvasText` (§10.5.3).
+  - Geçenler: Türkçe dizgi (İ/ı/Ğ/ş, "SAATCİ", EN'de `lang="tr"` ad), `ss01`/`ss03`, panel hiçbir metnin arkasında değil (360/768/1440), gece paneli her temada, 320 px'te yatay kaydırma yok, kapaklar 16:10 ve filtresiz, baskı ve `contrast: more` (otomatik testlerde). Kutu çizgi karakterleri Martian Mono'da yoktur; yedek monospace fontla `.kd` hücre genişliğine sabitlenerek hizalı çizilir.
+
 ### 6.12 Kabul kriterleri
 
 - [ ] `src/app/globals.css`, §6.10.1 ile aynı içerikte. `npm run build` hatasız. Depoda `tailwind.config.*` yok.
