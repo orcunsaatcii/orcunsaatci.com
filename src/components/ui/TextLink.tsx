@@ -82,6 +82,7 @@ export function TextLink(props: TextLinkProps) {
   }
   return (
     <Link
+      prefetch={false}
       transitionTypes={['nav-forward']}
       href={props.href}
       className={cls}

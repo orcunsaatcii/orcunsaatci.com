@@ -507,14 +507,23 @@
     min-height: 60svh;
   }
   [data-chapter='hero'] > h1 {
-    /* iki satır ("Orçun" / "Saatçi") yarım genişlikte sığar; kelime bölünmez */
-    font-size: min(var(--text-display), calc((50vw - var(--spacing-margin)) / 3.6));
+    /* iki satır ("Orçun" / "SAATCİ") yarım genişlikte sığar; kelime bölünmez. En uzun satır 3.95 em → 4.35 (sütun
+       aralığı payıyla ≈ %91; M8: eski ad için ölçülen 3.6 "SAATCİ"yi sütundan taşırıyordu) */
+    font-size: min(var(--text-display), calc((50vw - var(--spacing-margin)) / 4.35));
   }
 }
 
 /* Satır yüksekliği 0.92 olan H1'in Ç/ç çengeli alt satıra taşar: lead ile arasına aksan payı (X6 tasarım QA) */
 [data-chapter='hero'] > h1 {
   margin-bottom: 0.12em;
+}
+/* forced-colors: tarayıcının metin arkasına çizdiği Canvas plakası 0.92 satır kutusundan taşar ve üstteki eyebrow
+   satırını ve hero panelinin alt satırını örter (M8 tasarım QA). Plaka kapatılır, renk sistem rengidir (§10.5.3). */
+@media (forced-colors: active) {
+  [data-chapter='hero'] > h1 {
+    forced-color-adjust: none;
+    color: CanvasText;
+  }
 }
 
 /* Duraklatma düğmesi: 64rem altında sahne bandıyla aynı grid alanında, sağ altta (satır yüksekliğini sahne

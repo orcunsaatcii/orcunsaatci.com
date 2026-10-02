@@ -118,7 +118,13 @@ export function Button(props: ButtonProps) {
       );
     }
     return (
-      <Link transitionTypes={['nav-forward']} href={props.href} className={cls} hrefLang={hrefLang}>
+      <Link
+        prefetch={false}
+        transitionTypes={['nav-forward']}
+        href={props.href}
+        className={cls}
+        hrefLang={hrefLang}
+      >
         {children}
       </Link>
     );

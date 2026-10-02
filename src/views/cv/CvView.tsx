@@ -46,6 +46,7 @@ export function CvView({ locale }: { locale: Locale }) {
     if (own) {
       return (
         <Link
+          prefetch={false}
           transitionTypes={['nav-forward']}
           href={pathOf({ key: 'project', param: slug }, locale)}
           className="link-inline"

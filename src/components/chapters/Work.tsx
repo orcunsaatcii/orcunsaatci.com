@@ -105,6 +105,7 @@ export function Work({ locale }: { locale: Locale }) {
                 <div data-reveal="block">
                   <p className="mt-4">
                     <Link
+                      prefetch={false}
                       transitionTypes={['nav-forward']}
                       href={pathOf({ key: 'project', param: p.slug }, locale)}
                       className="link-inline type-ui"
@@ -174,6 +175,7 @@ export function Work({ locale }: { locale: Locale }) {
       </div>
       <p className="work-closing mt-block">
         <Link
+          prefetch={false}
           transitionTypes={['nav-forward']}
           href={all.href}
           hrefLang={all.hrefLang}

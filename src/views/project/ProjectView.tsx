@@ -200,6 +200,7 @@ export function ProjectView({ project, locale }: { project: ProjectDoc; locale: 
                   : (`${projectsLink.href}?alan=${id}` as Route);
                 return (
                   <Link
+                    prefetch={false}
                     transitionTypes={['nav-forward']}
                     key={id}
                     href={href}
@@ -286,6 +287,7 @@ export function ProjectView({ project, locale }: { project: ProjectDoc; locale: 
               {dict.project.next}
             </p>
             <Link
+              prefetch={false}
               transitionTypes={['nav-forward']}
               href={pathOf({ key: 'project', param: next.slug }, locale)}
               className="group col-span-4 grid grid-cols-1 gap-gutter md:col-span-8 md:grid-cols-2 md:items-center lg:col-span-7"

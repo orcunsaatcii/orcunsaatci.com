@@ -1,7 +1,8 @@
 // playwright.config.ts
 import { defineConfig, devices, type Project } from '@playwright/test';
 
-const PORT = 3000;
+// Paralel yerel koşular için (ör. ayrı worktree'ler) PORT ile değiştirilebilir; CI 3000 kullanır.
+const PORT = Number(process.env.PORT ?? 3000);
 const baseURL = process.env.BASE_URL ?? `http://localhost:${PORT}`;
 const SWIFTSHADER = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'];
 const DESKTOP = { width: 1440, height: 900 };

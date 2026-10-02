@@ -2,7 +2,9 @@
 // canvas geçişi ve örtüşme, çapalar ve programlar (K-KOD-1/2), bağlam kaybı, hot reload (K-HERO-8), kendiliğinden hareket
 // (süzülme, boşta durma, duraklatma; K-HERO-9/10), paralaks, kare politikası, kademe tablosu ve tema bağlaması. Mutlu yol
 // ?tier=high (masaüstü) / ?tier=medium (mobil) ile koşar; doğal yol ready ya da fallback kabul eder (V-41). Yükleme
-// sırası ve chunk boyutları perf-budgets.spec.ts'tedir. Bekleme sayfa içinde yapılır (waitForTimeout YASAK).
+// sırası ve chunk boyutları perf-budgets.spec.ts'tedir. Bekleme sayfa içinde yapılır (waitForTimeout YASAK). Derin sayfa
+// presetleri (M8): route başına preset (K-DEEP-1/10), okuma modu (K-DEEP-3), "Sonraki proje" (K-DEEP-4), filtre ve
+// yüzen önizleme (K-DEEP-5); route geçişleri transitions.spec.ts'tedir.
 import type { Page } from '@playwright/test';
 import sharp from 'sharp';
 import { initialQuality } from '../../src/stage/quality';
@@ -686,5 +688,185 @@ test.describe('K-DEEP-2', { tag: ['@desktop-chromium', '@pixel-7', '@iphone-15']
     );
     await expect(page.locator('canvas')).toHaveCount(0);
     await expect(page.locator('#scene-layer')).toHaveAttribute('data-phase', 'poster');
+  });
+});
+
+/** ?debug kancası yüklendi (debug modülü dinamik import edilir) */
+const debugReady = (page: Page) =>
+  page.waitForFunction(() => !!(window as unknown as { __stage?: unknown }).__stage);
+const layerOpacity = (page: Page) =>
+  page.evaluate(() =>
+    Number.parseFloat(getComputedStyle(document.getElementById('scene-layer')!).opacity),
+  );
+
+test.describe('§4.13 derin sayfa presetleri', { tag: ['@desktop-chromium'] }, () => {
+  test('K-DEEP-1 her route’un preset’i §4.13.2 ile aynı; K-DEEP-10 /cv’de çapa yok (preset none)', async ({
+    page,
+  }) => {
+    await page.goto('/projeler?debug&tier=static', { waitUntil: 'networkidle' });
+    const project = (await page.locator('main li[data-project] a').first().getAttribute('href'))!;
+    const cases = [
+      ['/', 'home'],
+      ['/projeler', 'plan-small'],
+      [project, 'folio'],
+      ['/calisma-alanlari', 'plan-small'],
+      ['/hakkimda', 'about-page'],
+      ['/iletisim', 'contact-page'],
+      ['/cv', 'none'],
+      ['/gizlilik', 'none'],
+      ['/en', 'home'],
+      ['/en/about', 'about-page'],
+    ] as const;
+    for (const [path, preset] of cases) {
+      await test.step(path, async () => {
+        await page.goto(`${path}?debug&tier=static`, { waitUntil: 'networkidle' });
+        await debugReady(page);
+        await expect
+          .poll(async () => (await readStage(page)).preset, { message: path })
+          .toBe(preset);
+        if (preset === 'none')
+          await expect(page.locator('[data-stage-anchor]'), `${path}: çapa yok`).toHaveCount(0);
+      });
+    }
+  });
+
+  test('K-DEEP-3 okuma modu: page-folio bloğu çıkınca --scene-opacity 300 ms’de 0; sonraki kaydırmada kare çizilmez', async ({
+    page,
+  }, info) => {
+    test.setTimeout(90_000);
+    // süre: director kademeden bağımsızdır; statik kademede kare zamanlaması kesindir (CI SwiftShader ≈ 2 fps)
+    await page.goto('/hakkimda?debug&tier=static', { waitUntil: 'networkidle' });
+    await page.waitForFunction(() => document.documentElement.classList.contains('motion-ready'));
+    await debugReady(page);
+    await settle(page);
+    expect(await layerOpacity(page), 'başlık yanında panel görünür').toBeGreaterThan(0.99);
+    // --scene-opacity yazımları (kare başına): ilk düşüşten 0'a kadar ≤ 300 ms; pay = yazımlar arası en büyük boşluk
+    const t = await page.evaluate(
+      () =>
+        new Promise<{ first: number; zero: number; gap: number }>((resolve) => {
+          type L = { live: { layout: { reading?: number } | null } };
+          const layer = document.getElementById('scene-layer')!;
+          const reading = (window as unknown as { __stage: L }).__stage.live.layout?.reading ?? 0;
+          const val = () => Number.parseFloat(layer.style.getPropertyValue('--scene-opacity'));
+          const writes: number[] = [];
+          const t0 = performance.now();
+          new MutationObserver(() => {
+            const at = performance.now() - t0;
+            if (val() < 0.999) writes.push(at);
+            if (val() <= 0.01) {
+              const gap = Math.max(0, ...writes.slice(1).map((w, i) => w - (writes[i] ?? w)));
+              resolve({ first: writes[0] ?? at, zero: at, gap });
+            }
+          }).observe(layer, { attributes: true, attributeFilter: ['style'] });
+          window.scrollTo({ top: reading + 0.05 * window.innerHeight, behavior: 'instant' });
+        }),
+    );
+    info.annotations.push({ type: 'K-DEEP-3 sönme (ms)', description: JSON.stringify(t) });
+    expect(t.zero - t.first, `sönme ≤ 300 ms (kare boşluğu ${t.gap} ms)`).toBeLessThanOrEqual(
+      300 + t.gap,
+    );
+
+    // kare: canlı sahne, sönük katmanda kaydırma kare istemez (loop never)
+    await page.goto('/hakkimda?debug&tier=high');
+    await waitForStagePhase(page, ['ready']);
+    await settle(page);
+    const reading = await page.evaluate(
+      () =>
+        (window as unknown as { __stage: { live: { layout: { reading?: number } | null } } })
+          .__stage.live.layout?.reading ?? 0,
+    );
+    await page.evaluate((y) => window.scrollTo({ top: y + 20, behavior: 'instant' }), reading);
+    await expect.poll(() => layerOpacity(page), { message: 'okuma modu' }).toBe(0);
+    await expect.poll(async () => (await readStage(page)).loop).toBe('never');
+    const f0 = (await readLive(page)).frames;
+    for (const dy of [200, 400, 600]) {
+      await page.evaluate((y) => window.scrollTo({ top: y, behavior: 'instant' }), reading + dy);
+      await settle(page);
+    }
+    expect((await readLive(page)).frames - f0, 'okurken kare yok').toBe(0);
+  });
+
+  test('K-DEEP-4 "Sonraki proje" bloğu görününce panel o çapada belirir ve next: <slug> programını gösterir', async ({
+    page,
+  }) => {
+    test.setTimeout(90_000);
+    await page.goto('/projeler?tier=static', { waitUntil: 'networkidle' });
+    const project = (await page.locator('main li[data-project] a').first().getAttribute('href'))!;
+    await page.goto(`${project}?debug&tier=high`);
+    await waitForStagePhase(page, ['ready']);
+    const next = page.locator('section[aria-labelledby="next-title"]');
+    const slug = ((await next.locator('a').first().getAttribute('href')) ?? '').split('/').at(-1);
+    await next.evaluate((el) => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
+    await settle(page);
+    await expect
+      .poll(async () => (await readLive(page)).kod.key, {
+        message: 'next programı',
+        timeout: 15_000,
+      })
+      .toBe(`next:${slug}`);
+    await expect.poll(() => layerOpacity(page), { message: 'panel belirir' }).toBeGreaterThan(0.99);
+    await waitForPanelStill(page);
+    const live = await readLive(page);
+    const still = await next.evaluate((el) => {
+      const r = el.querySelector('[data-stage-anchor] .kod-panel')!.getBoundingClientRect();
+      return { x: r.left, y: r.top, w: r.width, h: r.height };
+    });
+    for (const k of ['x', 'y', 'w', 'h'] as const)
+      expect.soft(Math.abs(live.panel[k] - still[k]), `slot 1 ${k}`).toBeLessThanOrEqual(2);
+  });
+
+  test('K-DEEP-5 /projeler filtre çipi panelde ls projects/ --area=<id> açar; yüzen önizleme §4.14.5', async ({
+    page,
+  }) => {
+    test.setTimeout(90_000);
+    await page.goto('/projeler?debug&tier=high');
+    await waitForStagePhase(page, ['ready']);
+    await page.waitForFunction(() => document.documentElement.classList.contains('motion-ready'));
+    await expect.poll(async () => (await readLive(page)).kod.key).toBe('list:');
+    const chips = page.getByRole('group', { name: 'Alana göre filtrele' }).getByRole('button');
+    await chips.nth(1).click();
+    await expect(page).toHaveURL(/[?&]alan=/);
+    const area = new URL(page.url()).searchParams.get('alan');
+    await expect
+      .poll(async () => (await readLive(page)).kod.key, { message: 'filtreli liste' })
+      .toBe(`list:${area}`);
+    await chips.first().click();
+    await expect.poll(async () => (await readLive(page)).kod.key).toBe('list:');
+
+    // yüzen önizleme: işaretçide başlığın sağında, clamp(240px, 22vw, 360px); klavyede satırın sağ ucunda
+    const row = page.locator('main li[data-project]').first();
+    const preview = page.locator('.floating-preview');
+    await row.hover();
+    await expect(preview).toHaveAttribute('data-open', '');
+    await expect(preview).toHaveAttribute('aria-hidden', 'true');
+    await expect(preview.locator('img[data-on]')).toHaveAttribute('alt', '');
+    await pageDelay(page, 700); // giriş (400 ms) ve takip (0.5 s) biter
+    const geo = () =>
+      row.evaluate((li) => {
+        const p = document.querySelector('.floating-preview')!.getBoundingClientRect();
+        const r = li.getBoundingClientRect();
+        const h = li.querySelector('h2')!.getBoundingClientRect();
+        return {
+          p: { l: p.left, r: p.right, w: p.width },
+          row: r.right,
+          title: h.right,
+          vw: innerWidth,
+        };
+      });
+    let g = await geo();
+    expect
+      .soft(Math.abs(g.p.w - Math.min(360, Math.max(240, 0.22 * g.vw))), 'genişlik')
+      .toBeLessThanOrEqual(1);
+    expect.soft(g.p.l, 'başlığın üstüne binmez').toBeGreaterThanOrEqual(g.title);
+    expect.soft(g.p.r, 'görüntü alanında').toBeLessThanOrEqual(g.vw);
+    await page.mouse.move(4, 4);
+    await chips.last().focus();
+    await page.keyboard.press('Tab');
+    await expect(row.locator('a').first()).toBeFocused();
+    await expect(preview).toHaveAttribute('data-open', '');
+    await pageDelay(page, 700); // giriş ölçeği (0.96 → 1, 400 ms) biter
+    g = await geo();
+    expect.soft(Math.abs(g.p.r - g.row), 'klavye: satırın sağ ucuna sabit').toBeLessThanOrEqual(1);
+    await page.waitForLoadState('networkidle');
   });
 });

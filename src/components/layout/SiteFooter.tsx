@@ -110,6 +110,7 @@ export function SiteFooter({ locale, enPaths, variant }: SiteFooterProps) {
                 return (
                   <li key={key}>
                     <Link
+                      prefetch={false}
                       transitionTypes={['nav-forward']}
                       href={href}
                       hrefLang={hrefLang}
@@ -131,6 +132,7 @@ export function SiteFooter({ locale, enPaths, variant }: SiteFooterProps) {
           ].join(' ')}
         >
           <Link
+            prefetch={false}
             transitionTypes={['nav-forward']}
             href={privacy.href}
             hrefLang={privacy.hrefLang}

@@ -88,6 +88,7 @@ export function Contact({ locale }: { locale: Locale }) {
           {status ? <p className="type-ui text-ink-muted">{dict.availability[status]}</p> : null}
           <p>
             <Link
+              prefetch={false}
               transitionTypes={['nav-forward']}
               href={more.href}
               hrefLang={more.hrefLang}

@@ -111,6 +111,7 @@ export function ExpertiseView({ locale }: { locale: Locale }) {
                 <p className="mt-4">
                   {areaPages.has(a.id) ? (
                     <Link
+                      prefetch={false}
                       transitionTypes={['nav-forward']}
                       href={pathOf({ key: 'area', param: a.id }, locale)}
                       className="link-inline type-ui"
@@ -120,6 +121,7 @@ export function ExpertiseView({ locale }: { locale: Locale }) {
                     </Link>
                   ) : (
                     <Link
+                      prefetch={false}
                       transitionTypes={['nav-forward']}
                       href={`${projectsLink.href}?alan=${a.id}` as Route}
                       hrefLang={projectsLink.hrefLang}

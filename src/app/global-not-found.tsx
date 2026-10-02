@@ -35,6 +35,7 @@ function Links({ locale, email }: { locale: Locale; email?: string }) {
       {links.map((l) => (
         <li key={l.href}>
           <Link
+            prefetch={false}
             transitionTypes={['nav-forward']}
             href={l.href}
             className="inline-flex min-h-11 items-center link-inline type-ui"
@@ -83,7 +84,7 @@ export default function GlobalNotFound() {
               </div>
             )}
           </div>
-          <div className="col-span-4 mx-auto w-full max-w-sm md:col-span-6 md:col-start-2 lg:col-span-5 lg:col-start-8">
+          <div className="@container col-span-4 mx-auto w-full max-w-sm md:col-span-6 md:col-start-2 lg:col-span-5 lg:col-start-8">
             <KodPanel
               className="kod-inline"
               data={getKodData('about-page', undefined, 'tr')}

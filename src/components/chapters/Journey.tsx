@@ -143,6 +143,7 @@ export function Journey({ locale }: { locale: Locale }) {
             >
               <CvDownload locale={locale} />
               <Link
+                prefetch={false}
                 transitionTypes={['nav-forward']}
                 href={cv.href}
                 hrefLang={cv.hrefLang}

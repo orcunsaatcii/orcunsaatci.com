@@ -1,5 +1,5 @@
 // tests/e2e/a11y-reflow.spec.ts — yeniden akış, yakınlaştırma ve metin aralığı (§10.5.4; WCAG 1.4.4, 1.4.10,
-// 1.4.12, 1.3.4). Sayfa listesi: sitemap + NOINDEX_PATHS (pagePaths).
+// 1.4.12, 1.3.4) ve §6.12 genişlik taraması. Sayfa listesi: sitemap + NOINDEX_PATHS (pagePaths).
 import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { pagePaths } from './helpers/urls';
@@ -43,6 +43,44 @@ test.describe('§10.5.4 yeniden akış', { tag: ['@desktop-chromium'] }, () => {
       }
     });
   }
+
+  test('§6.12 360 / 768 / 1024 / 1440 / 1920 px genişlikte her route’ta yatay taşma yok', async ({
+    page,
+    request,
+  }) => {
+    test.slow(); // her route × 5 genişlik (CI koşucusu yavaş)
+    for (const path of await pagePaths(request)) {
+      await test.step(path, async () => {
+        await page.setViewportSize({ width: 1920, height: 1080 });
+        await open(page, path);
+        for (const width of [1920, 1440, 1024, 768, 360]) {
+          // headless'ta resize olayı yerleşimden yüzlerce ms sonra gelir: sayfanın resize işleyicileri koştuktan sonra
+          // ölçülür (gerçek tarayıcıda ikisi aynı karededir)
+          await page.evaluate(() => {
+            const w = window as unknown as { __resized?: boolean };
+            w.__resized = false;
+            window.addEventListener('resize', () => (w.__resized = true), { once: true });
+          });
+          await page.setViewportSize({ width, height: 900 });
+          if (width !== 1920)
+            await page.waitForFunction(
+              () => (window as unknown as { __resized?: boolean }).__resized === true,
+            );
+          const [scrollWidth, innerWidth] = await page.evaluate(
+            () =>
+              new Promise<[number, number]>((resolve) =>
+                requestAnimationFrame(() =>
+                  requestAnimationFrame(() =>
+                    resolve([document.documentElement.scrollWidth, window.innerWidth]),
+                  ),
+                ),
+              ),
+          );
+          expect.soft(scrollWidth, `${path} @${width}`).toBeLessThanOrEqual(innerWidth);
+        }
+      });
+    }
+  });
 
   test('1.4.12 metin aralığı enjeksiyonunda kırpılan metin yok', async ({ page, request }) => {
     await page.setViewportSize({ width: 320, height: 640 });

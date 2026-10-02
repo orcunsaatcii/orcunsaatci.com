@@ -5,8 +5,25 @@ import { expect, test } from '../fixtures';
 
 export const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
-/** Sonlu CSS/WAAPI animasyonları (ör. hero-in girişi) bitene kadar bekler: kontrast ara karede ölçülmez. */
+/**
+ * Önce MotionRoot'un reveal kurulumunu (load + boşluk → `.motion-ready`), sonra sonlu CSS/WAAPI animasyonlarını (ör.
+ * hero-in girişi) bekler: kontrast ara karede ölçülmez. Kurulum axe koşusunun ortasına denk gelirse kurulan öğelerin
+ * opaklık geçişi ara renk ölçtürüyordu (paralel işçilerde `/`: 70 color-contrast). `global-not-found` MotionRoot
+ * taşımaz; JS'siz ve azaltılmış harekette `data-motion` "full" değildir.
+ */
 export async function waitForAnimations(page: Page): Promise<void> {
+  await page.waitForFunction(
+    () => {
+      const html = document.documentElement;
+      return (
+        html.dataset.motion !== 'full' ||
+        html.classList.contains('motion-ready') ||
+        document.querySelector('[data-404="global"]') !== null
+      );
+    },
+    undefined,
+    { timeout: 20_000 },
+  );
   await page.evaluate(() =>
     Promise.all(
       document

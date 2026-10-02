@@ -35,13 +35,14 @@
 .kod-panel[data-kod-step]:not([data-active]) {
   visibility: hidden;
 }
-/* Çapa dışı kullanım (404): akışta, sütun genişliğinde */
+/* Çapa dışı kullanım (404): akışta, sütun genişliğinde. Sarmalayıcı `@container`'dır: --kod-w font boyutunda da
+   kullanıldığından yüzde olamaz (font-size'da % ebeveynin font boyutudur; M8'de metin ≈ 0.4 px çıkıyordu). */
 .kod-panel.kod-inline {
   position: relative;
   left: auto;
   top: auto;
   translate: none;
-  --kod-w: min(100%, 40rem);
+  --kod-w: min(100cqw, 40rem);
 }
 .kod-pre {
   margin: 0;
@@ -98,8 +99,9 @@
 .kod-pre .kb5,
 .kod-pre .kb6 {
   background: color-mix(in srgb, var(--kbc) calc(var(--ba, 0) * 100%), transparent);
-  /* zemin hücre yüksekliğinin tamamını kaplar */
-  display: inline-flex;
+  /* zemin hücre yüksekliğinin tamamını kaplar. inline-flex DEĞİL: flex kapsayıcı yalnız boşluktan oluşan metni çizmez,
+     vurgulu satırın boşluk koşuları sıfır genişliğe iner ve satır kayar (M8 tasarım QA'sında bulundu). */
+  display: inline-block;
   height: 2ch;
   vertical-align: top;
 }
@@ -138,7 +140,8 @@
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  width: 1ch;
+  /* 1ch kendi (0.86em) font boyutuyla çözülür: hücre genişliği için bölünür (M8: ✓'li satırlarda çerçeve kayıyordu) */
+  width: calc(1ch / 0.86);
   height: 2ch;
   text-align: center;
   vertical-align: top;

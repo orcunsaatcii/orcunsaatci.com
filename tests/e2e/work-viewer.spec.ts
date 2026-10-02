@@ -1,6 +1,7 @@
 // tests/e2e/work-viewer.spec.ts — work görüntüleyicisi: aynı grid alanında üst üste sticky figürler (§4.9.3, K-WORK-1,
-// K-WORK-10, V-38). Çapraz tarayıcı projeleri yalnız PW_CROSS=1 iken vardır (§13.3.7). Geometri beklentisi ızgara
-// formülünden hesaplanır (k7–12, top 14 svh); fark ≤ 2 px. Ekran görüntüsü tabanı yalnız desktop-chromium'dadır.
+// K-WORK-10, V-38); ASCII derleme kaplaması aria-hidden (§10.4.4). Çapraz tarayıcı projeleri yalnız PW_CROSS=1 iken
+// vardır (§13.3.7). Geometri beklentisi ızgara formülünden hesaplanır (k7–12, top 14 svh); fark ≤ 2 px. Ekran
+// görüntüsü tabanı yalnız desktop-chromium'dadır.
 import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { settle } from './helpers/scroll';
@@ -32,6 +33,17 @@ test.describe(
       page,
       browserName,
     }) => {
+      // §10.4.4: ASCII derleme kaplaması (geçici canvas) aria-hidden doğar
+      await page.addInitScript(() => {
+        const seen: (string | null)[] = [];
+        (window as unknown as { __ascii: typeof seen }).__ascii = seen;
+        new MutationObserver((list) => {
+          for (const r of list)
+            for (const n of r.addedNodes)
+              if (n instanceof HTMLCanvasElement && n.classList.contains('ascii-compile'))
+                seen.push(n.getAttribute('aria-hidden'));
+        }).observe(document, { childList: true, subtree: true });
+      });
       await page.goto('/', { waitUntil: 'networkidle' });
       await page.waitForFunction(() => document.documentElement.classList.contains('motion-ready'));
       const count = await page.locator('[data-work-figure]').count();
@@ -83,6 +95,13 @@ test.describe(
         const viewer = page.locator('[data-work-figure]').nth(1);
         await expect(viewer).toHaveScreenshot('work-viewer.png');
       }
+      const ascii = await page.evaluate(() => (window as unknown as { __ascii: string[] }).__ascii);
+      if (browserName === 'chromium')
+        expect(ascii.length, 'ASCII derlemesi oynadı').toBeGreaterThan(0);
+      expect(
+        ascii.filter((a) => a !== 'true'),
+        'ascii-compile aria-hidden',
+      ).toEqual([]);
     });
   },
 );

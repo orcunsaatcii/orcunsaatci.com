@@ -232,6 +232,37 @@ test.describe('§6.12 tasarım sistemi', { tag: ['@desktop-chromium'] }, () => {
     }
   });
 
+  test('filtre çipleri ≥ 44 × 44 px; areas adım düğmeleri ≥ 2.5.8 AA tabanı (24 px)', async ({
+    page,
+  }) => {
+    const boxes = (selector: string) =>
+      page.locator(selector).evaluateAll((els) =>
+        els
+          .filter((el) => el.getClientRects().length > 0)
+          .map((el) => {
+            const r = el.getBoundingClientRect();
+            return { el: `${el.tagName} "${el.textContent?.trim()}"`, w: r.width, h: r.height };
+          }),
+      );
+    await page.goto('/projeler');
+    const chips = await boxes('main [role="group"] button');
+    expect(chips.length, 'filtre çipleri').toBeGreaterThan(1);
+    for (const b of chips) {
+      expect.soft(b.w, `${b.el} genişlik`).toBeGreaterThanOrEqual(44);
+      expect.soft(b.h, `${b.el} yükseklik`).toBeGreaterThanOrEqual(44);
+    }
+    // §6.12 notu (M8): adım düğmeleri 1440 × 900'de 30 px yüksekliğindedir; 44 px pin'i liste moduna iter (sığma
+    // payı 0). Açık madde; burada WCAG 2.5.8 AA tabanı korunur.
+    await page.goto('/?tier=static');
+    await expect(page.locator('[data-area-step]').first()).toBeVisible(); // pin modu (istemci)
+    const steps = await boxes('[data-area-step]');
+    expect(steps.length, 'adım düğmeleri').toBeGreaterThanOrEqual(3);
+    for (const b of steps) {
+      expect.soft(b.w, `${b.el} genişlik`).toBeGreaterThanOrEqual(44);
+      expect.soft(b.h, `${b.el} yükseklik`).toBeGreaterThanOrEqual(24);
+    }
+  });
+
   test('hero <h1>: ilk karede opak ve animasyonsuz; 360 px’te iki, 1440 px’te tek satır', async ({
     page,
   }) => {

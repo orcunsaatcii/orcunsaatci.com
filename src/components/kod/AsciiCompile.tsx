@@ -6,6 +6,7 @@
 // çözülmemişse çizilmez. Aynı anda tek kaplama: yenisi başlarken süren kaldırılır. Mobilde, azaltılmış harekette ve
 // JS'siz yoktur.
 import { useEffect, useRef } from 'react';
+import { palettes } from '@/design/tokens';
 import { onStageEvent } from '@/stage/events';
 import './kod-panel.css';
 
@@ -109,8 +110,11 @@ export function AsciiCompile({ index }: { index: number }) {
         color[j] = `rgb(${c(0)},${c(1)},${c(2)})`;
       }
       const cs = getComputedStyle(document.documentElement);
-      const surface = cs.getPropertyValue('--color-surface').trim() || '#f7f8fa';
-      const accent = cs.getPropertyValue('--color-accent').trim() || '#b0103c';
+      // değişkenler globals.css'te her zaman tanımlı; yedek token'dan (bileşende renk literali yok, §6.12)
+      const surface =
+        cs.getPropertyValue('--color-surface').trim() || palettes.mekanizma.light.surface;
+      const accent =
+        cs.getPropertyValue('--color-accent').trim() || palettes.mekanizma.light.accent;
       const font = cs.getPropertyValue('--font-mono').trim() || 'monospace';
       g.setTransform(dpr, 0, 0, dpr, 0, 0);
       g.font = `500 ${Math.round(ch * 0.78)}px ${font}`;

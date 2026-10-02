@@ -190,6 +190,9 @@
   /* ≥ 64rem tek satırlık hero adı (§4.6.3); type-display ve hero çapası (K-HERO-6) paylaşır. Bölen = adın em genişliği /
      doluluk: "Orçun SAATCİ" 7.30 em → 7.95 ile içerik genişliğinin %92'si (SPEC-SAPMA §4.6.3: eski ad 6.69 em / 7.3) */
   --text-display-fit: min(var(--text-display), calc((100vw - 2 * var(--spacing-margin)) / 7.95));
+  /* < 64rem iki satır: en uzun satır "SAATCİ" 3.95 em → 4.15 (≈ %95 doluluk). 360 px ve üstünde clamp'in 4.8rem'i
+     değişmez; 320 px'te (ve %200 yakınlaştırmada) ad kelime ortasından bölünmez (M8 tasarım QA; ad değişirse ölç) */
+  --text-display-fit-sm: min(var(--text-display), calc((100vw - 2 * var(--spacing-margin)) / 4.15));
 
   --z-stage: 0;
   --z-content: 10;
@@ -364,7 +367,7 @@
 /* ── 6. Bileşik metin stilleri ve yardımcılar ────────────────────────────── */
 @utility type-display {                /* yalnız hero adı (§6.2.4) */
   font-family: var(--font-display);
-  font-size: var(--text-display);
+  font-size: var(--text-display-fit-sm);
   line-height: var(--leading-display);
   letter-spacing: var(--tracking-display);
   font-weight: var(--font-weight-heavy);

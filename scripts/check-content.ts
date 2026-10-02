@@ -126,6 +126,13 @@ const BODIES = [
 const PLACEHOLDER_RE = /\{\{[A-ZÇĞİÖŞÜ0-9_]+\}\}/u; // §0.4.1 kanonik desen (tek kaynak)
 const PLACEHOLDER = new RegExp(PLACEHOLDER_RE.source, 'gu');
 const RAW: [string, string][] = [];
+/** C13: web fontlarının kapsamı (scripts/subset-fonts.sh yazar); kümede olmayan karakter yedek fontla çizilir. */
+const COVERAGE = JSON.parse(await readFile('src/fonts/coverage.json', 'utf8')) as Record<
+  string,
+  number[]
+>;
+const COVERED = new Set(Object.values(COVERAGE).flat());
+const uncovered = new Map<string, string>(); // karakter → ilk görüldüğü yer
 for (const root of ['content', 'src/i18n/dictionaries']) {
   for await (const file of walk(root)) {
     // content/README.md sahip kılavuzudur (koleksiyonlara dahil değil, §7.2.1): yer tutucu ve ticari dil
@@ -133,6 +140,13 @@ for (const root of ['content', 'src/i18n/dictionaries']) {
     if (file === path.join('content', 'README.md')) continue;
     const text = await readFile(file, 'utf8');
     if (root === 'content') RAW.push([file, text]);
+    if (!/\.(ya?ml|mdx?|ts)$/.test(file)) continue; // görseller ve PDF'ler metin değildir
+    text.split('\n').forEach((line, i) => {
+      if (/^\s*(#|\/\/)/.test(line)) return; // YAML/TS yorumları sayfaya çıkmaz
+      for (const ch of line)
+        if (ch.codePointAt(0)! > 0x7e && !COVERED.has(ch.codePointAt(0)!) && !uncovered.has(ch))
+          uncovered.set(ch, `${file}:${i + 1}`);
+    });
     text.split('\n').forEach((line, i) => {
       for (const m of line.matchAll(PLACEHOLDER))
         strictly('C01', `${file}:${i + 1}`, `yer tutucu ${m[0]}`);
@@ -141,6 +155,13 @@ for (const root of ['content', 'src/i18n/dictionaries']) {
     });
   }
 }
+for (const [ch, where] of uncovered)
+  report(
+    'warn',
+    'C13',
+    where,
+    `"${ch}" (U+${ch.codePointAt(0)!.toString(16).toUpperCase().padStart(4, '0')}) web fontlarında yok; yedek fontla çizilir (scripts/subset-fonts.sh U_WEB)`,
+  );
 for (const a of C.allAreas)
   if (/^alan-\d+$/.test(a.id)) strictly('C01', `content/areas/${a.id}.yaml`, 'tohum alan id');
 for (const p of C.allProjects)
