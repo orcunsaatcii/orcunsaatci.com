@@ -47,7 +47,7 @@ const selectorOf = (el: Element) => {
 };
 
 /**
- * §5.18.2: Taş dairesinin sınır kutusuyla kesişen metin öğelerinin arkasındaki canvas pikselleri okunur (tek readPixels,
+ * §5.18.2: KOD panelinin dikdörtgeniyle kesişen metin öğelerinin arkasındaki canvas pikselleri okunur (tek readPixels,
  * 8×4 örnek), --scene-opacity ile çarpılıp sayfa rengine bindirilir, metin rengiyle WCAG oranı hesaplanır.
  */
 export async function probeContrast(persona: Persona = 'engineer'): Promise<ContrastReport> {
@@ -63,12 +63,12 @@ export async function probeContrast(persona: Persona = 'engineer'): Promise<Cont
   const layer = document.getElementById('scene-layer');
   const canvas = layer?.querySelector('canvas');
   const gl = canvas?.getContext('webgl2');
-  const s = live.stone;
-  if (!layer || !canvas || !gl || !s.visible || s.r <= 0) return report;
+  const s = live.panel;
+  if (!layer || !canvas || !gl || !s.visible || s.w <= 0) return report;
   const dpr = canvas.width / Math.max(1, canvas.clientWidth);
   const sceneOpacity = Number.parseFloat(getComputedStyle(layer).opacity) || 0;
   const page = hexRgb(themeColors(PROFILES[persona].palette, theme).canvas);
-  const box = { x0: s.cx - s.r, y0: s.cy - s.r, x1: s.cx + s.r, y1: s.cy + s.r };
+  const box = { x0: s.x, y0: s.y, x1: s.x + s.w, y1: s.y + s.h };
   const main = document.getElementById('main');
   if (!main) return report;
   for (const el of main.querySelectorAll<HTMLElement>('*')) {
@@ -164,6 +164,10 @@ export function mountDebug(persona: Persona = 'engineer'): void {
   button('bağlamı kaybet', () => lose()?.loseContext());
   button('geri yükle', () => lose()?.restoreContext());
   button('kontrast', () => void probeContrast(persona).then((r) => console.table(r.failures)));
+  button('hot reload’u oynat', () => {
+    live.kod.replayHot = true;
+    stageStore.getState().invalidate();
+  });
   for (const t of ['static', 'low', 'medium', 'high'])
     button(`tier=${t}`, () => {
       const u = new URL(window.location.href);
@@ -173,27 +177,17 @@ export function mountDebug(persona: Persona = 'engineer'): void {
   panel.append(out, actions);
   document.body.append(panel);
 
-  const keys = [
-    'camR',
-    'camAz',
-    'camEl',
-    'camFov',
-    'rotYScroll',
-    'rotYEvent',
-    'rotX',
-    'cut',
-    'anchorMix',
-  ] as const;
+  const keys = ['anchorFrom', 'anchorTo', 'anchorMix', 'opacityTrack', 'opacityCut'] as const;
   const tick = () => {
     const s = stageStore.getState();
     const q = s.quality;
     const lines = [
       `phase ${s.phase} · tier ${s.tier} (${s.tierReason ?? '—'}) · preset ${s.preset}`,
       `paused ${s.paused} · loop ${s.loop} · losses ${s.contextLosses}`,
-      q ? `dpr ${q.dpr} · ghost ${q.ghost} · oct ${q.octaves} · seg ${q.segments}` : 'quality —',
+      q ? `dpr ${q.dpr} · süzülme/paralaks ${q.motion}` : 'quality —',
       `gpu ${s.signals?.gpu ? `${s.signals.gpu.type}/${s.signals.gpu.tier} ${s.signals.gpu.name ?? ''}` : '—'}${s.signals?.software ? ' · yazılım render' : ''}`,
-      `stone ${fmt(live.stone.cx)},${fmt(live.stone.cy)} r ${fmt(live.stone.r)} ${live.stone.visible ? '' : '(gizli)'}`,
-      `tilt x ${fmt(live.tilt.x)} y ${fmt(live.tilt.y)} · nefes ${fmt(live.tilt.breath)}`,
+      `program ${live.kod.key || '—'} · köprü ${fmt(live.kod.mix)} · donuk ${live.kod.frozen} · hot ${live.kod.hot}`,
+      `panel ${fmt(live.panel.x)},${fmt(live.panel.y)} ${fmt(live.panel.w)}×${fmt(live.panel.h)} ${live.panel.visible ? '' : '(gizli)'}`,
       `anchors ${live.anchors.map((a) => a.id).join(' ')}`,
       ...keys.map(
         (k) => `${k.padEnd(10)} ${fmt(stageTarget[k]).padStart(8)} → ${fmt(rendered[k])}`,

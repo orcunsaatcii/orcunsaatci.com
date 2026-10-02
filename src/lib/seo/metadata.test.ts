@@ -120,10 +120,6 @@ describe('sayfa metadata’sı (§11.2.4)', () => {
     expect(a.alternates?.canonical).toBe('https://www.orcunsaatci.com/en/expertise/mobil');
   });
 
-  it('lab metadata’sı sayfada yazılır', () => {
-    expect(() => staticPageMetadata({ key: 'lab' }, 'tr')).toThrow(/lab/);
-  });
-
   it('kök metadata: metadataBase, şablon, açıklama', () => {
     const m = buildRootMetadata('en');
     expect(String(m.metadataBase)).toBe('https://www.orcunsaatci.com/');

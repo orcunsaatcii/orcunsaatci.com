@@ -60,7 +60,11 @@ test.describe('§10.5.4 yeniden akış', { tag: ['@desktop-chromium'] }, () => {
               );
               // görsel olarak gizli (sr-only) öğeler bilinçli olarak kırpılır
               const srOnly = cs.position === 'absolute' && el.clientWidth <= 1;
-              return hides && hasText && !srOnly && el.scrollHeight > el.clientHeight + 1;
+              // KOD paneli sabit ızgaralı dekoratif kod resmidir (aria-hidden); asıl metin sayfadadır
+              const decorative = !!el.closest('[aria-hidden="true"]');
+              return (
+                hides && hasText && !srOnly && !decorative && el.scrollHeight > el.clientHeight + 1
+              );
             })
             .map((el) => `${el.tagName}.${el.className}`),
         );

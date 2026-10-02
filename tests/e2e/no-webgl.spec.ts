@@ -1,5 +1,5 @@
-// tests/e2e/no-webgl.spec.ts — WebGL yok (--disable-webgl): static kademe, posterler ve 3D'siz DOM koreografisi
-// (K-VAR-4, K-VAR-7, §13.3.4). Konsol hatası yokluğu (K-VAR-7) fikstürde denetlenir.
+// tests/e2e/no-webgl.spec.ts — WebGL yok (--disable-webgl): static kademe, statik KOD panelleri ve 3D'siz DOM
+// koreografisi (K-VAR-4, K-VAR-7, K-KOD-3, §13.3.4). Konsol hatası yokluğu (K-VAR-7) fikstürde denetlenir.
 import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { scrollToSvh, settle } from './helpers/scroll';
@@ -25,41 +25,54 @@ const clipOf = (page: Page, k: number) =>
 
 test.describe('WebGL yok: static kademe', { tag: ['@no-webgl'] }, () => {
   for (const url of ['/', '/?tier=high']) {
-    test(`K-VAR-7 ${url}: fallback, static, canvas yok; posterler görünür`, async ({ page }) => {
+    test(`K-VAR-7 ${url}: fallback, static, canvas yok; statik paneller görünür`, async ({
+      page,
+    }) => {
       await page.goto(url);
       await waitForStagePhase(page, ['fallback']);
       const layer = page.locator('#scene-layer');
       await expect(layer).toHaveAttribute('data-tier', 'static');
       await expect(page.locator('canvas')).toHaveCount(0);
-      const poster = page
-        .locator('[data-stage-anchor="hero-rest"] .stage-poster')
-        .locator('visible=true');
-      await expect(poster).toHaveCount(1);
-      await expect(poster).toHaveCSS('opacity', '1');
-      await expect(poster.locator('img')).toHaveJSProperty('complete', true);
+      const panel = page.locator('[data-stage-anchor="hero-rest"] .kod-panel');
+      await expect(panel).toBeVisible();
+      await expect(panel).toHaveCSS('opacity', '1');
+      await expect(panel).toHaveAttribute('data-kod-program', 'hero');
     });
   }
 
-  test('K-VAR-4 areas pini DialFigure ile döner (T + 60 → T + 80); work silmeleri oynar', async ({
+  test('K-VAR-4 areas pini çalışır; statik panel etkin adımı izler; work silmeleri oynar', async ({
     page,
   }) => {
     await page.goto('/');
     await waitForStagePhase(page, ['fallback']);
-    const rotor = () =>
-      page.evaluate(
-        () => getComputedStyle(document.querySelector('.areas-dial [data-dial-rotor]')!).transform,
-      );
-    // adım k = 1'in dönüşü [T + 60, T + 75] svh (§4.5.2); T ölçülür: gerçek about metni 140 svh'yi aşabilir
+    // T ölçülür: gerçek about metni 140 svh'yi aşabilir
     const T = await page.evaluate(() => {
       const el = document.querySelector<HTMLElement>('[data-chapter="areas"]')!;
       return ((el.getBoundingClientRect().top + window.scrollY) / window.innerHeight) * 100;
     });
-    await scrollToSvh(page, T + 60);
-    await expect(page.locator('[data-areas-pinned]')).toHaveCount(1);
-    await expect(page.locator('.areas-dial [data-dial-figure]')).toBeVisible();
-    const before = await rotor();
-    await scrollToSvh(page, T + 80);
-    expect(await rotor(), 'kadran rotY track’iyle döner').not.toBe(before);
+    const state = () =>
+      page.evaluate(() => ({
+        panel:
+          document
+            .querySelector('.areas-dial .kod-panel[data-active]')
+            ?.getAttribute('data-kod-step') ?? null,
+        desc:
+          document.querySelector('[data-area-desc][data-active]')?.getAttribute('data-area-desc') ??
+          null,
+        visible: [...document.querySelectorAll('.areas-dial .kod-panel')].filter(
+          (p) => getComputedStyle(p).visibility !== 'hidden',
+        ).length,
+      }));
+    const seen = new Set<string>();
+    for (let s = T + 40; s <= T + 200; s += 20) {
+      await scrollToSvh(page, s);
+      const st = await state();
+      if (!(await page.locator('[data-areas-pinned]').count())) continue;
+      expect.soft(st.panel, `s = ${Math.round(s)}: panel ↔ açıklama`).toBe(st.desc);
+      expect.soft(st.visible, `s = ${Math.round(s)}: tek görünür panel`).toBe(1);
+      if (st.panel) seen.add(st.panel);
+    }
+    expect(seen.size, 'panel adımla değişir').toBeGreaterThanOrEqual(2);
     // work: figür 2 makale 1'de kapalı, makale 2'de açık (SectionWipe clip-path'i)
     await scrollToArticle(page, 0);
     const shut = await clipOf(page, 1);

@@ -567,7 +567,7 @@ describe('stageStore (§5.9.1)', () => {
     expect(s()).toMatchObject({ tier: 'static', tierReason: 'error', phase: 'fallback' });
     s().setLoop('never');
     expect(s().loop).toBe('never');
-    const q = { dpr: 1.5, ghost: false, octaves: 1, segments: 'medium' } as const;
+    const q = { dpr: 1.5, motion: true } as const;
     s().setQuality(q);
     expect(s().quality).toBe(q);
   });

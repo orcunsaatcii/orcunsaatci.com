@@ -1,6 +1,6 @@
 // tests/e2e/not-found.spec.ts — 404 sayfaları (§3.7, §4.13.6; D-19, K-DEEP-2, K-DEEP-9).
-// Durum kodu, noindex, data-404, H1, iç bağlantılar, mailto:, canvas yokluğu ve saat ibreleri; ağaç 404'ünde
-// "Son projeler" (§15.4.1 #10).
+// Durum kodu, noindex, data-404, H1, iç bağlantılar, mailto:, canvas yokluğu ve KOD hata çıktısı paneli; ağaç
+// 404'ünde "Son projeler" (§15.4.1 #10).
 import { allowConsole, expect, test } from './fixtures';
 import { NOT_FOUND_PATHS } from './helpers/urls';
 
@@ -42,51 +42,28 @@ test.describe('D-19 404 sayfaları', { tag: ['@desktop-chromium', '@no-js'] }, (
   });
 });
 
-test.describe('K-DEEP-9 ClockFigure', { tag: ['@no-js'] }, () => {
-  test('SSR HTML’inde ibre yok', async ({ request }) => {
-    const html = await (await request.get('/yok')).text();
-    expect(html).toContain('data-live-time');
-    expect(html).not.toContain('data-hand');
-  });
-});
-
-test.describe('K-DEEP-9 ClockFigure', { tag: ['@desktop-chromium'] }, () => {
-  test('ibreler yerel saati gösterir (14:32, ±6°)', async ({ page }) => {
+test.describe('K-DEEP-9 KOD hata çıktısı', { tag: ['@desktop-chromium', '@no-js'] }, () => {
+  test('404 paneli statik HTML’dir: dekoratif, hata çıktısı ve önerilen yollar; JS gerekmez', async ({
+    page,
+  }) => {
     allowConsole('404');
-    await page.clock.install({ time: new Date('2026-01-01T14:32:00+03:00') });
-    await page.goto('/yok');
-    const angle = async (hand: 'hour' | 'minute') => {
-      const t = await page.locator(`[data-hand="${hand}"]`).getAttribute('transform');
-      return Number.parseFloat(/rotate\(([-\d.]+)/.exec(t ?? '')?.[1] ?? 'NaN');
-    };
-    await expect(page.locator('[data-hand]')).toHaveCount(2);
-    expect(Math.abs((await angle('hour')) - (30 * 2 + 0.5 * 32))).toBeLessThanOrEqual(6);
-    expect(Math.abs((await angle('minute')) - 6 * 32)).toBeLessThanOrEqual(6);
-    await expect(page.locator('svg[data-live-time]')).toHaveAttribute(
-      'aria-label',
-      'Yerel saat 14:32',
-    );
-  });
-
-  test('data-motion="reduce" iken yükleme anında donar', async ({ page }) => {
-    allowConsole('404');
-    await page.clock.install({ time: new Date('2026-01-01T14:32:00+03:00') });
-    await page.addInitScript(() => localStorage.setItem('os-motion', 'reduce'));
-    await page.goto('/yok');
-    await expect(page.locator('[data-hand]')).toHaveCount(2);
-    const label = page.locator('svg[data-live-time]');
-    await expect(label).toHaveAttribute('aria-label', 'Yerel saat 14:32');
-    await page.clock.runFor(3 * 60_000);
-    await expect(label).toHaveAttribute('aria-label', 'Yerel saat 14:32');
-  });
-
-  test('dakika sınırında güncellenir', async ({ page }) => {
-    allowConsole('404');
-    await page.clock.install({ time: new Date('2026-01-01T14:32:30+03:00') });
-    await page.goto('/yok');
-    const label = page.locator('svg[data-live-time]');
-    await expect(label).toHaveAttribute('aria-label', 'Yerel saat 14:32');
-    await page.clock.runFor(31_000);
-    await expect(label).toHaveAttribute('aria-label', 'Yerel saat 14:33');
+    for (const path of ['/yok', '/en/yok', '/projeler/yok']) {
+      await test.step(path, async () => {
+        await page.goto(path);
+        const panel = page.locator('[data-404] .kod-panel');
+        await expect(panel).toHaveCount(1);
+        await expect(panel).toHaveAttribute('aria-hidden', 'true');
+        await expect(panel).toHaveAttribute('data-kod-program', /^notfound:/);
+        await expect(panel).toBeVisible();
+        await expect(panel).toContainText('Error: 404');
+        // önerilen yollar sayfadaki bağlantılarla aynı (panel bağlantı değildir; gerçek bağlantılar metindedir)
+        for (const href of await page
+          .locator('[data-404] a[href^="/"]')
+          .evaluateAll((els) => els.map((a) => a.getAttribute('href')!))
+          .then((h) => h.slice(0, 3)))
+          await expect(panel).toContainText(href);
+        await expect(panel.locator('a, button')).toHaveCount(0);
+      });
+    }
   });
 });

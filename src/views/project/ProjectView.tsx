@@ -1,13 +1,13 @@
 // src/views/project/ProjectView.tsx — yalın proje sayfası (§7.7.1, D-48). Server; veri yalnız project.yaml'dan.
 // Sıra: breadcrumb · hero (H1, özet, preload'lu kapak) · künye · mağaza · galeri · video bağlantısı · sonraki proje ·
 // benzer projeler · iletişim CTA'sı. Boş bölüm çizilmez; okuma süresi, metrik, ekip, müşteri, teknoloji listesi yok.
-// Sahne D1 folio (§4.13.2): page-folio slot 0 H1 bloğunun yanında (k10–12; < 64rem yok), slot 1 "Sonraki proje"
-// bloğunda (< 64rem 30 svh bant). Poster karşılığı SpecimenGlyph (§4.16.3).
+// Sahne D1 folio (§4.13.2): page-folio slot 0 H1 bloğunun yanında (k8–12, yükseklik başlık bloğunu izler; < 64rem yok),
+// slot 1 "Sonraki proje" bloğunda (k8–12; < 64rem 7 : 6 bant). İçinde KOD paneli (§4 KOD; panel ≥ 360 px, §4.5.6).
 import type { Route } from 'next';
 import Image, { getImageProps } from 'next/image';
 import Link from 'next/link';
 import { preload } from 'react-dom';
-import { SpecimenGlyph } from '@/components/figures/SpecimenGlyph';
+import { KodPanel } from '@/components/kod/KodPanel';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { Button } from '@/components/ui/Button';
@@ -31,7 +31,7 @@ import {
 import { jsonLdFor } from '@/lib/seo/jsonld';
 import { pageLink } from '@/lib/seo/metadata';
 import { PAGE_FOLIO_SIZE } from '@/stage/anchors';
-import { StageAnchor } from '@/stage/ScenePoster';
+import { StageAnchor } from '@/stage/StageAnchor';
 import { StagePreset } from '@/stage/StagePreset';
 import type { StageData } from '@/stage/store';
 import { ViewTransition } from 'react';
@@ -39,18 +39,16 @@ import { ViewTransition } from 'react';
 const COVER_SIZES = '(min-width: 64rem) 70vw, 100vw';
 
 /** D1 poster karşılığı: projenin bandı ve alanı */
+/** KOD paneli (§4 KOD): başlık yanında proje künyesi (yaml), "Sonraki proje"de sonraki projeye geçiş */
 function Glyph({ stage, k }: { stage: StageData; k: number }) {
   const p = stage.projects[k];
-  return p ? (
-    <SpecimenGlyph
-      rings={stage.rings}
-      sectors={stage.sectors}
-      band={p.band}
-      area={p.area}
-      size={240}
-      className="anchor-figure"
+  if (!p || !stage.kod) return null;
+  return (
+    <KodPanel
+      data={stage.kod}
+      program={k === 0 ? { kind: 'folio', slug: p.slug } : { kind: 'next', slug: p.slug }}
     />
-  ) : null;
+  );
 }
 
 /** ≥ 64rem 16:10 kapak; < 64rem mobileCover (4:5) varsa sanat yönetimli <picture> (§7.7.1, §9.3). */
@@ -139,7 +137,7 @@ export function ProjectView({ project, locale }: { project: ProjectDoc; locale: 
       <StagePreset name="folio" data={stage} />
       {/* 1–2 · breadcrumb ve hero */}
       <header className="container-page grid-page gap-y-6 pt-block">
-        <div className="col-span-4 md:col-span-8 lg:col-span-9">
+        <div className="col-span-4 md:col-span-8 lg:col-span-7">
           <Breadcrumbs
             pageRef={{ key: 'project', param: project.slug }}
             locale={locale}
@@ -160,7 +158,7 @@ export function ProjectView({ project, locale }: { project: ProjectDoc; locale: 
         <StageAnchor
           id="page-folio"
           size={PAGE_FOLIO_SIZE.folio}
-          className="aspect-square max-lg:hidden lg:col-span-3 lg:col-start-10"
+          className="max-lg:hidden lg:col-span-5 lg:col-start-8 lg:h-[max(100%,19.5rem)]"
         >
           <Glyph stage={stage} k={0} />
         </StageAnchor>
@@ -290,7 +288,7 @@ export function ProjectView({ project, locale }: { project: ProjectDoc; locale: 
             <Link
               transitionTypes={['nav-forward']}
               href={pathOf({ key: 'project', param: next.slug }, locale)}
-              className="group col-span-4 grid grid-cols-1 gap-gutter md:col-span-8 md:grid-cols-2 md:items-center lg:col-span-9"
+              className="group col-span-4 grid grid-cols-1 gap-gutter md:col-span-8 md:grid-cols-2 md:items-center lg:col-span-7"
             >
               <span className="block aspect-card overflow-hidden rounded-md bg-raised">
                 <Image
@@ -313,7 +311,7 @@ export function ProjectView({ project, locale }: { project: ProjectDoc; locale: 
             <StageAnchor
               id="page-folio"
               size={PAGE_FOLIO_SIZE.folio}
-              className="col-span-4 h-[30svh] md:col-span-8 lg:col-span-3 lg:aspect-square lg:h-auto"
+              className="col-span-4 aspect-[7/6] max-h-[42svh] w-full md:col-span-8 lg:col-span-5 lg:col-start-8 lg:aspect-auto lg:h-[max(100%,19.5rem)] lg:max-h-none"
             >
               <Glyph stage={stage} k={1} />
             </StageAnchor>

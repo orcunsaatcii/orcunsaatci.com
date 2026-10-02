@@ -285,6 +285,8 @@ test.describe('§6.12 tasarım sistemi', { tag: ['@desktop-chromium'] }, () => {
           await waitForAnimations(page); // hero-in giriş animasyonu ara renk ölçtürür
           const { violations } = await new AxeBuilder({ page })
             .withRules(['color-contrast'])
+            .exclude('#scene-layer')
+            .exclude('.kod-panel') // dekoratif kod resmi (aria-hidden; WCAG 1.4.3 "pure decoration")
             .analyze();
           expect
             .soft(

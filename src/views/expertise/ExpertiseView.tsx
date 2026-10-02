@@ -3,7 +3,7 @@
 // Alan başına: indeks, <h2>, özet, açıklama, yetkinlikler, etiketler, ilgili beceriler ve bağlantı. Dilim glifi M4'te.
 import type { Route } from 'next';
 import Link from 'next/link';
-import { DialFigure } from '@/components/figures/DialFigure';
+import { KodPanel } from '@/components/kod/KodPanel';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { Tag } from '@/components/ui/Tag';
@@ -17,6 +17,7 @@ import {
   getAreas,
   getCv,
   getHome,
+  getKodData,
   getProjects,
   getSite,
   getStageData,
@@ -24,7 +25,6 @@ import {
 } from '@/lib/content';
 import { jsonLdFor } from '@/lib/seo/jsonld';
 import { pageLink } from '@/lib/seo/metadata';
-import { previewAttrs } from '@/stage/preview-attrs';
 import { StagePreset } from '@/stage/StagePreset';
 
 export function ExpertiseView({ locale }: { locale: Locale }) {
@@ -51,12 +51,9 @@ export function ExpertiseView({ locale }: { locale: Locale }) {
         folio={{
           preset: 'plan-small',
           figure: (
-            <DialFigure
-              n={stage.sectors}
-              rings={stage.rings}
-              active={null}
-              ariaLabel=""
-              className="anchor-figure"
+            <KodPanel
+              data={getKodData('plan-small', undefined, locale)}
+              program={{ kind: 'area', index: 0 }}
             />
           ),
         }}
@@ -66,11 +63,7 @@ export function ExpertiseView({ locale }: { locale: Locale }) {
           const count = projects.filter((p) => p.areas.includes(a.id)).length;
           const areaSkills = skills.filter((k) => a.skills.includes(k.id));
           return (
-            <li
-              key={a.id}
-              className="grid-page gap-y-4 border-t border-line pt-block"
-              {...previewAttrs({ sector: stage.sectors > 0 ? i : null })}
-            >
+            <li key={a.id} className="grid-page gap-y-4 border-t border-line pt-block">
               <p className="col-span-4 type-meta nums-tabular md:col-span-8 lg:col-span-2">
                 {String(i + 1).padStart(2, '0')}
               </p>

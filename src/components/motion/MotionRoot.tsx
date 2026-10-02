@@ -96,10 +96,6 @@ export function armReveals(root: HTMLElement, rt: MotionRuntime): () => void {
     for (const el of root.querySelectorAll<HTMLElement>(
       '[data-reveal]:not(.is-revealed):not([data-armed])',
     )) {
-      if (el.dataset.reveal === 'lede') {
-        el.dataset.armed = ''; // CutLine yönetir (§5.14.4)
-        continue;
-      }
       const when = el.dataset.revealWhen; // yalnız bu medya koşulunda reveal (ör. mobil work kapakları, §4.5.4 #9)
       if (
         el.getBoundingClientRect().top < vh * 0.88 ||

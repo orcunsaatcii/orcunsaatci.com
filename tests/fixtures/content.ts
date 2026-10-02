@@ -136,6 +136,7 @@ function build() {
     capabilities: [{ tr: 'Yetenek', en: 'Capability' }],
     skills: ['kotlin'],
     hasPage,
+    figure: 'list',
     pageLocales,
     seo: { noindex: false },
     _meta: meta(`${id}.yaml`),

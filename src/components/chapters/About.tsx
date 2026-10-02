@@ -1,11 +1,11 @@
-// src/components/chapters/About.tsx — "Kesim" bölümü (§4.7.2, §4.7.7, §6.6.7). Server.
-// DOM: başlık → bant (çapa + kesit çizgisi) → lede → gövde. Masaüstünde bant 1 px'lik satırdır: çizgi k1–8,
-// çapa k8–12 ve dikey merkezi çizgide; mobilde lede'nin üstünde 36 svh bant (home.css). Lede satırları cutProgress
-// eşiklerinde açılır (CutLine); JS'siz/azaltılmış hâlde her şey görünür, çizgi tam genişlikte statiktir.
+// src/components/chapters/About.tsx — hakkımda bölümü (§4.7.2, §4.7.7, §6.6.7). Server.
+// DOM: başlık → bant (about-cut çapası, about.dart paneli) → lede → gövde. Masaüstünde bant 1 px'lik satırdır, çapa
+// k8–12'de ve dikey merkezi bu satırda; mobilde lede'nin üstünde 36 svh bant (home.css). Lede bölünmez, global blok
+// reveal'ıyla bir kez açılır (K-ABOUT-2); JS'siz/azaltılmış hâlde her şey görünür.
 import Image from 'next/image';
 import Link from 'next/link';
-import { CutLine } from '@/components/motion/CutLine';
 import { RevealHeading } from '@/components/motion/RevealHeading';
+import { KodPanel } from '@/components/kod/KodPanel';
 import { Txt } from '@/components/ui/Txt';
 import { getExperienceProfile } from '@/experience/profile';
 import { chapterAnchors, type Locale } from '@/i18n/config';
@@ -15,13 +15,14 @@ import {
   getCareerStartYear,
   getHome,
   getHomeJourney,
+  getKodData,
   getPerson,
   getSite,
   getWorksFor,
   t,
 } from '@/lib/content';
 import { pageLink } from '@/lib/seo/metadata';
-import { StageAnchor } from '@/stage/ScenePoster';
+import { StageAnchor } from '@/stage/StageAnchor';
 
 export function About({ locale }: { locale: Locale }) {
   const dict = getDictionary(locale);
@@ -53,11 +54,15 @@ export function About({ locale }: { locale: Locale }) {
         </RevealHeading>
       </div>
       <div aria-hidden="true" className="about-band lg:row-start-3">
-        <StageAnchor id="about-cut" poster="k1" />
-        <CutLine />
+        <StageAnchor id="about-cut">
+          <KodPanel
+            data={getKodData('home', undefined, locale)}
+            program={{ kind: 'about', reveal: 1 }}
+          />
+        </StageAnchor>
       </div>
       <p
-        data-reveal="lede"
+        data-reveal="block"
         className="col-span-4 max-w-[24ch] text-3xl font-medium md:col-span-8 lg:col-span-6 lg:row-start-2"
       >
         <Txt v={t(home.about.lede, locale)} />

@@ -1,7 +1,7 @@
 // src/views/area/AreaView.tsx — tek alan sayfası (§7.8.5; features.areaPages + hasPage). Server.
 // Sıra: breadcrumb, <h1>, lede (frontmatter ya da summary), MDX gövdesi, yetkinlikler, ilgili beceriler,
 // bu alandaki projeler (kartlar), varsa ilgili referans, iletişim CTA'sı.
-import { DialFigure } from '@/components/figures/DialFigure';
+import { KodPanel } from '@/components/kod/KodPanel';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { MdxBody } from '@/components/mdx/MdxBody';
 import { JsonLd } from '@/components/seo/JsonLd';
@@ -14,6 +14,7 @@ import {
   getAreaBody,
   getCv,
   getProjects,
+  getKodData,
   getStageData,
   getTestimonials,
   t,
@@ -54,14 +55,11 @@ export function AreaView({ area, locale }: { area: AreaDoc; locale: Locale }) {
         lede={body.lede ?? <Txt v={t(area.summary, locale)} />}
         folio={{
           preset: 'plan-small',
-          narrow: true,
+          compact: true,
           figure: (
-            <DialFigure
-              n={stage.sectors}
-              rings={stage.rings}
-              active={stage.activeArea ?? null}
-              ariaLabel=""
-              className="anchor-figure"
+            <KodPanel
+              data={getKodData('plan-small', area.id, locale)}
+              program={{ kind: 'area', index: Math.max(0, stage.activeArea ?? 0) }}
             />
           ),
         }}

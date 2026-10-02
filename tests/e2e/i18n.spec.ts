@@ -12,7 +12,7 @@ import tr from '../../src/i18n/dictionaries/tr';
 import { expect, test } from './fixtures';
 import { localPath, sitemapEntries } from './helpers/urls';
 
-const PAIRED = staticRouteKeys.filter((key) => staticRoutes[key].en !== null && key !== 'lab');
+const PAIRED = staticRouteKeys.filter((key) => staticRoutes[key].en !== null);
 const isEn = (path: string) => path === '/en' || path.startsWith('/en/');
 
 /** TR sözlükte, aynı anahtarın EN değerinden farklı olan (çevrilmiş) dize yaprakları. Dil değiştiricinin özadı
@@ -188,6 +188,8 @@ test.describe('§3.10 dil ve route’lar', { tag: ['@desktop-chromium'] }, () =>
             if (!text) continue;
             const el = n.parentElement!;
             if (el.closest('script, style, [hidden], template')) continue;
+            // KOD panelleri dekoratif kod resmidir (aria-hidden, translate="no"); okunan metin sayfadadır
+            if (el.closest('[aria-hidden="true"]')) continue;
             if (el.closest('[lang]')?.getAttribute('lang') === 'tr') continue;
             if (text.includes('SAATCİ') || set.has(text)) out.push(text.slice(0, 60));
           }

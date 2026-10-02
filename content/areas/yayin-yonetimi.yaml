@@ -16,3 +16,4 @@ capabilities:
   - { tr: "Sürüm bilgilerini ve yayın paketlerini düzenliyorum.", en: "I organize version information and release packages." }
   - { tr: "CI/CD ile derleme ve teslim adımlarının otomasyonuna katkı sağlıyorum.", en: "I contribute to build and delivery automation through CI/CD." }
 skills: [magaza-yayini]
+figure: pipeline # KOD diyagramı: phone | tree | api | pipeline | list

@@ -12,7 +12,6 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "e2e": "playwright test",
-    "posters": "tsx scripts/render-posters.ts",
     "fonts": "sh scripts/subset-fonts.sh",
     "budgets": "node scripts/check-budgets.mjs",
     "analyze": "next experimental-analyze",

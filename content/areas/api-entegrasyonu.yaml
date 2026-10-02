@@ -16,3 +16,4 @@ capabilities:
   - { tr: "İstek, yanıt ve hata akışlarını düzenliyorum.", en: "I structure request, response, and error handling." }
   - { tr: "Servis verilerini uygulamanın durum yönetimiyle ilişkilendiriyorum.", en: "I connect service data to application state management." }
 skills: [api-entegrasyonu]
+figure: api # KOD diyagramı: phone | tree | api | pipeline | list

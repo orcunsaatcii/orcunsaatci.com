@@ -17,7 +17,7 @@ export function StagePreset({ name, data }: { name: PresetName; data: StageData 
   useEffect(() => {
     const gate = name === 'cv-core' ? window.matchMedia('(min-width: 80rem)') : null;
     const apply = () => {
-      nav.snapshot = { ...live.stone, opacity: currentSceneOpacity() }; // eski sayfanın son karesi
+      nav.snapshot = { ...live.panel, opacity: currentSceneOpacity() }; // eski sayfanın son paneli
       stageStore.getState().setPreset(gate && !gate.matches ? 'none' : name, data);
     };
     apply();

@@ -1,15 +1,14 @@
 // src/views/projects/ProjectsView.tsx — /projeler (§7.8). Server; liste sunucuda tam çizilir.
 // ?alan= yalnız istemcide okunur (D-06): ProjectFilter sunucuda "Tümü" ile çizilir, JS'siz görünümde gizlidir.
-import { DialFigure } from '@/components/figures/DialFigure';
+import { KodPanel } from '@/components/kod/KodPanel';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { ProjectFilter } from '@/components/ui/ProjectFilter';
 import { ProjectRow } from '@/components/ui/ProjectRow';
 import type { Locale } from '@/i18n/config';
 import { getDictionary } from '@/i18n/get-dictionary';
-import { getAreas, getProjects, getStageData, t } from '@/lib/content';
+import { getAreas, getKodData, getProjects, getStageData, t } from '@/lib/content';
 import { jsonLdFor } from '@/lib/seo/jsonld';
-import { previewAttrs } from '@/stage/preview-attrs';
 import { StagePreset } from '@/stage/StagePreset';
 import { FloatingPreview } from '@/components/ui/FloatingPreview';
 
@@ -18,10 +17,6 @@ export function ProjectsView({ locale }: { locale: Locale }) {
   const projects = getProjects(locale);
   const graph = jsonLdFor({ key: 'projects' }, locale);
   const stage = getStageData('plan-small', undefined, locale); // D2 (§4.13.2)
-  const previewOf = (slug: string) => {
-    const s = stage.projects.find((x) => x.slug === slug);
-    return { band: s?.band, sector: s?.area };
-  };
   const areas = getAreas()
     .map((a, k) => {
       const title = t(a.title, locale);
@@ -30,7 +25,7 @@ export function ProjectsView({ locale }: { locale: Locale }) {
         title: title.text,
         lang: title.fallback ? title.lang : undefined,
         count: projects.filter((p) => p.areas.includes(a.id)).length,
-        sector: stage.sectors > 0 ? k : null,
+        sector: k, // KOD: plan filtresi alan indeksini `ls projects/ --area=` programına verir
       };
     })
     .filter((a) => a.count > 0); // projesi olmayan alanın çipi çizilmez (§7.8.2)
@@ -45,14 +40,11 @@ export function ProjectsView({ locale }: { locale: Locale }) {
         title={dict.meta.projects}
         folio={{
           preset: 'plan-small',
-          narrow: true,
+          compact: true,
           figure: (
-            <DialFigure
-              n={stage.sectors}
-              rings={stage.rings}
-              active={null}
-              ariaLabel=""
-              className="anchor-figure"
+            <KodPanel
+              data={getKodData('plan-small', undefined, locale)}
+              program={{ kind: 'list', filter: null }}
             />
           ),
         }}
@@ -75,12 +67,7 @@ export function ProjectsView({ locale }: { locale: Locale }) {
             <div>
               <ul className="mt-stack border-t border-line">
                 {projects.map((p) => (
-                  <ProjectRow
-                    key={p.slug}
-                    project={p}
-                    locale={locale}
-                    preview={previewAttrs(previewOf(p.slug))}
-                  />
+                  <ProjectRow key={p.slug} project={p} locale={locale} />
                 ))}
               </ul>
               <FloatingPreview

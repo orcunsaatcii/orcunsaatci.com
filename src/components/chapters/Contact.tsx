@@ -1,9 +1,9 @@
-// src/components/chapters/Contact.tsx — "Bir sonraki halka" (§4.11.2, §12.1). Server.
+// src/components/chapters/Contact.tsx — iletişim bölümü (§4.11.2, §12.1). Server.
 // mailto: + Kopyala + sosyal bağlantılar + CV + yerel saat; compact footer bölümün içindedir (§3.9.3).
-// contact-ring çapasında statik K5 posteri + istemcide bugüne kadar çizilen açık yay (ArcFigure). Reveal eşikleri
+// contact-ring çapasında KOD terminal paneli (§4 KOD). Reveal eşikleri
 // senkron istisnasıdır (§4.11.4, §4.12.3): H2 bölümün top 45%'inde (IN p 0.55), metin top 30%'unda (p 0.70).
 import Link from 'next/link';
-import { ArcFigure } from '@/components/figures/ArcFigure';
+import { KodPanel } from '@/components/kod/KodPanel';
 import { RevealHeading } from '@/components/motion/RevealHeading';
 import { SiteFooter } from '@/components/layout/SiteFooter';
 import { CopyEmail } from '@/components/ui/CopyEmail';
@@ -15,9 +15,9 @@ import { Txt } from '@/components/ui/Txt';
 import { getExperienceProfile } from '@/experience/profile';
 import { chapterAnchors, localeMeta, type Locale } from '@/i18n/config';
 import { getDictionary } from '@/i18n/get-dictionary';
-import { getContact, getHome, getPerson, getSite, getStageData, t } from '@/lib/content';
+import { getContact, getHome, getKodData, getPerson, getSite, t } from '@/lib/content';
 import { listEnPaths, pageLink } from '@/lib/seo/metadata';
-import { StageAnchor } from '@/stage/ScenePoster';
+import { StageAnchor } from '@/stage/StageAnchor';
 
 export function Contact({ locale }: { locale: Locale }) {
   const dict = getDictionary(locale);
@@ -29,7 +29,6 @@ export function Contact({ locale }: { locale: Locale }) {
   const heading = home.contact.heading ? t(home.contact.heading, locale) : null;
   const lead = home.contact.lead ? t(home.contact.lead, locale) : null;
   const status = contact.availability?.status;
-  const { rings } = getStageData('home', undefined, locale);
 
   return (
     <section
@@ -41,10 +40,9 @@ export function Contact({ locale }: { locale: Locale }) {
       <div className="contact-grid container-page grid-page flex-1 content-center gap-y-6 pt-12 pb-8">
         <StageAnchor
           id="contact-ring"
-          poster="k5"
           className="contact-ring col-span-4 h-[36svh] md:col-span-8 lg:col-span-5 lg:col-start-8 lg:row-span-4 lg:h-[72svh] lg:self-center"
         >
-          <ArcFigure rings={rings} className="arc-overlay" />
+          <KodPanel data={getKodData('home', undefined, locale)} program={{ kind: 'contact' }} />
         </StageAnchor>
         <div className="col-span-4 md:col-span-8 lg:col-span-7 lg:row-start-1">
           <p className="type-eyebrow">{labels.eyebrows.contact[locale]}</p>

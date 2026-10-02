@@ -1,15 +1,8 @@
 // src/stage/pointer.ts — girdi izleme (§4.6.4, §5.6.2, §5.12.3). İnce işaretçide pasif, rAF-birleştirilmiş
 // pointermove: live.pointer (x, y ∈ [−1, 1], y yukarı +; px, py CSS px). Her işaretçi ya da kaydırma girdisi
-// live.lastInput'u yazar: idle drift yeniden başlar (dokunmatikte pointerdown). Dokunmatikte taşa kısa dokunuş tek ışık
-// taraması yapar (§4.14 #2). Yalnız canlı sahne mount'ken çalışır (gl/Scene.tsx): sahne chunk'ına girer, ilk pakete
-// girmez. Three-free.
-import { tapSweep } from './fx';
+// live.lastInput'u yazar: panelin kendiliğinden hareketi yeniden başlar (dokunmatikte pointerdown, K-HERO-9). Yalnız
+// canlı sahne mount'ken çalışır (gl/Scene.tsx): sahne chunk'ına girer, ilk pakete girmez. Three-free.
 import { live, stageStore } from './store';
-
-/** Dokunuş taraması (§4.14 #2): < 250 ms, < 10 px; etkileşimli öğelerin üstünde değil */
-const TAP_MS = 250;
-const TAP_PX = 10;
-const NO_TAP = 'a, button, input, select, textarea, label, [role=button], [data-no-press]';
 
 /** Dinleyicileri kurar; temizlik fonksiyonu döner. */
 export function trackInput(): () => void {
@@ -46,30 +39,15 @@ export function trackInput(): () => void {
     window.addEventListener('pointermove', onMove, { passive: true });
     document.addEventListener('pointerout', onOut, { passive: true });
   }
-  let down = { t: 0, x: 0, y: 0, id: -1 };
-  const onDown = (e: PointerEvent) => {
-    input();
-    down = { t: performance.now(), x: e.clientX, y: e.clientY, id: e.pointerId };
-  };
-  const onUp = (e: PointerEvent) => {
-    if (e.pointerType === 'mouse' || e.pointerId !== down.id) return;
-    if (performance.now() - down.t >= TAP_MS) return;
-    if (Math.hypot(e.clientX - down.x, e.clientY - down.y) >= TAP_PX) return;
-    if (e.target instanceof Element && e.target.closest(NO_TAP)) return;
-    const s = live.stone;
-    if (!s.visible || stageStore.getState().tier === 'low') return;
-    if (Math.hypot(e.clientX - s.cx, e.clientY - s.cy) > s.r) return;
-    tapSweep();
-  };
+  live.lastInput = performance.now(); // sahne açılışı girdi sayılır: süzülme ilk 20 s / 8 s oynar
+  const onDown = () => input();
   window.addEventListener('pointerdown', onDown, { passive: true });
-  window.addEventListener('pointerup', onUp, { passive: true });
   window.addEventListener('scroll', input, { passive: true });
   return () => {
     cancelAnimationFrame(raf);
     window.removeEventListener('pointermove', onMove);
     document.removeEventListener('pointerout', onOut);
     window.removeEventListener('pointerdown', onDown);
-    window.removeEventListener('pointerup', onUp);
     window.removeEventListener('scroll', input);
     live.pointer.active = false;
   };

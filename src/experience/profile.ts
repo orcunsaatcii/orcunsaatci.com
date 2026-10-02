@@ -43,12 +43,13 @@ const SEED = 7.0;
 const RING_WARP = 0.04;
 
 /** Eyebrow'lar normal yazımla saklanır; büyük harfi type-eyebrow'un CSS text-transform'u üretir (§4.17.2). */
+/** KOD (§4 KOD, 2026-10-02): bölüm eyebrow'ları editörün dilinden; görünür başlıklar sade kalır */
 const EYEBROWS: ExperienceProfile['labels']['eyebrows'] = {
-  about: { tr: 'Kesit', en: 'Cross-section' },
-  areas: { tr: 'Dilimler', en: 'Sectors' },
-  work: { tr: 'Numuneler', en: 'Specimens' },
-  journey: { tr: 'Halkalar', en: 'Rings' },
-  contact: { tr: 'Bir sonraki halka', en: 'The next ring' },
+  about: { tr: 'Kaynak', en: 'Source' },
+  areas: { tr: 'Modüller', en: 'Modules' },
+  work: { tr: 'Derleme', en: 'Build' },
+  journey: { tr: 'Sürüm geçmişi', en: 'Version history' },
+  contact: { tr: 'Terminal', en: 'Terminal' },
 };
 
 const WORK = { viewer: true, specimen: true } as const;
@@ -73,8 +74,8 @@ export const PROFILES: Readonly<Record<Persona, ExperienceProfile>> = {
       areas: { tr: 'Çalışma alanları', en: 'Areas of work' },
       work: { tr: 'Seçili projeler', en: 'Selected projects' },
       contactLead: {
-        tr: 'Bir sonraki halkayı birlikte yazalım.',
-        en: "Let's write the next ring together.",
+        tr: 'Bir sonraki sürümü birlikte yazalım.',
+        en: "Let's write the next release together.",
       },
     },
     work: WORK,
@@ -100,8 +101,8 @@ export const PROFILES: Readonly<Record<Persona, ExperienceProfile>> = {
       areas: { tr: 'Uzmanlık alanları', en: 'Areas of expertise' },
       work: { tr: 'Seçili projeler', en: 'Selected projects' },
       contactLead: {
-        tr: 'Bir sonraki halkayı birlikte inşa edelim.',
-        en: "Let's build the next ring together.",
+        tr: 'Bir sonraki sürümü birlikte inşa edelim.',
+        en: "Let's build the next release together.",
       },
     },
     work: WORK,
@@ -125,8 +126,8 @@ export const PROFILES: Readonly<Record<Persona, ExperienceProfile>> = {
       areas: { tr: 'Disiplinler', en: 'Disciplines' },
       work: { tr: 'Seçili işler', en: 'Selected work' },
       contactLead: {
-        tr: 'Bir sonraki halkayı birlikte tasarlayalım.',
-        en: "Let's design the next ring together.",
+        tr: 'Bir sonraki sürümü birlikte tasarlayalım.',
+        en: "Let's design the next release together.",
       },
     },
     work: WORK,
@@ -150,8 +151,8 @@ export const PROFILES: Readonly<Record<Persona, ExperienceProfile>> = {
       areas: { tr: 'Ölçekler ve tipolojiler', en: 'Scales and typologies' },
       work: { tr: 'Yapılar ve projeler', en: 'Buildings and projects' },
       contactLead: {
-        tr: 'Bir sonraki halkayı birlikte kuralım.',
-        en: "Let's raise the next ring together.",
+        tr: 'Bir sonraki sürümü birlikte kuralım.',
+        en: "Let's raise the next release together.",
       },
     },
     work: WORK,
@@ -176,8 +177,8 @@ export const PROFILES: Readonly<Record<Persona, ExperienceProfile>> = {
       areas: { tr: 'Araştırma alanları', en: 'Research areas' },
       work: { tr: 'Yayınlar ve projeler', en: 'Publications and projects' },
       contactLead: {
-        tr: 'Bir sonraki halkayı birlikte araştıralım.',
-        en: "Let's research the next ring together.",
+        tr: 'Bir sonraki sürümü birlikte araştıralım.',
+        en: "Let's research the next release together.",
       },
     },
     work: WORK,
@@ -201,8 +202,8 @@ export const PROFILES: Readonly<Record<Persona, ExperienceProfile>> = {
       areas: { tr: 'Liderlik alanları', en: 'Areas of leadership' },
       work: { tr: 'Ekipler ve sonuçlar', en: 'Teams and outcomes' },
       contactLead: {
-        tr: 'Bir sonraki halkayı birlikte büyütelim.',
-        en: "Let's grow the next ring together.",
+        tr: 'Bir sonraki sürümü birlikte büyütelim.',
+        en: "Let's grow the next release together.",
       },
     },
     work: WORK,

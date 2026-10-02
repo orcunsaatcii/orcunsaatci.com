@@ -543,24 +543,12 @@
   html[data-motion="full"].motion-ready [data-reveal="clip"][data-armed] { clip-path: inset(0 round 6px); }
   html[data-motion="full"].motion-ready [data-reveal="clip"][data-armed]:not(.is-revealed) { opacity: 1; clip-path: inset(8% round 6px); }
   html[data-motion="full"].motion-ready [data-reveal="clip"][data-armed]:not(.is-revealed) img { scale: 1.08; }
-  html[data-motion="full"].motion-ready [data-reveal="lede"][data-armed]:not(.is-revealed) {
-    opacity: 1;
-    clip-path: inset(0 0 calc(100% - var(--lede-shown, 0) * 1lh) 0);
-  }
   [data-reveal="block"] { transition: opacity 500ms var(--ease-out), transform 500ms var(--ease-out); }
   [data-reveal="clip"] { transition: clip-path 700ms var(--ease-out); }
   [data-reveal="clip"] img { transition: scale 700ms var(--ease-out); }
   [data-reveal].is-instant,
   [data-reveal].is-instant img { transition: none !important; }
 
-  /* Kesit çizgisi (§5.14.4): yalnız dekor; JS yoksa ve azaltılmış harekette tam genişlikte statik */
-  .cut-line {
-    display: block;
-    height: 1px;
-    background-color: var(--color-ink);
-    transform-origin: left center;
-  }
-  html[data-motion="full"].motion-ready .cut-line { transform: scaleX(var(--cut-progress, 0)); }
 
   /* Hero ikincil metinleri: yalnız CSS, JS beklemez; h1 ASLA bu sınıfı almaz (D-34) */
   .hero-in {
@@ -572,7 +560,7 @@
     :root:not([data-motion="full"]) .hero-in { animation: none; }
   }
 
-  /* Tema başına görsel (poster vb.): etkin olmayan tema hiç render edilmez */
+  /* Tema başına görsel: etkin olmayan tema hiç render edilmez */
   :root[data-theme="dark"] .only-light,
   :root[data-theme="light"] .only-dark { display: none; }
   @media (prefers-color-scheme: dark) {
@@ -603,20 +591,10 @@
     transition: opacity 600ms var(--ease-out);
   }
   #scene-layer[data-phase="ready"] .stage-canvas { opacity: 1; }
-  /* Poster / figür → canvas çapraz geçişi yalnız 'ready'ye giderken (ilk derlenmiş kare ve kaydırma durumuna atlama
-     sonrası, §4.16.3); bağlam kaybında (phase 'poster') posterler geçişsiz, anında geri gelir (§5.17). */
-  .stage-poster,
-  .arc-overlay,
-  .stage-anchor .anchor-figure { transition: none; }
-  :root:has(#scene-layer[data-phase="ready"]) :is(
-      .stage-poster,
-      .arc-overlay,
-      [data-stage-anchor="work-specimen"] .anchor-figure,
-      [data-stage-anchor="journey-core"] .anchor-figure,
-      [data-stage-anchor="page-folio"] .anchor-figure,
-      [data-stage-anchor="cv-core"] .anchor-figure,
-      [data-areas-pinned] [data-stage-anchor="areas-dial"] .anchor-figure
-    ) {
+  /* Statik KOD paneli → canlı panel çapraz geçişi yalnız 'ready'ye giderken (§4 KOD); bağlam kaybında (phase 'poster')
+     statik paneller geçişsiz, anında geri gelir (§5.17). */
+  .stage-anchor .kod-panel { transition: none; }
+  :root:has(#scene-layer[data-phase="ready"]) .stage-anchor .kod-panel {
     opacity: 0;
     transition: opacity 600ms var(--ease-out);
   }

@@ -79,7 +79,7 @@ test.describe('K-GEN-5 içerik görünürlüğü', { tag: ['@no-js', '@reduced-m
     }
   });
 
-  test('(d) tüm alan açıklamaları görünür (liste modu); (e) posterler ve SVG figürler', async ({
+  test('(d) tüm alan açıklamaları görünür (liste modu); (e) statik KOD panelleri', async ({
     page,
   }) => {
     for (const home of ['/', '/en']) {
@@ -88,25 +88,33 @@ test.describe('K-GEN-5 içerik görünürlüğü', { tag: ['@no-js', '@reduced-m
       const n = await descriptions.count();
       expect(n).toBeGreaterThan(0);
       for (let i = 0; i < n; i++) await expect.soft(descriptions.nth(i)).toBeVisible();
-      for (const anchor of ['hero-rest', 'about-cut', 'contact-ring']) {
-        const posters = page.locator(`[data-stage-anchor="${anchor}"] img`);
-        await expect.soft(posters.locator('visible=true'), `${home} ${anchor}`).toHaveCount(1);
+      // §4.16.3 statik panel karşılıkları: çapa başına tek görünür panel (areas'ta etkin adım), dekoratif
+      const dial = (await page.locator('[data-areas-mode="dial"]').count()) > 0;
+      for (const anchor of [
+        'hero-rest',
+        'about-cut',
+        ...(dial ? ['areas-dial'] : []),
+        'journey-core',
+        'contact-ring',
+      ]) {
+        const panel = page.locator(`[data-stage-anchor="${anchor}"] .kod-panel`);
+        await expect.soft(panel.locator('visible=true'), `${home} ${anchor}`).toHaveCount(1);
+        for (const el of await panel.all())
+          await expect.soft(el, `${home} ${anchor}`).toHaveAttribute('aria-hidden', 'true');
       }
-      // §4.16.3 figür karşılıkları: kadran, halkalar, proje başına numune glifi, girdi başına bant glifi
-      await expect.soft(page.locator('[data-chapter="areas"] svg[role="img"]')).toBeVisible();
-      await expect.soft(page.locator('[data-chapter="journey"] svg[role="img"]')).toBeVisible();
-      const articles = await page.locator('[data-chapter="work"] article').count();
-      await expect
-        .soft(
-          page
-            .locator('[data-chapter="work"] article [data-specimen-glyph]')
-            .locator('visible=true'),
-        )
-        .toHaveCount(articles);
-      const entries = await page.locator('[data-journey-entry]').count();
-      await expect
-        .soft(page.locator('[data-journey-entry] svg[aria-hidden="true"]').locator('visible=true'))
-        .toHaveCount(entries);
+      // work'te panel yoktur: kapaklar gerçek görsellerdir
+      await expect.soft(page.locator('[data-chapter="work"] .kod-panel')).toHaveCount(0);
+      // gece paneli (journey) açık temada da koyu zeminlidir (§5.20.6, K-JOURNEY-3)
+      const nightLum = await page
+        .locator('[data-stage-anchor="journey-core"] .kod-panel[data-night]')
+        .evaluate((el) => {
+          const m = getComputedStyle(el)
+            .backgroundColor.match(/[\d.]+/g)
+            ?.map(Number) ?? [255];
+          const [r = 255, g = 255, b = 255] = m;
+          return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+        });
+      expect.soft(nightLum, `${home}: gece paneli zemini`).toBeLessThan(0.2);
       // K-WORK-5: her figür akışta, clip-path yok
       const clipped = await page.evaluate(
         () =>

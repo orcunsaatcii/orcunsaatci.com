@@ -1,11 +1,10 @@
 // src/components/chapters/Journey.tsx — "Karot" (§4.10.2, §4.10.7, §7.6.1). Server.
 // Masaüstü + html.js + tam hareket (home.css): metin k1–7 doğal hızda kayar, yalnız sahne sütunu (journey-core,
 // k8–12) sticky; başlık bloğu 40 svh, girdi 35 svh, kuyruk ≥ 30 svh. Mobilde bölüm başında 36 svh bant; her girdide
-// 24 px EntryGlyph. Etkin yıl vurgusu JourneyActive'tedir. Girdiler en yeniden eskiye, E ≤ 6.
+// KOD git log paneli (§4 KOD). Etkin girdi vurgusu JourneyActive'tedir. Girdiler en yeniden eskiye, E ≤ 6.
 import Link from 'next/link';
 import type { CSSProperties } from 'react';
-import { EntryGlyph } from '@/components/figures/EntryGlyph';
-import { RingsFigure } from '@/components/figures/RingsFigure';
+import { KodPanel } from '@/components/kod/KodPanel';
 import { RevealHeading } from '@/components/motion/RevealHeading';
 import { CvDownload } from '@/components/ui/CvDownload';
 import { TimelineEntry } from '@/components/ui/TimelineEntry';
@@ -13,19 +12,9 @@ import { Txt } from '@/components/ui/Txt';
 import { getExperienceProfile } from '@/experience/profile';
 import { chapterAnchors, type Locale } from '@/i18n/config';
 import { getDictionary } from '@/i18n/get-dictionary';
-import { fill } from '@/i18n/text';
-import {
-  getCareerStartYear,
-  getHome,
-  getHomeJourney,
-  getSite,
-  getStageData,
-  t,
-  tList,
-} from '@/lib/content';
+import { getHome, getHomeJourney, getKodData, getSite, t, tList } from '@/lib/content';
 import { pageLink } from '@/lib/seo/metadata';
-import { previewAttrs } from '@/stage/preview-attrs';
-import { StageAnchor } from '@/stage/ScenePoster';
+import { StageAnchor } from '@/stage/StageAnchor';
 import { JourneyActive } from './JourneyActive';
 
 export function Journey({ locale }: { locale: Locale }) {
@@ -35,10 +24,7 @@ export function Journey({ locale }: { locale: Locale }) {
   const journey = getHomeJourney(locale);
   const cv = pageLink({ key: 'cv' }, locale);
   const heading = home.journey.heading ? t(home.journey.heading, locale) : null;
-  const stage = getStageData('home', undefined, locale);
   const E = journey.experience.length;
-  const startYear = getCareerStartYear();
-  const buildYear = new Date().getFullYear(); // build yılı (SSG, §5.10)
   const sectionId = chapterAnchors.journey[locale];
 
   return (
@@ -71,20 +57,12 @@ export function Journey({ locale }: { locale: Locale }) {
                 <TimelineEntry
                   key={e.id}
                   entryIndex={i}
-                  preview={previewAttrs({ band: stage.entries[i]?.band })}
                   reveal
                   locale={locale}
                   start={e.period.start}
                   end={e.period.end}
                   precision="year"
                   presentLabel={dict.cv.present}
-                  glyph={
-                    <EntryGlyph
-                      rings={stage.rings}
-                      band={stage.entries[i]?.band ?? null}
-                      className="journey-glyph mr-2 [display:inline-block] align-middle lg:mr-0 lg:mb-2 lg:ml-auto"
-                    />
-                  }
                   title={<Txt v={t(e.role, locale)} />}
                   subtitle={
                     <>
@@ -177,15 +155,10 @@ export function Journey({ locale }: { locale: Locale }) {
             </div>
           </div>
         </div>
-        <StageAnchor id="journey-core" labelled className="journey-core">
-          <RingsFigure
-            rings={stage.rings}
-            startYear={startYear}
-            currentYear={buildYear}
-            ariaLabel={fill(dict.figures.rings, { start: startYear, end: buildYear })}
-            bands={stage.entries.map((x) => x.band)}
-            active={null}
-            className="anchor-figure"
+        <StageAnchor id="journey-core" className="journey-core">
+          <KodPanel
+            data={getKodData('home', undefined, locale)}
+            program={{ kind: 'journey', active: -1 }}
           />
         </StageAnchor>
       </div>

@@ -1,11 +1,11 @@
 // tests/e2e/contrast.spec.ts — sahne üstündeki metnin kontrastı (§5.18.2, §10.5, X8). YALNIZ RUN_CONTRAST=1 iken
 // koşar (M5, M8, M10'da elle): RUN_CONTRAST=1 npx playwright test --project=desktop-chromium tests/e2e/contrast.spec.ts
 // Her bölümde 10 kaydırma konumu × 2 tema × 3 genişlik; gövde metninde < 4.5, büyük metinde < 3.0 başarısızlıktır
-// (eşikleri probeContrast uygular). Derin sayfalar M7'ye kadar 'none' preset'tedir: Taş yoksa denetlenecek öğe yoktur.
+// (eşikleri probeContrast uygular). Panel yoksa (preset 'none', work) denetlenecek öğe yoktur.
 import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { settle } from './helpers/scroll';
-import { waitForStagePhase, waitForStoneStill } from './helpers/stage';
+import { waitForPanelStill, waitForStagePhase } from './helpers/stage';
 
 const RUN = process.env.RUN_CONTRAST === '1';
 const WIDTHS = [
@@ -55,8 +55,7 @@ test.describe('X8 kontrast probu', { tag: ['@desktop-chromium'] }, () => {
           const ctx = await browser.newContext({ viewport, colorScheme });
           const page = await ctx.newPage();
           await page.goto(`${url}?debug&tier=high`, { waitUntil: 'networkidle' });
-          // 'none' preset'te (derin sayfalar M7'ye kadar) sahne boot etmez: STAGE_IDLE kapısından sonra da faz poster
-          // kalır ve Taş yoktur
+          // 'none' preset'te sahne boot etmez: STAGE_IDLE kapısından sonra da faz poster kalır ve panel yoktur
           await page.waitForFunction(() => {
             const nav = performance.getEntriesByType(
               'navigation',
@@ -77,7 +76,7 @@ test.describe('X8 kontrast probu', { tag: ['@desktop-chromium'] }, () => {
           for (const p of await positions(page)) {
             await page.evaluate((y) => window.scrollTo({ top: y, behavior: 'instant' }), p.y);
             await settle(page);
-            await waitForStoneStill(page);
+            await waitForPanelStill(page);
             const r = await probe(page);
             checked += r.checked;
             expect

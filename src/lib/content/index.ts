@@ -35,6 +35,8 @@ import { getExperienceProfile } from '@/experience/profile';
 import { fileRoutes, type Locale, type PageRef, type RouteKey } from '@/i18n/config';
 import { bandOf, ringGeometry } from '@/lib/section-geometry';
 import type { PresetName, StageData } from '@/stage/store';
+import type { KodData } from '@/lib/kod/types';
+import { buildKodData } from './kod';
 import {
   byDateDesc,
   byPeriod,
@@ -45,6 +47,7 @@ import {
   sortProjects,
   type CvSection,
   type CvSource,
+  type EducationItem,
   type ExperienceItem,
   type HomeJourney,
 } from './cv';
@@ -327,8 +330,6 @@ export function availableLocales(key: RouteKey, slug?: string): Locale[] {
       if (!a || !site.features.areaPages || !a.hasPage || !a.pageLocales.includes('tr')) return [];
       return both(a.pageLocales.includes('en'));
     }
-    case 'lab':
-      return process.env.NEXT_PUBLIC_ENABLE_LAB === '1' ? ['tr'] : [];
   }
 }
 
@@ -380,7 +381,7 @@ export function getCvSummary(locale: Locale): {
 /* ───────────── sahne verisi (§5.9.1) ───────────── */
 
 /**
- * StagePreset / LabStage verisi. folio'da slug ZORUNLU; 'none' için data={null} verilir.
+ * StagePreset verisi. folio'da slug ZORUNLU; 'none' için data={null} verilir.
  * locale: ana sayfa listesi dile göre değişir (TR 4, EN 3 öne çıkan); varsayılan 'tr'.
  */
 export function getStageData(
@@ -403,40 +404,80 @@ export function getStageData(
     const y = entryYears(e);
     return { band: bandOf(y.start, y.end, g) };
   };
-  const intensity = getExperienceProfile(getSite().persona).intensity; // areas dönüş easing'i (§5.9.4)
+  const profile = getExperienceProfile(getSite().persona);
+  const intensity = profile.intensity; // areas dönüş easing'i (§5.9.4)
   const base = { rings: g.rings, sectors, intensity };
+  const home = selectHomeJourney(cvSource());
+  /** KOD program verisi (§4 KOD): ana sayfa yolculuğu ya da CV kayıtları, preset'in proje listesi */
+  const kod = (
+    projects: readonly ProjectDoc[],
+    journey: { experience: ExperienceItem[]; education: EducationItem[] } = home,
+  ) =>
+    buildKodData({
+      locale,
+      person,
+      home: getHome(),
+      contact,
+      areas,
+      projects,
+      experience: journey.experience,
+      education: journey.education,
+      defaultLead: profile.labels.contactLead[locale],
+    });
 
   switch (preset) {
-    case 'home':
+    case 'home': {
+      const featured = getProjects(locale, { featured: true });
       return {
         ...base,
-        projects: getProjects(locale, { featured: true }).map(projectData),
-        entries: selectHomeJourney(cvSource()).experience.map(entryBand),
+        projects: featured.map(projectData),
+        entries: home.experience.map(entryBand),
+        kod: kod(featured),
       };
+    }
     case 'folio': {
       if (!slug) throw new Error('getStageData("folio"): slug zorunlu');
       const self = getProject(slug, locale);
       if (!self) throw new Error(`getStageData("folio"): bilinmeyen proje "${slug}"`);
       const next = getAdjacentProjects(slug, locale)?.next;
-      return { ...base, projects: [self, ...(next ? [next] : [])].map(projectData), entries: [] };
+      const pair = [self, ...(next ? [next] : [])];
+      return { ...base, projects: pair.map(projectData), entries: [], kod: kod(pair) };
     }
-    case 'plan-small':
+    case 'plan-small': {
+      const all = getProjects(locale);
       return {
         ...base,
-        projects: getProjects(locale).map(projectData),
+        projects: all.map(projectData),
         entries: [],
         activeArea: slug ? areaIndex(slug) : null,
+        kod: kod(all),
       };
+    }
     case 'cv-core': {
       // /cv'deki [data-cv-entry] DOM sırası (bölüm sırası, §7.6.1): girdi aktivasyon çizgileri bu sırayla eşleşir
       const entries: Array<{ band: readonly [number, number] | null }> = [];
-      for (const s of selectCv(cvSource(), locale, 'web'))
+      const cv = { experience: [] as ExperienceItem[], education: [] as EducationItem[] };
+      for (const s of selectCv(cvSource(), locale, 'web')) {
+        if (s.key === 'experience') cv.experience.push(...(s.entries as ExperienceItem[]));
+        if (s.key === 'education') cv.education.push(...(s.entries as EducationItem[]));
         if (s.key === 'experience' || s.key === 'education')
           entries.push(...s.entries.map(entryBand));
-      return { ...base, projects: [], entries };
+      }
+      return { ...base, projects: [], entries, kod: kod(getProjects(locale), cv) };
     }
     case 'about-page':
     case 'contact-page':
-      return { ...base, projects: [], entries: [] };
+      return { ...base, projects: [], entries: [], kod: kod(getProjects(locale)) };
   }
+}
+
+/** KOD program verisi (§4 KOD): statik panel ve WebGL aynı veriyi çizer */
+export function getKodData(
+  preset: Exclude<PresetName, 'none'>,
+  slug?: string,
+  locale: Locale = 'tr',
+): KodData {
+  const k = getStageData(preset, slug, locale).kod;
+  if (!k) throw new Error(`getKodData("${preset}"): veri yok`);
+  return k;
 }

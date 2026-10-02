@@ -59,6 +59,10 @@ test.describe(
           }
           expect(visited, `${path}: en az bir Tab durağı`).toBeGreaterThan(0);
           expect(visited, `${path}: sonsuz döngü yok`).toBeLessThanOrEqual(limit);
+          // Tab sayfayı sona kaydırır ve tembel galeri görselleri yüklenmeye başlar. Yarıda kesilen /_next/image isteği
+          // `next start`'ta (Next 16.3.7) o URL'yi sunucu yeniden başlayana dek kilitliyor (iç istek istemcinin soketiyle
+          // yapılıyor): sonraki testlerin görselleri hiç gelmiyordu (PR #15 CI, visual.spec). Ağ durulunca ayrılınır.
+          await page.waitForLoadState('networkidle');
         });
       }
     });

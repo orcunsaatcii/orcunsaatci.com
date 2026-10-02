@@ -138,7 +138,6 @@ export function buildRootMetadata(locale: Locale): Metadata {
 
 /** home, about, cv, projects, expertise, contact, privacy */
 export function staticPageMetadata(ref: StaticPageRef, locale: Locale): Metadata {
-  if (ref.key === 'lab') throw new Error('staticPageMetadata: lab metadata’sı sayfada yazılır');
   const person = getPerson();
   const meta = getDictionary(locale).meta;
   const pagePart = ref.key === 'home' ? BRAND : meta[ref.key];

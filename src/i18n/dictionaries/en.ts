@@ -32,7 +32,7 @@ const en = {
   },
   notFound: {
     title: 'Page not found',
-    lead: 'This section is empty, but the clock is right.',
+    lead: "This path isn't in the build.",
     body: 'The link may be outdated or the address mistyped.',
     home: 'Back to home',
     projects: 'Projects',
@@ -68,7 +68,6 @@ const en = {
   },
   theme: { label: 'Theme', system: 'System', dark: 'Dark', light: 'Light' },
   motion: { reduce: 'Reduce motion', pause: 'Pause animation', play: 'Play animation' },
-  figures: { dial: 'Areas: {list}', rings: 'Career rings: {start} – {end}' },
   hero: { ctaPrimary: 'Explore projects', ctaSecondary: 'Get in touch', scrollCue: 'Scroll' },
   home: {
     aboutMore: 'Full story',

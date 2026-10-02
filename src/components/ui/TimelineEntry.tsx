@@ -19,12 +19,8 @@ interface TimelineEntryProps {
   entryIndex?: number;
   /** /cv: data-cv-entry (cv-core bant event'i, §4.13.2) */
   cvEntry?: boolean;
-  /** hover-to-scene öznitelikleri (previewAttrs, §4.14 #3) */
-  preview?: Record<string, string>;
   /** blok reveal'ı (§4.10.2) */
   reveal?: boolean;
-  /** 24 px bant glifi (EntryGlyph, §4.10.7–§4.10.8); tarih satırının başında */
-  glyph?: ReactNode;
 }
 
 export function TimelineEntry({
@@ -40,9 +36,7 @@ export function TimelineEntry({
   className,
   entryIndex,
   cvEntry,
-  preview,
   reveal,
-  glyph,
 }: TimelineEntryProps) {
   const label = (d: string) =>
     precision === 'year' ? d.slice(0, 4) : formatPartialDate(d, locale);
@@ -50,7 +44,6 @@ export function TimelineEntry({
     <Tag
       data-journey-entry={entryIndex}
       data-cv-entry={cvEntry ? '' : undefined}
-      {...preview}
       data-reveal={reveal ? 'block' : undefined}
       className={[
         'grid gap-x-gutter gap-y-2 lg:grid-cols-[minmax(8rem,12rem)_minmax(0,1fr)]',
@@ -60,7 +53,6 @@ export function TimelineEntry({
         .join(' ')}
     >
       <p className="type-meta nums-tabular lg:text-right">
-        {glyph}
         <time dateTime={start}>{label(start)}</time>
         {' – '}
         {end ? (

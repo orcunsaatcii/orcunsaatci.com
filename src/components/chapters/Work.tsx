@@ -6,7 +6,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { ViewTransition, type CSSProperties } from 'react';
-import { SpecimenGlyph } from '@/components/figures/SpecimenGlyph';
+import { AsciiCompile } from '@/components/kod/AsciiCompile';
 import { RevealHeading } from '@/components/motion/RevealHeading';
 import { SectionWipe } from '@/components/motion/SectionWipe';
 import { HIT_AREA } from '@/components/ui/hit-area';
@@ -16,10 +16,9 @@ import { getExperienceProfile } from '@/experience/profile';
 import { chapterAnchors, pathOf, type Locale } from '@/i18n/config';
 import { getDictionary } from '@/i18n/get-dictionary';
 import { fill } from '@/i18n/text';
-import { getAreas, getHome, getProjects, getSite, getStageData, t } from '@/lib/content';
-import { previewAttrs } from '@/stage/preview-attrs';
+import { getAreas, getHome, getProjects, getSite, t } from '@/lib/content';
 import { pageLink } from '@/lib/seo/metadata';
-import { StageAnchor } from '@/stage/ScenePoster';
+import { StageAnchor } from '@/stage/StageAnchor';
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
@@ -31,7 +30,6 @@ export function Work({ locale }: { locale: Locale }) {
   const featured = getProjects(locale, { featured: true });
   const total = getProjects(locale).length;
   const areas = getAreas();
-  const stage = getStageData('home', undefined, locale);
   const all = pageLink({ key: 'projects' }, locale);
   const heading = home.work.heading ? t(home.work.heading, locale) : null;
   const P = featured.length;
@@ -64,7 +62,6 @@ export function Work({ locale }: { locale: Locale }) {
           const titleId = `work-${p.slug}`;
           const area = areas.find((a) => a.id === p.primaryArea);
           const stores = p.links.filter((l) => l.kind === 'live');
-          const s = stage.projects[k];
           return (
             <div
               key={p.slug}
@@ -75,7 +72,6 @@ export function Work({ locale }: { locale: Locale }) {
                 aria-labelledby={titleId}
                 data-work-article=""
                 className="col-span-4 md:col-span-8 lg:col-span-5"
-                {...previewAttrs({ band: s?.band, sector: s?.area })}
               >
                 <p className="type-meta nums-tabular" data-reveal="block">
                   {pad(k + 1)} / {pad(P)}
@@ -129,13 +125,6 @@ export function Work({ locale }: { locale: Locale }) {
                     </ul>
                   ) : null}
                 </div>
-                <SpecimenGlyph
-                  rings={stage.rings}
-                  sectors={stage.sectors}
-                  band={s?.band ?? null}
-                  area={s?.area ?? null}
-                  className="work-glyph mt-4"
-                />
               </article>
               <figure
                 data-work-figure={k}
@@ -158,6 +147,7 @@ export function Work({ locale }: { locale: Locale }) {
                       style={{ backgroundColor: p.cover.dominant }}
                     />
                   </ViewTransition>
+                  <AsciiCompile index={k} />
                   <span aria-hidden="true" className="work-wipe-line" />
                 </div>
               </figure>
@@ -180,20 +170,7 @@ export function Work({ locale }: { locale: Locale }) {
             );
           })}
         </p>
-        <StageAnchor id="work-specimen" className="work-specimen">
-          {stage.projects.map((s, k) => (
-            <span key={s.slug} data-work-specimen-glyph={k} hidden={k !== 0}>
-              <SpecimenGlyph
-                rings={stage.rings}
-                sectors={stage.sectors}
-                band={s.band}
-                area={s.area}
-                size={240}
-                className="anchor-figure"
-              />
-            </span>
-          ))}
-        </StageAnchor>
+        <StageAnchor id="work-specimen" className="work-specimen" />
       </div>
       <p className="work-closing mt-block">
         <Link

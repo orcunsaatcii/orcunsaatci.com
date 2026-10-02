@@ -1,4 +1,5 @@
 // src/views/contact/ContactView.tsx — /iletisim (§12.1, §4.13). Server; form yok (D-22, v1.1'de).
+import { KodPanel } from '@/components/kod/KodPanel';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { CopyEmail } from '@/components/ui/CopyEmail';
@@ -9,7 +10,7 @@ import { SocialLinks } from '@/components/ui/SocialLinks';
 import { Txt } from '@/components/ui/Txt';
 import { localeMeta, type Locale } from '@/i18n/config';
 import { getDictionary } from '@/i18n/get-dictionary';
-import { getContact, getPerson, getStageData, t } from '@/lib/content';
+import { getContact, getKodData, getPerson, getStageData, t } from '@/lib/content';
 import { jsonLdFor } from '@/lib/seo/jsonld';
 import { StagePreset } from '@/stage/StagePreset';
 
@@ -29,7 +30,15 @@ export function ContactView({ locale }: { locale: Locale }) {
         locale={locale}
         title={dict.meta.contact}
         lede={dict.contact.cta}
-        folio={{ preset: 'contact-page', poster: 'k5' }}
+        folio={{
+          preset: 'contact-page',
+          figure: (
+            <KodPanel
+              data={getKodData('contact-page', undefined, locale)}
+              program={{ kind: 'contact' }}
+            />
+          ),
+        }}
       />
       <div className="container-page flex flex-col items-start gap-6 pt-block pb-section">
         <div className="flex flex-col items-start gap-4">

@@ -60,22 +60,31 @@ test.describe('K-GEN-10 görsel regresyon', { tag: ['@reduced-motion', '@pixel-7
   for (const path of PAGES) {
     for (const theme of THEMES) {
       test(`${path} ${theme}`, async ({ page }) => {
+        // tam pakette görsel iyileştirici (24 galeri görseli, soğuk önbellek) CI'da 60 s'yi aşabiliyor (PR #15)
+        test.setTimeout(120_000);
         await page.clock.install({ time: new Date('2026-01-01T09:00:00+03:00') });
         await page.emulateMedia({ colorScheme: theme });
         await page.goto(path);
         await page.evaluate(() => document.fonts.ready);
         // Tam sayfa görüntüsünde tembel (lazy) görseller koşudan koşuya farklı anda yüklenir (gerçek proje galerisi):
         // hepsi yüklenip çözülene kadar beklenir
-        await page.evaluate(async () => {
+        const pending = await page.evaluate(async () => {
           const imgs = [...document.images];
           for (const img of imgs) img.loading = 'eager';
-          await Promise.all(imgs.map((img) => img.decode().catch(() => undefined)));
+          const all = Promise.all(imgs.map((img) => img.decode().catch(() => undefined)));
+          // takılan istek (ör. sunucu tarafında kilitlenmiş /_next/image) adıyla raporlansın; sonsuz beklenmez
+          await Promise.race([all, new Promise((resolve) => setTimeout(resolve, 45_000))]);
+          return imgs.filter((img) => !img.complete).map((img) => img.currentSrc || img.src);
         });
+        expect(pending, `${path}: çözülmeyen görseller`).toEqual([]);
         // SPEC-SAPMA §13.4.2 (M5): #scene-layer §5.12.5'ten beri tam ekran fixed kutudur; tamamı maskelenirse tam sayfa
-        // görüntüsünün ilk ekranı kapanır. Yalnız canvas maskelenir (azaltılmış harekette canvas yoktur, posterler dahil)
+        // görüntüsünün ilk ekranı kapanır. Yalnız canvas maskelenir (azaltılmış harekette canvas yoktur, statik KOD
+        // panelleri dahil)
+        // Tam sayfa yakalama (≈ 9300 px, yazılım GL) yavaş CI koşucusunda 10 s'yi aşabiliyor (KOD referans koşusu)
         await expect(page).toHaveScreenshot({
           fullPage: true,
-          mask: [page.locator('#scene-layer canvas'), page.locator('[data-live-time]')],
+          mask: [page.locator('#scene-layer canvas')],
+          timeout: 30_000,
         });
       });
     }
