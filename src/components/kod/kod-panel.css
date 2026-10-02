@@ -18,13 +18,13 @@
   width: var(--kod-w);
   aspect-ratio: 56 / 48;
   border-radius: calc(var(--kod-w) / 56);
-  background: color-mix(in srgb, var(--color-surface) 94%, transparent);
+  background: color-mix(in srgb, var(--k6) 94%, transparent);
   box-shadow: 0 calc(var(--kod-w) / 40) calc(var(--kod-w) / 14) rgb(14 21 48 / 0.12);
   overflow: hidden;
   pointer-events: none;
   user-select: none;
 }
-/* Gece paneli (journey, §5.20.6): her temada koyu değerler; token'lar light-dark() olduğundan color-scheme yeter */
+/* Gece paneli (journey, §5.20.6): her temada koyu rol renkleri (satır içi --k0…--k7, KodPanel) */
 .kod-panel[data-night] {
   color-scheme: dark;
   box-shadow: 0 calc(var(--kod-w) / 40) calc(var(--kod-w) / 14) rgb(14 21 48 / 0.3);

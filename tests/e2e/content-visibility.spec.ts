@@ -104,6 +104,17 @@ test.describe('K-GEN-5 içerik görünürlüğü', { tag: ['@no-js', '@reduced-m
       }
       // work'te panel yoktur: kapaklar gerçek görsellerdir
       await expect.soft(page.locator('[data-chapter="work"] .kod-panel')).toHaveCount(0);
+      // gece paneli (journey) açık temada da koyu zeminlidir (§5.20.6, K-JOURNEY-3)
+      const nightLum = await page
+        .locator('[data-stage-anchor="journey-core"] .kod-panel[data-night]')
+        .evaluate((el) => {
+          const m = getComputedStyle(el)
+            .backgroundColor.match(/[\d.]+/g)
+            ?.map(Number) ?? [255];
+          const [r = 255, g = 255, b = 255] = m;
+          return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+        });
+      expect.soft(nightLum, `${home}: gece paneli zemini`).toBeLessThan(0.2);
       // K-WORK-5: her figür akışta, clip-path yok
       const clipped = await page.evaluate(
         () =>
