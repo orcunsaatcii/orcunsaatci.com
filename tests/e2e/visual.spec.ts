@@ -74,9 +74,11 @@ test.describe('K-GEN-10 görsel regresyon', { tag: ['@reduced-motion', '@pixel-7
         // SPEC-SAPMA §13.4.2 (M5): #scene-layer §5.12.5'ten beri tam ekran fixed kutudur; tamamı maskelenirse tam sayfa
         // görüntüsünün ilk ekranı kapanır. Yalnız canvas maskelenir (azaltılmış harekette canvas yoktur, statik KOD
         // panelleri dahil)
+        // Tam sayfa yakalama (≈ 9300 px, yazılım GL) yavaş CI koşucusunda 10 s'yi aşabiliyor (KOD referans koşusu)
         await expect(page).toHaveScreenshot({
           fullPage: true,
           mask: [page.locator('#scene-layer canvas')],
+          timeout: 30_000,
         });
       });
     }
