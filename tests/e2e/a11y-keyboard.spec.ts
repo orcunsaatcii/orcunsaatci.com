@@ -113,6 +113,18 @@ test.describe('§10.3 klavye: ana sayfa', { tag: ['@desktop-chromium'] }, () => 
     await page.keyboard.press('Enter');
     await expect(last).toHaveAttribute('aria-current', 'step', { timeout: 5000 });
     await expect(areas.locator('[aria-current="step"][data-area-step]')).toHaveCount(1);
+    // K-AREAS-8: açıklamalar aria-hidden / inert değildir; etkin olmayana gelen odak onu anında (geçişsiz) görünür
+    // kılar, odaklı öğe hiçbir an opacity: 0 kalmaz (§10.3.4)
+    await expect(
+      areas.locator('[data-area-desc][aria-hidden], [data-area-desc][inert]'),
+    ).toHaveCount(0);
+    const j = await areas
+      .locator('[data-area-desc]:not([data-active])')
+      .first()
+      .getAttribute('data-area-desc');
+    const desc = areas.locator(`[data-area-desc="${j}"]`);
+    await desc.locator('a').first().focus();
+    expect(await desc.evaluate((d) => getComputedStyle(d).opacity)).toBe('1');
     // atlama bağlantısı: sonraki bölümün h2'sine odak
     await areas.locator('a[data-skip-section]').focus();
     await page.keyboard.press('Enter');
