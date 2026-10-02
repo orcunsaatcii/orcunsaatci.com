@@ -22,8 +22,11 @@ describe('Tailwind sınıf çakışmaları', () => {
       readFileSync(f, 'utf8')
         .split('\n')
         .forEach((line, i) => {
-          if (/(?<![\w[:-])inline-block(?![\w-])/.test(line) && !/^\s*(\/\/|\*|\/\*)/.test(line))
-            offenders.push(`${f}:${i + 1}`);
+          // CSS'te `display: inline-block` özelliği serbesttir; yalnız @apply ile sınıf olarak kullanımı çakışır
+          const hit = f.endsWith('.css')
+            ? /@apply[^;]*(?<![\w[:-])inline-block(?![\w-])/.test(line)
+            : /(?<![\w[:-])inline-block(?![\w-])/.test(line);
+          if (hit && !/^\s*(\/\/|\*|\/\*)/.test(line)) offenders.push(`${f}:${i + 1}`);
         });
     }
     expect(offenders).toEqual([]);
@@ -48,8 +51,12 @@ describe('§6.12 tasarım sistemi grep’leri', () => {
     expect(offending(/#[0-9A-Fa-f]{6}\b/, allowed)).toEqual([]);
   });
 
-  it('yerel imleç gizlenmez: `cursor: none` / `cursor-none` yok', () => {
-    expect(offending(/cursor:\s*none|\bcursor-none\b/)).toEqual([]);
+  it('K-MICRO-1 yerel imleç gizlenmez: `cursor: none`, `cursor-none`, özel imleç bileşeni yok', () => {
+    expect(
+      offending(/cursor\s*:\s*none|\bcursor-none\b|cursor-\[none\]|CustomCursor/, (f) =>
+        /\.test\.tsx?$/.test(f),
+      ),
+    ).toEqual([]);
   });
 
   it('depoda tailwind.config.* yok (Tailwind v4 CSS yapılandırması)', () => {

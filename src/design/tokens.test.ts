@@ -1,5 +1,5 @@
 // src/design/tokens.test.ts — tokens.ts ↔ globals.css paritesi + kontrast alt sınırları (product.md §6.10.4)
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { getExperienceProfile } from '@/experience/profile';
@@ -125,17 +125,4 @@ describe('kontrast alt sınırları: tüm paletler × temalar', () => {
       });
     }
   }
-});
-
-describe('§4.14.1 YASAK imleç (D-16)', () => {
-  it('K-MICRO-1 kaynakta cursor: none / özel imleç yok', () => {
-    const files = (readdirSync(join(process.cwd(), 'src'), { recursive: true }) as string[])
-      .filter((f) => /\.(css|tsx?)$/.test(f) && !/\.test\.tsx?$/.test(f))
-      .filter((f) =>
-        /cursor\s*:\s*none|cursor-none|cursor-\[none\]|CustomCursor/.test(
-          readFileSync(join(process.cwd(), 'src', f), 'utf8'),
-        ),
-      );
-    expect(files).toEqual([]);
-  });
 });
