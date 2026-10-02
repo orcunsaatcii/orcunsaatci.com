@@ -1,4 +1,5 @@
-// tests/e2e/contact.spec.ts — iletişim v1 (§12.1, §12.6; B24, K-CONTACT-1/2/8). v1.1 form grubu M9'da eklenir.
+// tests/e2e/contact.spec.ts — iletişim v1 (§12.1, §12.6; B24, K-CONTACT-1/2/8; toast K-MICRO-8). v1.1 form grubu M9'da
+// eklenir.
 import { allowConsole, expect, test } from './fixtures';
 import { NOT_FOUND_PATHS, pagePaths } from './helpers/urls';
 
@@ -79,6 +80,55 @@ test.describe('§12.1 iletişim sayfası', { tag: ['@desktop-chromium'] }, () =>
         .first(),
     ).toBeVisible();
     await expect(button).not.toContainText('Kopyalandı', { timeout: 4000 });
+  });
+
+  test('K-MICRO-8 toast role="status", 4 s görünür kalır ve odaklanmış öğenin üstüne binmez', async ({
+    page,
+    context,
+  }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    await page.setViewportSize({ width: 390, height: 844 }); // toast neredeyse tam genişlik
+    await page.goto('/iletisim?tier=static', { waitUntil: 'networkidle' });
+    const button = page
+      .locator('main')
+      .getByRole('button', { name: /kopyala/i })
+      .first();
+    // düğme toast'ın çıkacağı alt kenarda; klavyeyle basılır, odak düğmede kalır
+    await button.evaluate((b) => {
+      const r = b.getBoundingClientRect();
+      window.scrollBy({ top: r.bottom - (window.innerHeight - 24), behavior: 'instant' });
+    });
+    await button.focus();
+    // görünür kalma süresi sayfada ölçülür: kartın eklenişinden kalkışına (çıkış 160 ms dahil)
+    await page.evaluate(() => {
+      const w = window as unknown as { __toast: number[] };
+      w.__toast = [];
+      new MutationObserver((list) => {
+        for (const m of list)
+          if ((m.target as Element).matches('[role="status"][data-edge]'))
+            w.__toast.push(performance.now());
+      }).observe(document.body, { subtree: true, childList: true });
+    });
+    await page.keyboard.press('Enter');
+    // sayfada iki Kopyala vardır (iletişim ve footer), her biri kendi bölgesiyle
+    const region = page.locator('[role="status"][data-edge]').filter({ hasText: /kopyalandı/i });
+    await expect(region).toHaveAttribute('aria-live', 'polite');
+    await expect(button).toBeFocused();
+    const [b, c] = await Promise.all([button.boundingBox(), region.locator('> *').boundingBox()]);
+    const overlap =
+      b!.x < c!.x + c!.width &&
+      c!.x < b!.x + b!.width &&
+      b!.y < c!.y + c!.height &&
+      c!.y < b!.y + b!.height;
+    expect(overlap, `toast ${JSON.stringify(c)} odaklı düğmeye ${JSON.stringify(b)} biner`).toBe(
+      false,
+    );
+    await expect(region.locator('> *')).toHaveCount(0, { timeout: 6000 });
+    const [shown = 0, gone = 0] = await page.evaluate(
+      () => (window as unknown as { __toast: number[] }).__toast,
+    );
+    expect(gone - shown, `görünür ${Math.round(gone - shown)} ms`).toBeGreaterThanOrEqual(4000);
+    expect(gone - shown).toBeLessThanOrEqual(4000 + 160 + 500);
   });
 
   test('Pano API’si yokken adres seçilir ve yedek toast görünür', async ({ page }) => {

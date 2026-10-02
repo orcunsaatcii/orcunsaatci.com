@@ -1,7 +1,9 @@
 // tests/e2e/mobile.spec.ts — mobil yerleşim, dokunma hedefleri ve mobil menü (§6.4.5, §10.3.4, §10.7; K-MOBILE-1/2/3).
-// Yatay taşma, dokunma hedefleri, Lenis sınıfı, header gizle/göster (M4), çapa sonrası konum ve menü odak sözleşmesi.
-// Yatay modda taş (K-MOBILE-4) M6'dan itibaren eklenir (§15.3.1 #12).
+// Yatay taşma, dokunma hedefleri, Lenis sınıfı, header gizle/göster (M4), çapa sonrası konum ve menü odak sözleşmesi
+// (K-MICRO-10, açılış 500 ms). Dokunmatikte işaretçi efekti yok (K-MICRO-2/9). Yatay modda taş (K-MOBILE-4) M6'dan
+// itibaren eklenir (§15.3.1 #12).
 import { expect, test } from './fixtures';
+import { pageDelay, readLive, waitForStagePhase } from './helpers/stage';
 import { pagePaths } from './helpers/urls';
 
 test.describe('K-MOBILE mobil kabuk', { tag: ['@pixel-7', '@iphone-15'] }, () => {
@@ -67,6 +69,15 @@ test.describe('K-MOBILE mobil kabuk', { tag: ['@pixel-7', '@iphone-15'] }, () =>
     await expect(dialog).toBeVisible();
     await expect(openButton).toHaveAttribute('aria-expanded', 'true');
     await expect(dialog.locator('nav a').first()).toBeFocused();
+    // §4.14 #17: düğmeden daire clip-path, 500 ms
+    const opening = await dialog.evaluate((d) =>
+      d
+        .getAnimations()
+        .map((a) => a.effect as KeyframeEffect)
+        .filter((e) => e.getKeyframes().some((k) => 'clipPath' in k))
+        .map((e) => e.getTiming().duration),
+    );
+    expect(opening, 'menü açılışı 500 ms').toEqual([500]);
     await expect(page.locator('#main')).toHaveJSProperty('inert', true);
     await expect(page.locator('body > header')).toHaveJSProperty('inert', true);
     await expect(page.locator('[data-site-footer]')).toHaveJSProperty('inert', true);
@@ -126,3 +137,32 @@ test.describe('K-MOBILE mobil kabuk', { tag: ['@pixel-7', '@iphone-15'] }, () =>
     expect(targetTop).toBeGreaterThanOrEqual(headerBottom - 1);
   });
 });
+
+test.describe(
+  '§4.14.1 dokunmatikte işaretçi efekti yok',
+  { tag: ['@pixel-7', '@iphone-15'] },
+  () => {
+    test('K-MICRO-2/9 dokunuşta panel paralaksı ve tepkisi yok; manyetik etiket kaymaz', async ({
+      page,
+    }) => {
+      await page.goto('/?tier=medium&debug', { waitUntil: 'networkidle' });
+      const phase = await waitForStagePhase(page, ['ready', 'fallback'], 30_000);
+      await page.waitForFunction(() => document.documentElement.classList.contains('motion-ready'));
+      // panelin ve hero başlığının üstüne dokunulur (bağlantı yok: gezinme olmaz)
+      const anchor = (await page.locator('[data-stage-anchor="hero-rest"]').boundingBox())!;
+      const h1 = (await page.locator('[data-chapter="hero"] h1').boundingBox())!;
+      await page.touchscreen.tap(anchor.x + anchor.width * 0.7, anchor.y + anchor.height * 0.7);
+      await page.touchscreen.tap(h1.x + h1.width / 2, h1.y + h1.height / 2);
+      await pageDelay(page, 800);
+      expect(page.url(), 'dokunuş gezinmedi').toMatch(/\/\?tier=medium&debug$/);
+      if (phase === 'ready') {
+        const l = await readLive(page);
+        expect([l.kod.parX, l.kod.parY], 'paralaks yok').toEqual([0, 0]);
+      }
+      const moved = await page
+        .locator('[data-magnetic], [data-magnetic] > *')
+        .evaluateAll((els) => els.filter((el) => getComputedStyle(el).transform !== 'none').length);
+      expect(moved, 'manyetik kayma yok').toBe(0);
+    });
+  },
+);

@@ -81,7 +81,7 @@ export function Magnetic({
   }, [rt, max]);
 
   return (
-    <span ref={outer} className="[display:inline-block] will-change-transform">
+    <span ref={outer} data-magnetic="" className="[display:inline-block] will-change-transform">
       <span ref={inner} className={className}>
         {children}
       </span>

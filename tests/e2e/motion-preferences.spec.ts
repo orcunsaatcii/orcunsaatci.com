@@ -1,7 +1,10 @@
 // tests/e2e/motion-preferences.spec.ts — hareket tercihleri ve duraklatma (§10.2.4, §13.3.4; K-VAR-1/2/5).
 // Ağ tarafı (motion chunk istenmez) PB-5'tedir (perf-budgets.spec.ts). Canlı canvas M5'te; burada canvas yoktur.
+// Azaltılmış harekette route geçişi süresizdir ve kesim çizgisi çizilmez (K-DEEP-8, D-32); işaretçi efekti yoktur,
+// mobil menü anında açılır (K-MICRO-2/10).
 import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
+import { pageDelay } from './helpers/stage';
 
 /** Motion runtime kuruldu ve reveal'lar hazır (load + boşluk) */
 const motionReady = (page: Page) =>
@@ -48,6 +51,93 @@ test.describe('§10.2.4 azaltılmış hareket', { tag: ['@reduced-motion'] }, ()
         .toBeVisible();
   });
 });
+
+test.describe(
+  '§4.13.4 azaltılmış harekette geçiş ve mikro etkileşimler',
+  { tag: ['@reduced-motion'] },
+  () => {
+    test('K-DEEP-8 gezinmede süresi > 0 view transition animasyonu yok, kesim çizgisi görünmez; K-MICRO-2 manyetik kapalı', async ({
+      page,
+    }) => {
+      // geçiş hazır olunca (pseudo-element animasyonları kurulmuştur) etkin süreler okunur
+      await page.addInitScript(() => {
+        const w = window as unknown as { __vt: number[]; __vtRuns: number };
+        w.__vt = [];
+        w.__vtRuns = 0;
+        const start = document.startViewTransition?.bind(document);
+        if (!start) return;
+        document.startViewTransition = ((arg?: Parameters<typeof start>[0]) => {
+          const vt = start(arg);
+          w.__vtRuns++;
+          void vt.ready.then(
+            () => {
+              for (const a of document.getAnimations()) {
+                const e = a.effect as KeyframeEffect | null;
+                if (!e?.pseudoElement?.includes('view-transition')) continue;
+                const t = e.getComputedTiming();
+                w.__vt.push(Number(t.endTime));
+              }
+            },
+            () => {},
+          );
+          return vt;
+        }) as typeof document.startViewTransition;
+      });
+      await page.goto('/', { waitUntil: 'networkidle' });
+      await expect(page.locator('html')).toHaveAttribute('data-motion', 'reduce');
+      // manyetik: işaretçi CTA'nın etkinleşme alanında, etiket kaymaz
+      const cta = page.locator('[data-chapter="hero"] [data-magnetic]').first();
+      const box = (await cta.boundingBox())!;
+      await page.mouse.move(box.x + box.width + 12, box.y + box.height / 2, { steps: 4 });
+      await pageDelay(page, 500);
+      expect(
+        await page
+          .locator('[data-magnetic], [data-magnetic] > *')
+          .evaluateAll(
+            (els) => els.filter((el) => getComputedStyle(el).transform !== 'none').length,
+          ),
+        'manyetik kayma yok',
+      ).toBe(0);
+      // ana sayfa → proje (nav-forward)
+      const link = page.locator('[data-work-article] a[href^="/projeler/"]').first();
+      const href = (await link.getAttribute('href')) ?? '';
+      await link.click();
+      await page.waitForURL((u) => u.pathname === href);
+      await expect(page.locator('main h1')).toBeFocused();
+      await page.waitForLoadState('networkidle');
+      const { runs, ends, cut } = await page.evaluate(() => {
+        const w = window as unknown as { __vt: number[]; __vtRuns: number };
+        const line = document.querySelector('body > header .nav-cut-line')!;
+        return {
+          runs: w.__vtRuns,
+          ends: w.__vt,
+          cut: { anims: line.getAnimations().length, opacity: getComputedStyle(line).opacity },
+        };
+      });
+      expect(runs, 'geçiş başladı (DOM katmanı kesilmeden değişir)').toBeGreaterThan(0);
+      expect(
+        ends.filter((ms) => ms > 0),
+        'view transition animasyonları süresiz',
+      ).toEqual([]);
+      expect(cut, 'kesim çizgisi çizilmez').toEqual({ anims: 0, opacity: '0' });
+    });
+
+    test('K-MICRO-10 mobil menü azaltılmış harekette anında açılır', async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.goto('/hakkimda', { waitUntil: 'networkidle' });
+      await page.getByRole('button', { name: 'Menüyü aç' }).click();
+      const dialog = page.getByRole('dialog');
+      await expect(dialog.locator('nav a').first()).toBeFocused();
+      const running = await dialog.evaluate((d) =>
+        d.getAnimations({ subtree: true }).map((a) => a.effect?.getComputedTiming().endTime),
+      );
+      expect(running, 'açılış ve kademe animasyonu yok').toEqual([]);
+      expect(await dialog.evaluate((d) => getComputedStyle(d).clipPath), 'daire maskesi yok').toBe(
+        'none',
+      );
+    });
+  },
+);
 
 test.describe('§10.2.4 MotionToggle ve PauseButton', { tag: ['@desktop-chromium'] }, () => {
   test('K-VAR-5 anahtar: os-motion yazılır, ≤ 1 s azaltılmış görünüm, bölüm korunur; geri alınır', async ({
