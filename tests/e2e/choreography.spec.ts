@@ -933,6 +933,26 @@ function recordScene(): void {
     });
     window.addEventListener('click', () => push('click'), true);
     window.addEventListener('popstate', () => push('popstate'));
+    // Kare taraması Chromium'da geçiş animasyonlarını kaçırabilir (en fazla bir rAF örneğinde görünürler; M8):
+    // startViewTransition sarılır, geçiş hazır olunca kurulan bütün animasyonlar kaydedilir.
+    const startVt = document.startViewTransition?.bind(document);
+    if (startVt)
+      document.startViewTransition = ((arg?: Parameters<typeof startVt>[0]) => {
+        const vt = startVt(arg);
+        void vt.ready.then(
+          () => {
+            for (const a of document.getAnimations()) {
+              const pe = (a.effect as KeyframeEffect | null)?.pseudoElement ?? '';
+              if (pe.includes('view-transition') && !seen.has(a)) {
+                seen.add(a);
+                push(`vt ${pe}`);
+              }
+            }
+          },
+          () => {},
+        );
+        return vt;
+      }) as typeof document.startViewTransition;
     let last = '';
     const frame = () => {
       const r = read('raf');
